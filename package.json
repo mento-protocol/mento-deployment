@@ -1,11 +1,10 @@
 {
-  "name": "@mentolabs/core",
-  "description": "The core smart contracts of the Mento protocol",
+  "name": "mento-tooling",
+  "description": "The mento tooling repo",
   "license": "Apache-2.0",
   "version": "1.0.3",
   "files": [
     "dist",
-    "contracts",
     "img"
   ],
   "main": "dist/index.js",
@@ -15,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mento-protocol/mento-core"
+    "url": "git+https://github.com/mento-protocol/mento-tooling"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",
