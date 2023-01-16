@@ -1,20 +1,21 @@
 {
-  "name": "mento-tooling",
+  "name": "@mento-protocol/mento-core",
   "description": "The mento tooling repo",
   "license": "Apache-2.0",
-  "version": "1.0.3",
+  "version": "1.0.0",
   "files": [
     "dist",
+    "contracts",
     "img"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": {
-    "name": "Mento Labs"
+    "name": "mento-protocol"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mento-protocol/mento-tooling"
+    "url": "git+https://github.com/mento-protocol/mento-core"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",
