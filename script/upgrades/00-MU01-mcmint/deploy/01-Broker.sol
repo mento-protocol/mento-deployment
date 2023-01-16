@@ -47,7 +47,7 @@ contract DeployBrokerScript is Script {
     address governance = contracts.celoRegistry("Governance");
     address reserveProxy = contracts.celoRegistry("Reserve");
     address sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
-    contracts.load("00-CircuitBreaker", "1669916685");
+    contracts.load("00-CircuitBreaker", "1673623801");
     address breakerBoxProxy = contracts.deployed("BreakerBoxProxy");
 
     vm.startBroadcast(Chain.deployerPrivateKey());

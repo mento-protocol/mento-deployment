@@ -24,10 +24,10 @@ contract DeployCircuitBreaker is Script {
   BreakerBoxProxy private breakerBoxProxy;
 
   function run() public {
-    address[] memory rateFeedIDs = new address[](3);
+    address[] memory rateFeedIDs = new address[](2);
     rateFeedIDs[0] = contracts.celoRegistry("StableToken");
     rateFeedIDs[1] = contracts.celoRegistry("StableTokenEUR");
-    rateFeedIDs[2] = contracts.celoRegistry("StableTokenBRL");
+    // rateFeedIDs[1] = contracts.celoRegistry("StableTokenBRL"); 
     address governance = contracts.celoRegistry("Governance");
     address sortedOracles = contracts.celoRegistry("SortedOracles");
 
@@ -65,7 +65,7 @@ contract DeployCircuitBreaker is Script {
     console2.log("----------");
     console2.log("BreakerBox deployed at: ", address(breakerBox));
     console2.log("BreakerBoxProxy deployed at: ", address(breakerBoxProxy));
-    console2.log("Transferred BreakerBox proxy & implementation ownereship to ", address(governance));
+    console2.log("Transferred BreakerBox proxy & implementation ownership to ", address(governance));
     console2.log("----------");
     console2.log("MedianDeltaBreaker deployed at", address(medianDeltaBreaker));
     console2.log("Transferred MedianDeltaBreaker ownership to ", address(governance));
