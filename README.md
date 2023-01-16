@@ -1,6 +1,6 @@
 # mento-tooling
 
-The tooling for mento core contracts deployment and npm package
+The tooling for mento core contracts deployment and @mento-protocol/mento-core npm package
 ## Getting Started
 
 ```bash
