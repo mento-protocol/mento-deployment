@@ -24,12 +24,9 @@ import { Chain } from "script/utils/Chain.sol";
 contract MentoUpgrade1_baklava_rev0 is GovernanceScript {
   ICeloGovernance.Transaction[] private transactions;
 
-  // NetworkProxies private proxies = getNetworkProxies();
-  // NetworkImplementations private implementations = getNetworkImplementations();
-
   function run() public {
-    contracts.load("00-CircuitBreaker", "1669916685");
-    contracts.load("01-Broker", "1669916825");
+    contracts.load("00-CircuitBreaker", "1673898407");
+    contracts.load("01-Broker", "1673898735");
     address governance = contracts.celoRegistry("Governance");
     ICeloGovernance.Transaction[] memory _transactions = buildProposal();
 

@@ -23,8 +23,8 @@ contract MentoUpgrade1_baklava_rev2 is GovernanceScript {
   ICeloGovernance.Transaction[] private transactions;
 
   function run() public {
-    contracts.load("00-CircuitBreaker", "1669916685");
-    contracts.load("01-Broker", "1669916825");
+    contracts.load("00-CircuitBreaker", "1673625499");
+    contracts.load("01-Broker", "1673625757");
     address governance = contracts.celoRegistry("Governance");
 
     ICeloGovernance.Transaction[] memory _transactions = buildProposal();
@@ -41,8 +41,10 @@ contract MentoUpgrade1_baklava_rev2 is GovernanceScript {
     address cUSDImpl = contracts.deployed("StableToken");
     address cEURProxy = contracts.celoRegistry("StableTokenEUR");
     address cEURImpl = contracts.deployed("StableTokenEUR");
-    address cBRLProxy = contracts.celoRegistry("StableTokenBRL");
-    address cBRLImpl = contracts.deployed("StableTokenBRL");
+
+    // TODO: Commented out as BRL is not yet deployed on baklava.
+    // address cBRLProxy = contracts.celoRegistry("StableTokenBRL");
+    // address cBRLImpl = contracts.deployed("StableTokenBRL");
 
     transactions.push(
       ICeloGovernance.Transaction(0, cUSDProxy, abi.encodeWithSelector(Proxy(0)._setImplementation.selector, cUSDImpl))
@@ -52,9 +54,11 @@ contract MentoUpgrade1_baklava_rev2 is GovernanceScript {
       ICeloGovernance.Transaction(0, cEURProxy, abi.encodeWithSelector(Proxy(0)._setImplementation.selector, cEURImpl))
     );
 
-    transactions.push(
-      ICeloGovernance.Transaction(0, cBRLProxy, abi.encodeWithSelector(Proxy(0)._setImplementation.selector, cBRLImpl))
-    );
+    // TODO: Commented out as BRL is not yet deployed on baklava.
+    // transactions.push(
+    //   ICeloGovernance.Transaction(0, cBRLProxy,
+    // abi.encodeWithSelector(Proxy(0)._setImplementation.selector, cBRLImpl))
+    // );
     return transactions;
   }
 }
