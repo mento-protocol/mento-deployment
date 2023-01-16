@@ -8,6 +8,7 @@ import { console2 } from "forge-std/Script.sol";
 import { MentoUpgrade1_baklava_rev0 } from "./baklava.rev0.sol";
 import { MentoUpgrade1_baklava_rev1 } from "./baklava.rev1.sol";
 import { MentoUpgrade1_baklava_rev2 } from "./baklava.rev2.sol";
+import { MentoUpgrade1_baklava } from "./baklava.sol";
 import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
 
 import { SwapTest } from "script/test/Swap.sol";
@@ -22,7 +23,8 @@ contract MentoUpgrade1_baklava_simulation is GovernanceScript {
     governance = contracts.celoRegistry("Governance");
     // simulate_rev0();
     // simulate_rev1();
-    simulate_rev2();
+    // simulate_rev2();
+    simulate();
   }
 
   function simulate_rev0() internal {
@@ -38,6 +40,13 @@ contract MentoUpgrade1_baklava_simulation is GovernanceScript {
   function simulate_rev2() internal {
     MentoUpgrade1_baklava_rev2 rev2 = new MentoUpgrade1_baklava_rev2();
     simulateProposal(rev2.buildProposal(), governance);
+    SwapTest test = new SwapTest();
+    test.run();
+  }
+
+  function simulate() internal {
+    MentoUpgrade1_baklava rev = new MentoUpgrade1_baklava();
+    simulateProposal(rev.buildProposal(), governance);
     SwapTest test = new SwapTest();
     test.run();
   }
