@@ -1,7 +1,7 @@
 # Mento Deployment
 
 This repo contains scripts for deploying & proposing upgrades to the Mento protocol.
-Deployments for the core contracts are done using Foundry solidity scripting. This allows us to deploy our smart contracts using scripts written in solidity. All deployments and changes to the core contracts can be considered to be upgrades to the protocol.
+Deployments for the core contracts are done using [Foundry solidity scripting](https://book.getfoundry.sh/tutorials/solidity-scripting).
 
 ## Getting Started
 
