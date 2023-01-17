@@ -64,6 +64,7 @@ library Contracts {
 
         // todo(bogdan): think about best way to handle overrides
         self.contractAddress[keccak256(bytes(contractName))] = contractAddresses[i];
+        console.log("Loaded contract %s at %s", contractName, contractAddresses[i]);
       }
     }
 

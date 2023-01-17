@@ -13,9 +13,12 @@ import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICel
 
 import { SwapTest } from "script/test/Swap.sol";
 import { Chain } from "script/utils/Chain.sol";
+import { Contracts } from "script/utils/Contracts.sol";
 
 // forge script {file} --rpc-url $BAKLAVA_RPC_URL
 contract MentoUpgrade1_baklava_simulation is GovernanceScript {
+  using Contracts for Contracts.Cache;
+
   address public governance;
 
   function run() public {
@@ -46,6 +49,7 @@ contract MentoUpgrade1_baklava_simulation is GovernanceScript {
 
   function simulate() internal {
     MentoUpgrade1_baklava rev = new MentoUpgrade1_baklava();
+    rev.prepare();
     simulateProposal(rev.buildProposal(), governance);
     SwapTest test = new SwapTest();
     test.run();

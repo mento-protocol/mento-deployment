@@ -25,8 +25,7 @@ contract MentoUpgrade1_baklava is GovernanceScript {
   ICeloGovernance.Transaction[] private transactions;
 
   function run() public {
-    contracts.load("00-CircuitBreaker", "1673898407");
-    contracts.load("01-Broker", "1673898735");
+    prepare();
     address governance = contracts.celoRegistry("Governance");
     ICeloGovernance.Transaction[] memory _transactions = buildProposal();
 
@@ -35,6 +34,11 @@ contract MentoUpgrade1_baklava is GovernanceScript {
       createProposal(_transactions, "TODO", governance);
     }
     vm.stopBroadcast();
+  }
+
+  function prepare() public {
+    contracts.load("00-CircuitBreaker", "1673898407");
+    contracts.load("01-Broker", "1673898735");
   }
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
