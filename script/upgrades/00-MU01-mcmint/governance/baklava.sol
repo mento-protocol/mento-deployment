@@ -96,21 +96,26 @@ contract MentoUpgrade1_baklava is GovernanceScript {
       )
     );
 
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        reserveProxy,
-        abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("USDCet"))
-      )
-    );
+    // NOTE:  These assets have already been added to the Reserve in a prev deployment.
+    //        As we are not deploying a new reserve proxy we do not need to add them again (tx also will fail).
+    //        Leaving this here for reference when building the mainnet proposal as it will need to be included there.
+    //        @Bayological
 
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        reserveProxy,
-        abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.celoRegistry("GoldToken"))
-      )
-    );
+    // transactions.push(
+    //   ICeloGovernance.Transaction(
+    //     0,
+    //     reserveProxy,
+    //     abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("USDCet"))
+    //   )
+    // );
+
+    // transactions.push(
+    //   ICeloGovernance.Transaction(
+    //     0,
+    //     reserveProxy,
+    //     abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.celoRegistry("GoldToken"))
+    //   )
+    // );
   }
 
   function proposal_registryUpdates() private {
@@ -129,12 +134,16 @@ contract MentoUpgrade1_baklava is GovernanceScript {
 
     IBiPoolManager.PoolExchange[] memory pools = new IBiPoolManager.PoolExchange[](4);
 
+    // Get the proxy addresses for the tokens from the registry
     address cUSD = contracts.celoRegistry("StableToken");
     address cEUR = contracts.celoRegistry("StableTokenEUR");
     address celo = contracts.celoRegistry("GoldToken");
+
+    // Get the address of the newly deployed CPP pricing module
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
 
-    pools[0] = IBiPoolManager.PoolExchange({ // cUSD/CELO
+    // Create the pool configuration for cUSD/CELO
+    pools[0] = IBiPoolManager.PoolExchange({
       asset0: cUSD,
       asset1: celo,
       pricingModule: constantProduct,
@@ -150,8 +159,9 @@ contract MentoUpgrade1_baklava is GovernanceScript {
       })
     });
 
-    pools[1] = IBiPoolManager.PoolExchange({ // cEUR/CELO
-      asset0: cUSD,
+    // Create the pool configuration for cEUR/CELO
+    pools[1] = IBiPoolManager.PoolExchange({
+      asset0: cEUR,
       asset1: celo,
       pricingModule: constantProduct,
       bucket0: 0,
