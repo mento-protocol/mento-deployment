@@ -1,22 +1,24 @@
-# mento-tooling
+# Mento Deployment
 
-The tooling for mento core contracts deployment and @mento-protocol/mento-core npm package
+This repo contains scripts for deploying & proposing upgrades to the Mento protocol.
+Deployments for the core contracts are done using Foundry solidity scripting. This allows us to deploy our smart contracts using scripts written in solidity. All deployments and changes to the core contracts can be considered to be upgrades to the protocol.
+
 ## Getting Started
 
 ```bash
 # Get the latest code
-git clone git@github.com:mento-protocol/mento-tooling.git
+git clone git@github.com:mento-protocol/mento-deployment.git
 
 # Change directory to the the newly cloned repo
 cd mento-tooling
 
-# Install dev dependencies with yarn
-yarn
+# Install the project dependencies & build the contracts
+forge install && forge build
 
-# Install mento-core submodule dependency with forge
-forge install
+# Create your .env file(Replace the PK for deployer account)
+cp .env.example .env
 
-# Compile the deployment script with forge
-forge build
+# Execute scripts using forge script command
+forge script DeployCircuitBreaker --rpc-url $BAKLAVA_RPC_URL --broadcast --legacy --verify --verifier sourcify
 
 ```
