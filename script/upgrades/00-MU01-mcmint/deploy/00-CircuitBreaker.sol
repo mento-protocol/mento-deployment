@@ -13,7 +13,7 @@ import { BreakerBoxProxy } from "mento-core/contracts/proxies/BreakerBoxProxy.so
 
 /*
  Baklava: 
- forge script {file} --rpc-url $BAKLAVA_RPC_URL 
+ forge script DeployCircuitBreaker --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy --verify --verifier sourcify 
                      --private-key $BAKLAVA_DEPLOYER_PK
 */
@@ -27,7 +27,7 @@ contract DeployCircuitBreaker is Script {
     address[] memory rateFeedIDs = new address[](2);
     rateFeedIDs[0] = contracts.celoRegistry("StableToken");
     rateFeedIDs[1] = contracts.celoRegistry("StableTokenEUR");
-    // rateFeedIDs[1] = contracts.celoRegistry("StableTokenBRL"); 
+    // rateFeedIDs[1] = contracts.celoRegistry("StableTokenBRL");
     address governance = contracts.celoRegistry("Governance");
     address sortedOracles = contracts.celoRegistry("SortedOracles");
 

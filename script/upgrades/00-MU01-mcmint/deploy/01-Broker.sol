@@ -24,12 +24,12 @@ import { ReserveProxy } from "mento-core/contracts/proxies/ReserveProxy.sol";
 
 /*
  Baklava: 
- forge script {file} --rpc-url $BAKLAVA_RPC_URL 
+ forge script DeployBroker --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy --verify --verifier sourcify 
                      --private-key $BAKLAVA_DEPLOYER_PK
 */
 
-contract DeployBrokerScript is Script {
+contract DeployBroker is Script {
   ConstantSumPricingModule private csPricingModule;
   ConstantProductPricingModule private cpPricingModule;
   BiPoolManager private biPoolManager;
