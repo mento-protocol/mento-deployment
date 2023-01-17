@@ -24,6 +24,11 @@ import { Chain } from "script/utils/Chain.sol";
 contract MentoUpgrade1_baklava is GovernanceScript {
   ICeloGovernance.Transaction[] private transactions;
 
+  function prepare() public {
+    contracts.load("00-CircuitBreaker", "1673898407");
+    contracts.load("01-Broker", "1673898735");
+  }
+
   function run() public {
     prepare();
     address governance = contracts.celoRegistry("Governance");
@@ -34,11 +39,6 @@ contract MentoUpgrade1_baklava is GovernanceScript {
       createProposal(_transactions, "TODO", governance);
     }
     vm.stopBroadcast();
-  }
-
-  function prepare() public {
-    contracts.load("00-CircuitBreaker", "1673898407");
-    contracts.load("01-Broker", "1673898735");
   }
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
