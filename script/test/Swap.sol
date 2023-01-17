@@ -16,7 +16,7 @@ contract SwapTest is Script {
     // bytes32[] memory exchanges = bpm.exchangeIds();
     bytes32 exchangeID = bpm.exchangeIds(0);
     address tokenIn = contracts.celoRegistry("GoldToken");
-    address tokenOut = contracts.celoRegistry("StableToen");
+    address tokenOut = contracts.celoRegistry("StableToken");
 
     uint256 amountOut = broker.getAmountOut(exchangeProviders[0], exchangeID, tokenIn, tokenOut, 1e20);
 
