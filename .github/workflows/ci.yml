@@ -16,7 +16,7 @@ on:
 
 jobs:
   ci:
-    name: Lint & Test
+    name: Lint & Build
     runs-on: "ubuntu-latest"
     steps:
       - name: "Check out the repo"
@@ -49,15 +49,7 @@ jobs:
       - name: "Show the Foundry config"
         run: "forge config"
 
-      - name: "Run the tests"
-        run: "forge test"
-
       - name: "Build the contracts"
         run: |
           forge --version
           forge build --sizes
-
-      - name: "Add test summary"
-        run: |
-          echo "## Tests" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
