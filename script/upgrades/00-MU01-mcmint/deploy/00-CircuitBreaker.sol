@@ -35,11 +35,14 @@ contract DeployCircuitBreaker is Script {
     uint256[] memory __rateChangeThresholds = new uint256[](0);
     uint256[] memory __cooldowns = new uint256[](0);
 
+    uint256 medianDeltaBreakerCooldown = 0;
+    uint256 medianDeltaBreakerThreshold = 0;
+
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       medianDeltaBreaker = new MedianDeltaBreaker(
-        0,
-        0,
+        medianDeltaBreakerCooldown,
+        medianDeltaBreakerThreshold,
         ISortedOracles(sortedOracles),
         __rateFeedIDs,
         __rateChangeThresholds,
