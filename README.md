@@ -10,7 +10,7 @@ Deployments for the core contracts are done using [Foundry solidity scripting](
 git clone git@github.com:mento-protocol/mento-deployment.git
 
 # Change directory to the the newly cloned repo
-cd mento-tooling
+cd mento-deployment
 
 # Install the project dependencies & build the contracts
 forge install && forge build
