@@ -22,7 +22,7 @@ library Chain {
   string public constant NETWORK_BAKLAVA_PK_ENV_VAR = "BAKLAVA_DEPLOYER_PK";
 
   uint256 public constant NETWORK_ALFAJORES_CHAINID = 44787;
-  string public constant NETWORK_ALFAJORES_CHAINID_STRING = "62320";
+  string public constant NETWORK_ALFAJORES_CHAINID_STRING = "44787";
   string public constant NETWORK_ALFAJORES_RPC = "alfajores";
   string public constant NETWORK_ALFAJORES_PK_ENV_VAR = "ALFAJORES_DEPLOYER_PK";
 
