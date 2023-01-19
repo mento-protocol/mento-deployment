@@ -1,0 +1,43 @@
+{
+  "name": "@mento-protocol/mento-deployment",
+  "description": "Scripts for deploying upgrades to the Mento protocol",
+  "license": "Apache-2.0",
+  "version": "1.0.0",
+  "author": {
+    "name": "Mento Labs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mento-protocol/mento-deployment"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.0.3",
+    "@commitlint/config-conventional": "^17.0.3",
+    "commitizen": "^4.2.4",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.0.3",
+    "pinst": "^3.0.0",
+    "prettier": "^2.7.1",
+    "prettier-plugin-solidity": "^1.0.0-dev.22",
+    "solhint": "^3.3.7",
+    "solhint-plugin-prettier": "^0.0.5"
+  },
+  "keywords": [
+    "mento",
+    "celo",
+    "solidity"
+  ],
+  "private": true,
+  "scripts": {
+    "lint": "yarn prettier && yarn solhint",
+    "lint:check": "yarn prettier:check && yarn solhint:check",
+    "postinstall": "husky install",
+    "prepack": "pinst --disable",
+    "postpack": "pinst --enable",
+    "prettier": "prettier --config \"./.prettierrc.yml\" --write \"**/*.{json,md,sol,yml}\"",
+    "prettier:check": "prettier --config \"./.prettierrc.yml\" --check \"**/*.{json,md,sol,yml}\"",
+    "solhint": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\"",
+    "solhint:check": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\" -q"
+  }
+}
