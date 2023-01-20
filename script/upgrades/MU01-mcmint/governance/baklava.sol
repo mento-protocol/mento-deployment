@@ -31,7 +31,7 @@ import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
                      --broadcast --legacy 
  * @dev depends on deploy/00-CircuitBreaker.sol and deploy/01-Broker.sol
  */
-contract MentoUpgrade1_baklava is GovernanceScript {
+contract MU01_BaklavaCGP is GovernanceScript {
   ICeloGovernance.Transaction[] private transactions;
 
   function prepare() public {
@@ -47,7 +47,7 @@ contract MentoUpgrade1_baklava is GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "TODO", governance);
+      createProposal(_transactions, "MU01", governance);
     }
     vm.stopBroadcast();
   }
@@ -59,7 +59,7 @@ contract MentoUpgrade1_baklava is GovernanceScript {
     proposal_configureReserve();
     proposal_registryUpdates();
     proposal_createExchanges();
-    //TODO: Set Oracle report targets for new rates
+    // TODO: Set Oracle report targets for new rates
     return transactions;
   }
 
@@ -165,34 +165,35 @@ contract MentoUpgrade1_baklava is GovernanceScript {
 
   function proposal_configureReserve() private {
     address reserveProxy = contracts.celoRegistry("Reserve");
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        reserveProxy,
-        abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, contracts.deployed("BrokerProxy"))
-      )
-    );
+    if (IReserve(reserveProxy).isExchangeSpender(contracts.deployed("BrokerProxy")) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          reserveProxy,
+          abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, contracts.deployed("BrokerProxy"))
+        )
+      );
+    }
 
-    // NOTE:  These assets have already been added to the Reserve in a prev deployment.
-    //        As we are not deploying a new reserve proxy we do not need to add them again (tx also will fail).
-    //        Leaving this here for reference when building the mainnet proposal as it will need to be included there.
-    //        @Bayological
+    if (IReserve(reserveProxy).isCollateralAsset(contracts.dependency("USDCet")) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          reserveProxy,
+          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("USDCet"))
+        )
+      );
+    }
 
-    // transactions.push(
-    //   ICeloGovernance.Transaction(
-    //     0,
-    //     reserveProxy,
-    //     abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("USDCet"))
-    //   )
-    // );
-
-    // transactions.push(
-    //   ICeloGovernance.Transaction(
-    //     0,
-    //     reserveProxy,
-    //     abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.celoRegistry("GoldToken"))
-    //   )
-    // );
+    if (IReserve(reserveProxy).isCollateralAsset(contracts.celoRegistry("GoldToken")) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          reserveProxy,
+          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.celoRegistry("GoldToken"))
+        )
+      );
+    }
   }
 
   function proposal_registryUpdates() private {

@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
 import { console2 } from "forge-std/Script.sol";
-import { MentoUpgrade1_baklava } from "./baklava.sol";
+import { MU01_BaklavaCGP } from "./baklava.sol";
 import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
 
 import { SwapTest } from "script/test/Swap.sol";
@@ -25,7 +25,7 @@ contract MU01_BaklavaCGPSimulation is GovernanceScript {
   }
 
   function simulate() internal {
-    MentoUpgrade1_baklava rev = new MentoUpgrade1_baklava();
+    MU01_BaklavaCGP rev = new MU01_BaklavaCGP();
     rev.prepare();
     simulateProposal(rev.buildProposal(), governance);
     SwapTest test = new SwapTest();
