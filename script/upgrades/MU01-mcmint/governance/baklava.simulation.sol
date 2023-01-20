@@ -29,6 +29,6 @@ contract MU01_BaklavaCGPSimulation is GovernanceScript {
     rev.prepare();
     simulateProposal(rev.buildProposal(), governance);
     SwapTest test = new SwapTest();
-    test.run();
+    test.runInFork();
   }
 }

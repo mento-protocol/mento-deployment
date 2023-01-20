@@ -11,6 +11,7 @@ import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
 
 contract SwapTest is Script {
+  IBroker broker;
   BiPoolManager bpm;
 
   address celoToken;
@@ -27,32 +28,44 @@ contract SwapTest is Script {
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
     celoToken = contracts.celoRegistry("GoldToken");
-  }
-
-  function run() public {
-    setup();
-
-    IBroker broker = IBroker(contracts.celoRegistry("Broker"));
+    broker = IBroker(contracts.celoRegistry("Broker"));
 
     address[] memory exchangeProviders = broker.getExchangeProviders();
     verifyExchangeProviders(exchangeProviders);
 
     bpm = BiPoolManager(exchangeProviders[0]);
     verifyBiPoolManager(address(bpm));
+  }
 
+  function run() public {
+    setup();
+
+    vm.startBroadcast();
+    {
+      executeSwap();
+    }
+    vm.stopBroadcast();
+  }
+
+  function runInFork() public {
+    setup();
+    vm.deal(address(this), 1e20);
+    executeSwap();
+  }
+
+  function executeSwap() public {
     bytes32 exchangeID = bpm.exchangeIds(0);
     verifyExchange(exchangeID);
 
     address tokenIn = celoToken;
     address tokenOut = cUSD;
 
-    uint256 amountOut = broker.getAmountOut(exchangeProviders[0], exchangeID, tokenIn, tokenOut, 1e20);
+    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, 1e20);
 
     console2.log("Expected amount out:", amountOut);
-    vm.deal(address(this), 1e20);
 
     IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e20);
-    broker.swapIn(exchangeProviders[0], exchangeID, tokenIn, tokenOut, 1e20, amountOut - 1e18);
+    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, 1e20, amountOut - 1e18);
   }
 
   function verifyBiPoolManager(address biPoolManager) public {
