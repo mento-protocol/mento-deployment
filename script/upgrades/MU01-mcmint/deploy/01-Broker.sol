@@ -52,22 +52,6 @@ contract DeployBroker is Script {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      // Deploy updated implementations
-      reserve = new Reserve(false);
-      stableToken = new StableToken(false);
-      stableTokenBRL = new StableTokenBRL(false);
-      stableTokenEUR = new StableTokenEUR(false);
-
-      // Deploy stateless contracts
-      csPricingModule = new ConstantSumPricingModule();
-      cpPricingModule = new ConstantProductPricingModule();
-
-      // Deploy new proxies
-      biPoolManagerProxy = new BiPoolManagerProxy();
-      brokerProxy = new BrokerProxy();
-
-      // Deploy & Initialize BiPoolManager
-      biPoolManager = new BiPoolManager(false);
 
       biPoolManagerProxy._setAndInitializeImplementation(
         address(biPoolManager),
@@ -79,11 +63,7 @@ contract DeployBroker is Script {
           IBreakerBox(breakerBoxProxy)
         )
       );
-      biPoolManagerProxy._transferOwnership(governance);
       BiPoolManager(address(biPoolManagerProxy)).transferOwnership(governance);
-
-      // Deploy & Initialize Broker
-      broker = new Broker(false);
 
       address[] memory exchangeProviders = new address[](1);
       exchangeProviders[0] = address(biPoolManagerProxy);

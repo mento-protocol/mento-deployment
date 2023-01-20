@@ -40,28 +40,6 @@ contract DeployCircuitBreaker is Script {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      medianDeltaBreaker = new MedianDeltaBreaker(
-        medianDeltaBreakerCooldown,
-        medianDeltaBreakerThreshold,
-        ISortedOracles(sortedOracles),
-        __rateFeedIDs,
-        __rateChangeThresholds,
-        __cooldowns
-      );
-      medianDeltaBreaker.transferOwnership(governance);
-
-      breakerBox = new BreakerBox(false);
-      breakerBoxProxy = new BreakerBoxProxy();
-      breakerBoxProxy._setAndInitializeImplementation(
-        address(breakerBox),
-        abi.encodeWithSelector(
-          BreakerBox(address(breakerBoxProxy)).initialize.selector,
-          rateFeedIDs,
-          ISortedOracles(sortedOracles)
-        )
-      );
-      breakerBoxProxy._transferOwnership(governance);
-      BreakerBox(address(breakerBoxProxy)).transferOwnership(governance);
     }
     vm.stopBroadcast();
 

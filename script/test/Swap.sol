@@ -19,8 +19,9 @@ contract SwapTest is Script {
 
   function setup() public {
     // Load addresses from deployments
-    contracts.load("00-CircuitBreaker", "1673898407");
-    contracts.load("01-Broker", "1673898735");
+    contracts.load("MU01-00-Create-Proxies", "1674224277");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1674224321");
+    contracts.load("MU01-02-Create-Implementations", "1674225880");
 
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
@@ -39,22 +40,19 @@ contract SwapTest is Script {
     bpm = BiPoolManager(exchangeProviders[0]);
     verifyBiPoolManager(address(bpm));
 
-    vm.startBroadcast();
-    {
-      bytes32 exchangeID = bpm.exchangeIds(0);
-      verifyExchange(exchangeID);
+    bytes32 exchangeID = bpm.exchangeIds(0);
+    verifyExchange(exchangeID);
 
-      address tokenIn = celoToken;
-      address tokenOut = cUSD;
+    address tokenIn = celoToken;
+    address tokenOut = cUSD;
 
-      uint256 amountOut = broker.getAmountOut(exchangeProviders[0], exchangeID, tokenIn, tokenOut, 1e20);
+    uint256 amountOut = broker.getAmountOut(exchangeProviders[0], exchangeID, tokenIn, tokenOut, 1e20);
 
-      console2.log("Expected amount out:", amountOut);
+    console2.log("Expected amount out:", amountOut);
+    vm.deal(address(this), 1e20);
 
-      IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e20);
-      broker.swapIn(exchangeProviders[0], exchangeID, tokenIn, tokenOut, 1e20, amountOut - 1e18);
-    }
-    vm.stopBroadcast();
+    IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e20);
+    broker.swapIn(exchangeProviders[0], exchangeID, tokenIn, tokenOut, 1e20, amountOut - 1e18);
   }
 
   function verifyBiPoolManager(address biPoolManager) public {

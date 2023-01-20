@@ -71,8 +71,8 @@ library Contracts {
     return self;
   }
 
-  function deployed(Cache storage self, string memory contractName) internal view returns (address addr) {
-    addr = self.contractAddress[keccak256(bytes(contractName))];
+  function deployed(Cache storage self, string memory contractName) internal view returns (address payable addr) {
+    addr = address(uint160(self.contractAddress[keccak256(bytes(contractName))]));
     require(addr != address(0), string(abi.encodePacked(contractName, ":NotFoundInDeployedCache")));
   }
 
