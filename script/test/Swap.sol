@@ -2,8 +2,11 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { Script } from "script/utils/Script.sol";
 import { console2 } from "forge-std/Script.sol";
+
+import { Script } from "script/utils/Script.sol";
+import { Chain } from "script/utils/Chain.sol";
+
 import { IBroker } from "mento-core/contracts/interfaces/IBroker.sol";
 import { IExchangeProvider } from "mento-core/contracts/interfaces/IExchangeProvider.sol";
 import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
@@ -18,7 +21,7 @@ contract SwapTest is Script {
   address cUSD;
   address cEUR;
 
-  function setup() public {
+  function setUp() public {
     // Load addresses from deployments
     contracts.load("MU01-00-Create-Proxies", "1674224277");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1674224321");
@@ -38,9 +41,7 @@ contract SwapTest is Script {
   }
 
   function run() public {
-    setup();
-
-    vm.startBroadcast();
+    vm.startBroadcast(Chain.deployerPrivateKey());
     {
       executeSwap();
     }
@@ -48,7 +49,7 @@ contract SwapTest is Script {
   }
 
   function runInFork() public {
-    setup();
+    setUp();
     vm.deal(address(this), 1e20);
     executeSwap();
   }
@@ -60,12 +61,12 @@ contract SwapTest is Script {
     address tokenIn = celoToken;
     address tokenOut = cUSD;
 
-    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, 1e20);
+    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, 1e18);
 
     console2.log("Expected amount out:", amountOut);
 
-    IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e20);
-    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, 1e20, amountOut - 1e18);
+    IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e18);
+    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, 1e18, amountOut - 1e17);
   }
 
   function verifyBiPoolManager(address biPoolManager) public {
