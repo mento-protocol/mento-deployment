@@ -82,7 +82,7 @@ library Contracts {
 
   function _loadDependencies(Cache storage self) internal returns (Cache storage) {
     string memory root = vm.projectRoot();
-    string memory path = string(abi.encodePacked(root, "/script/dependencies.json"));
+    string memory path = string(abi.encodePacked(root, "/script/upgrades/dependencies.json"));
     self._dependenciesLoaded = true;
     self._dependencies = vm.readFile(path);
     return self;
