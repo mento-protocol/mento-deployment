@@ -69,7 +69,7 @@ contract SwapTest is Script {
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, 1e18, amountOut - 1e17);
   }
 
-  function verifyBiPoolManager(address biPoolManager) public {
+  function verifyBiPoolManager(address biPoolManager) public view {
     // Get the address of the deployed BiPoolManagerProxy from the deployment json.
     address expectedBiPoolManager = contracts.deployed("BiPoolManagerProxy");
 
@@ -84,14 +84,14 @@ contract SwapTest is Script {
     }
   }
 
-  function verifyExchangeProviders(address[] memory exchangeProviders) public {
+  function verifyExchangeProviders(address[] memory exchangeProviders) public view {
     if (exchangeProviders.length != 1) {
       console2.log("Exchange provider count was %s but should have been 1", exchangeProviders.length);
       revert("Exchange provider count was not 1");
     }
   }
 
-  function verifyExchange(bytes32 exchangeID) public {
+  function verifyExchange(bytes32 exchangeID) public view {
     // Get the exchane struct from the BiPoolManager
     IBiPoolManager.PoolExchange memory pool = bpm.getPoolExchange(exchangeID);
 

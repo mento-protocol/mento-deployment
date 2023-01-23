@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
 import { console2 } from "forge-std/Script.sol";
-import { MU01_BaklavaCGP } from "./baklava.sol";
+import { MU01_BaklavaCGP } from "./MU01-Baklava-CGP.sol";
 import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
 
 import { SwapTest } from "script/test/Swap.sol";
