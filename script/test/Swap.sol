@@ -3,7 +3,6 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { console2 } from "forge-std/Script.sol";
-
 import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 

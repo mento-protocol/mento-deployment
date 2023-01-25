@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.5.13;
 
+import { console2 } from "forge-std/Script.sol";
 import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
-import { console2 } from "forge-std/Script.sol";
 
 import { ConstantSumPricingModule } from "mento-core/contracts/ConstantSumPricingModule.sol";
 import { ConstantProductPricingModule } from "mento-core/contracts/ConstantProductPricingModule.sol";

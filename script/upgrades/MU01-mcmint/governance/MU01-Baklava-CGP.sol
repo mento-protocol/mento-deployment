@@ -29,7 +29,7 @@ import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy 
- * @dev depends on deploy/00-CircuitBreaker.sol and deploy/01-Broker.sol
+ * @dev depends on: ../deploy/*.sol
  */
 contract MU01_BaklavaCGP is GovernanceScript {
   ICeloGovernance.Transaction[] private transactions;
