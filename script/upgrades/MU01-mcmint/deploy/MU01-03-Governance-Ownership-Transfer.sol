@@ -12,7 +12,7 @@ import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol"
 
 
 /*
- forge script MU01CreateImplementations --rpc-url $RPC_URL
+ forge script MU01_GovernanceOwnershipTransfer --rpc-url $RPC_URL
                              --broadcast --legacy 
                              --verify --verifier sourcify 
 */

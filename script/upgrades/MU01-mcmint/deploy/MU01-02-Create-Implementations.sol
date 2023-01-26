@@ -14,7 +14,7 @@ import { StableTokenBRL } from "mento-core/contracts/StableTokenBRL.sol";
 import { StableTokenEUR } from "mento-core/contracts/StableTokenEUR.sol";
 
 /*
- forge script MU01CreateImplementations --rpc-url $RPC_URL
+ forge script MU01_CreateImplementations --rpc-url $RPC_URL
                              --broadcast --legacy 
                              --verify --verifier sourcify 
 */

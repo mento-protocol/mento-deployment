@@ -10,7 +10,7 @@ import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerPr
 import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
 
 /*
- forge script MU01CreateProxies --rpc-url $RPC_URL
+ forge script MU01_CreateProxies --rpc-url $RPC_URL
                              --broadcast --legacy 
                              --verify --verifier sourcify 
 */
