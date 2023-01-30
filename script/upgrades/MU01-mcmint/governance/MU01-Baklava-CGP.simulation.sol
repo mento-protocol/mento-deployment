@@ -4,8 +4,7 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
-import { console2 } from "forge-std/Script.sol";
-import { MentoUpgrade1_baklava } from "./baklava.sol";
+import { MU01_BaklavaCGP } from "./MU01-Baklava-CGP.sol";
 import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
 
 import { SwapTest } from "script/test/Swap.sol";
@@ -13,7 +12,7 @@ import { Chain } from "script/utils/Chain.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 
 // forge script {file} --rpc-url $BAKLAVA_RPC_URL
-contract MentoUpgrade1_baklava_simulation is GovernanceScript {
+contract MU01_BaklavaCGPSimulation is GovernanceScript {
   using Contracts for Contracts.Cache;
 
   address public governance;
@@ -25,10 +24,10 @@ contract MentoUpgrade1_baklava_simulation is GovernanceScript {
   }
 
   function simulate() internal {
-    MentoUpgrade1_baklava rev = new MentoUpgrade1_baklava();
+    MU01_BaklavaCGP rev = new MU01_BaklavaCGP();
     rev.prepare();
     simulateProposal(rev.buildProposal(), governance);
     SwapTest test = new SwapTest();
-    test.run();
+    test.runInFork();
   }
 }

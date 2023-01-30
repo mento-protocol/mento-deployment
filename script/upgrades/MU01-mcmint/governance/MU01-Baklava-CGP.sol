@@ -15,18 +15,29 @@ import { IRegistry } from "mento-core/contracts/common/interfaces/IRegistry.sol"
 import { Proxy } from "mento-core/contracts/common/Proxy.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
+import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
+import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.sol";
+
+import { BreakerBoxProxy } from "mento-core/contracts/proxies/BreakerBoxProxy.sol";
+import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerProxy.sol";
+import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
+import { Broker } from "mento-core/contracts/Broker.sol";
+import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
+import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
+
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy 
- * @dev depends on deploy/00-CircuitBreaker.sol and deploy/01-Broker.sol
+ * @dev depends on: ../deploy/*.sol
  */
-contract MentoUpgrade1_baklava is GovernanceScript {
+contract MU01_BaklavaCGP is GovernanceScript {
   ICeloGovernance.Transaction[] private transactions;
 
   function prepare() public {
-    contracts.load("00-CircuitBreaker", "1673898407");
-    contracts.load("01-Broker", "1673898735");
+    contracts.load("MU01-00-Create-Proxies", "1674224277");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1674224321");
+    contracts.load("MU01-02-Create-Implementations", "1674225880");
   }
 
   function run() public {
@@ -36,19 +47,85 @@ contract MentoUpgrade1_baklava is GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "TODO", governance);
+      createProposal(_transactions, "MU01", governance);
     }
     vm.stopBroadcast();
   }
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
+    proposal_initializeNewProxies();
     proposal_upgradeContracts();
     proposal_configureReserve();
     proposal_registryUpdates();
     proposal_createExchanges();
-    //TODO: Set Oracle report targets for new rates
+    // TODO: Set Oracle report targets for new rates
     return transactions;
+  }
+
+  function proposal_initializeNewProxies() private {
+    address sortedOracles = contracts.celoRegistry("SortedOracles");
+    address reserve = contracts.celoRegistry("Reserve");
+
+    BreakerBoxProxy breakerBoxProxy = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"));
+    address breakerBox = contracts.deployed("BreakerBox");
+    address[] memory rateFeedIDs = new address[](2);
+    rateFeedIDs[0] = contracts.celoRegistry("StableToken");
+    rateFeedIDs[1] = contracts.celoRegistry("StableTokenEUR");
+    // rateFeedIDs[2] = contracts.celoRegistry("StableTokenBRL");
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        address(breakerBoxProxy),
+        abi.encodeWithSelector(
+          breakerBoxProxy._setAndInitializeImplementation.selector,
+          breakerBox,
+          abi.encodeWithSelector(
+            BreakerBox(0).initialize.selector,
+            rateFeedIDs,
+            ISortedOracles(sortedOracles)
+          )
+        )
+      )
+    );
+
+    BiPoolManagerProxy biPoolManagerProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
+    address biPoolManager = contracts.deployed("BiPoolManager");
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        address(biPoolManagerProxy),
+        abi.encodeWithSelector(
+          biPoolManagerProxy._setAndInitializeImplementation.selector,
+          biPoolManager,
+          abi.encodeWithSelector(
+            BiPoolManager(0).initialize.selector,
+            contracts.deployed("BrokerProxy"),
+            IReserve(reserve),
+            ISortedOracles(sortedOracles),
+            IBreakerBox(address(breakerBoxProxy))
+          )
+        )
+      )
+    );
+
+    BrokerProxy brokerProxy = BrokerProxy(address(contracts.deployed("BrokerProxy")));
+    address[] memory exchangeProviders = new address[](1);
+    exchangeProviders[0] = address(biPoolManagerProxy);
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        address(brokerProxy),
+        abi.encodeWithSelector(
+          brokerProxy._setAndInitializeImplementation.selector,
+          contracts.deployed("Broker"),
+          abi.encodeWithSelector(Broker(0).initialize.selector, exchangeProviders, reserve)
+        )
+      )
+    );
   }
 
   function proposal_upgradeContracts() private {
@@ -88,34 +165,35 @@ contract MentoUpgrade1_baklava is GovernanceScript {
 
   function proposal_configureReserve() private {
     address reserveProxy = contracts.celoRegistry("Reserve");
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        reserveProxy,
-        abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, contracts.deployed("BrokerProxy"))
-      )
-    );
+    if (IReserve(reserveProxy).isExchangeSpender(contracts.deployed("BrokerProxy")) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          reserveProxy,
+          abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, contracts.deployed("BrokerProxy"))
+        )
+      );
+    }
 
-    // NOTE:  These assets have already been added to the Reserve in a prev deployment.
-    //        As we are not deploying a new reserve proxy we do not need to add them again (tx also will fail).
-    //        Leaving this here for reference when building the mainnet proposal as it will need to be included there.
-    //        @Bayological
+    if (IReserve(reserveProxy).isCollateralAsset(contracts.dependency("USDCet")) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          reserveProxy,
+          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("USDCet"))
+        )
+      );
+    }
 
-    // transactions.push(
-    //   ICeloGovernance.Transaction(
-    //     0,
-    //     reserveProxy,
-    //     abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("USDCet"))
-    //   )
-    // );
-
-    // transactions.push(
-    //   ICeloGovernance.Transaction(
-    //     0,
-    //     reserveProxy,
-    //     abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.celoRegistry("GoldToken"))
-    //   )
-    // );
+    if (IReserve(reserveProxy).isCollateralAsset(contracts.celoRegistry("GoldToken")) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          reserveProxy,
+          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.celoRegistry("GoldToken"))
+        )
+      );
+    }
   }
 
   function proposal_registryUpdates() private {

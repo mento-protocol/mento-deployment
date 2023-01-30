@@ -13,8 +13,12 @@ solc = "0.5.17"
 legacy = true
 fs_permissions = [
     { access = "read", path = "./broadcast"}, 
-    { access = "read", path = "./script/dependencies.json"}
+    { access = "read", path = "./script/upgrades/dependencies.json"}
 ]
+
+# libraries = [
+#     "lib/mento-core/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x3e2cc57f83093Ce1Ee03482c1590E3B5f4225bd7"
+# ]
 
 [profile.ci]
 fuzz_runs = 1_000

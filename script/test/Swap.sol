@@ -2,8 +2,10 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { Script } from "script/utils/Script.sol";
 import { console2 } from "forge-std/Script.sol";
+import { Script } from "script/utils/Script.sol";
+import { Chain } from "script/utils/Chain.sol";
+
 import { IBroker } from "mento-core/contracts/interfaces/IBroker.sol";
 import { IExchangeProvider } from "mento-core/contracts/interfaces/IExchangeProvider.sol";
 import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
@@ -11,53 +13,62 @@ import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
 
 contract SwapTest is Script {
+  IBroker broker;
   BiPoolManager bpm;
 
   address celoToken;
   address cUSD;
   address cEUR;
 
-  function setup() public {
+  function setUp() public {
     // Load addresses from deployments
-    contracts.load("00-CircuitBreaker", "1673898407");
-    contracts.load("01-Broker", "1673898735");
+    contracts.load("MU01-00-Create-Proxies", "1674224277");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1674224321");
+    contracts.load("MU01-02-Create-Implementations", "1674225880");
 
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
     celoToken = contracts.celoRegistry("GoldToken");
-  }
-
-  function run() public {
-    setup();
-
-    IBroker broker = IBroker(contracts.celoRegistry("Broker"));
+    broker = IBroker(contracts.celoRegistry("Broker"));
 
     address[] memory exchangeProviders = broker.getExchangeProviders();
     verifyExchangeProviders(exchangeProviders);
 
     bpm = BiPoolManager(exchangeProviders[0]);
     verifyBiPoolManager(address(bpm));
+  }
 
-    vm.startBroadcast();
+  function run() public {
+    vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      bytes32 exchangeID = bpm.exchangeIds(0);
-      verifyExchange(exchangeID);
-
-      address tokenIn = celoToken;
-      address tokenOut = cUSD;
-
-      uint256 amountOut = broker.getAmountOut(exchangeProviders[0], exchangeID, tokenIn, tokenOut, 1e20);
-
-      console2.log("Expected amount out:", amountOut);
-
-      IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e20);
-      broker.swapIn(exchangeProviders[0], exchangeID, tokenIn, tokenOut, 1e20, amountOut - 1e18);
+      executeSwap();
     }
     vm.stopBroadcast();
   }
 
-  function verifyBiPoolManager(address biPoolManager) public {
+  function runInFork() public {
+    setUp();
+    vm.deal(address(this), 1e20);
+    executeSwap();
+  }
+
+  function executeSwap() public {
+    bytes32 exchangeID = bpm.exchangeIds(0);
+    verifyExchange(exchangeID);
+
+    address tokenIn = celoToken;
+    address tokenOut = cUSD;
+
+    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, 1e18);
+
+    console2.log("Expected amount out:", amountOut);
+
+    IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e18);
+    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, 1e18, amountOut - 1e17);
+  }
+
+  function verifyBiPoolManager(address biPoolManager) public view {
     // Get the address of the deployed BiPoolManagerProxy from the deployment json.
     address expectedBiPoolManager = contracts.deployed("BiPoolManagerProxy");
 
@@ -72,14 +83,14 @@ contract SwapTest is Script {
     }
   }
 
-  function verifyExchangeProviders(address[] memory exchangeProviders) public {
+  function verifyExchangeProviders(address[] memory exchangeProviders) public view {
     if (exchangeProviders.length != 1) {
       console2.log("Exchange provider count was %s but should have been 1", exchangeProviders.length);
       revert("Exchange provider count was not 1");
     }
   }
 
-  function verifyExchange(bytes32 exchangeID) public {
+  function verifyExchange(bytes32 exchangeID) public view {
     // Get the exchane struct from the BiPoolManager
     IBiPoolManager.PoolExchange memory pool = bpm.getPoolExchange(exchangeID);
 
