@@ -25,7 +25,6 @@ import { Broker } from "mento-core/contracts/Broker.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 
-
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy 
@@ -72,7 +71,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     address[] memory rateFeedIDs = new address[](2);
     rateFeedIDs[0] = contracts.celoRegistry("StableToken");
     rateFeedIDs[1] = contracts.celoRegistry("StableTokenEUR");
-    // rateFeedIDs[2] = contracts.celoRegistry("StableTokenBRL");
+    rateFeedIDs[2] = contracts.celoRegistry("StableTokenBRL");
 
     transactions.push(
       ICeloGovernance.Transaction(
@@ -81,11 +80,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
         abi.encodeWithSelector(
           breakerBoxProxy._setAndInitializeImplementation.selector,
           breakerBox,
-          abi.encodeWithSelector(
-            BreakerBox(0).initialize.selector,
-            rateFeedIDs,
-            ISortedOracles(sortedOracles)
-          )
+          abi.encodeWithSelector(BreakerBox(0).initialize.selector, rateFeedIDs, ISortedOracles(sortedOracles))
         )
       )
     );
@@ -153,14 +148,13 @@ contract MU01_BaklavaCGP is GovernanceScript {
       )
     );
 
-    // TODO: add BRL once it is deployed on Baklava
-    // transactions.push(
-    //   ICeloGovernance.Transaction(
-    //     0,
-    //     contracts.celoRegistry("StableTokenBRL"),
-    //     abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("StableTokenBRL"))
-    //   )
-    // );
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        contracts.celoRegistry("StableTokenBRL"),
+        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("StableTokenBRL"))
+      )
+    );
   }
 
   function proposal_configureReserve() private {
@@ -208,13 +202,14 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
   function proposal_createExchanges() private {
     // TODO: confirm values
-    // Add pools to the BiPoolManager: cUSD/CELO, cEUR/CELO, cREAL/CELO, cUSD/USDCet
+    // Add pools to the BiPoolManager: cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/USDCet
 
     IBiPoolManager.PoolExchange[] memory pools = new IBiPoolManager.PoolExchange[](4);
 
     // Get the proxy addresses for the tokens from the registry
     address cUSD = contracts.celoRegistry("StableToken");
     address cEUR = contracts.celoRegistry("StableTokenEUR");
+    address cBRL = contracts.celoRegistry("StableTokenBRL");
     address celo = contracts.celoRegistry("GoldToken");
 
     // Get the address of the newly deployed CPP pricing module
@@ -248,6 +243,23 @@ contract MU01_BaklavaCGP is GovernanceScript {
       config: IBiPoolManager.PoolConfig({
         spread: FixidityLib.newFixedFraction(5, 100),
         referenceRateFeedID: cEUR,
+        referenceRateResetFrequency: 60 * 5,
+        minimumReports: 5,
+        stablePoolResetSize: 1e24
+      })
+    });
+
+    // Create the pool configuration for cBRL/CELO
+    pools[2] = IBiPoolManager.PoolExchange({
+      asset0: cBRL,
+      asset1: celo,
+      pricingModule: constantProduct,
+      bucket0: 0,
+      bucket1: 0,
+      lastBucketUpdate: 0,
+      config: IBiPoolManager.PoolConfig({
+        spread: FixidityLib.newFixedFraction(5, 100),
+        referenceRateFeedID: cBRL,
         referenceRateResetFrequency: 60 * 5,
         minimumReports: 5,
         stablePoolResetSize: 1e24
