@@ -68,7 +68,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
     BreakerBoxProxy breakerBoxProxy = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"));
     address breakerBox = contracts.deployed("BreakerBox");
-    address[] memory rateFeedIDs = new address[](2);
+    address[] memory rateFeedIDs = new address[](3);
     rateFeedIDs[0] = contracts.celoRegistry("StableToken");
     rateFeedIDs[1] = contracts.celoRegistry("StableTokenEUR");
     rateFeedIDs[2] = contracts.celoRegistry("StableTokenBRL");
