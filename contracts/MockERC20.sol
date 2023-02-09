@@ -5,9 +5,9 @@ import { ERC20Detailed } from "lib/mento-core/lib/openzeppelin-contracts/contrac
 import { Ownable } from "lib/mento-core/lib/openzeppelin-contracts/contracts/ownership/Ownable.sol";
 
 
-contract MockUSDC is ERC20, ERC20Detailed, Ownable {
+contract MockERC20 is ERC20, ERC20Detailed, Ownable {
 
-  constructor() public ERC20Detailed("mockUSDC", "USDC", 18) {
+  constructor(string memory name, string memory symbol, uint8 decimals) ERC20Detailed(name, symbol, decimals) public {
     mint(msg.sender, 1000000 ether);
   }
 
