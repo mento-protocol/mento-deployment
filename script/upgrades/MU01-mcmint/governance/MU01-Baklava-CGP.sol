@@ -68,10 +68,11 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
     BreakerBoxProxy breakerBoxProxy = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"));
     address breakerBox = contracts.deployed("BreakerBox");
-    address[] memory rateFeedIDs = new address[](3);
+    address[] memory rateFeedIDs = new address[](4);
     rateFeedIDs[0] = contracts.celoRegistry("StableToken");
     rateFeedIDs[1] = contracts.celoRegistry("StableTokenEUR");
     rateFeedIDs[2] = contracts.celoRegistry("StableTokenBRL");
+    rateFeedIDs[3] = contracts.dependency("USDCUSDRateFeedAddr");
 
     transactions.push(
       ICeloGovernance.Transaction(
@@ -169,12 +170,12 @@ contract MU01_BaklavaCGP is GovernanceScript {
       );
     }
 
-    if (IReserve(reserveProxy).isCollateralAsset(contracts.dependency("USDCet")) == false) {
+    if (IReserve(reserveProxy).isCollateralAsset(contracts.dependency("MockUSDCet")) == false) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           reserveProxy,
-          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("USDCet"))
+          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("MockUSDCet"))
         )
       );
     }
@@ -211,9 +212,11 @@ contract MU01_BaklavaCGP is GovernanceScript {
     address cEUR = contracts.celoRegistry("StableTokenEUR");
     address cBRL = contracts.celoRegistry("StableTokenBRL");
     address celo = contracts.celoRegistry("GoldToken");
+    address USDcet = contracts.dependency("MockUSDCet");
 
     // Get the address of the newly deployed CPP pricing module
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
+    IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
     // Create the pool configuration for cUSD/CELO
     pools[0] = IBiPoolManager.PoolExchange({
@@ -260,6 +263,23 @@ contract MU01_BaklavaCGP is GovernanceScript {
       config: IBiPoolManager.PoolConfig({
         spread: FixidityLib.newFixedFraction(5, 100),
         referenceRateFeedID: cBRL,
+        referenceRateResetFrequency: 60 * 5,
+        minimumReports: 5,
+        stablePoolResetSize: 1e24
+      })
+    });
+
+    // Create the pool configuration for cUSD/USDcet
+    pools[3] = IBiPoolManager.PoolExchange({
+      asset0: cUSD,
+      asset1: USDcet,
+      pricingModule: constantSum,
+      bucket0: 0,
+      bucket1: 0,
+      lastBucketUpdate: 0,
+      config: IBiPoolManager.PoolConfig({
+        spread: FixidityLib.newFixedFraction(5, 100),
+        referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
         referenceRateResetFrequency: 60 * 5,
         minimumReports: 5,
         stablePoolResetSize: 1e24
