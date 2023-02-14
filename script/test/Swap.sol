@@ -25,13 +25,13 @@ interface IMockERC20 {
 }
 
 contract SwapTest is Script {
-  IBroker broker;
-  BiPoolManager bpm;
+  IBroker public broker;
+  BiPoolManager public bpm;
 
-  address celoToken;
-  address cUSD;
-  address cEUR;
-  address USDcet;
+  address public celoToken;
+  address public cUSD;
+  address public cEUR;
+  address public usdCet;
 
   function setUp() public {
     // Load addresses from deployments
@@ -42,7 +42,7 @@ contract SwapTest is Script {
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
-    USDcet = contracts.dependency("MockUSDCet");
+    usdCet = contracts.dependency("MockUSDCet");
     celoToken = contracts.celoRegistry("GoldToken");
     broker = IBroker(contracts.celoRegistry("Broker"));
 
@@ -87,12 +87,12 @@ contract SwapTest is Script {
     address trader = address(this);
     bytes32 exchangeID = bpm.exchangeIds(3);
 
-    address tokenIn = USDcet;
+    address tokenIn = usdCet;
     address tokenOut = cUSD;
     uint256 amountIn = 100e18;
     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
-    IMockERC20 mockUSDcetContract = IMockERC20(USDcet);
+    IMockERC20 mockUSDcetContract = IMockERC20(usdCet);
 
     assert(mockUSDcetContract.balanceOf(trader) == 0);
     vm.prank(mockUSDcetContract.owner());
