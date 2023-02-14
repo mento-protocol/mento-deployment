@@ -64,6 +64,10 @@ contract GovernanceScript is Script, GovernanceHelper {
     /******************************************/
 
     /**
+     * @dev This determines whether a MedianDeltaBreaker is enabled
+     */
+    bool isMedianDeltaBreakerEnabled;
+    /**
      * @dev This determines the permitted deviation of the median report changes.
      *      The new median must fall within a range calculated based on this threshold
      *      to be considered valid. This range also affects whether the breaker will
@@ -82,11 +86,15 @@ contract GovernanceScript is Script, GovernanceHelper {
     /******************************************/
 
     /**
+     * @dev This determines whether a MedianDeltaBreaker is enabled
+     */
+    bool isValueDeltaBreakerEnabled;
+    /**
      * @dev  The allowed change in the new median relative to the reference value.
      *       This variable determines the range of acceptable values for the new median,
      *       which in turn affects whether the breaker will trigger or not. The range is
      *       represented as a FixidityLib.Fraction using 24 decimal places. To set the
-     *       value to 0.8%, you need to pass 800000000000000000000000 (081% * 10^24)
+     *       value to 0.8%, you need to pass 800000000000000000000000 (0.8% * 10^24)
      */
     uint256 valueDeltaBreakerThreshold;
     /**

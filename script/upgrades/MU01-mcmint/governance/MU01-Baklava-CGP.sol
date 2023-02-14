@@ -24,6 +24,7 @@ import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
 import { Broker } from "mento-core/contracts/Broker.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
+import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
@@ -33,10 +34,120 @@ import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 contract MU01_BaklavaCGP is GovernanceScript {
   ICeloGovernance.Transaction[] private transactions;
 
+  PoolConfiguration private cUSDCeloConfig;
+  PoolConfiguration private cEURCeloConfig;
+  PoolConfiguration private cBRLCeloConfig;
+  PoolConfiguration private cUSDUSDCConfig;
+
+  address private cUSD;
+  address private cEUR;
+  address private cBRL;
+  address private celo;
+  address private USDCet;
+
   function prepare() public {
+    loadDeployedContracts();
+    setAddresses();
+    setUpPoolConfigs();
+  }
+
+  /**
+   * @dev Loads the deployed contracts from the previous deployment step
+   */
+  function loadDeployedContracts() public {
     contracts.load("MU01-00-Create-Proxies", "1674224277");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1674224321");
     contracts.load("MU01-02-Create-Implementations", "1674225880");
+    contracts.load("MU01-04-Create-MockUSDCet", "1676392537");
+  }
+
+  /**
+   * @dev Sets the addresses of the various contracts needed for the proposal.
+   */
+  function setAddresses() public {
+    cUSD = contracts.celoRegistry("StableToken");
+    cEUR = contracts.celoRegistry("StableTokenEUR");
+    cBRL = contracts.celoRegistry("StableTokenBRL");
+    celo = contracts.celoRegistry("GoldToken");
+    USDCet = contracts.deployed("MockERC20");
+  }
+
+  /**
+   * @dev Sets the various values needed for the configuration of the new pools.
+   *      This function is called by the governance script runner.
+   */
+  function setUpPoolConfigs() public {
+    // Create pool configuration for cUSD/CELO pool
+    cUSDCeloConfig = PoolConfiguration({
+      asset0: cUSD,
+      asset1: celo,
+      isConstantSum: false,
+      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
+      referenceRateResetFrequency: 60 * 5,
+      minimumReports: 5,
+      stablePoolResetSize: 72e23, // 7200000
+      isMedianDeltaBreakerEnabled: true,
+      medianDeltaBreakerThreshold: 3e16, // 0.03
+      medianDeltaBreakerCooldown: 30 minutes,
+      isValueDeltaBreakerEnabled: false,
+      valueDeltaBreakerThreshold: 0,
+      valueDeltaBreakerReferenceValue: 0,
+      valueDeltaBreakerCooldown: 0
+    });
+
+    // Create pool configuration for cEUR/CELO pool
+    cEURCeloConfig = PoolConfiguration({
+      asset0: cEUR,
+      asset1: celo,
+      isConstantSum: false,
+      spread: FixidityLib.newFixedFraction(25, 10000),
+      referenceRateResetFrequency: 60 * 5,
+      minimumReports: 5,
+      stablePoolResetSize: 18e23,
+      isMedianDeltaBreakerEnabled: true,
+      medianDeltaBreakerThreshold: 3e16, // 0.03
+      medianDeltaBreakerCooldown: 30 minutes,
+      isValueDeltaBreakerEnabled: false,
+      valueDeltaBreakerThreshold: 0,
+      valueDeltaBreakerReferenceValue: 0,
+      valueDeltaBreakerCooldown: 0
+    });
+
+    // Create pool configuration for cBRL/CELO pool
+    cBRLCeloConfig = PoolConfiguration({
+      asset0: cBRL,
+      asset1: celo,
+      isConstantSum: false,
+      spread: FixidityLib.newFixedFraction(25, 10000),
+      referenceRateResetFrequency: 60 * 5,
+      minimumReports: 5,
+      stablePoolResetSize: 3e24,
+      isMedianDeltaBreakerEnabled: true,
+      medianDeltaBreakerThreshold: 3e16, // 0.03
+      medianDeltaBreakerCooldown: 30 minutes,
+      isValueDeltaBreakerEnabled: false,
+      valueDeltaBreakerThreshold: 0,
+      valueDeltaBreakerReferenceValue: 0,
+      valueDeltaBreakerCooldown: 0
+    });
+
+    // Setup the pool configuration for cUSD/USDC pool
+    cUSDUSDCConfig = PoolConfiguration({
+      asset0: cUSD,
+      asset1: USDCet,
+      isConstantSum: true,
+      spread: FixidityLib.newFixedFraction(2, 10000),
+      referenceRateResetFrequency: 60 * 5,
+      minimumReports: 5,
+      stablePoolResetSize: 1e25, // 10000000
+      isMedianDeltaBreakerEnabled: false,
+      medianDeltaBreakerThreshold: 0,
+      medianDeltaBreakerCooldown: 0,
+      isValueDeltaBreakerEnabled: true,
+      valueDeltaBreakerThreshold: 5e15, // 0.005
+      valueDeltaBreakerReferenceValue: 1e18,
+      valueDeltaBreakerCooldown: 1
+    });
   }
 
   function run() public {
@@ -201,16 +312,11 @@ contract MU01_BaklavaCGP is GovernanceScript {
   }
 
   function proposal_createExchanges() private {
-    // TODO: confirm values
     // Add pools to the BiPoolManager: cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/USDCet
 
     IBiPoolManager.PoolExchange[] memory pools = new IBiPoolManager.PoolExchange[](4);
 
     // Get the proxy addresses for the tokens from the registry
-    address cUSD = contracts.celoRegistry("StableToken");
-    address cEUR = contracts.celoRegistry("StableTokenEUR");
-    address cBRL = contracts.celoRegistry("StableTokenBRL");
-    address celo = contracts.celoRegistry("GoldToken");
 
     // Get the address of the newly deployed CPP pricing module
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
@@ -278,4 +384,71 @@ contract MU01_BaklavaCGP is GovernanceScript {
       }
     }
   }
+
+  function proposal_configureCircuitBreaker() private {
+    // Add all breakers to the breaker box
+    // Add rate feeds to breaker box
+    // BreakerBox.Toggle breaker -> to enable a breaker for a specific rate feed
+    // For the specific breaker configuire values required for the rate feeds
+
+    // Load necessary addresses
+    address breakerBoxProxyAddress = contracts.deployed("BreakerBoxProxy");
+    address medianDeltaBreakerAddress = contracts.deployed("MedianDeltaBreaker");
+    address valueDeltaBreakerAddress = contracts.deployed("ValueDeltaBreaker");
+
+    address[] memory allRateFeedIds = new address[](3);
+    allRateFeedIds[0] = cUSD;
+    allRateFeedIds[1] = cEUR;
+    allRateFeedIds[2] = cBRL;
+
+    PoolConfiguration[] memory poolConfigs = new PoolConfiguration[](3);
+    poolConfigs[0] = cUSDCeloConfig;
+    poolConfigs[1] = cEURCeloConfig;
+    poolConfigs[2] = cBRLCeloConfig;
+
+    // Add the Median Delta Breaker to the breaker box with the trading mode '1' -> No Trading
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBoxProxyAddress,
+        abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, medianDeltaBreakerAddress, 1)
+      )
+    );
+
+    // Add the Value Delta Breaker to the breaker box with the trading mode '2' -> Also No Trading ?
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBoxProxyAddress,
+        abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, valueDeltaBreakerAddress, 2)
+      )
+    );
+
+    // Add rateFeedIds to the breaker box to be monitored
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBoxProxyAddress,
+        abi.encodeWithSelector(BreakerBox(0).addRateFeeds.selector, allRateFeedIds)
+      )
+    );
+
+    // Configure Median Delta Breaker -> Set cooldowns
+
+    /*for (uint256 i = 0; i < pools.poolConfigs; i++) {
+      if (pools[i].asset0 != address(0)) {
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            medianDeltaBreakerAddress,
+            abi.encodeWithSelector(MedianDeltaBreaker(0).createExchange.selector, pools[i])
+          )
+        );
+      }
+    }*/
+  }
+
+  // TODO: Configure breaker box
+
+  // TODO: Configure Trading Limits
 }
