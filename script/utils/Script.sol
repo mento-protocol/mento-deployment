@@ -88,7 +88,7 @@ contract GovernanceScript is Script, GovernanceHelper {
     /**
      * @dev This determines whether a MedianDeltaBreaker is enabled
      */
-    bool isValueDeltaBreakerEnabled;
+    bool isValueDeltaBreakerEnabled; //TODO: May be overkill
     /**
      * @dev  The allowed change in the new median relative to the reference value.
      *       This variable determines the range of acceptable values for the new median,
@@ -112,5 +112,7 @@ contract GovernanceScript is Script, GovernanceHelper {
     /* ================================================================ */
     /* ==================== Trading Limit Config ==================== */
     /* ================================================================ */
+
+    //TODO: Add trading limit config
   }
 }
