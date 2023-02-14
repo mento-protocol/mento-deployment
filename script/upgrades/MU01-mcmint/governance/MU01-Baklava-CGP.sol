@@ -471,7 +471,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       )
     );
 
-    // Configure Median Delta Breaker
+    // Median Delta Breaker Configuration
     // rateFeedIDs for which Median Delta Breaker is enabled
     address[] memory medianDeltaRateFeedIds = new address[](1);
     medianDeltaRateFeedIds[0] = cUSD;
@@ -496,19 +496,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       )
     );
 
-    /*for (uint256 i = 0; i < pools.poolConfigs; i++) {
-      if (pools[i].asset0 != address(0)) {
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            medianDeltaBreakerAddress,
-            abi.encodeWithSelector(MedianDeltaBreaker(0).createExchange.selector, pools[i])
-          )
-        );
-      }
-    }*/
-
-    // Value Delta Breaker Configuration [BAYO]
+    // Value Delta Breaker Configuration
     // rateFeedIDs for which Median Delta Breaker is enabled
     address[] memory valueDeltaBreakerRateFeedIds = new address[](1);
     valueDeltaBreakerRateFeedIds[0] = cUSDUSCDRateFeedId;
