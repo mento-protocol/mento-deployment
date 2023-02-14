@@ -188,7 +188,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         address(breakerBoxProxy),
-        abi.encodeWithSelector(cBRL/CELO pool
+        abi.encodeWithSelector(
           breakerBoxProxy._setAndInitializeImplementation.selector,
           breakerBox,
           abi.encodeWithSelector(BreakerBox(0).initialize.selector, rateFeedIDs, ISortedOracles(sortedOracles))
@@ -209,7 +209,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
           abi.encodeWithSelector(
             BiPoolManager(0).initialize.selector,
             contracts.deployed("BrokerProxy"),
-            IReserve(reserve),cBRL/CELO pool
+            IReserve(reserve),
             ISortedOracles(sortedOracles),
             IBreakerBox(address(breakerBoxProxy))
           )
@@ -381,7 +381,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       lastBucketUpdate: 0,
       config: IBiPoolManager.PoolConfig({
         spread: cUSDUSDCConfig.spread,
-        referenceRateFeedID: address(uint256(keccak256(abi.encodePacked("USDCUSD")))),  
+        referenceRateFeedID: address(uint256(keccak256(abi.encodePacked("USDCUSD")))),
         referenceRateResetFrequency: cUSDUSDCConfig.referenceRateResetFrequency,
         minimumReports: cUSDUSDCConfig.minimumReports,
         stablePoolResetSize: cUSDUSDCConfig.stablePoolResetSize
