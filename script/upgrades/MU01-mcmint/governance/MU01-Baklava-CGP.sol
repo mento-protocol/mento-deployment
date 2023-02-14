@@ -188,7 +188,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         address(breakerBoxProxy),
-        abi.encodeWithSelector(
+        abi.encodeWithSelector(cBRL/CELO pool
           breakerBoxProxy._setAndInitializeImplementation.selector,
           breakerBox,
           abi.encodeWithSelector(BreakerBox(0).initialize.selector, rateFeedIDs, ISortedOracles(sortedOracles))
@@ -209,7 +209,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
           abi.encodeWithSelector(
             BiPoolManager(0).initialize.selector,
             contracts.deployed("BrokerProxy"),
-            IReserve(reserve),
+            IReserve(reserve),cBRL/CELO pool
             ISortedOracles(sortedOracles),
             IBreakerBox(address(breakerBoxProxy))
           )
@@ -316,59 +316,75 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
     IBiPoolManager.PoolExchange[] memory pools = new IBiPoolManager.PoolExchange[](4);
 
-    // Get the proxy addresses for the tokens from the registry
-
     // Get the address of the newly deployed CPP pricing module
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
+    IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
-    // Create the pool configuration for cUSD/CELO
+    // Add the cUSD/CELO pool
     pools[0] = IBiPoolManager.PoolExchange({
-      asset0: cUSD,
-      asset1: celo,
-      pricingModule: constantProduct,
+      asset0: cUSDCeloConfig.asset0,
+      asset1: cUSDCeloConfig.asset1,
+      pricingModule: cUSDCeloConfig.isConstantSum ? constantSum : constantProduct,
       bucket0: 0,
       bucket1: 0,
       lastBucketUpdate: 0,
       config: IBiPoolManager.PoolConfig({
-        spread: FixidityLib.newFixedFraction(5, 100),
+        spread: cUSDCeloConfig.spread,
         referenceRateFeedID: cUSD,
-        referenceRateResetFrequency: 60 * 5,
-        minimumReports: 5,
-        stablePoolResetSize: 1e24
+        referenceRateResetFrequency: cUSDCeloConfig.referenceRateResetFrequency,
+        minimumReports: cUSDCeloConfig.minimumReports,
+        stablePoolResetSize: cUSDCeloConfig.stablePoolResetSize
       })
     });
 
-    // Create the pool configuration for cEUR/CELO
+    // Add the cEUR/CELO pool
     pools[1] = IBiPoolManager.PoolExchange({
-      asset0: cEUR,
-      asset1: celo,
-      pricingModule: constantProduct,
+      asset0: cEURCeloConfig.asset0,
+      asset1: cEURCeloConfig.asset1,
+      pricingModule: cEURCeloConfig.isConstantSum ? constantSum : constantProduct,
       bucket0: 0,
       bucket1: 0,
       lastBucketUpdate: 0,
       config: IBiPoolManager.PoolConfig({
-        spread: FixidityLib.newFixedFraction(5, 100),
+        spread: cEURCeloConfig.spread,
         referenceRateFeedID: cEUR,
-        referenceRateResetFrequency: 60 * 5,
-        minimumReports: 5,
-        stablePoolResetSize: 1e24
+        referenceRateResetFrequency: cEURCeloConfig.referenceRateResetFrequency,
+        minimumReports: cEURCeloConfig.minimumReports,
+        stablePoolResetSize: cEURCeloConfig.stablePoolResetSize
       })
     });
 
-    // Create the pool configuration for cBRL/CELO
+    // Add the cBRL/CELO pool
     pools[2] = IBiPoolManager.PoolExchange({
-      asset0: cBRL,
-      asset1: celo,
-      pricingModule: constantProduct,
+      asset0: cBRLCeloConfig.asset0,
+      asset1: cBRLCeloConfig.asset1,
+      pricingModule: cBRLCeloConfig.isConstantSum ? constantSum : constantProduct,
       bucket0: 0,
       bucket1: 0,
       lastBucketUpdate: 0,
       config: IBiPoolManager.PoolConfig({
-        spread: FixidityLib.newFixedFraction(5, 100),
+        spread: cBRLCeloConfig.spread,
         referenceRateFeedID: cBRL,
-        referenceRateResetFrequency: 60 * 5,
-        minimumReports: 5,
-        stablePoolResetSize: 1e24
+        referenceRateResetFrequency: cBRLCeloConfig.referenceRateResetFrequency,
+        minimumReports: cBRLCeloConfig.minimumReports,
+        stablePoolResetSize: cBRLCeloConfig.stablePoolResetSize
+      })
+    });
+
+    // Add the cUSD/USDCet
+    pools[3] = IBiPoolManager.PoolExchange({
+      asset0: cUSDUSDCConfig.asset0,
+      asset1: cUSDUSDCConfig.asset1,
+      pricingModule: cUSDUSDCConfig.isConstantSum ? constantSum : constantProduct,
+      bucket0: 0,
+      bucket1: 0,
+      lastBucketUpdate: 0,
+      config: IBiPoolManager.PoolConfig({
+        spread: cUSDUSDCConfig.spread,
+        referenceRateFeedID: address(uint256(keccak256(abi.encodePacked("USDCUSD")))),  
+        referenceRateResetFrequency: cUSDUSDCConfig.referenceRateResetFrequency,
+        minimumReports: cUSDUSDCConfig.minimumReports,
+        stablePoolResetSize: cUSDUSDCConfig.stablePoolResetSize
       })
     });
 
