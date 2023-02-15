@@ -236,7 +236,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
-    //proposal_initializeNewProxies();
+    proposal_initializeNewProxies();
     proposal_upgradeContracts();
     proposal_configureReserve();
     proposal_registryUpdates();
@@ -338,6 +338,14 @@ contract MU01_BaklavaCGP is GovernanceScript {
         0,
         contracts.celoRegistry("StableTokenBRL"),
         abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("StableTokenBRL"))
+      )
+    );
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        contracts.celoRegistry("SortedOracles"),
+        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("SortedOracles"))
       )
     );
   }
@@ -805,5 +813,4 @@ contract MU01_BaklavaCGP is GovernanceScript {
         )
       );
   }
-
 }
