@@ -118,6 +118,55 @@ contract GovernanceScript is Script, GovernanceHelper {
     /* ==================== Trading Limit Config ==================== */
     /* ================================================================ */
 
-    //TODO: Add trading limit config
+    /**
+     * @dev The time window in seconds for the L0 trading limit of asset0.
+     */
+    uint32 asset0_timeStep0;
+    /**
+     * @dev The time window in seconds for the L1 trading limit of asset0.
+     */
+    uint32 asset0_timeStep1;
+    /**
+     * @dev The maximum allowed netflow of asset0 for L0 within the time window.
+     */
+    int48 asset0_limit0;
+    /**
+     * @dev The maximum allowed netflow of asset0 for L1 within the time window.
+     */
+    int48 asset0_limit1;
+    /**
+     * @dev The maximum allowed netflow of asset0 for the lifetime of the limit.
+     */
+    int48 asset0_limitGlobal;
+    /**
+     * @dev Configuration flags that can enable or disable the three different
+     *      trading limits for asset 0.
+     */
+    uint8 asset0_flags;
+    /**
+     * @dev The time window in seconds for the L0 trading limit of asset1.
+     */
+    uint32 asset1_timeStep0;
+    /**
+     * @dev The time window in seconds for the L1 trading limit of asset1.
+     */
+    uint32 asset1_timeStep1;
+    /**
+     * @dev The maximum allowed netflow of asset1 for L0 within the time window.
+     */
+    int48 asset1_limit0;
+    /**
+     * @dev The maximum allowed netflow of asset1 for L1 within the time window.
+     */
+    int48 asset1_limit1;
+    /**
+     * @dev The maximum allowed netflow of asset1 for the lifetime of the limit.
+     */
+    int48 asset1_limitGlobal;
+    /**
+     * @dev Configuration flags that can enable or disable the three different
+     *      trading limits for asset 1.
+     */
+    uint8 asset1_flags;
   }
 }
