@@ -10,7 +10,6 @@ import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerPr
 import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
 import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
 
-
 /*
  forge script MU01_GovernanceOwnershipTransfer --rpc-url $RPC_URL
                              --broadcast --legacy 
@@ -19,7 +18,7 @@ import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol"
 contract MU01_GovernanceOwnershipTransfer is Script {
   function run() public {
     contracts.load("MU01-00-Create-Proxies", "1674224277");
-    contracts.load("MU01-01-Create-Nonupgradable-Contracts", "1674224321");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1674224321");
     address payable breakerBoxProxy = address(uint160(contracts.deployed("BreakerBoxProxy")));
     address payable biPoolManagerProxy = address(uint160(contracts.deployed("BiPoolManagerProxy")));
     address payable brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
