@@ -85,6 +85,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     breakerBoxProxyAddress = contracts.deployed("BreakerBoxProxy");
   }
 
+  /* solhint-disable function-max-lines */
   /**
    * @dev Sets the various values needed for the configuration of the new pools.
    *      This function is called by the governance script runner.
@@ -221,6 +222,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
       cUSDUSDCConfig.isConstantSum
     );
   }
+
+  /* solhint-enable function-max-lines */
 
   function run() public {
     prepare();
