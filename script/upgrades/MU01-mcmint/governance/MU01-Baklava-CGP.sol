@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-// solhint-disable func-name-mixedcase, contract-name-camelcase
+// solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
@@ -85,7 +85,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
     breakerBoxProxyAddress = contracts.deployed("BreakerBoxProxy");
   }
 
-  /* solhint-disable function-max-lines */
   /**
    * @dev Sets the various values needed for the configuration of the new pools.
    *      This function is called by the governance script runner.
@@ -223,8 +222,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
     );
   }
 
-  /* solhint-enable function-max-lines */
-
   function run() public {
     prepare();
     address governance = contracts.celoRegistry("Governance");
@@ -246,6 +243,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     proposal_createExchanges();
     proposal_configureCircuitBreaker();
     proposal_configureTradingLimits();
+
     // TODO: Set Oracle report targets for new rates
     return transactions;
   }
