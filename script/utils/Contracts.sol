@@ -43,7 +43,7 @@ library Contracts {
      * todo(bogdan): Remove all this once we update solidity.
      */
 
-    bytes memory contractAddressesRaw = json.parseRaw("transactions[*].contractAddress");
+    bytes memory contractAddressesRaw = json.parseRaw(".transactions[*].contractAddress");
 
     uint256 length = contractAddressesRaw.length / 32;
     address[] memory contractAddresses = abi.decode(
@@ -53,12 +53,12 @@ library Contracts {
 
     for (uint256 i = 0; i < length; i++) {
       string memory txType = abi.decode(
-        json.parseRaw(string(abi.encodePacked("transactions[", uintToString(i), "].transactionType"))),
+        json.parseRaw(string(abi.encodePacked(".transactions[", uintToString(i), "].transactionType"))),
         (string)
       );
       if (keccak256(bytes(txType)) == keccak256(bytes("CREATE"))) {
         string memory contractName = abi.decode(
-          json.parseRaw(string(abi.encodePacked("transactions[", uintToString(i), "].contractName"))),
+          json.parseRaw(string(abi.encodePacked(".transactions[", uintToString(i), "].contractName"))),
           (string)
         );
 

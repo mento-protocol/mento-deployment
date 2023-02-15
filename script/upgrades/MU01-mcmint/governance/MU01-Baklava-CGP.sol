@@ -29,6 +29,8 @@ import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol"
 import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
 
+import { console2 as console } from "forge-std/Script.sol";
+
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy 
@@ -57,6 +59,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
 
   function prepare() public {
+    console.log("Executing script preparation -> prepare()");
+
     loadDeployedContracts();
     setAddresses();
     setUpPoolConfigs();
@@ -66,8 +70,10 @@ contract MU01_BaklavaCGP is GovernanceScript {
    * @dev Loads the deployed contracts from the previous deployment step
    */
   function loadDeployedContracts() public {
+    console.log("Loading deployed contracts -> loadDeployedContracts()");
+
     contracts.load("MU01-00-Create-Proxies", "1674224277");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1674224321");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676477381");
     contracts.load("MU01-02-Create-Implementations", "1674225880");
     contracts.load("MU01-04-Create-MockUSDCet", "1676392537");
   }
@@ -76,6 +82,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
    * @dev Sets the addresses of the various contracts needed for the proposal.
    */
   function setAddresses() public {
+    console.log("Loading deployed contracts -> loadDeployedContracts()");
+
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
@@ -223,6 +231,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
   }
 
   function run() public {
+    console.log("Beginning run of proposal script -> run()");
+
     prepare();
     address governance = contracts.celoRegistry("Governance");
     ICeloGovernance.Transaction[] memory _transactions = buildProposal();
@@ -235,6 +245,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
   }
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
+    console.log("Building proposal transactions -> buildProposal()");
+
     require(transactions.length == 0, "buildProposal() should only be called once");
     proposal_initializeNewProxies();
     proposal_upgradeContracts();
@@ -242,11 +254,13 @@ contract MU01_BaklavaCGP is GovernanceScript {
     proposal_registryUpdates();
     proposal_createExchanges();
     proposal_configureCircuitBreaker();
+    proposal_configureTradingLimits();
     // TODO: Set Oracle report targets for new rates
     return transactions;
   }
 
   function proposal_initializeNewProxies() private {
+    console.log("Iniitlizing proxies -> proposal_initializeNewProxies()");
     address sortedOracles = contracts.celoRegistry("SortedOracles");
     address reserve = contracts.celoRegistry("Reserve");
 
@@ -561,7 +575,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     /****** Median Delta Breaker Configuration *******/
 
     // rateFeedIDs for which Median Delta Breaker is enabled
-    address[] memory medianDeltaRateFeedIds = new address[](1);
+    address[] memory medianDeltaRateFeedIds = new address[](3);
     medianDeltaRateFeedIds[0] = cUSD;
     medianDeltaRateFeedIds[1] = cEUR;
     medianDeltaRateFeedIds[2] = cBRL;
@@ -696,13 +710,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
     );
   }
 
-  // TODO: Finish adding the transactions to configure the trading limits
-  //       for each pool. Each pool will require two calls to the BrokerProxy,
-  //       one to configure the trading limit for each asset in the pool.
-
   /**
    * @notice This function creates the transactions to configure the trading limits.
-   * @dev    Trading limits are configured individually for each token in a pool.
    */
   function proposal_configureTradingLimits() public {
     address brokerProxyAddress = contracts.deployed("BreakerBoxProxy");
