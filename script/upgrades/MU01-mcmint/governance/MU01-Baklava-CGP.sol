@@ -68,7 +68,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
   function loadDeployedContracts() public {
     contracts.load("MU01-00-Create-Proxies", "1674224277");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676477381");
-    contracts.load("MU01-02-Create-Implementations", "1674225880");
+    contracts.load("MU01-02-Create-Implementations", "1676504104");
     contracts.load("MU01-04-Create-MockUSDCet", "1676392537");
   }
 

@@ -29,14 +29,11 @@ contract SwapTest is Script {
   address cUSD;
   address cEUR;
 
-
-
-  
   function setUp() public {
     // Load addresses from deployments
     contracts.load("MU01-00-Create-Proxies", "1674224277");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1674224321");
-    contracts.load("MU01-02-Create-Implementations", "1674225880");
+    contracts.load("MU01-02-Create-Implementations", "1676504104");
 
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
@@ -89,7 +86,7 @@ contract SwapTest is Script {
     bytes32 exchangeId = getExchangeId(cUSD, celoToken, false);
     bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(cUSD)));
 
-    (uint32 t0, uint32 t1, int48 l0, int48 l1, int48 lg,) = brokerContract.tradingLimitsConfig(limitId);
+    (uint32 t0, uint32 t1, int48 l0, int48 l1, int48 lg, ) = brokerContract.tradingLimitsConfig(limitId);
 
     TradingLimits.Config memory cUSDTradingLimits = TradingLimits.Config({
       timestep0: t0,
@@ -100,11 +97,12 @@ contract SwapTest is Script {
       flags: 0
     });
 
-    if(cUSDTradingLimits.timestep0 == 0 ||
-       cUSDTradingLimits.timestep1 == 0 ||
-       cUSDTradingLimits.limit0 == 0 || 
-       cUSDTradingLimits.limit1 == 0) 
-    {
+    if (
+      cUSDTradingLimits.timestep0 == 0 ||
+      cUSDTradingLimits.timestep1 == 0 ||
+      cUSDTradingLimits.limit0 == 0 ||
+      cUSDTradingLimits.limit1 == 0
+    ) {
       console2.log("The trading limit for cUSD/CELO was not set.");
       revert("Trading limit for cUSD/CELO was not set.");
     }
@@ -112,10 +110,10 @@ contract SwapTest is Script {
 
   function verifyCircuitBreaker() public view {
     // Check circuit breaker is configured for cUSD/CELO
-    (, uint64 lastUpdatedTime,) = breakerBox.rateFeedTradingModes(cUSD);
+    (, uint64 lastUpdatedTime, ) = breakerBox.rateFeedTradingModes(cUSD);
 
     // Check if cUSD TradingModeInfo.lastUpdatedTime is greater than zero
-    if(lastUpdatedTime == 0) {
+    if (lastUpdatedTime == 0) {
       revert("cUSD circuit breaker was not set.");
     }
   }
@@ -126,9 +124,6 @@ contract SwapTest is Script {
 
     if (biPoolManager != expectedBiPoolManager) {
       console2.log(
-
-
-  
         "The address of the BiPool manager retrieved from the Broker was not the address found in the deployment json."
       );
       console2.log("Expected address:", expectedBiPoolManager);
