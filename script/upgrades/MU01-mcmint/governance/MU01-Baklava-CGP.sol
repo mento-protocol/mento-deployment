@@ -28,6 +28,7 @@ import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
 import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
+import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
@@ -504,6 +505,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
    *
    *        4. Enable each breaker for each rate feed.
    *           [BreakerBox.toggleBreaker]
+   *
+   *        5. Add the new breaker box address to sorted oracles.
    */
   function proposal_configureCircuitBreaker() private {
     address medianDeltaBreakerAddress = contracts.deployed("MedianDeltaBreaker");
@@ -703,6 +706,18 @@ contract MU01_BaklavaCGP is GovernanceScript {
         0,
         breakerBoxProxyAddress,
         abi.encodeWithSelector(BreakerBox(0).toggleBreaker.selector, valueDeltaBreakerAddress, cUSDUSCDRateFeedId, true)
+      )
+    );
+
+    /* ================================================================ */
+    /* ========= 5. Set breaker box address in sorted oracles ========= */
+    /* ================================================================ */
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBoxProxyAddress,
+        abi.encodeWithSelector(SortedOracles(0).setBreakerBox.selector, contracts.deployed("BreakerBoxProxy"))
       )
     );
   }
