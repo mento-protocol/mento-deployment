@@ -17,6 +17,7 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
 import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.sol";
+import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
 
 import { BreakerBoxProxy } from "mento-core/contracts/proxies/BreakerBoxProxy.sol";
 import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerProxy.sol";
@@ -26,6 +27,7 @@ import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
 import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
+import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
@@ -33,6 +35,8 @@ import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
  * @dev depends on: ../deploy/*.sol
  */
 contract MU01_BaklavaCGP is GovernanceScript {
+  using TradingLimits for TradingLimits.Config;
+
   ICeloGovernance.Transaction[] private transactions;
 
   PoolConfiguration private cUSDCeloConfig;
@@ -46,7 +50,11 @@ contract MU01_BaklavaCGP is GovernanceScript {
   address private celo;
   address private USDCet;
 
+  address payable private breakerBoxProxyAddress;
   address private cUSDUSCDRateFeedId = address(uint256(keccak256(abi.encodePacked("USDCUSD"))));
+
+  // Helper mapping to store the exchange IDs for the reference rate feeds
+  mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
 
   function prepare() public {
     loadDeployedContracts();
@@ -73,6 +81,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
     cBRL = contracts.celoRegistry("StableTokenBRL");
     celo = contracts.celoRegistry("GoldToken");
     USDCet = contracts.deployed("MockERC20");
+
+    breakerBoxProxyAddress = contracts.deployed("BreakerBoxProxy");
   }
 
   /**
@@ -80,6 +90,9 @@ contract MU01_BaklavaCGP is GovernanceScript {
    *      This function is called by the governance script runner.
    */
   function setUpPoolConfigs() public {
+    // TODO: -> Finish adding trading limit configuration values to
+    //          the pool configs below [Tobi]
+
     // Create pool configuration for cUSD/CELO pool
     cUSDCeloConfig = PoolConfiguration({
       asset0: cUSD,
@@ -96,8 +109,21 @@ contract MU01_BaklavaCGP is GovernanceScript {
       valueDeltaBreakerThreshold: 0,
       valueDeltaBreakerReferenceValue: 0,
       valueDeltaBreakerCooldown: 0,
-      referenceRateFeedID: cUSD
+      referenceRateFeedID: cUSD,
+      asset0_timeStep0: 5 minutes,
+      asset0_timeStep1: 1 days,
+      asset0_limit0: 1e24, // 1000000
+      asset0_limit1: 5e24, // 5000000
+      asset0_limitGlobal: 0,
+      asset0_flags: cUSDCeloConfig.asset0_limit0 | cUSDCeloConfig.asset0_limit1
     });
+
+    // Set the exchange ID for the reference rate feed
+    referenceRateFeedIDToExchangeId[cUSDCeloConfig.referenceRateFeedID] = getExchangeId(
+      cUSDCeloConfig.asset0,
+      cUSDCeloConfig.asset1,
+      cUSDCeloConfig.isConstantSum
+    );
 
     // Create pool configuration for cEUR/CELO pool
     cEURCeloConfig = PoolConfiguration({
@@ -118,6 +144,13 @@ contract MU01_BaklavaCGP is GovernanceScript {
       referenceRateFeedID: cEUR
     });
 
+    // Set the exchange ID for the reference rate feed
+    referenceRateFeedIDToExchangeId[cEURCeloConfig.referenceRateFeedID] = getExchangeId(
+      cEURCeloConfig.asset0,
+      cEURCeloConfig.asset1,
+      cEURCeloConfig.isConstantSum
+    );
+
     // Create pool configuration for cBRL/CELO pool
     cBRLCeloConfig = PoolConfiguration({
       asset0: cBRL,
@@ -137,6 +170,13 @@ contract MU01_BaklavaCGP is GovernanceScript {
       referenceRateFeedID: cBRL
     });
 
+    // Set the exchange ID for the reference rate feed
+    referenceRateFeedIDToExchangeId[cBRLCeloConfig.referenceRateFeedID] = getExchangeId(
+      cBRLCeloConfig.asset0,
+      cBRLCeloConfig.asset1,
+      cBRLCeloConfig.isConstantSum
+    );
+
     // Setup the pool configuration for cUSD/USDC pool
     cUSDUSDCConfig = PoolConfiguration({
       asset0: cUSD,
@@ -155,6 +195,13 @@ contract MU01_BaklavaCGP is GovernanceScript {
       valueDeltaBreakerCooldown: 1 seconds,
       referenceRateFeedID: address(uint256(keccak256(abi.encodePacked("USDCUSD"))))
     });
+
+    // Set the exchange ID for the reference rate feed
+    referenceRateFeedIDToExchangeId[cUSDUSDCConfig.referenceRateFeedID] = getExchangeId(
+      cUSDUSDCConfig.asset0,
+      cUSDUSDCConfig.asset1,
+      cUSDUSDCConfig.isConstantSum
+    );
   }
 
   function run() public {
@@ -176,6 +223,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     proposal_configureReserve();
     proposal_registryUpdates();
     proposal_createExchanges();
+    proposal_configureCircuitBreaker();
     // TODO: Set Oracle report targets for new rates
     return transactions;
   }
@@ -430,7 +478,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
    *           [BreakerBox.toggleBreaker]
    */
   function proposal_configureCircuitBreaker() private {
-    address breakerBoxProxyAddress = contracts.deployed("BreakerBoxProxy");
     address medianDeltaBreakerAddress = contracts.deployed("MedianDeltaBreaker");
     address valueDeltaBreakerAddress = contracts.deployed("ValueDeltaBreaker");
 
@@ -631,5 +678,53 @@ contract MU01_BaklavaCGP is GovernanceScript {
     );
   }
 
-  // TODO: Configure Trading Limits
+  // TODO: Finish adding the transactions to configure the trading limits
+  //       for each pool. Each pool will require two calls to the BrokerProxy,
+  //       one to configure the trading limit for each asset in the pool.
+
+  /**
+   * @notice This function creates the transactions to configure the trading limits.
+   * @dev    Trading limits are configured individually for each token in a pool.
+   */
+  function proposal_configureTradingLimits() public {
+    address brokerProxyAddress = contracts.deployed("BreakerBoxProxy");
+    // Set the trading limits for cUSD/Celo pool
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        brokerProxyAddress,
+        abi.encodeWithSelector(
+          Broker(0).configureTradingLimit.selector,
+          referenceRateFeedIDToExchangeId[cUSDCeloConfig.referenceRateFeedID],
+          cUSDCeloConfig.asset0,
+          TradingLimits.Config({
+            timestep0: cUSDCeloConfig.asset0_timeStep0,
+            timestep1: cUSDCeloConfig.asset0_timeStep1,
+            limit0: cUSDCeloConfig.asset0_limit0,
+            limit1: cUSDCeloConfig.asset0_limit1,
+            limitGlobal: cUSDCeloConfig.asset0_limitGlobal,
+            flags: cUSDCeloConfig.asset0_flags
+          })
+        )
+      )
+    );
+  }
+
+  /**
+   * @notice Helper function to get the exchange ID for a pool.
+   */
+  function getExchangeId(
+    address asset0,
+    address asset1,
+    bool isConstantSum
+  ) public pure returns (bytes32) {
+    return
+      keccak256(
+        abi.encodePacked(
+          IERC20Metadata(asset0).symbol(),
+          IERC20Metadata(asset1).symbol(),
+          isConstantSum ? "ConstantSum" : "ConstantProduct"
+        )
+      );
+  }
 }
