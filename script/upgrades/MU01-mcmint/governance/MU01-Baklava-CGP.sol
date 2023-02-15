@@ -112,10 +112,10 @@ contract MU01_BaklavaCGP is GovernanceScript {
       referenceRateFeedID: cUSD,
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: 1e24, // 1000000
-      asset0_limit1: 5e24, // 5000000
+      asset0_limit0: int48(1e24), // 1000000
+      asset0_limit1: int48(5e24), // 5000000
       asset0_limitGlobal: 0,
-      asset0_flags: cUSDCeloConfig.asset0_limit0 | cUSDCeloConfig.asset0_limit1
+      asset0_flags: uint8(cUSDCeloConfig.asset0_limit0 | cUSDCeloConfig.asset0_limit1)
     });
 
     // Set the exchange ID for the reference rate feed
@@ -141,7 +141,13 @@ contract MU01_BaklavaCGP is GovernanceScript {
       valueDeltaBreakerThreshold: 0,
       valueDeltaBreakerReferenceValue: 0,
       valueDeltaBreakerCooldown: 0,
-      referenceRateFeedID: cEUR
+      referenceRateFeedID: cEUR,
+      asset0_timeStep0: 5 minutes,
+      asset0_timeStep1: 1 days,
+      asset0_limit0: int48(1e24), // 1000000
+      asset0_limit1: int48(5e24), // 5000000
+      asset0_limitGlobal: 0,
+      asset0_flags: uint8(cEURCeloConfig.asset0_limit0 | cEURCeloConfig.asset0_limit1)
     });
 
     // Set the exchange ID for the reference rate feed
@@ -167,7 +173,13 @@ contract MU01_BaklavaCGP is GovernanceScript {
       valueDeltaBreakerThreshold: 0,
       valueDeltaBreakerReferenceValue: 0,
       valueDeltaBreakerCooldown: 0,
-      referenceRateFeedID: cBRL
+      referenceRateFeedID: cBRL,
+      asset0_timeStep0: 5 minutes,
+      asset0_timeStep1: 1 days,
+      asset0_limit0: int48(1e24), // 1000000
+      asset0_limit1: int48(5e24), // 5000000
+      asset0_limitGlobal: 0,
+      asset0_flags: uint8(cBRLCeloConfig.asset0_limit0 | cBRLCeloConfig.asset0_limit1)
     });
 
     // Set the exchange ID for the reference rate feed
@@ -193,7 +205,13 @@ contract MU01_BaklavaCGP is GovernanceScript {
       valueDeltaBreakerThreshold: 5e15, // 0.005
       valueDeltaBreakerReferenceValue: 1e18,
       valueDeltaBreakerCooldown: 1 seconds,
-      referenceRateFeedID: address(uint256(keccak256(abi.encodePacked("USDCUSD"))))
+      referenceRateFeedID: address(uint256(keccak256(abi.encodePacked("USDCUSD")))),
+      asset0_timeStep0: 5 minutes,
+      asset0_timeStep1: 1 days,
+      asset0_limit0: int48(1e25), // 10000000
+      asset0_limit1: int48(1e25), // 10000000
+      asset0_limitGlobal: 0,
+      asset0_flags: uint8(cUSDUSDCConfig.asset0_limit0 | cUSDUSDCConfig.asset0_limit1)
     });
 
     // Set the exchange ID for the reference rate feed
@@ -659,7 +677,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
             breakerBoxProxyAddress,
             abi.encodeWithSelector(
               BreakerBox(0).toggleBreaker.selector,
-              medianDeltaBreakerAddress,
+              contracts.deployed("MedianDeltaBreaker"),
               poolConfigs[i].referenceRateFeedID,
               true
             )
@@ -708,6 +726,69 @@ contract MU01_BaklavaCGP is GovernanceScript {
         )
       )
     );
+
+    // Set the trading limits for cEUR/Celo pool
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        brokerProxyAddress,
+        abi.encodeWithSelector(
+          Broker(0).configureTradingLimit.selector,
+          referenceRateFeedIDToExchangeId[cEURCeloConfig.referenceRateFeedID],
+          cEURCeloConfig.asset0,
+          TradingLimits.Config({
+            timestep0: cEURCeloConfig.asset0_timeStep0,
+            timestep1: cEURCeloConfig.asset0_timeStep1,
+            limit0: cEURCeloConfig.asset0_limit0,
+            limit1: cEURCeloConfig.asset0_limit1,
+            limitGlobal: cEURCeloConfig.asset0_limitGlobal,
+            flags: cEURCeloConfig.asset0_flags
+          })
+        )
+      )
+    );
+
+    // Set the trading limits for cBRL/Celo pool
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        brokerProxyAddress,
+        abi.encodeWithSelector(
+          Broker(0).configureTradingLimit.selector,
+          referenceRateFeedIDToExchangeId[cBRLCeloConfig.referenceRateFeedID],
+          cBRLCeloConfig.asset0,
+          TradingLimits.Config({
+            timestep0: cBRLCeloConfig.asset0_timeStep0,
+            timestep1: cBRLCeloConfig.asset0_timeStep1,
+            limit0: cBRLCeloConfig.asset0_limit0,
+            limit1: cBRLCeloConfig.asset0_limit1,
+            limitGlobal: cBRLCeloConfig.asset0_limitGlobal,
+            flags: cBRLCeloConfig.asset0_flags
+          })
+        )
+      )
+    );
+
+    // Set the trading limits for cUSD/USDC pool
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        brokerProxyAddress,
+        abi.encodeWithSelector(
+          Broker(0).configureTradingLimit.selector,
+          referenceRateFeedIDToExchangeId[cUSDUSDCConfig.referenceRateFeedID],
+          cUSDUSDCConfig.asset0,
+          TradingLimits.Config({
+            timestep0: cUSDUSDCConfig.asset0_timeStep0,
+            timestep1: cUSDUSDCConfig.asset0_timeStep1,
+            limit0: cUSDUSDCConfig.asset0_limit0,
+            limit1: cUSDUSDCConfig.asset0_limit1,
+            limitGlobal: cUSDUSDCConfig.asset0_limitGlobal,
+            flags: cUSDUSDCConfig.asset0_flags
+          })
+        )
+      )
+    );
   }
 
   /**
@@ -717,7 +798,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     address asset0,
     address asset1,
     bool isConstantSum
-  ) public pure returns (bytes32) {
+  ) public view returns (bytes32) {
     return
       keccak256(
         abi.encodePacked(
