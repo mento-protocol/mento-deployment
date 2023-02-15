@@ -170,12 +170,12 @@ contract MU01_BaklavaCGP is GovernanceScript {
       );
     }
 
-    if (IReserve(reserveProxy).isCollateralAsset(contracts.dependency("MockUSDCet")) == false) {
+    if (IReserve(reserveProxy).isCollateralAsset(contracts.dependency("USDCet")) == false) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           reserveProxy,
-          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("MockUSDCet"))
+          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("USDCet"))
         )
       );
     }
@@ -212,7 +212,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     address cEUR = contracts.celoRegistry("StableTokenEUR");
     address cBRL = contracts.celoRegistry("StableTokenBRL");
     address celo = contracts.celoRegistry("GoldToken");
-    address USDcet = contracts.dependency("MockUSDCet");
+    address USDcet = contracts.dependency("USDCet");
 
     // Get the address of the newly deployed CPP pricing module
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));

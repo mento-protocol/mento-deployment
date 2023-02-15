@@ -12,17 +12,7 @@ import { IExchangeProvider } from "mento-core/contracts/interfaces/IExchangeProv
 import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
-
-interface IMockERC20 {
-  // need to define this because we don't have a single interface with all this methods
-  function approve(address, uint256) external returns (bool);
-
-  function balanceOf(address) external view returns (uint256);
-
-  function mint(address, uint256) external returns (bool);
-
-  function owner() external returns (address);
-}
+import { MockERC20 } from "../../contracts/MockERC20.sol";
 
 contract SwapTest is Script {
   IBroker public broker;
@@ -42,7 +32,7 @@ contract SwapTest is Script {
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
-    usdCet = contracts.dependency("MockUSDCet");
+    usdCet = contracts.dependency("USDCet");
     celoToken = contracts.celoRegistry("GoldToken");
     broker = IBroker(contracts.celoRegistry("Broker"));
 
@@ -84,7 +74,7 @@ contract SwapTest is Script {
   }
 
   function swapUSDcetForcUSD() public {
-    address trader = address(this);
+    address trader = vm.addr(1);
     bytes32 exchangeID = bpm.exchangeIds(3);
 
     address tokenIn = usdCet;
@@ -92,20 +82,22 @@ contract SwapTest is Script {
     uint256 amountIn = 100e18;
     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
-    IMockERC20 mockUSDcetContract = IMockERC20(usdCet);
+    MockERC20 mockUSDcetContract = MockERC20(usdCet);
 
     assert(mockUSDcetContract.balanceOf(trader) == 0);
     vm.prank(mockUSDcetContract.owner());
     assert(mockUSDcetContract.mint(trader, amountIn));
     assert(mockUSDcetContract.balanceOf(trader) == amountIn);
 
-    uint256 beforecUSD = IMockERC20(cUSD).balanceOf(trader);
+    vm.startPrank(trader);
+    uint256 beforecUSD = MockERC20(cUSD).balanceOf(trader);
     mockUSDcetContract.approve(address(broker), amountIn);
 
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
 
     assert(mockUSDcetContract.balanceOf(trader) == 0);
-    assert(IMockERC20(cUSD).balanceOf(trader) == beforecUSD + amountOut);
+    assert(MockERC20(cUSD).balanceOf(trader) == beforecUSD + amountOut);
+    vm.stopPrank();
 
     console2.log("USDCet -> cUSD swap successful 🚀");
   }
