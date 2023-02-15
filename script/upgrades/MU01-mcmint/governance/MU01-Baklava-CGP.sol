@@ -29,8 +29,6 @@ import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol"
 import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
 
-import { console2 as console } from "forge-std/Script.sol";
-
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy 
@@ -59,8 +57,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
 
   function prepare() public {
-    console.log("Executing script preparation -> prepare()");
-
     loadDeployedContracts();
     setAddresses();
     setUpPoolConfigs();
@@ -70,8 +66,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
    * @dev Loads the deployed contracts from the previous deployment step
    */
   function loadDeployedContracts() public {
-    console.log("Loading deployed contracts -> loadDeployedContracts()");
-
     contracts.load("MU01-00-Create-Proxies", "1674224277");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676477381");
     contracts.load("MU01-02-Create-Implementations", "1674225880");
@@ -82,8 +76,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
    * @dev Sets the addresses of the various contracts needed for the proposal.
    */
   function setAddresses() public {
-    console.log("Loading deployed contracts -> loadDeployedContracts()");
-
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
@@ -231,8 +223,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
   }
 
   function run() public {
-    console.log("Beginning run of proposal script -> run()");
-
     prepare();
     address governance = contracts.celoRegistry("Governance");
     ICeloGovernance.Transaction[] memory _transactions = buildProposal();
@@ -245,10 +235,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
   }
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
-    console.log("Building proposal transactions -> buildProposal()");
-
     require(transactions.length == 0, "buildProposal() should only be called once");
-    proposal_initializeNewProxies();
+    //proposal_initializeNewProxies();
     proposal_upgradeContracts();
     proposal_configureReserve();
     proposal_registryUpdates();
@@ -260,7 +248,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
   }
 
   function proposal_initializeNewProxies() private {
-    console.log("Iniitlizing proxies -> proposal_initializeNewProxies()");
     address sortedOracles = contracts.celoRegistry("SortedOracles");
     address reserve = contracts.celoRegistry("Reserve");
 
@@ -357,15 +344,15 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
   function proposal_configureReserve() private {
     address reserveProxy = contracts.celoRegistry("Reserve");
-    if (IReserve(reserveProxy).isExchangeSpender(contracts.deployed("BrokerProxy")) == false) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          reserveProxy,
-          abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, contracts.deployed("BrokerProxy"))
-        )
-      );
-    }
+    // if (IReserve(reserveProxy).isExchangeSpender(contracts.deployed("BrokerProxy")) == false) {
+    //   transactions.push(
+    //     ICeloGovernance.Transaction(
+    //       0,
+    //       reserveProxy,
+    //       abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, contracts.deployed("BrokerProxy"))
+    //     )
+    //   );
+    // }
 
     if (IReserve(reserveProxy).isCollateralAsset(contracts.dependency("USDCet")) == false) {
       transactions.push(
@@ -592,15 +579,16 @@ contract MU01_BaklavaCGP is GovernanceScript {
     medianDeltaBreakerRateChangeThresholds[1] = cEURCeloConfig.medianDeltaBreakerThreshold;
     medianDeltaBreakerRateChangeThresholds[2] = cBRLCeloConfig.medianDeltaBreakerThreshold;
 
+    //TODO: This function name will change to setCooldownTimes for consistency.
+    //      Update mento-core to latest &Change once PR has been merged.
+    //      https://github.com/mento-protocol/mento-core/pull/148
+
     // Set the cooldown times
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         medianDeltaBreakerAddress,
         abi.encodeWithSelector(
-          //TODO: This function name will change to setCooldownTimes for consistency.
-          //      Update mento-core to latest &Change once PR has been merged.
-          //      https://github.com/mento-protocol/mento-core/pull/148
           MedianDeltaBreaker(0).setCooldownTime.selector,
           medianDeltaRateFeedIds,
           medianDeltaBreakerCooldownTimes
@@ -807,7 +795,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     address asset0,
     address asset1,
     bool isConstantSum
-  ) public view returns (bytes32) {
+  ) internal view returns (bytes32) {
     return
       keccak256(
         abi.encodePacked(
@@ -817,4 +805,5 @@ contract MU01_BaklavaCGP is GovernanceScript {
         )
       );
   }
+
 }

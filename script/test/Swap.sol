@@ -11,15 +11,27 @@ import { IExchangeProvider } from "mento-core/contracts/interfaces/IExchangeProv
 import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
+import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
+
+import { Broker } from "mento-core/contracts/Broker.sol";
+import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
+
+import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
 
 contract SwapTest is Script {
+  using TradingLimits for TradingLimits.Config;
+
   IBroker broker;
   BiPoolManager bpm;
+  BreakerBox breakerBox;
 
   address celoToken;
   address cUSD;
   address cEUR;
 
+
+
+  
   function setUp() public {
     // Load addresses from deployments
     contracts.load("MU01-00-Create-Proxies", "1674224277");
@@ -31,6 +43,7 @@ contract SwapTest is Script {
     cEUR = contracts.celoRegistry("StableTokenEUR");
     celoToken = contracts.celoRegistry("GoldToken");
     broker = IBroker(contracts.celoRegistry("Broker"));
+    breakerBox = BreakerBox(contracts.celoRegistry("BreakerBox"));
 
     address[] memory exchangeProviders = broker.getExchangeProviders();
     verifyExchangeProviders(exchangeProviders);
@@ -66,6 +79,45 @@ contract SwapTest is Script {
 
     IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e18);
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, 1e18, amountOut - 1e17);
+
+    verifyTradingLimits();
+  }
+
+  function verifyTradingLimits() public view {
+    Broker brokerContract = Broker(address(broker));
+
+    bytes32 exchangeId = getExchangeId(cUSD, celoToken, false);
+    bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(cUSD)));
+
+    (uint32 t0, uint32 t1, int48 l0, int48 l1, int48 lg,) = brokerContract.tradingLimitsConfig(limitId);
+
+    TradingLimits.Config memory cUSDTradingLimits = TradingLimits.Config({
+      timestep0: t0,
+      timestep1: t1,
+      limit0: l0,
+      limit1: l1,
+      limitGlobal: lg,
+      flags: 0
+    });
+
+    if(cUSDTradingLimits.timestep0 == 0 ||
+       cUSDTradingLimits.timestep1 == 0 ||
+       cUSDTradingLimits.limit0 == 0 || 
+       cUSDTradingLimits.limit1 == 0) 
+    {
+      console2.log("The trading limit for cUSD/CELO was not set.");
+      revert("Trading limit for cUSD/CELO was not set.");
+    }
+  }
+
+  function verifyCircuitBreaker() public view {
+    // Check circuit breaker is configured for cUSD/CELO
+    (, uint64 lastUpdatedTime,) = breakerBox.rateFeedTradingModes(cUSD);
+
+    // Check if cUSD TradingModeInfo.lastUpdatedTime is greater than zero
+    if(lastUpdatedTime == 0) {
+      revert("cUSD circuit breaker was not set.");
+    }
   }
 
   function verifyBiPoolManager(address biPoolManager) public view {
@@ -74,6 +126,9 @@ contract SwapTest is Script {
 
     if (biPoolManager != expectedBiPoolManager) {
       console2.log(
+
+
+  
         "The address of the BiPool manager retrieved from the Broker was not the address found in the deployment json."
       );
       console2.log("Expected address:", expectedBiPoolManager);
@@ -102,5 +157,23 @@ contract SwapTest is Script {
       console2.log("Actual asset0:", pool.asset0);
       revert("Exchange was not configured as expected.");
     }
+  }
+
+  /**
+   * @notice Helper function to get the exchange ID for a pool.
+   */
+  function getExchangeId(
+    address asset0,
+    address asset1,
+    bool isConstantSum
+  ) internal view returns (bytes32) {
+    return
+      keccak256(
+        abi.encodePacked(
+          IERC20Metadata(asset0).symbol(),
+          IERC20Metadata(asset1).symbol(),
+          isConstantSum ? "ConstantSum" : "ConstantProduct"
+        )
+      );
   }
 }

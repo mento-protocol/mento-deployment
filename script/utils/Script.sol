@@ -8,6 +8,7 @@ import { Chain } from "./Chain.sol";
 import { Contracts } from "./Contracts.sol";
 import { GovernanceHelper } from "./GovernanceHelper.sol";
 import { IPricingModule } from "mento-core/contracts/interfaces/IPricingModule.sol";
+import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
 
 contract Script is BaseScript {
   using Contracts for Contracts.Cache;
