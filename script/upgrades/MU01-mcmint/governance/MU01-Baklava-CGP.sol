@@ -95,7 +95,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
       isValueDeltaBreakerEnabled: false,
       valueDeltaBreakerThreshold: 0,
       valueDeltaBreakerReferenceValue: 0,
-      valueDeltaBreakerCooldown: 0
+      valueDeltaBreakerCooldown: 0,
+      referenceRateFeedID: cUSD
     });
 
     // Create pool configuration for cEUR/CELO pool
@@ -113,7 +114,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
       isValueDeltaBreakerEnabled: false,
       valueDeltaBreakerThreshold: 0,
       valueDeltaBreakerReferenceValue: 0,
-      valueDeltaBreakerCooldown: 0
+      valueDeltaBreakerCooldown: 0,
+      referenceRateFeedID: cEUR
     });
 
     // Create pool configuration for cBRL/CELO pool
@@ -131,7 +133,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
       isValueDeltaBreakerEnabled: false,
       valueDeltaBreakerThreshold: 0,
       valueDeltaBreakerReferenceValue: 0,
-      valueDeltaBreakerCooldown: 0
+      valueDeltaBreakerCooldown: 0,
+      referenceRateFeedID: cBRL
     });
 
     // Setup the pool configuration for cUSD/USDC pool
@@ -149,7 +152,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
       isValueDeltaBreakerEnabled: true,
       valueDeltaBreakerThreshold: 5e15, // 0.005
       valueDeltaBreakerReferenceValue: 1e18,
-      valueDeltaBreakerCooldown: 1 seconds
+      valueDeltaBreakerCooldown: 1 seconds,
+      referenceRateFeedID: address(uint256(keccak256(abi.encodePacked("USDCUSD"))))
     });
   }
 
@@ -314,9 +318,11 @@ contract MU01_BaklavaCGP is GovernanceScript {
     );
   }
 
+  /**
+   * @notice This function generates the transactions required to create the
+   *         BiPoolManager exchanges (cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/USDCet)
+   */
   function proposal_createExchanges() private {
-    // Add pools to the BiPoolManager: cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/USDCet
-
     IBiPoolManager.PoolExchange[] memory pools = new IBiPoolManager.PoolExchange[](4);
 
     // Get the address of the newly deployed CPP pricing module
@@ -350,7 +356,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       lastBucketUpdate: 0,
       config: IBiPoolManager.PoolConfig({
         spread: cEURCeloConfig.spread,
-        referenceRateFeedID: cEUR,
+        referenceRateFeedID: cEURCeloConfig.referenceRateFeedID,
         referenceRateResetFrequency: cEURCeloConfig.referenceRateResetFrequency,
         minimumReports: cEURCeloConfig.minimumReports,
         stablePoolResetSize: cEURCeloConfig.stablePoolResetSize
@@ -367,7 +373,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       lastBucketUpdate: 0,
       config: IBiPoolManager.PoolConfig({
         spread: cBRLCeloConfig.spread,
-        referenceRateFeedID: cBRL,
+        referenceRateFeedID: cBRLCeloConfig.referenceRateFeedID,
         referenceRateResetFrequency: cBRLCeloConfig.referenceRateResetFrequency,
         minimumReports: cBRLCeloConfig.minimumReports,
         stablePoolResetSize: cBRLCeloConfig.stablePoolResetSize
@@ -384,7 +390,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       lastBucketUpdate: 0,
       config: IBiPoolManager.PoolConfig({
         spread: cUSDUSDCConfig.spread,
-        referenceRateFeedID: cUSDUSCDRateFeedId,
+        referenceRateFeedID: cUSDUSDCConfig.referenceRateFeedID,
         referenceRateResetFrequency: cUSDUSDCConfig.referenceRateResetFrequency,
         minimumReports: cUSDUSDCConfig.minimumReports,
         stablePoolResetSize: cUSDUSDCConfig.stablePoolResetSize
@@ -404,22 +410,26 @@ contract MU01_BaklavaCGP is GovernanceScript {
     }
   }
 
+  /**
+   * @notice This function creates the required transactions to configure
+   *         the ϟ circuit breaker ϟ.
+   * @dev    Configuration of the circuit breaker requires the following steps:
+   *        1. Add all ratefeedIds that should be monitored to the circuit breaker.
+   *           [BreakerBox.addRateFeeds || BreakerBox.addRateFeed]
+   *
+   *        2. Add all breakers that should be used to the circuit breaker.
+   *           [BreakerBox.addBreaker || BreakerBox.insertBreaker]
+   *
+   *        3. Configure each breaker for each rateFeed. Configuration will vary
+   *           depending on the type of breaker. Median Delta Breaker only requires
+   *           a cooldown and threshold to be set. Value Delta Breaker requires
+   *           a cooldown, a threshold and a reference value to be set.
+   *           [Breaker.setCooldownTimes && Breaker.setThresholds && ValueBreaker.setReferenceValues]
+   *
+   *        4. Enable each breaker for each rate feed.
+   *           [BreakerBox.toggleBreaker]
+   */
   function proposal_configureCircuitBreaker() private {
-    // TODO: Things to do. Mark when done. Also Create draft note in wiki
-    //        using this list for future ref on how to setup a circuit breaker.
-    // -> Add rate feeds to breaker box. ✓
-    // -> Add breakers to breaker box. ✓
-    // -> BreakerBox.Toggle breaker -> to enable a breaker for a specific rate feed
-    // -> For the specific breaker configuire values required for the rate feeds
-    //      -> Median Delta Breaker [TOBI]
-    //        -> Set default cooldown & threshold
-    //          -> For each pool configuration:
-    //            -> Set cooldown & threshold for each rate feed
-    //      -> Value Delta Breaker [BAYO]
-    //        -> Set default cooldown & threshold. TBD [Nadiem]
-    //          -> For each pool configuration:
-    //            -> Set cooldown & threshold for each rate feed ✓ ✓
-
     address breakerBoxProxyAddress = contracts.deployed("BreakerBoxProxy");
     address medianDeltaBreakerAddress = contracts.deployed("MedianDeltaBreaker");
     address valueDeltaBreakerAddress = contracts.deployed("ValueDeltaBreaker");
@@ -430,7 +440,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     allRateFeedIds[2] = cBRL;
     allRateFeedIds[3] = cUSDUSCDRateFeedId;
 
-    PoolConfiguration[] memory poolConfigs = new PoolConfiguration[](3);
+    PoolConfiguration[] memory poolConfigs = new PoolConfiguration[](4);
     poolConfigs[0] = cUSDCeloConfig;
     poolConfigs[1] = cEURCeloConfig;
     poolConfigs[2] = cBRLCeloConfig;
@@ -442,7 +452,24 @@ contract MU01_BaklavaCGP is GovernanceScript {
     uint256[] memory valueDeltaCoolDownTimes = new uint256[](1);
     valueDeltaCoolDownTimes[0] = cUSDUSDCConfig.valueDeltaBreakerCooldown;
 
-    // Add breakers to the breaker box
+    /* ================================================================ */
+    /* ==== 1. Add rateFeedIds to be monitored to the breaker box ===== */
+    /* ================================================================ */
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBoxProxyAddress,
+        abi.encodeWithSelector(BreakerBox(0).addRateFeeds.selector, allRateFeedIds)
+      )
+    );
+
+    /* ================================================================ */
+    /* ============== 2. Add breakers to the breaker box ============== */
+    /* ================================================================ */
+
+    // Current implementation will stop trading for a rateFeed when trading mode is not == 0.
+    // (BreakerBox LN266 & LN290)
 
     // Add the Median Delta Breaker to the breaker box with the trading mode '1' -> No Trading
     transactions.push(
@@ -453,7 +480,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       )
     );
 
-    // Add the Value Delta Breaker to the breaker box with the trading mode '2' -> Also No Trading ?
+    // Add the Value Delta Breaker to the breaker box with the trading mode '2' -> No Trading
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -462,33 +489,39 @@ contract MU01_BaklavaCGP is GovernanceScript {
       )
     );
 
-    // Add rateFeedIds to the breaker box to be monitored
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        breakerBoxProxyAddress,
-        abi.encodeWithSelector(BreakerBox(0).addRateFeeds.selector, allRateFeedIds)
-      )
-    );
+    /* ================================================================ */
+    /* ========= 3. Add rateFeed specific config to breakers ========== */
+    /* ================================================================ */
 
-    // Median Delta Breaker Configuration
+    /****** Median Delta Breaker Configuration *******/
+
     // rateFeedIDs for which Median Delta Breaker is enabled
     address[] memory medianDeltaRateFeedIds = new address[](1);
     medianDeltaRateFeedIds[0] = cUSD;
     medianDeltaRateFeedIds[1] = cEUR;
     medianDeltaRateFeedIds[2] = cBRL;
 
-    // cooldownTimes for rateFeedIDs with Median Delta Breaker is enabled
+    // cooldownTimes for rateFeedIDs with Median Delta Breaker enabled
     uint256[] memory medianDeltaBreakerCooldownTimes = new uint256[](3);
     medianDeltaBreakerCooldownTimes[0] = cUSDCeloConfig.medianDeltaBreakerCooldown;
     medianDeltaBreakerCooldownTimes[1] = cEURCeloConfig.medianDeltaBreakerCooldown;
     medianDeltaBreakerCooldownTimes[2] = cBRLCeloConfig.medianDeltaBreakerCooldown;
 
+    // rateChangeThresholds for rateFeedIDs with Median Delta Breaker enabled
+    uint256[] memory medianDeltaBreakerRateChangeThresholds = new uint256[](3);
+    medianDeltaBreakerRateChangeThresholds[0] = cUSDCeloConfig.medianDeltaBreakerThreshold;
+    medianDeltaBreakerRateChangeThresholds[1] = cEURCeloConfig.medianDeltaBreakerThreshold;
+    medianDeltaBreakerRateChangeThresholds[2] = cBRLCeloConfig.medianDeltaBreakerThreshold;
+
+    // Set the cooldown times
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         medianDeltaBreakerAddress,
         abi.encodeWithSelector(
+          //TODO: This function name will change to setCooldownTimes for consistency.
+          //      Update mento-core to latest &Change once PR has been merged.
+          //      https://github.com/mento-protocol/mento-core/pull/148
           MedianDeltaBreaker(0).setCooldownTime.selector,
           medianDeltaRateFeedIds,
           medianDeltaBreakerCooldownTimes
@@ -496,15 +529,38 @@ contract MU01_BaklavaCGP is GovernanceScript {
       )
     );
 
-    // Value Delta Breaker Configuration
-    // rateFeedIDs for which Median Delta Breaker is enabled
+    // Set the rate change thresholds
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        medianDeltaBreakerAddress,
+        abi.encodeWithSelector(
+          MedianDeltaBreaker(0).setRateChangeThresholds.selector,
+          medianDeltaRateFeedIds,
+          medianDeltaBreakerCooldownTimes
+        )
+      )
+    );
+
+    /****** Value Delta Breaker Configuration *******/
+
+    // rateFeedIDs for which Value Delta Breaker is enabled
     address[] memory valueDeltaBreakerRateFeedIds = new address[](1);
     valueDeltaBreakerRateFeedIds[0] = cUSDUSCDRateFeedId;
 
-    // Set the reference values for the value delta breaker
+    // reference values for rateFeedIDs with Value Delta Breaker enabled
     uint256[] memory valueDeltaBreakerReferenceValues = new uint256[](1);
     valueDeltaBreakerReferenceValues[0] = cUSDUSDCConfig.valueDeltaBreakerReferenceValue;
 
+    // cooldownTimes for rateFeedIDs with Value Delta Breaker enabled
+    uint256[] memory valueDeltaBreakerCooldownTimes = new uint256[](1);
+    valueDeltaBreakerCooldownTimes[0] = cUSDUSDCConfig.valueDeltaBreakerCooldown;
+
+    // thresholds for rateFeedIDs with Value Delta Breaker enabled
+    uint256[] memory valueDeltaBreakerThresholds = new uint256[](1);
+    valueDeltaBreakerThresholds[0] = cUSDUSDCConfig.valueDeltaBreakerThreshold;
+
+    // Set the reference values for the value delta breaker
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -517,10 +573,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
       )
     );
 
-    // cooldownTimes for rateFeedIDs with Value Delta Breaker is enabled
-    uint256[] memory valueDeltaBreakerCooldownTimes = new uint256[](1);
-    valueDeltaBreakerCooldownTimes[0] = cUSDUSDCConfig.valueDeltaBreakerCooldown;
-
     // Set the cooldown times for the value delta breaker
     transactions.push(
       ICeloGovernance.Transaction(
@@ -531,6 +583,50 @@ contract MU01_BaklavaCGP is GovernanceScript {
           valueDeltaBreakerRateFeedIds,
           valueDeltaBreakerCooldownTimes
         )
+      )
+    );
+
+    // Set the thresholds for the value delta breaker
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        valueDeltaBreakerAddress,
+        abi.encodeWithSelector(
+          ValueDeltaBreaker(0).setRateChangeThresholds.selector,
+          valueDeltaBreakerRateFeedIds,
+          valueDeltaBreakerThresholds
+        )
+      )
+    );
+
+    /* ==========================ϟϟϟϟϟϟϟϟϟϟϟ=========================== */
+    /* ============ 4. Enable breakers for each rate feed ============= */
+    /* ==========================ϟϟϟϟϟϟϟϟϟϟϟ=========================== */
+
+    // Enable the Median Delta Breaker for the rate feeds
+    for (uint256 i = 0; i < poolConfigs.length; i++) {
+      if (poolConfigs[i].isMedianDeltaBreakerEnabled) {
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            breakerBoxProxyAddress,
+            abi.encodeWithSelector(
+              BreakerBox(0).toggleBreaker.selector,
+              medianDeltaBreakerAddress,
+              poolConfigs[i].referenceRateFeedID,
+              true
+            )
+          )
+        );
+      }
+    }
+
+    // Enable Value Delta Breaker for cUSD/USDC rate feed
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBoxProxyAddress,
+        abi.encodeWithSelector(BreakerBox(0).toggleBreaker.selector, valueDeltaBreakerAddress, cUSDUSCDRateFeedId, true)
       )
     );
   }

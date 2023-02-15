@@ -47,6 +47,11 @@ contract GovernanceScript is Script, GovernanceHelper {
      */
     uint256 referenceRateResetFrequency;
     /**
+     * @dev The ID of the reference oracle rate that's used to stabilize
+     *      the pool.
+     */
+    address referenceRateFeedID;
+    /**
      * @dev The minimum number of oracle reports that must be submitted for the reference rate.
      *      This is used to determine whether or not the buckets should upfate.
      */
@@ -88,7 +93,7 @@ contract GovernanceScript is Script, GovernanceHelper {
     /**
      * @dev This determines whether a MedianDeltaBreaker is enabled
      */
-    bool isValueDeltaBreakerEnabled; //TODO: May be overkill
+    bool isValueDeltaBreakerEnabled;
     /**
      * @dev  The allowed change in the new median relative to the reference value.
      *       This variable determines the range of acceptable values for the new median,

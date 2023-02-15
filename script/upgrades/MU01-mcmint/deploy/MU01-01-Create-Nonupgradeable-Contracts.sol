@@ -23,6 +23,7 @@ contract MU01_CreateNonupgradeableContracts is Script {
   ValueDeltaBreaker private valueDeltaBreaker;
 
   function run() public {
+    //TODO: We need to get the correct values for these
     uint256 medianDeltaBreakerCooldown = 0;
     uint256 medianDeltaBreakerThreshold = 0;
 
