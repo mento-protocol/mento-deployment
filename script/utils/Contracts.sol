@@ -45,17 +45,27 @@ library Contracts {
      */
 
     bytes memory contractAddressesRaw = json.parseRaw(".transactions[*].contractAddress");
-    address[] memory contractAddresses = abi.decode(contractAddressesRaw, (address[]));
-    uint256 length = contractAddresses.length;
+    console.logBytes(contractAddressesRaw);
+    address[] memory contractAddresses;
+    if (contractAddressesRaw.length == 32) {
+      contractAddresses = new address[](1);
+      contractAddresses[0] = abi.decode(contractAddressesRaw, (address));
+    } else {
+      contractAddresses = abi.decode(contractAddressesRaw, (address[]));
+    }
+    console.log("Loaded %d contract addresses", contractAddresses.length);
 
-    for (uint256 i = 0; i < length; i++) {
+    for (uint256 i = 0; i < contractAddresses.length; i++) {
+      string memory stringIndex = uintToString(i);
+      console.log(contractAddresses[i]);
+      console.log(string(abi.encodePacked("Loading index: ", stringIndex)));
       string memory txType = abi.decode(
-        json.parseRaw(string(abi.encodePacked(".transactions[", uintToString(i), "].transactionType"))),
+        json.parseRaw(string(abi.encodePacked(".transactions[", stringIndex, "].transactionType"))),
         (string)
       );
       if (keccak256(bytes(txType)) == keccak256(bytes("CREATE"))) {
         string memory contractName = abi.decode(
-          json.parseRaw(string(abi.encodePacked(".transactions[", uintToString(i), "].contractName"))),
+          json.parseRaw(string(abi.encodePacked(".transactions[", stringIndex, "].contractName"))),
           (string)
         );
 
