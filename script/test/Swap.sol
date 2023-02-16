@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
@@ -7,10 +7,12 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 
 import { IBroker } from "mento-core/contracts/interfaces/IBroker.sol";
+import { IStableToken } from "mento-core/contracts/interfaces/IStableToken.sol";
 import { IExchangeProvider } from "mento-core/contracts/interfaces/IExchangeProvider.sol";
 import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
+import { MockERC20 } from "../../contracts/MockERC20.sol";
 import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
 
 import { Broker } from "mento-core/contracts/Broker.sol";
@@ -19,15 +21,13 @@ import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
 
 contract SwapTest is Script {
-  using TradingLimits for TradingLimits.Config;
-
   IBroker broker;
   BiPoolManager bpm;
-  BreakerBox breakerBox;
 
-  address celoToken;
-  address cUSD;
-  address cEUR;
+  address public celoToken;
+  address public cUSD;
+  address public cEUR;
+  address public usdCet;
 
   function setUp() public {
     // Load addresses from deployments
@@ -38,6 +38,7 @@ contract SwapTest is Script {
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
+    usdCet = contracts.dependency("USDCet");
     celoToken = contracts.celoRegistry("GoldToken");
     broker = IBroker(contracts.celoRegistry("Broker"));
     breakerBox = BreakerBox(contracts.deployed("BreakerBox"));
@@ -61,6 +62,7 @@ contract SwapTest is Script {
     setUp();
     vm.deal(address(this), 1e20);
     executeSwap();
+    swapUSDcetForcUSD();
   }
 
   function executeSwap() public {
@@ -72,7 +74,7 @@ contract SwapTest is Script {
 
     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, 1e18);
 
-    console2.log("Expected amount out:", amountOut);
+    console2.log("CELO -> cUSD swap Expected amount out:", amountOut);
 
     IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e18);
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, 1e18, amountOut - 1e17);
@@ -116,6 +118,35 @@ contract SwapTest is Script {
     if (lastUpdatedTime == 0) {
       revert("cUSD circuit breaker was not set.");
     }
+  }
+
+  function swapUSDcetForcUSD() public {
+    address trader = vm.addr(1);
+    bytes32 exchangeID = bpm.exchangeIds(3);
+
+    address tokenIn = usdCet;
+    address tokenOut = cUSD;
+    uint256 amountIn = 100e18;
+    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
+
+    MockERC20 mockUSDcetContract = MockERC20(usdCet);
+
+    assert(mockUSDcetContract.balanceOf(trader) == 0);
+    vm.prank(mockUSDcetContract.owner());
+    assert(mockUSDcetContract.mint(trader, amountIn));
+    assert(mockUSDcetContract.balanceOf(trader) == amountIn);
+
+    vm.startPrank(trader);
+    uint256 beforecUSD = MockERC20(cUSD).balanceOf(trader);
+    mockUSDcetContract.approve(address(broker), amountIn);
+
+    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+
+    assert(mockUSDcetContract.balanceOf(trader) == 0);
+    assert(MockERC20(cUSD).balanceOf(trader) == beforecUSD + amountOut);
+    vm.stopPrank();
+
+    console2.log("USDCet -> cUSD swap successful 🚀");
   }
 
   function verifyBiPoolManager(address biPoolManager) public view {
