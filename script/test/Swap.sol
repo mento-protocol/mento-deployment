@@ -40,7 +40,7 @@ contract SwapTest is Script {
     cEUR = contracts.celoRegistry("StableTokenEUR");
     celoToken = contracts.celoRegistry("GoldToken");
     broker = IBroker(contracts.celoRegistry("Broker"));
-    breakerBox = BreakerBox(contracts.celoRegistry("BreakerBox"));
+    breakerBox = BreakerBox(contracts.deployed("BreakerBox"));
 
     address[] memory exchangeProviders = broker.getExchangeProviders();
     verifyExchangeProviders(exchangeProviders);
