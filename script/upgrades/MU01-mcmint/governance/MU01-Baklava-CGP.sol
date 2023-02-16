@@ -68,7 +68,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
    */
   function loadDeployedContracts() public {
     contracts.load("MU01-00-Create-Proxies", "1674224277");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676477381");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676565026");
     contracts.load("MU01-02-Create-Implementations", "1676504104");
     contracts.load("MU01-04-Create-MockUSDCet", "1676392537");
   }
@@ -91,9 +91,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
    *      This function is called by the governance script runner.
    */
   function setUpPoolConfigs() public {
-    // TODO: -> Finish adding trading limit configuration values to
-    //          the pool configs below [Tobi]
-
     // Create pool configuration for cUSD/CELO pool
     cUSDCeloConfig = PoolConfiguration({
       asset0: cUSD,
@@ -255,10 +252,11 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
     BreakerBoxProxy breakerBoxProxy = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"));
     address breakerBox = contracts.deployed("BreakerBox");
-    address[] memory rateFeedIDs = new address[](3);
+    address[] memory rateFeedIDs = new address[](4);
     rateFeedIDs[0] = contracts.celoRegistry("StableToken");
     rateFeedIDs[1] = contracts.celoRegistry("StableTokenEUR");
     rateFeedIDs[2] = contracts.celoRegistry("StableTokenBRL");
+    rateFeedIDs[3] = cUSDUSCDRateFeedId;
 
     transactions.push(
       ICeloGovernance.Transaction(
@@ -354,15 +352,15 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
   function proposal_configureReserve() private {
     address reserveProxy = contracts.celoRegistry("Reserve");
-    // if (IReserve(reserveProxy).isExchangeSpender(contracts.deployed("BrokerProxy")) == false) {
-    //   transactions.push(
-    //     ICeloGovernance.Transaction(
-    //       0,
-    //       reserveProxy,
-    //       abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, contracts.deployed("BrokerProxy"))
-    //     )
-    //   );
-    // }
+    if (IReserve(reserveProxy).isExchangeSpender(contracts.deployed("BrokerProxy")) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          reserveProxy,
+          abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, contracts.deployed("BrokerProxy"))
+        )
+      );
+    }
 
     if (IReserve(reserveProxy).isCollateralAsset(contracts.dependency("USDCet")) == false) {
       transactions.push(
@@ -512,11 +510,9 @@ contract MU01_BaklavaCGP is GovernanceScript {
     address medianDeltaBreakerAddress = contracts.deployed("MedianDeltaBreaker");
     address valueDeltaBreakerAddress = contracts.deployed("ValueDeltaBreaker");
 
-    address[] memory allRateFeedIds = new address[](4);
-    allRateFeedIds[0] = cUSD;
-    allRateFeedIds[1] = cEUR;
-    allRateFeedIds[2] = cBRL;
-    allRateFeedIds[3] = cUSDUSCDRateFeedId;
+    address[] memory allRateFeedIds = new address[](2);
+    allRateFeedIds[0] = cUSDUSCDRateFeedId;
+    allRateFeedIds[1] = cBRL;
 
     PoolConfiguration[] memory poolConfigs = new PoolConfiguration[](4);
     poolConfigs[0] = cUSDCeloConfig;
@@ -590,10 +586,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
     medianDeltaBreakerRateChangeThresholds[0] = cUSDCeloConfig.medianDeltaBreakerThreshold;
     medianDeltaBreakerRateChangeThresholds[1] = cEURCeloConfig.medianDeltaBreakerThreshold;
     medianDeltaBreakerRateChangeThresholds[2] = cBRLCeloConfig.medianDeltaBreakerThreshold;
-
-    //TODO: This function name will change to setCooldownTimes for consistency.
-    //      Update mento-core to latest &Change once PR has been merged.
-    //      https://github.com/mento-protocol/mento-core/pull/148
 
     // Set the cooldown times
     transactions.push(
@@ -716,7 +708,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
-        breakerBoxProxyAddress,
+        contracts.celoRegistry("SortedOracles"),
         abi.encodeWithSelector(SortedOracles(0).setBreakerBox.selector, contracts.deployed("BreakerBoxProxy"))
       )
     );
@@ -726,7 +718,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
    * @notice This function creates the transactions to configure the trading limits.
    */
   function proposal_configureTradingLimits() public {
-    address brokerProxyAddress = contracts.deployed("BreakerBoxProxy");
+    address brokerProxyAddress = contracts.deployed("BrokerProxy");
     // Set the trading limits for cUSD/Celo pool
     transactions.push(
       ICeloGovernance.Transaction(

@@ -32,7 +32,7 @@ contract SwapTest is Script {
   function setUp() public {
     // Load addresses from deployments
     contracts.load("MU01-00-Create-Proxies", "1674224277");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1674224321");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676565026");
     contracts.load("MU01-02-Create-Implementations", "1676504104");
 
     // Get proxy addresses of the deployed tokens

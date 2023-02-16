@@ -28,7 +28,11 @@ library Contracts {
     string _dependencies;
   }
 
-  function load(Cache storage self, string memory script, string memory timestamp) internal returns (Cache storage) {
+  function load(
+    Cache storage self,
+    string memory script,
+    string memory timestamp
+  ) internal returns (Cache storage) {
     string memory chainId = Chain.idString();
     string memory root = vm.projectRoot();
     string memory path = string(
@@ -45,7 +49,7 @@ library Contracts {
      */
 
     bytes memory contractAddressesRaw = json.parseRaw(".transactions[*].contractAddress");
-    console.logBytes(contractAddressesRaw);
+
     address[] memory contractAddresses;
     if (contractAddressesRaw.length == 32) {
       contractAddresses = new address[](1);
@@ -53,12 +57,10 @@ library Contracts {
     } else {
       contractAddresses = abi.decode(contractAddressesRaw, (address[]));
     }
-    console.log("Loaded %d contract addresses", contractAddresses.length);
 
     for (uint256 i = 0; i < contractAddresses.length; i++) {
       string memory stringIndex = uintToString(i);
-      console.log(contractAddresses[i]);
-      console.log(string(abi.encodePacked("Loading index: ", stringIndex)));
+
       string memory txType = abi.decode(
         json.parseRaw(string(abi.encodePacked(".transactions[", stringIndex, "].transactionType"))),
         (string)
