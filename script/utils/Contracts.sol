@@ -2,8 +2,9 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
+import { console } from "forge-std/console.sol";
+
 import { Vm } from "forge-std/Vm.sol";
-import { console2 as console } from "forge-std/console2.sol";
 import { Chain } from "./Chain.sol";
 import { stdJson } from "forge-std/StdJson.sol";
 import { IRegistry } from "mento-core/contracts/common/interfaces/IRegistry.sol";
@@ -44,12 +45,8 @@ library Contracts {
      */
 
     bytes memory contractAddressesRaw = json.parseRaw(".transactions[*].contractAddress");
-
-    uint256 length = contractAddressesRaw.length / 32;
-    address[] memory contractAddresses = abi.decode(
-      abi.encodePacked(uint256(32), uint256(length), contractAddressesRaw),
-      (address[])
-    );
+    address[] memory contractAddresses = abi.decode(contractAddressesRaw, (address[]));
+    uint256 length = contractAddresses.length;
 
     for (uint256 i = 0; i < length; i++) {
       string memory txType = abi.decode(
