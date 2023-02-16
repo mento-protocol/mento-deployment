@@ -21,8 +21,11 @@ import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
 
 contract SwapTest is Script {
+  using TradingLimits for TradingLimits.Config;
+
   IBroker broker;
   BiPoolManager bpm;
+  BreakerBox breakerBox;
 
   address public celoToken;
   address public cUSD;
