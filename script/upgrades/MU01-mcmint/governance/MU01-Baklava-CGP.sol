@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines
+// solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines, var-name-mixedcase
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
@@ -81,8 +81,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
     celo = contracts.celoRegistry("GoldToken");
-    USDCet = contracts.deployed("MockERC20");
-
+    USDCet = contracts.dependency("USDCet");
     breakerBoxProxyAddress = contracts.deployed("BreakerBoxProxy");
   }
 
@@ -203,7 +202,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       valueDeltaBreakerThreshold: 5e15, // 0.005
       valueDeltaBreakerReferenceValue: 1e18,
       valueDeltaBreakerCooldown: 1 seconds,
-      referenceRateFeedID: address(uint256(keccak256(abi.encodePacked("USDCUSD")))),
+      referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
       asset0_limit0: int48(1e25), // 10000000
@@ -400,14 +399,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
   function proposal_createExchanges() private {
     IBiPoolManager.PoolExchange[] memory pools = new IBiPoolManager.PoolExchange[](4);
 
-    // Get the proxy addresses for the tokens from the registry
-    address cUSD = contracts.celoRegistry("StableToken");
-    address cEUR = contracts.celoRegistry("StableTokenEUR");
-    address cBRL = contracts.celoRegistry("StableTokenBRL");
-    address celo = contracts.celoRegistry("GoldToken");
-    address USDcet = contracts.dependency("USDCet");
-
-    // Get the address of the newly deployed CPP pricing module
+    // Get the address of the newly deployed pricing modules
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
@@ -421,7 +413,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       lastBucketUpdate: 0,
       config: IBiPoolManager.PoolConfig({
         spread: cUSDCeloConfig.spread,
-        referenceRateFeedID: cUSD,
+        referenceRateFeedID: cUSDCeloConfig.referenceRateFeedID,
         referenceRateResetFrequency: cUSDCeloConfig.referenceRateResetFrequency,
         minimumReports: cUSDCeloConfig.minimumReports,
         stablePoolResetSize: cUSDCeloConfig.stablePoolResetSize
@@ -476,40 +468,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
         referenceRateResetFrequency: cUSDUSDCConfig.referenceRateResetFrequency,
         minimumReports: cUSDUSDCConfig.minimumReports,
         stablePoolResetSize: cUSDUSDCConfig.stablePoolResetSize
-      })
-    });
-
-    // Create the pool configuration for cUSD/USDcet
-    pools[3] = IBiPoolManager.PoolExchange({
-      asset0: cUSDUSDCConfig.asset0,
-      asset1: USDcet,
-      pricingModule: constantSum,
-      bucket0: 0,
-      bucket1: 0,
-      lastBucketUpdate: 0,
-      config: IBiPoolManager.PoolConfig({
-        spread: FixidityLib.newFixedFraction(5, 100),
-        referenceRateFeedID: cBRL,
-        referenceRateResetFrequency: 60 * 5,
-        minimumReports: 5,
-        stablePoolResetSize: 1e24
-      })
-    });
-
-    // Create the pool configuration for cUSD/USDcet
-    pools[3] = IBiPoolManager.PoolExchange({
-      asset0: cUSD,
-      asset1: USDcet,
-      pricingModule: constantSum,
-      bucket0: 0,
-      bucket1: 0,
-      lastBucketUpdate: 0,
-      config: IBiPoolManager.PoolConfig({
-        spread: FixidityLib.newFixedFraction(5, 100),
-        referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
-        referenceRateResetFrequency: 60 * 5,
-        minimumReports: 5,
-        stablePoolResetSize: 1e24
       })
     });
 
@@ -571,6 +529,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
     /* ==== 1. Add rateFeedIds to be monitored to the breaker box ===== */
     /* ================================================================ */
 
+    //  TODO: This needs to be removed.
+    //  The rates are added as part of the initilization of the breaker box.
     transactions.push(
       ICeloGovernance.Transaction(
         0,
