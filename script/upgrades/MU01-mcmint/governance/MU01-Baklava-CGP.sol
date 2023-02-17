@@ -181,8 +181,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
       referenceRateFeedID: cBRL,
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: int48(1_000_000),
-      asset0_limit1: int48(5_000_000),
+      asset0_limit0: 1_000_000,
+      asset0_limit1: 5_000_000,
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
