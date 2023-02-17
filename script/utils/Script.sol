@@ -81,7 +81,7 @@ contract GovernanceScript is Script, GovernanceHelper {
      *      decimal places. When setting the value, it should be scaled by 10^24.
      *      For example, to set it to 0.1%, you would pass 100000000000000000000000 (0.1% * 10^24)
      */
-    uint256 medianDeltaBreakerThreshold;
+    FixidityLib.Fraction medianDeltaBreakerThreshold;
     /**
      * @dev Time interval (in seconds) required before resetting the median delta
      *      breaker, calculated from the moment it was triggered for the pool to the present.
@@ -102,10 +102,10 @@ contract GovernanceScript is Script, GovernanceHelper {
      *       represented as a FixidityLib.Fraction using 24 decimal places. To set the
      *       value to 0.8%, you need to pass 800000000000000000000000 (0.8% * 10^24)
      */
-    uint256 valueDeltaBreakerThreshold;
+    FixidityLib.Fraction valueDeltaBreakerThreshold;
     /**
      * @dev The reference value used to calculate the value delta breakers allowed min and max threshold.
-     *      This value is stored as a FixidityLib.Fraction, which uses 24 decimal places,
+     *      This value has the same precision as the numerator of the median value, which is 24 decimal places.
      *      however the setter expects the value is already scaled by 10^24.
      *      So if you want to set the value to 1.0, you would pass in 1000000000000000000000000 (1.0 * 10^24).
      */

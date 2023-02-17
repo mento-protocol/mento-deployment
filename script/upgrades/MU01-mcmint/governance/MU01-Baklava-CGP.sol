@@ -15,6 +15,7 @@ import { IRegistry } from "mento-core/contracts/common/interfaces/IRegistry.sol"
 import { Proxy } from "mento-core/contracts/common/Proxy.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
+import { Arrays } from "script/utils/Arrays.sol";
 import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
 import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.sol";
 import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
@@ -40,10 +41,15 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
+  uint8 private constant L0 = 1; // 0b001 Limit0
+  uint8 private constant L1 = 2; // 0b010 Limit1
+  uint8 private constant LG = 4; // 0b100 LimitGlobal
+
   PoolConfiguration private cUSDCeloConfig;
   PoolConfiguration private cEURCeloConfig;
   PoolConfiguration private cBRLCeloConfig;
   PoolConfiguration private cUSDUSDCConfig;
+  PoolConfiguration[] private poolConfigs;
 
   address private cUSD;
   address private cEUR;
@@ -98,21 +104,21 @@ contract MU01_BaklavaCGP is GovernanceScript {
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 60 * 5,
       minimumReports: 5,
-      stablePoolResetSize: 72e23, // 7200000
+      stablePoolResetSize: 7200000 * 1e18, // 7200000
       isMedianDeltaBreakerEnabled: true,
-      medianDeltaBreakerThreshold: 3e16, // 0.03
+      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
       isValueDeltaBreakerEnabled: false,
-      valueDeltaBreakerThreshold: 0,
+      valueDeltaBreakerThreshold: FixidityLib.wrap(0),
       valueDeltaBreakerReferenceValue: 0,
       valueDeltaBreakerCooldown: 0,
       referenceRateFeedID: cUSD,
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: int48(1e24), // 1000000
-      asset0_limit1: int48(5e24), // 5000000
+      asset0_limit0: 1_000_000,
+      asset0_limit1: 5_000_000,
       asset0_limitGlobal: 0,
-      asset0_flags: uint8(cUSDCeloConfig.asset0_limit0 | cUSDCeloConfig.asset0_limit1)
+      asset0_flags: L0 | L1
     });
 
     // Set the exchange ID for the reference rate feed
@@ -127,24 +133,24 @@ contract MU01_BaklavaCGP is GovernanceScript {
       asset0: cEUR,
       asset1: celo,
       isConstantSum: false,
-      spread: FixidityLib.newFixedFraction(25, 10000),
-      referenceRateResetFrequency: 60 * 5,
+      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
+      referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 18e23,
       isMedianDeltaBreakerEnabled: true,
-      medianDeltaBreakerThreshold: 3e16, // 0.03
+      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
       isValueDeltaBreakerEnabled: false,
-      valueDeltaBreakerThreshold: 0,
+      valueDeltaBreakerThreshold: FixidityLib.wrap(0),
       valueDeltaBreakerReferenceValue: 0,
       valueDeltaBreakerCooldown: 0,
       referenceRateFeedID: cEUR,
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: int48(1e24), // 1000000
-      asset0_limit1: int48(5e24), // 5000000
+      asset0_limit0: 1_000_000,
+      asset0_limit1: 5_000_000,
       asset0_limitGlobal: 0,
-      asset0_flags: uint8(cEURCeloConfig.asset0_limit0 | cEURCeloConfig.asset0_limit1)
+      asset0_flags: L0 | L1
     });
 
     // Set the exchange ID for the reference rate feed
@@ -159,24 +165,24 @@ contract MU01_BaklavaCGP is GovernanceScript {
       asset0: cBRL,
       asset1: celo,
       isConstantSum: false,
-      spread: FixidityLib.newFixedFraction(25, 10000),
-      referenceRateResetFrequency: 60 * 5,
+      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
+      referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 3e24,
       isMedianDeltaBreakerEnabled: true,
-      medianDeltaBreakerThreshold: 3e16, // 0.03
+      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
       isValueDeltaBreakerEnabled: false,
-      valueDeltaBreakerThreshold: 0,
+      valueDeltaBreakerThreshold: FixidityLib.wrap(0),
       valueDeltaBreakerReferenceValue: 0,
       valueDeltaBreakerCooldown: 0,
       referenceRateFeedID: cBRL,
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: int48(1e24), // 1000000
-      asset0_limit1: int48(5e24), // 5000000
+      asset0_limit0: int48(1_000_000),
+      asset0_limit1: int48(5_000_000),
       asset0_limitGlobal: 0,
-      asset0_flags: uint8(cBRLCeloConfig.asset0_limit0 | cBRLCeloConfig.asset0_limit1)
+      asset0_flags: L0 | L1
     });
 
     // Set the exchange ID for the reference rate feed
@@ -191,24 +197,24 @@ contract MU01_BaklavaCGP is GovernanceScript {
       asset0: cUSD,
       asset1: USDCet,
       isConstantSum: true,
-      spread: FixidityLib.newFixedFraction(2, 10000),
-      referenceRateResetFrequency: 60 * 5,
+      spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
+      referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
-      stablePoolResetSize: 1e25, // 10000000
+      stablePoolResetSize: 10_000_000 * 1e18, // 10mil
       isMedianDeltaBreakerEnabled: false,
-      medianDeltaBreakerThreshold: 0,
+      medianDeltaBreakerThreshold: FixidityLib.wrap(0),
       medianDeltaBreakerCooldown: 0,
       isValueDeltaBreakerEnabled: true,
-      valueDeltaBreakerThreshold: 5e15, // 0.005
-      valueDeltaBreakerReferenceValue: 1e18,
+      valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
+      valueDeltaBreakerReferenceValue: 1e18, // 1$
       valueDeltaBreakerCooldown: 1 seconds,
       referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: int48(1e25), // 10000000
-      asset0_limit1: int48(1e25), // 10000000
+      asset0_limit0: 10_000_000,
+      asset0_limit1: 10_000_000,
       asset0_limitGlobal: 0,
-      asset0_flags: uint8(cUSDUSDCConfig.asset0_limit0 | cUSDUSDCConfig.asset0_limit1)
+      asset0_flags: L0 | L1
     });
 
     // Set the exchange ID for the reference rate feed
@@ -217,6 +223,11 @@ contract MU01_BaklavaCGP is GovernanceScript {
       cUSDUSDCConfig.asset1,
       cUSDUSDCConfig.isConstantSum
     );
+
+    poolConfigs.push(cUSDCeloConfig);
+    poolConfigs.push(cEURCeloConfig);
+    poolConfigs.push(cBRLCeloConfig);
+    poolConfigs.push(cUSDUSDCConfig);
   }
 
   function run() public {
@@ -241,7 +252,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
     proposal_configureCircuitBreaker();
     proposal_configureTradingLimits();
 
-    // TODO: Set Oracle report targets for new rates
     return transactions;
   }
 
@@ -250,61 +260,75 @@ contract MU01_BaklavaCGP is GovernanceScript {
     address reserve = contracts.celoRegistry("Reserve");
 
     BreakerBoxProxy breakerBoxProxy = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"));
-    address breakerBox = contracts.deployed("BreakerBox");
-    address[] memory rateFeedIDs = new address[](4);
-    rateFeedIDs[0] = contracts.celoRegistry("StableToken");
-    rateFeedIDs[1] = contracts.celoRegistry("StableTokenEUR");
-    rateFeedIDs[2] = contracts.celoRegistry("StableTokenBRL");
-    rateFeedIDs[3] = contracts.dependency("USDCUSDRateFeedAddr");
+    if (BreakerBox(address(breakerBoxProxy)).initialized() == false) {
+      address breakerBox = contracts.deployed("BreakerBox");
+      address[] memory rateFeedIDs = Arrays.addresses(
+        contracts.celoRegistry("StableToken"),
+        contracts.celoRegistry("StableTokenEUR"),
+        contracts.celoRegistry("StableTokenBRL"),
+        contracts.dependency("USDCUSDRateFeedAddr")
+      );
 
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        address(breakerBoxProxy),
-        abi.encodeWithSelector(
-          breakerBoxProxy._setAndInitializeImplementation.selector,
-          breakerBox,
-          abi.encodeWithSelector(BreakerBox(0).initialize.selector, rateFeedIDs, ISortedOracles(sortedOracles))
-        )
-      )
-    );
-
-    BiPoolManagerProxy biPoolManagerProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
-    address biPoolManager = contracts.deployed("BiPoolManager");
-
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        address(biPoolManagerProxy),
-        abi.encodeWithSelector(
-          biPoolManagerProxy._setAndInitializeImplementation.selector,
-          biPoolManager,
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          address(breakerBoxProxy),
           abi.encodeWithSelector(
-            BiPoolManager(0).initialize.selector,
-            contracts.deployed("BrokerProxy"),
-            IReserve(reserve),
-            ISortedOracles(sortedOracles),
-            IBreakerBox(address(breakerBoxProxy))
+            breakerBoxProxy._setAndInitializeImplementation.selector,
+            breakerBox,
+            abi.encodeWithSelector(BreakerBox(0).initialize.selector, rateFeedIDs, ISortedOracles(sortedOracles))
           )
         )
-      )
-    );
+      );
+    } else {
+      console2.log("Skipping BreakerBoxProxy - already initialized");
+    }
+
+    BiPoolManagerProxy biPoolManagerProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
+
+    if (BiPoolManager(address(biPoolManagerProxy)).initialized() == false) {
+      address biPoolManager = contracts.deployed("BiPoolManager");
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          address(biPoolManagerProxy),
+          abi.encodeWithSelector(
+            biPoolManagerProxy._setAndInitializeImplementation.selector,
+            biPoolManager,
+            abi.encodeWithSelector(
+              BiPoolManager(0).initialize.selector,
+              contracts.deployed("BrokerProxy"),
+              IReserve(reserve),
+              ISortedOracles(sortedOracles),
+              IBreakerBox(address(breakerBoxProxy))
+            )
+          )
+        )
+      );
+    } else {
+      console2.log("Skipping BiPoolManagerProxy - already initialized");
+    }
+
 
     BrokerProxy brokerProxy = BrokerProxy(address(contracts.deployed("BrokerProxy")));
-    address[] memory exchangeProviders = new address[](1);
-    exchangeProviders[0] = address(biPoolManagerProxy);
+    if (Broker(address(brokerProxy)).initialized() == false) {
+      address[] memory exchangeProviders = new address[](1);
+      exchangeProviders[0] = address(biPoolManagerProxy);
 
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        address(brokerProxy),
-        abi.encodeWithSelector(
-          brokerProxy._setAndInitializeImplementation.selector,
-          contracts.deployed("Broker"),
-          abi.encodeWithSelector(Broker(0).initialize.selector, exchangeProviders, reserve)
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          address(brokerProxy),
+          abi.encodeWithSelector(
+            brokerProxy._setAndInitializeImplementation.selector,
+            contracts.deployed("Broker"),
+            abi.encodeWithSelector(Broker(0).initialize.selector, exchangeProviders, reserve)
+          )
         )
-      )
-    );
+      );
+    } else {
+      console2.log("Skipping BrokerProxy - already initialized");
+    }
   }
 
   function proposal_upgradeContracts() private {
@@ -403,84 +427,42 @@ contract MU01_BaklavaCGP is GovernanceScript {
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
-    // Add the cUSD/CELO pool
-    pools[0] = IBiPoolManager.PoolExchange({
-      asset0: cUSDCeloConfig.asset0,
-      asset1: cUSDCeloConfig.asset1,
-      pricingModule: cUSDCeloConfig.isConstantSum ? constantSum : constantProduct,
-      bucket0: 0,
-      bucket1: 0,
-      lastBucketUpdate: 0,
-      config: IBiPoolManager.PoolConfig({
-        spread: cUSDCeloConfig.spread,
-        referenceRateFeedID: cUSDCeloConfig.referenceRateFeedID,
-        referenceRateResetFrequency: cUSDCeloConfig.referenceRateResetFrequency,
-        minimumReports: cUSDCeloConfig.minimumReports,
-        stablePoolResetSize: cUSDCeloConfig.stablePoolResetSize
-      })
-    });
+    bytes32[] memory existingExchangeIds = IBiPoolManager(contracts.deployed("BiPoolManagerProxy")).getExchangeIds();
+    for (uint256 i = 0; i < existingExchangeIds.length; i++) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          contracts.deployed("BiPoolManagerProxy"),
+          abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, existingExchangeIds[i], 0)
+        )
+      );
+    }
 
-    // Add the cEUR/CELO pool
-    pools[1] = IBiPoolManager.PoolExchange({
-      asset0: cEURCeloConfig.asset0,
-      asset1: cEURCeloConfig.asset1,
-      pricingModule: cEURCeloConfig.isConstantSum ? constantSum : constantProduct,
-      bucket0: 0,
-      bucket1: 0,
-      lastBucketUpdate: 0,
-      config: IBiPoolManager.PoolConfig({
-        spread: cEURCeloConfig.spread,
-        referenceRateFeedID: cEURCeloConfig.referenceRateFeedID,
-        referenceRateResetFrequency: cEURCeloConfig.referenceRateResetFrequency,
-        minimumReports: cEURCeloConfig.minimumReports,
-        stablePoolResetSize: cEURCeloConfig.stablePoolResetSize
-      })
-    });
+    for (uint256 i = 0; i < poolConfigs.length; i++) {
+      PoolConfiguration memory poolConfig = poolConfigs[i];
+      IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
+        asset0: poolConfig.asset0,
+        asset1: poolConfig.asset1,
+        pricingModule: poolConfig.isConstantSum ? constantSum : constantProduct,
+        bucket0: 0,
+        bucket1: 0,
+        lastBucketUpdate: 0,
+        config: IBiPoolManager.PoolConfig({
+          spread: poolConfig.spread,
+          referenceRateFeedID: poolConfig.referenceRateFeedID,
+          referenceRateResetFrequency: poolConfig.referenceRateResetFrequency,
+          minimumReports: poolConfig.minimumReports,
+          stablePoolResetSize: poolConfig.stablePoolResetSize
+        })
+      });
 
-    // Add the cBRL/CELO pool
-    pools[2] = IBiPoolManager.PoolExchange({
-      asset0: cBRLCeloConfig.asset0,
-      asset1: cBRLCeloConfig.asset1,
-      pricingModule: cBRLCeloConfig.isConstantSum ? constantSum : constantProduct,
-      bucket0: 0,
-      bucket1: 0,
-      lastBucketUpdate: 0,
-      config: IBiPoolManager.PoolConfig({
-        spread: cBRLCeloConfig.spread,
-        referenceRateFeedID: cBRLCeloConfig.referenceRateFeedID,
-        referenceRateResetFrequency: cBRLCeloConfig.referenceRateResetFrequency,
-        minimumReports: cBRLCeloConfig.minimumReports,
-        stablePoolResetSize: cBRLCeloConfig.stablePoolResetSize
-      })
-    });
-
-    // Add the cUSD/USDCet
-    pools[3] = IBiPoolManager.PoolExchange({
-      asset0: cUSDUSDCConfig.asset0,
-      asset1: cUSDUSDCConfig.asset1,
-      pricingModule: cUSDUSDCConfig.isConstantSum ? constantSum : constantProduct,
-      bucket0: 0,
-      bucket1: 0,
-      lastBucketUpdate: 0,
-      config: IBiPoolManager.PoolConfig({
-        spread: cUSDUSDCConfig.spread,
-        referenceRateFeedID: cUSDUSDCConfig.referenceRateFeedID,
-        referenceRateResetFrequency: cUSDUSDCConfig.referenceRateResetFrequency,
-        minimumReports: cUSDUSDCConfig.minimumReports,
-        stablePoolResetSize: cUSDUSDCConfig.stablePoolResetSize
-      })
-    });
-
-    for (uint256 i = 0; i < pools.length; i++) {
-      if (pools[i].asset0 != address(0)) {
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            contracts.deployed("BiPoolManagerProxy"),
-            abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, pools[i])
-          )
-        );
-      }
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          contracts.deployed("BiPoolManagerProxy"),
+          abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, pool)
+        )
+      );
     }
   }
 
@@ -509,24 +491,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
     address medianDeltaBreakerAddress = contracts.deployed("MedianDeltaBreaker");
     address valueDeltaBreakerAddress = contracts.deployed("ValueDeltaBreaker");
 
-    address[] memory allRateFeedIds = new address[](2);
-    allRateFeedIds[0] = cUSDUSCDRateFeedId;
-    allRateFeedIds[1] = cBRL;
-
-    PoolConfiguration[] memory poolConfigs = new PoolConfiguration[](4);
-    poolConfigs[0] = cUSDCeloConfig;
-    poolConfigs[1] = cEURCeloConfig;
-    poolConfigs[2] = cBRLCeloConfig;
-    poolConfigs[3] = cUSDUSDCConfig;
-
-    uint256[] memory referenceValues = new uint256[](1);
-    referenceValues[0] = cUSDUSDCConfig.valueDeltaBreakerReferenceValue;
-
-    uint256[] memory valueDeltaCoolDownTimes = new uint256[](1);
-    valueDeltaCoolDownTimes[0] = cUSDUSDCConfig.valueDeltaBreakerCooldown;
-
     /* ================================================================ */
-    /* ==== 1. Add rateFeedIds to be monitored to the breaker box ===== */
+    /* ==== 0. Add rateFeedIds to be monitored to the breaker box ===== */
     /* ================================================================ */
 
     //  TODO: This needs to be removed.
@@ -535,12 +501,15 @@ contract MU01_BaklavaCGP is GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         breakerBoxProxyAddress,
-        abi.encodeWithSelector(BreakerBox(0).addRateFeeds.selector, allRateFeedIds)
+        abi.encodeWithSelector(BreakerBox(0).addRateFeeds.selector, Arrays.addresses(
+          cBRL,
+          cUSDUSCDRateFeedId
+        ))
       )
     );
 
     /* ================================================================ */
-    /* ============== 2. Add breakers to the breaker box ============== */
+    /* ============== 1. Add breakers to the breaker box ============== */
     /* ================================================================ */
 
     // Current implementation will stop trading for a rateFeed when trading mode is not == 0.
@@ -565,28 +534,10 @@ contract MU01_BaklavaCGP is GovernanceScript {
     );
 
     /* ================================================================ */
-    /* ========= 3. Add rateFeed specific config to breakers ========== */
+    /* ========= 2. Add rateFeed specific config to breakers ========== */
     /* ================================================================ */
 
     /****** Median Delta Breaker Configuration *******/
-
-    // rateFeedIDs for which Median Delta Breaker is enabled
-    address[] memory medianDeltaRateFeedIds = new address[](3);
-    medianDeltaRateFeedIds[0] = cUSD;
-    medianDeltaRateFeedIds[1] = cEUR;
-    medianDeltaRateFeedIds[2] = cBRL;
-
-    // cooldownTimes for rateFeedIDs with Median Delta Breaker enabled
-    uint256[] memory medianDeltaBreakerCooldownTimes = new uint256[](3);
-    medianDeltaBreakerCooldownTimes[0] = cUSDCeloConfig.medianDeltaBreakerCooldown;
-    medianDeltaBreakerCooldownTimes[1] = cEURCeloConfig.medianDeltaBreakerCooldown;
-    medianDeltaBreakerCooldownTimes[2] = cBRLCeloConfig.medianDeltaBreakerCooldown;
-
-    // rateChangeThresholds for rateFeedIDs with Median Delta Breaker enabled
-    uint256[] memory medianDeltaBreakerRateChangeThresholds = new uint256[](3);
-    medianDeltaBreakerRateChangeThresholds[0] = cUSDCeloConfig.medianDeltaBreakerThreshold;
-    medianDeltaBreakerRateChangeThresholds[1] = cEURCeloConfig.medianDeltaBreakerThreshold;
-    medianDeltaBreakerRateChangeThresholds[2] = cBRLCeloConfig.medianDeltaBreakerThreshold;
 
     // Set the cooldown times
     transactions.push(
@@ -595,8 +546,12 @@ contract MU01_BaklavaCGP is GovernanceScript {
         medianDeltaBreakerAddress,
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setCooldownTime.selector,
-          medianDeltaRateFeedIds,
-          medianDeltaBreakerCooldownTimes
+          Arrays.addresses(cUSD, cEUR, cBRL),
+          Arrays.uints(
+            cUSDCeloConfig.medianDeltaBreakerCooldown,
+            cEURCeloConfig.medianDeltaBreakerCooldown,
+            cBRLCeloConfig.medianDeltaBreakerCooldown
+          )
         )
       )
     );
@@ -608,29 +563,17 @@ contract MU01_BaklavaCGP is GovernanceScript {
         medianDeltaBreakerAddress,
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setRateChangeThresholds.selector,
-          medianDeltaRateFeedIds,
-          medianDeltaBreakerCooldownTimes
+          Arrays.addresses(cUSD, cEUR, cBRL),
+          Arrays.uints(
+            cUSDCeloConfig.medianDeltaBreakerThreshold.unwrap(),
+            cEURCeloConfig.medianDeltaBreakerThreshold.unwrap(),
+            cBRLCeloConfig.medianDeltaBreakerThreshold.unwrap()
+          )
         )
       )
     );
 
     /****** Value Delta Breaker Configuration *******/
-
-    // rateFeedIDs for which Value Delta Breaker is enabled
-    address[] memory valueDeltaBreakerRateFeedIds = new address[](1);
-    valueDeltaBreakerRateFeedIds[0] = cUSDUSCDRateFeedId;
-
-    // reference values for rateFeedIDs with Value Delta Breaker enabled
-    uint256[] memory valueDeltaBreakerReferenceValues = new uint256[](1);
-    valueDeltaBreakerReferenceValues[0] = cUSDUSDCConfig.valueDeltaBreakerReferenceValue;
-
-    // cooldownTimes for rateFeedIDs with Value Delta Breaker enabled
-    uint256[] memory valueDeltaBreakerCooldownTimes = new uint256[](1);
-    valueDeltaBreakerCooldownTimes[0] = cUSDUSDCConfig.valueDeltaBreakerCooldown;
-
-    // thresholds for rateFeedIDs with Value Delta Breaker enabled
-    uint256[] memory valueDeltaBreakerThresholds = new uint256[](1);
-    valueDeltaBreakerThresholds[0] = cUSDUSDCConfig.valueDeltaBreakerThreshold;
 
     // Set the reference values for the value delta breaker
     transactions.push(
@@ -639,8 +582,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
         valueDeltaBreakerAddress,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          valueDeltaBreakerRateFeedIds,
-          valueDeltaBreakerReferenceValues
+          Arrays.addresses(cUSDUSCDRateFeedId),
+          Arrays.uints(cUSDUSDCConfig.valueDeltaBreakerReferenceValue)
         )
       )
     );
@@ -652,8 +595,8 @@ contract MU01_BaklavaCGP is GovernanceScript {
         valueDeltaBreakerAddress,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          valueDeltaBreakerRateFeedIds,
-          valueDeltaBreakerCooldownTimes
+          Arrays.addresses(cUSDUSCDRateFeedId),
+          Arrays.uints(cUSDUSDCConfig.valueDeltaBreakerCooldown)
         )
       )
     );
@@ -665,14 +608,14 @@ contract MU01_BaklavaCGP is GovernanceScript {
         valueDeltaBreakerAddress,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          valueDeltaBreakerRateFeedIds,
-          valueDeltaBreakerThresholds
+          Arrays.addresses(cUSDUSCDRateFeedId),
+          Arrays.uints(cUSDUSDCConfig.valueDeltaBreakerThreshold.unwrap())
         )
       )
     );
 
     /* ==========================ϟϟϟϟϟϟϟϟϟϟϟ=========================== */
-    /* ============ 4. Enable breakers for each rate feed ============= */
+    /* ============ 3. Enable breakers for each rate feed ============= */
     /* ==========================ϟϟϟϟϟϟϟϟϟϟϟ=========================== */
 
     // Enable the Median Delta Breaker for the rate feeds
@@ -703,7 +646,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     );
 
     /* ================================================================ */
-    /* ========= 5. Set breaker box address in sorted oracles ========= */
+    /* ========= 4. Set breaker box address in sorted oracles ========= */
     /* ================================================================ */
 
     transactions.push(
@@ -720,89 +663,30 @@ contract MU01_BaklavaCGP is GovernanceScript {
    */
   function proposal_configureTradingLimits() public {
     address brokerProxyAddress = contracts.deployed("BrokerProxy");
-    // Set the trading limits for cUSD/Celo pool
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        brokerProxyAddress,
-        abi.encodeWithSelector(
-          Broker(0).configureTradingLimit.selector,
-          referenceRateFeedIDToExchangeId[cUSDCeloConfig.referenceRateFeedID],
-          cUSDCeloConfig.asset0,
-          TradingLimits.Config({
-            timestep0: cUSDCeloConfig.asset0_timeStep0,
-            timestep1: cUSDCeloConfig.asset0_timeStep1,
-            limit0: cUSDCeloConfig.asset0_limit0,
-            limit1: cUSDCeloConfig.asset0_limit1,
-            limitGlobal: cUSDCeloConfig.asset0_limitGlobal,
-            flags: cUSDCeloConfig.asset0_flags
-          })
-        )
-      )
-    );
+    for (uint256 i = 0; i < poolConfigs.length; i++) {
+      PoolConfiguration memory poolConfig = poolConfigs[i];
 
-    // Set the trading limits for cEUR/Celo pool
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        brokerProxyAddress,
-        abi.encodeWithSelector(
-          Broker(0).configureTradingLimit.selector,
-          referenceRateFeedIDToExchangeId[cEURCeloConfig.referenceRateFeedID],
-          cEURCeloConfig.asset0,
-          TradingLimits.Config({
-            timestep0: cEURCeloConfig.asset0_timeStep0,
-            timestep1: cEURCeloConfig.asset0_timeStep1,
-            limit0: cEURCeloConfig.asset0_limit0,
-            limit1: cEURCeloConfig.asset0_limit1,
-            limitGlobal: cEURCeloConfig.asset0_limitGlobal,
-            flags: cEURCeloConfig.asset0_flags
-          })
+      // Set the trading limits for the pool
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          brokerProxyAddress,
+          abi.encodeWithSelector(
+            Broker(0).configureTradingLimit.selector,
+            referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
+            poolConfig.asset0,
+            TradingLimits.Config({
+              timestep0: poolConfig.asset0_timeStep0,
+              timestep1: poolConfig.asset0_timeStep1,
+              limit0: poolConfig.asset0_limit0,
+              limit1: poolConfig.asset0_limit1,
+              limitGlobal: poolConfig.asset0_limitGlobal,
+              flags: poolConfig.asset0_flags
+            })
+          )
         )
-      )
-    );
-
-    // Set the trading limits for cBRL/Celo pool
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        brokerProxyAddress,
-        abi.encodeWithSelector(
-          Broker(0).configureTradingLimit.selector,
-          referenceRateFeedIDToExchangeId[cBRLCeloConfig.referenceRateFeedID],
-          cBRLCeloConfig.asset0,
-          TradingLimits.Config({
-            timestep0: cBRLCeloConfig.asset0_timeStep0,
-            timestep1: cBRLCeloConfig.asset0_timeStep1,
-            limit0: cBRLCeloConfig.asset0_limit0,
-            limit1: cBRLCeloConfig.asset0_limit1,
-            limitGlobal: cBRLCeloConfig.asset0_limitGlobal,
-            flags: cBRLCeloConfig.asset0_flags
-          })
-        )
-      )
-    );
-
-    // Set the trading limits for cUSD/USDC pool
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        brokerProxyAddress,
-        abi.encodeWithSelector(
-          Broker(0).configureTradingLimit.selector,
-          referenceRateFeedIDToExchangeId[cUSDUSDCConfig.referenceRateFeedID],
-          cUSDUSDCConfig.asset0,
-          TradingLimits.Config({
-            timestep0: cUSDUSDCConfig.asset0_timeStep0,
-            timestep1: cUSDUSDCConfig.asset0_timeStep1,
-            limit0: cUSDUSDCConfig.asset0_limit0,
-            limit1: cUSDUSDCConfig.asset0_limit1,
-            limitGlobal: cUSDUSDCConfig.asset0_limitGlobal,
-            flags: cUSDUSDCConfig.asset0_flags
-          })
-        )
-      )
-    );
+      );
+    }
   }
 
   /**

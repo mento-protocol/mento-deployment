@@ -20,12 +20,24 @@ import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
 
+/**
+ * @title IBrokerWithCasts
+ * @notice Interface for Broker with tuple -> struct casting
+ * @dev This is used to access the internal trading limits state and
+ * config as structs as opposed to tuples.
+ */
+interface IBrokerWithCasts {
+  function tradingLimitsState(bytes32 id) external view returns (TradingLimits.State memory);
+
+  function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
+}
+
 contract SwapTest is Script {
   using TradingLimits for TradingLimits.Config;
 
-  IBroker broker;
-  BiPoolManager bpm;
-  BreakerBox breakerBox;
+  IBroker private broker;
+  BiPoolManager private bpm;
+  BreakerBox private breakerBox;
 
   address public celoToken;
   address public cUSD;
@@ -86,21 +98,12 @@ contract SwapTest is Script {
   }
 
   function verifyTradingLimits() public view {
-    Broker brokerContract = Broker(address(broker));
+   IBrokerWithCasts _broker = IBrokerWithCasts(address(broker));
 
     bytes32 exchangeId = getExchangeId(cUSD, celoToken, false);
     bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(cUSD)));
 
-    (uint32 t0, uint32 t1, int48 l0, int48 l1, int48 lg, ) = brokerContract.tradingLimitsConfig(limitId);
-
-    TradingLimits.Config memory cUSDTradingLimits = TradingLimits.Config({
-      timestep0: t0,
-      timestep1: t1,
-      limit0: l0,
-      limit1: l1,
-      limitGlobal: lg,
-      flags: 0
-    });
+    TradingLimits.Config memory cUSDTradingLimits = _broker.tradingLimitsConfig(limitId);
 
     if (
       cUSDTradingLimits.timestep0 == 0 ||
