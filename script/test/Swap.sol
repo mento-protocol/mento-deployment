@@ -50,7 +50,7 @@ contract SwapTest is Script {
     // Load addresses from deployments
     contracts.load("MU01-00-Create-Proxies", "1676642018");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676642105");
-    contracts.load("MU01-02-Create-Implementations", "1676642404");
+    contracts.load("MU01-02-Create-Implementations", "1676642427");
 
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
