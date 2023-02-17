@@ -260,22 +260,23 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
     BreakerBoxProxy breakerBoxProxy = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"));
     if (BreakerBox(address(breakerBoxProxy)).initialized() == false) {
-      address breakerBox = contracts.deployed("BreakerBox");
-      address[] memory rateFeedIDs = Arrays.addresses(
-        contracts.celoRegistry("StableToken"),
-        contracts.celoRegistry("StableTokenEUR"),
-        contracts.celoRegistry("StableTokenBRL"),
-        contracts.dependency("USDCUSDRateFeedAddr")
-      );
-
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           address(breakerBoxProxy),
           abi.encodeWithSelector(
             breakerBoxProxy._setAndInitializeImplementation.selector,
-            breakerBox,
-            abi.encodeWithSelector(BreakerBox(0).initialize.selector, rateFeedIDs, ISortedOracles(sortedOracles))
+            contracts.deployed("BreakerBox"),
+            abi.encodeWithSelector(
+              BreakerBox(0).initialize.selector, 
+              Arrays.addresses(
+                contracts.celoRegistry("StableToken"),
+                contracts.celoRegistry("StableTokenEUR"),
+                contracts.celoRegistry("StableTokenBRL"),
+                contracts.dependency("USDCUSDRateFeedAddr")
+              ),
+              ISortedOracles(sortedOracles)
+            )
           )
         )
       );
@@ -284,16 +285,14 @@ contract MU01_BaklavaCGP is GovernanceScript {
     }
 
     BiPoolManagerProxy biPoolManagerProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
-
     if (BiPoolManager(address(biPoolManagerProxy)).initialized() == false) {
-      address biPoolManager = contracts.deployed("BiPoolManager");
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           address(biPoolManagerProxy),
           abi.encodeWithSelector(
             biPoolManagerProxy._setAndInitializeImplementation.selector,
-            biPoolManager,
+            contracts.deployed("BiPoolManager"),
             abi.encodeWithSelector(
               BiPoolManager(0).initialize.selector,
               contracts.deployed("BrokerProxy"),
@@ -310,9 +309,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
     BrokerProxy brokerProxy = BrokerProxy(address(contracts.deployed("BrokerProxy")));
     if (Broker(address(brokerProxy)).initialized() == false) {
-      address[] memory exchangeProviders = new address[](1);
-      exchangeProviders[0] = address(biPoolManagerProxy);
-
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -320,7 +316,11 @@ contract MU01_BaklavaCGP is GovernanceScript {
           abi.encodeWithSelector(
             brokerProxy._setAndInitializeImplementation.selector,
             contracts.deployed("Broker"),
-            abi.encodeWithSelector(Broker(0).initialize.selector, exchangeProviders, reserve)
+            abi.encodeWithSelector(
+              Broker(0).initialize.selector, 
+              Arrays.addresses(address(biPoolManagerProxy)),
+              reserve
+            )
           )
         )
       );
@@ -419,22 +419,23 @@ contract MU01_BaklavaCGP is GovernanceScript {
    *         BiPoolManager exchanges (cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/USDCet)
    */
   function proposal_createExchanges() private {
-    IBiPoolManager.PoolExchange[] memory pools = new IBiPoolManager.PoolExchange[](4);
+    bytes32[] memory existingExchangeIds = IBiPoolManager(contracts.deployed("BiPoolManagerProxy")).getExchangeIds();
+    if (existingExchangeIds.length > 0) {
+      console2.log("Destroying existing exchanges: ", existingExchangeIds.length);
+      for (uint256 i = 0; i < existingExchangeIds.length; i++) {
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            contracts.deployed("BiPoolManagerProxy"),
+            abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, existingExchangeIds[i], 0)
+          )
+        );
+      }
+    }
 
     // Get the address of the newly deployed pricing modules
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
-
-    bytes32[] memory existingExchangeIds = IBiPoolManager(contracts.deployed("BiPoolManagerProxy")).getExchangeIds();
-    for (uint256 i = 0; i < existingExchangeIds.length; i++) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          contracts.deployed("BiPoolManagerProxy"),
-          abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, existingExchangeIds[i], 0)
-        )
-      );
-    }
 
     for (uint256 i = 0; i < poolConfigs.length; i++) {
       PoolConfiguration memory poolConfig = poolConfigs[i];
