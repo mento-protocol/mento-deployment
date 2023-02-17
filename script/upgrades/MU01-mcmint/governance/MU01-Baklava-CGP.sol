@@ -170,7 +170,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
-      stablePoolResetSize: 3_000_000 * 1e18, // 3min
+      stablePoolResetSize: 3_000_000 * 1e18, // 3milly
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
@@ -268,7 +268,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
             breakerBoxProxy._setAndInitializeImplementation.selector,
             contracts.deployed("BreakerBox"),
             abi.encodeWithSelector(
-              BreakerBox(0).initialize.selector, 
+              BreakerBox(0).initialize.selector,
               Arrays.addresses(
                 contracts.celoRegistry("StableToken"),
                 contracts.celoRegistry("StableTokenEUR"),
@@ -317,7 +317,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
             brokerProxy._setAndInitializeImplementation.selector,
             contracts.deployed("Broker"),
             abi.encodeWithSelector(
-              Broker(0).initialize.selector, 
+              Broker(0).initialize.selector,
               Arrays.addresses(address(biPoolManagerProxy)),
               reserve
             )
@@ -469,40 +469,28 @@ contract MU01_BaklavaCGP is GovernanceScript {
    * @notice This function creates the required transactions to configure
    *         the ϟ circuit breaker ϟ.
    * @dev    Configuration of the circuit breaker requires the following steps:
-   *        1. Add all ratefeedIds that should be monitored to the circuit breaker.
+   *        0. Add all ratefeedIds that should be monitored to the circuit breaker
+   *           This is done in the proxy initilization as the contract takes an array
+   *           of ratefeedIds as a constructor argument.
    *           [BreakerBox.addRateFeeds || BreakerBox.addRateFeed]
    *
-   *        2. Add all breakers that should be used to the circuit breaker.
+   *        1. Add all breakers that should be used to the circuit breaker.
    *           [BreakerBox.addBreaker || BreakerBox.insertBreaker]
    *
-   *        3. Configure each breaker for each rateFeed. Configuration will vary
+   *        2. Configure each breaker for each rateFeed. Configuration will vary
    *           depending on the type of breaker. Median Delta Breaker only requires
    *           a cooldown and threshold to be set. Value Delta Breaker requires
    *           a cooldown, a threshold and a reference value to be set.
    *           [Breaker.setCooldownTimes && Breaker.setThresholds && ValueBreaker.setReferenceValues]
    *
-   *        4. Enable each breaker for each rate feed.
+   *        3. Enable each breaker for each rate feed.
    *           [BreakerBox.toggleBreaker]
    *
-   *        5. Add the new breaker box address to sorted oracles.
+   *        4. Add the new breaker box address to sorted oracles.
    */
   function proposal_configureCircuitBreaker() private {
     address medianDeltaBreakerAddress = contracts.deployed("MedianDeltaBreaker");
     address valueDeltaBreakerAddress = contracts.deployed("ValueDeltaBreaker");
-
-    /* ================================================================ */
-    /* ==== 0. Add rateFeedIds to be monitored to the breaker box ===== */
-    /* ================================================================ */
-
-    //  TODO: This needs to be removed.
-    //  The rates are added as part of the initilization of the breaker box.
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        breakerBoxProxyAddress,
-        abi.encodeWithSelector(BreakerBox(0).addRateFeeds.selector, Arrays.addresses(cBRL, cUSDUSCDRateFeedId))
-      )
-    );
 
     /* ================================================================ */
     /* ============== 1. Add breakers to the breaker box ============== */
