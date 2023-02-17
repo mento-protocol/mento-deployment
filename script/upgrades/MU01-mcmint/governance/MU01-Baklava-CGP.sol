@@ -120,6 +120,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
+    poolConfigs.push(cUSDCeloConfig);
 
     // Set the exchange ID for the reference rate feed
     referenceRateFeedIDToExchangeId[cUSDCeloConfig.referenceRateFeedID] = getExchangeId(
@@ -152,6 +153,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
+    poolConfigs.push(cEURCeloConfig);
 
     // Set the exchange ID for the reference rate feed
     referenceRateFeedIDToExchangeId[cEURCeloConfig.referenceRateFeedID] = getExchangeId(
@@ -184,6 +186,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
+    poolConfigs.push(cBRLCeloConfig);
 
     // Set the exchange ID for the reference rate feed
     referenceRateFeedIDToExchangeId[cBRLCeloConfig.referenceRateFeedID] = getExchangeId(
@@ -216,6 +219,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
+    poolConfigs.push(cUSDUSDCConfig);
 
     // Set the exchange ID for the reference rate feed
     referenceRateFeedIDToExchangeId[cUSDUSDCConfig.referenceRateFeedID] = getExchangeId(
@@ -223,11 +227,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
       cUSDUSDCConfig.asset1,
       cUSDUSDCConfig.isConstantSum
     );
-
-    poolConfigs.push(cUSDCeloConfig);
-    poolConfigs.push(cEURCeloConfig);
-    poolConfigs.push(cBRLCeloConfig);
-    poolConfigs.push(cUSDUSDCConfig);
   }
 
   function run() public {
@@ -308,7 +307,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
     } else {
       console2.log("Skipping BiPoolManagerProxy - already initialized");
     }
-
 
     BrokerProxy brokerProxy = BrokerProxy(address(contracts.deployed("BrokerProxy")));
     if (Broker(address(brokerProxy)).initialized() == false) {
@@ -501,10 +499,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         breakerBoxProxyAddress,
-        abi.encodeWithSelector(BreakerBox(0).addRateFeeds.selector, Arrays.addresses(
-          cBRL,
-          cUSDUSCDRateFeedId
-        ))
+        abi.encodeWithSelector(BreakerBox(0).addRateFeeds.selector, Arrays.addresses(cBRL, cUSDUSCDRateFeedId))
       )
     );
 
