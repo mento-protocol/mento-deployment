@@ -10,6 +10,7 @@ import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerPr
 import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
 import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
 import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
+import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 
 /*
  forge script MU01_GovernanceOwnershipTransfer --rpc-url $RPC_URL
@@ -18,14 +19,14 @@ import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
 */
 contract MU01_GovernanceOwnershipTransfer is Script {
   function run() public {
-    contracts.load("MU01-00-Create-Proxies", "1674224277");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676565026");
+    contracts.load("MU01-00-Create-Proxies", "1676642018");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676642105");
     address payable breakerBoxProxy = address(uint160(contracts.deployed("BreakerBoxProxy")));
     address payable biPoolManagerProxy = address(uint160(contracts.deployed("BiPoolManagerProxy")));
     address payable brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
     address payable medianDeltaBreaker = address(uint160(contracts.deployed("MedianDeltaBreaker")));
     address payable valueDeltaBreaker = address(uint160(contracts.deployed("ValueDeltaBreaker")));
-
+    address payable partialReserveProxy = address(uint160(contracts.deployed("PartialReserveProxy")));
     address governance = contracts.celoRegistry("Governance");
 
     vm.startBroadcast(Chain.deployerPrivateKey());
@@ -35,6 +36,7 @@ contract MU01_GovernanceOwnershipTransfer is Script {
       BrokerProxy(brokerProxy)._transferOwnership(governance);
       MedianDeltaBreaker(medianDeltaBreaker).transferOwnership(governance);
       ValueDeltaBreaker(valueDeltaBreaker).transferOwnership(governance);
+      PartialReserveProxy(partialReserveProxy)._transferOwnership(governance);
     }
     vm.stopBroadcast();
 
@@ -44,6 +46,7 @@ contract MU01_GovernanceOwnershipTransfer is Script {
     console2.log("BreakerBoxProxy(%s) ownership transferred to %s", breakerBoxProxy, governance);
     console2.log("MedianDeltaBreaker(%s) ownership transferred to %s", medianDeltaBreaker, governance);
     console2.log("ValueDeltaBreaker(%s) ownership transferred to %s", valueDeltaBreaker, governance);
+    console2.log("PartialReserveProxy(%s) ownership transferred to %s", partialReserveProxy, governance);
     console2.log("----------");
   }
 }

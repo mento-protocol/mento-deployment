@@ -16,9 +16,10 @@ fs_permissions = [
     { access = "read", path = "./script/upgrades/dependencies.json"}
 ]
 
-# libraries = [
-#     "lib/mento-core/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x3e2cc57f83093Ce1Ee03482c1590E3B5f4225bd7"
-# ]
+libraries = [
+    "lib/mento-core/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x3e2cc57f83093Ce1Ee03482c1590E3B5f4225bd7",
+    "lib/mento-core/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0x99EDce8143FF8AeFA1fBB6C2103B349Add2B9519"
+]
 
 [profile.ci]
 fuzz_runs = 1_000

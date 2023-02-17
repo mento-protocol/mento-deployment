@@ -9,6 +9,7 @@ import { Chain } from "script/utils/Chain.sol";
 import { IBroker } from "mento-core/contracts/interfaces/IBroker.sol";
 import { IStableToken } from "mento-core/contracts/interfaces/IStableToken.sol";
 import { IExchangeProvider } from "mento-core/contracts/interfaces/IExchangeProvider.sol";
+import { Reserve } from "mento-core/contracts/Reserve.sol";
 import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
@@ -38,6 +39,7 @@ contract SwapTest is Script {
   IBroker private broker;
   BiPoolManager private bpm;
   BreakerBox private breakerBox;
+  Reserve public reserve;
 
   address public celoToken;
   address public cUSD;
@@ -46,9 +48,9 @@ contract SwapTest is Script {
 
   function setUp() public {
     // Load addresses from deployments
-    contracts.load("MU01-00-Create-Proxies", "1674224277");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676565026");
-    contracts.load("MU01-02-Create-Implementations", "1676504104");
+    contracts.load("MU01-00-Create-Proxies", "1676642018");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676642105");
+    contracts.load("MU01-02-Create-Implementations", "1676642404");
 
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
@@ -57,6 +59,7 @@ contract SwapTest is Script {
     celoToken = contracts.celoRegistry("GoldToken");
     broker = IBroker(contracts.celoRegistry("Broker"));
     breakerBox = BreakerBox(contracts.deployed("BreakerBox"));
+    reserve = Reserve(contracts.deployed("PartialReserveProxy"));
 
     address[] memory exchangeProviders = broker.getExchangeProviders();
     verifyExchangeProviders(exchangeProviders);
@@ -76,8 +79,17 @@ contract SwapTest is Script {
   function runInFork() public {
     setUp();
     vm.deal(address(this), 1e20);
+    checkReserve();
     executeSwap();
     swapUSDcetForcUSD();
+    swapcUSDForUSDcet();
+  }
+
+  function checkReserve() public {
+    console2.log("doing reserve checks");
+    require(reserve.checkIsCollateralAsset(celoToken), "CELO is not collateral asset");
+    require(reserve.checkIsCollateralAsset(usdCet), "USDCet is not collateral asset");
+    console2.log("reserve ✅");
   }
 
   function executeSwap() public {
@@ -153,6 +165,52 @@ contract SwapTest is Script {
     vm.stopPrank();
 
     console2.log("USDCet -> cUSD swap successful 🚀");
+  }
+
+  function swapcUSDForUSDcet() public {
+    address trader = vm.addr(1);
+    bytes32 exchangeID = bpm.exchangeIds(3);
+
+    address tokenIn = cUSD;
+    address tokenOut = usdCet;
+    uint256 amountIn = 10e18;
+    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
+
+    console2.log("---------------------------------");
+    console2.log("Swap cUSD for USDCet");
+    console2.log("cUSD balance", MockERC20(cUSD).balanceOf(trader));
+    console2.log("USDC balance", MockERC20(usdCet).balanceOf(trader));
+
+    // fund reserve with usdc
+    MockERC20 mockUSDcetContract = MockERC20(usdCet);
+    vm.prank(mockUSDcetContract.owner());
+    assert(mockUSDcetContract.mint(address(reserve), 1000e18));
+
+    vm.startPrank(trader);
+    MockERC20(cUSD).approve(address(broker), amountIn);
+    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+    vm.stopPrank();
+    console2.log("---- after balance ----");
+    console2.log("cUSD balance", MockERC20(cUSD).balanceOf(trader));
+    console2.log("USDC balance", MockERC20(usdCet).balanceOf(trader));
+    // MockERC20 mockUSDcetContract = MockERC20(usdCet);
+
+    // assert(mockUSDcetContract.balanceOf(trader) == 0);
+    // vm.prank(mockUSDcetContract.owner());
+    // assert(mockUSDcetContract.mint(trader, amountIn));
+    // assert(mockUSDcetContract.balanceOf(trader) == amountIn);
+
+    // vm.startPrank(trader);
+    // uint256 beforecUSD = MockERC20(cUSD).balanceOf(trader);
+    // mockUSDcetContract.approve(address(broker), amountIn);
+
+    // broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+
+    // assert(mockUSDcetContract.balanceOf(trader) == 0);
+    // assert(MockERC20(cUSD).balanceOf(trader) == beforecUSD + amountOut);
+    // vm.stopPrank();
+
+    console2.log("cUSD -> USDCet swap successful 🚀");
   }
 
   function verifyBiPoolManager(address biPoolManager) public view {
