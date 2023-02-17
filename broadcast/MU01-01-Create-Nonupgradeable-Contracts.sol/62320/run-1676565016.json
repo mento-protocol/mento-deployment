@@ -293,7 +293,7 @@
   "pending": [],
   "path": "/home/bayological/dev/source/mento/mento-deployment/broadcast/MU01-01-Create-Nonupgradeable-Contracts.sol/62320/run-latest.json",
   "returns": {},
-  "timestamp": 1676565026,
+  "timestamp": 1676565016,
   "chain": 62320,
   "multi": false,
   "commit": "67b095b"

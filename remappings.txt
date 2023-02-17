@@ -2,3 +2,5 @@ celo-foundry/=lib/celo-foundry/src/
 forge-std/=lib/celo-foundry/lib/forge-std/src/
 ds-test/=lib/celo-foundry/lib/forge-std/lib/ds-test/src/
 mento-core/=lib/mento-core/
+script/=script/
+contracts/=contracts/

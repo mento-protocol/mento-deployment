@@ -13,10 +13,31 @@ import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Met
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
 import { MockERC20 } from "../../contracts/MockERC20.sol";
+import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
+
+import { Broker } from "mento-core/contracts/Broker.sol";
+import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
+
+import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
+
+/**
+ * @title IBrokerWithCasts
+ * @notice Interface for Broker with tuple -> struct casting
+ * @dev This is used to access the internal trading limits state and
+ * config as structs as opposed to tuples.
+ */
+interface IBrokerWithCasts {
+  function tradingLimitsState(bytes32 id) external view returns (TradingLimits.State memory);
+
+  function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
+}
 
 contract SwapTest is Script {
-  IBroker public broker;
-  BiPoolManager public bpm;
+  using TradingLimits for TradingLimits.Config;
+
+  IBroker private broker;
+  BiPoolManager private bpm;
+  BreakerBox private breakerBox;
 
   address public celoToken;
   address public cUSD;
@@ -26,8 +47,8 @@ contract SwapTest is Script {
   function setUp() public {
     // Load addresses from deployments
     contracts.load("MU01-00-Create-Proxies", "1674224277");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1674224321");
-    contracts.load("MU01-02-Create-Implementations", "1674225880");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676565026");
+    contracts.load("MU01-02-Create-Implementations", "1676504104");
 
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
@@ -35,6 +56,7 @@ contract SwapTest is Script {
     usdCet = contracts.dependency("USDCet");
     celoToken = contracts.celoRegistry("GoldToken");
     broker = IBroker(contracts.celoRegistry("Broker"));
+    breakerBox = BreakerBox(contracts.deployed("BreakerBox"));
 
     address[] memory exchangeProviders = broker.getExchangeProviders();
     verifyExchangeProviders(exchangeProviders);
@@ -71,6 +93,37 @@ contract SwapTest is Script {
 
     IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e18);
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, 1e18, amountOut - 1e17);
+
+    verifyTradingLimits();
+  }
+
+  function verifyTradingLimits() public view {
+   IBrokerWithCasts _broker = IBrokerWithCasts(address(broker));
+
+    bytes32 exchangeId = getExchangeId(cUSD, celoToken, false);
+    bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(cUSD)));
+
+    TradingLimits.Config memory cUSDTradingLimits = _broker.tradingLimitsConfig(limitId);
+
+    if (
+      cUSDTradingLimits.timestep0 == 0 ||
+      cUSDTradingLimits.timestep1 == 0 ||
+      cUSDTradingLimits.limit0 == 0 ||
+      cUSDTradingLimits.limit1 == 0
+    ) {
+      console2.log("The trading limit for cUSD/CELO was not set.");
+      revert("Trading limit for cUSD/CELO was not set.");
+    }
+  }
+
+  function verifyCircuitBreaker() public view {
+    // Check circuit breaker is configured for cUSD/CELO
+    (, uint64 lastUpdatedTime, ) = breakerBox.rateFeedTradingModes(cUSD);
+
+    // Check if cUSD TradingModeInfo.lastUpdatedTime is greater than zero
+    if (lastUpdatedTime == 0) {
+      revert("cUSD circuit breaker was not set.");
+    }
   }
 
   function swapUSDcetForcUSD() public {
@@ -136,5 +189,23 @@ contract SwapTest is Script {
       console2.log("Actual asset0:", pool.asset0);
       revert("Exchange was not configured as expected.");
     }
+  }
+
+  /**
+   * @notice Helper function to get the exchange ID for a pool.
+   */
+  function getExchangeId(
+    address asset0,
+    address asset1,
+    bool isConstantSum
+  ) internal view returns (bytes32) {
+    return
+      keccak256(
+        abi.encodePacked(
+          IERC20Metadata(asset0).symbol(),
+          IERC20Metadata(asset1).symbol(),
+          isConstantSum ? "ConstantSum" : "ConstantProduct"
+        )
+      );
   }
 }

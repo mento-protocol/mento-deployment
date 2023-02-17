@@ -2,8 +2,9 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
+import { console } from "forge-std/console.sol";
+
 import { Vm } from "forge-std/Vm.sol";
-import { console2 as console } from "forge-std/console2.sol";
 import { Chain } from "./Chain.sol";
 import { stdJson } from "forge-std/StdJson.sol";
 import { IRegistry } from "mento-core/contracts/common/interfaces/IRegistry.sol";
@@ -27,7 +28,11 @@ library Contracts {
     string _dependencies;
   }
 
-  function load(Cache storage self, string memory script, string memory timestamp) internal returns (Cache storage) {
+  function load(
+    Cache storage self,
+    string memory script,
+    string memory timestamp
+  ) internal returns (Cache storage) {
     string memory chainId = Chain.idString();
     string memory root = vm.projectRoot();
     string memory path = string(
@@ -43,22 +48,26 @@ library Contracts {
      * todo(bogdan): Remove all this once we update solidity.
      */
 
-    bytes memory contractAddressesRaw = json.parseRaw("transactions[*].contractAddress");
+    bytes memory contractAddressesRaw = json.parseRaw(".transactions[*].contractAddress");
 
-    uint256 length = contractAddressesRaw.length / 32;
-    address[] memory contractAddresses = abi.decode(
-      abi.encodePacked(uint256(32), uint256(length), contractAddressesRaw),
-      (address[])
-    );
+    address[] memory contractAddresses;
+    if (contractAddressesRaw.length == 32) {
+      contractAddresses = new address[](1);
+      contractAddresses[0] = abi.decode(contractAddressesRaw, (address));
+    } else {
+      contractAddresses = abi.decode(contractAddressesRaw, (address[]));
+    }
 
-    for (uint256 i = 0; i < length; i++) {
+    for (uint256 i = 0; i < contractAddresses.length; i++) {
+      string memory stringIndex = uintToString(i);
+
       string memory txType = abi.decode(
-        json.parseRaw(string(abi.encodePacked("transactions[", uintToString(i), "].transactionType"))),
+        json.parseRaw(string(abi.encodePacked(".transactions[", stringIndex, "].transactionType"))),
         (string)
       );
       if (keccak256(bytes(txType)) == keccak256(bytes("CREATE"))) {
         string memory contractName = abi.decode(
-          json.parseRaw(string(abi.encodePacked("transactions[", uintToString(i), "].contractName"))),
+          json.parseRaw(string(abi.encodePacked(".transactions[", stringIndex, "].contractName"))),
           (string)
         );
 

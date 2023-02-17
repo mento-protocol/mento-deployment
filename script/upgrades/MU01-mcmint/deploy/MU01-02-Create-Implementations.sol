@@ -12,6 +12,7 @@ import { Reserve } from "mento-core/contracts/Reserve.sol";
 import { StableToken } from "mento-core/contracts/StableToken.sol";
 import { StableTokenBRL } from "mento-core/contracts/StableTokenBRL.sol";
 import { StableTokenEUR } from "mento-core/contracts/StableTokenEUR.sol";
+import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
 
 /*
  forge script MU01_CreateImplementations --rpc-url $RPC_URL
@@ -27,6 +28,7 @@ contract MU01_CreateImplementations is Script {
     address stableToken;
     address stableTokenBRL;
     address stableTokenEUR;
+    address sortedOracles;
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
@@ -34,11 +36,13 @@ contract MU01_CreateImplementations is Script {
       breakerBox = address(new BreakerBox(false));
       biPoolManager = address(new BiPoolManager(false));
       broker = address(new Broker(false));
+
       // Updated implementations
       reserve = address(new Reserve(false));
       stableToken = address(new StableToken(false));
       stableTokenBRL = address(new StableTokenBRL(false));
       stableTokenEUR = address(new StableTokenEUR(false));
+      sortedOracles = address(new SortedOracles(false));
     }
     vm.stopBroadcast();
 
@@ -50,6 +54,7 @@ contract MU01_CreateImplementations is Script {
     console2.log("StableToken deployed at: ", stableToken);
     console2.log("StableTokenEUR deployed at: ", stableTokenEUR);
     console2.log("StableTokenBRL deployed at: ", stableTokenBRL);
+    console2.log("SortedOracles deployed at: ", sortedOracles);
     console2.log("----------");
   }
 }
