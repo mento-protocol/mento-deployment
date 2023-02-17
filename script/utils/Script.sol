@@ -129,14 +129,17 @@ contract GovernanceScript is Script, GovernanceHelper {
     uint32 asset0_timeStep1;
     /**
      * @dev The maximum allowed netflow of asset0 for L0 within the time window.
+     * The value is in unints, without any decimal places. See TradingLimit.sol for more details.
      */
     int48 asset0_limit0;
     /**
      * @dev The maximum allowed netflow of asset0 for L1 within the time window.
+     * The value is in unints, without any decimal places. See TradingLimit.sol for more details.
      */
     int48 asset0_limit1;
     /**
      * @dev The maximum allowed netflow of asset0 for the lifetime of the limit.
+     * The value is in unints, without any decimal places. See TradingLimit.sol for more details.
      */
     int48 asset0_limitGlobal;
     /**

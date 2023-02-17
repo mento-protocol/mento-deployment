@@ -102,9 +102,9 @@ contract MU01_BaklavaCGP is GovernanceScript {
       asset1: celo,
       isConstantSum: false,
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
-      referenceRateResetFrequency: 60 * 5,
+      referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
-      stablePoolResetSize: 7200000 * 1e18, // 7200000
+      stablePoolResetSize: 7_200_000 * 1e18, // 7.2mil
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
@@ -137,7 +137,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
-      stablePoolResetSize: 18e23,
+      stablePoolResetSize: 1_800_000 * 1e18, // 1.8mil
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
@@ -170,7 +170,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
-      stablePoolResetSize: 3e24,
+      stablePoolResetSize: 3_000_000 * 1e18, // 3min
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
