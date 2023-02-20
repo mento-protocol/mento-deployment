@@ -99,10 +99,13 @@ contract MU01_BaklavaCGP is GovernanceScript {
    *      This function is called by the governance script runner.
    */
   function setUpConfigs() public {
-    // Create partial reserve configurations
+    /* ================================================================ */
+    /* ====================== 1. Partial Reserve ====================== */
+    /* ================================================================ */
+
     partialReserveConfig = PartialReserveConfiguration({
-      // --- not relevant parameters, copied from Reserve.sol
-      tobinTaxStalenessThreshold: 3153600000, // 100 years as current in Reserve.sol
+      // ===== not relevant parameters, copied from current mainnet Reserve.sol config
+      tobinTaxStalenessThreshold: 3153600000, // 100 years
       assetAllocationSymbols: Arrays.bytes32s(
         bytes32("cGLD"),
         bytes32("BTC"),
@@ -117,19 +120,28 @@ contract MU01_BaklavaCGP is GovernanceScript {
         uint256(0.295 * 10**24),
         uint256(0.005 * 10**24)
       ),
-      tobinTax: FixidityLib.newFixed(0).unwrap(), // disabled as current Reserve.sol
-      tobinTaxReserveRatio: FixidityLib.newFixed(0).unwrap(), // disabled as current Reserve.sol
+      tobinTax: FixidityLib.newFixed(0).unwrap(), // disabled
+      tobinTaxReserveRatio: FixidityLib.newFixed(0).unwrap(), // disabled
       frozenGold: 0, // no frozen gold
       frozenDays: 0,  // no frozen gold
-      // --- relevant parameters below
+
+      // ===== relevant parameters below
       registryAddress: address(0x000000000000000000000000000000000000ce10), // celo registry address
-      spendingRatioForCelo: FixidityLib.fixed1().unwrap(), // 100% spending
-      collateralAssets: Arrays.addresses(contracts.dependency("USDCet"), contracts.celoRegistry("GoldToken")),
+      spendingRatioForCelo: FixidityLib.fixed1().unwrap(), // 100% CELO spending
+      // CELO and USDcet as collateral assets with 100% spending
+      collateralAssets: Arrays.addresses(
+        contracts.dependency("USDCet"),
+        contracts.celoRegistry("GoldToken")
+      ),
       collateralAssetDailySpendingRatios: Arrays.uints(
         FixidityLib.fixed1().unwrap(), 
         FixidityLib.fixed1().unwrap()
-      ) // 100% spending
+      )
     });
+
+    /* ================================================================ */
+    /* ===================== 2. Broker Exchanges ===================== */
+    /* ================================================================ */
 
     // Create pool configuration for cUSD/CELO pool
     cUSDCeloConfig = PoolConfiguration({
