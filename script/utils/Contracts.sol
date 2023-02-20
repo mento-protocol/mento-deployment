@@ -105,7 +105,7 @@ library Contracts {
       string(abi.encodePacked('["', chainId, '"]', '["', contractName, '"]'))
     );
 
-    require(contractAddressRaw.length == 32, "depndency missing or invalid");
+    require(contractAddressRaw.length == 32, "dependency missing or invalid");
     return abi.decode(contractAddressRaw, (address));
   }
 

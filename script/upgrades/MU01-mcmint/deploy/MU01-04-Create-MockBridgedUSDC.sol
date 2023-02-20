@@ -7,18 +7,18 @@ import { console2 } from "forge-std/Script.sol";
 
 import { MockERC20 } from "contracts/MockERC20.sol";
 
-contract MU01_CreateMockUSDCet is Script {
+contract MU01_CreateMockBridgedUSDC is Script {
   function run() public {
-    address mockUSDCet;
+    address mockBridgedUSDC;
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      mockUSDCet = address(new MockERC20("mockUSDCet", "USDCet", 18));
+      mockBridgedUSDC = address(new MockERC20("mockBridgedUSDC", "BridgedUSDC", 18));
     }
     vm.stopBroadcast();
 
     console2.log("----------");
-    console2.log("MockUSDCet deployed at: ", mockUSDCet);
+    console2.log("MockBridgedUSDC deployed at: ", mockBridgedUSDC);
     console2.log("----------");
   }
 }

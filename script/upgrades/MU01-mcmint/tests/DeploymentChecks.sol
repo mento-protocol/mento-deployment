@@ -49,7 +49,7 @@ contract DeploymentChecks is Script {
   address public cUSD;
   address public cEUR;
   address public cBRL;
-  address public usdCet;
+  address public bridgedUSDC;
 
   function setUp() public {
     new PrecompileHandler(); // needed for reserve CELO transfer checks
@@ -64,7 +64,7 @@ contract DeploymentChecks is Script {
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
 
-    usdCet = contracts.dependency("USDCet");
+    bridgedUSDC = contracts.dependency("BridgedUSDC");
     celoToken = contracts.celoRegistry("GoldToken");
     broker = IBroker(contracts.celoRegistry("Broker"));
     breakerBox = BreakerBox(contracts.deployed("BreakerBox"));
@@ -104,7 +104,7 @@ contract DeploymentChecks is Script {
 
   function checkReserveCollateralAssets() public view {
     require(reserve.checkIsCollateralAsset(celoToken), "CELO is not collateral asset");
-    require(reserve.checkIsCollateralAsset(usdCet), "USDCet is not collateral asset");
+    require(reserve.checkIsCollateralAsset(bridgedUSDC), "bridgedUSDC is not collateral asset");
 
     console2.log("\t collateral assets are added 🎉");
   }
@@ -130,11 +130,11 @@ contract DeploymentChecks is Script {
     uint256 oneMillion = 1_000_000 * 1e18;
 
     assert (address(reserve).balance == 0);
-    assert (MockERC20(usdCet).balanceOf(address(reserve)) == 0);
+    assert (MockERC20(bridgedUSDC).balanceOf(address(reserve)) == 0);
 
     vm.deal(address(reserve), oneMillion);
-    vm.prank(MockERC20(usdCet).owner());
-    MockERC20(usdCet).mint(address(reserve), oneMillion);
+    vm.prank(MockERC20(bridgedUSDC).owner());
+    MockERC20(bridgedUSDC).mint(address(reserve), oneMillion);
 
     address payable mainReserve = address(uint160(contracts.celoRegistry("Reserve")));
     uint256 prevMainReserveCeloBalance = address(mainReserve).balance;
@@ -142,14 +142,14 @@ contract DeploymentChecks is Script {
     address multiSigAddr = contracts.dependency("PartialReserveMultisig");
     vm.startPrank(multiSigAddr);
     reserve.transferCollateralAsset(celoToken, mainReserve, oneMillion);
-    reserve.transferCollateralAsset(usdCet, mainReserve, oneMillion);
+    reserve.transferCollateralAsset(bridgedUSDC, mainReserve, oneMillion);
     vm.stopPrank();
 
     assert (address(reserve).balance == 0);
     assert (address(mainReserve).balance == prevMainReserveCeloBalance + oneMillion);
 
-    assert (MockERC20(usdCet).balanceOf(address(reserve)) == 0);
-    assert (MockERC20(usdCet).balanceOf(address(mainReserve)) == oneMillion);
+    assert (MockERC20(bridgedUSDC).balanceOf(address(reserve)) == 0);
+    assert (MockERC20(bridgedUSDC).balanceOf(address(mainReserve)) == oneMillion);
 
     console2.log("\t multiSig spender can spend collateral assets 🤑");
   } 
@@ -207,8 +207,8 @@ contract DeploymentChecks is Script {
         "asset0 is not a stable asset in the exchange"
       );
       require(
-        pool.asset1 == celoToken || pool.asset1 == usdCet,
-        "asset1 is not celo or usdcet in the exchange"
+        pool.asset1 == celoToken || pool.asset1 == bridgedUSDC,
+        "asset1 is not CELO or bridgedUSDC in the exchange"
       );
     }
 
@@ -242,7 +242,7 @@ contract DeploymentChecks is Script {
 
   function verifyCircuitBreaker() public view {
     address[] memory configuredBreakers = Arrays.addresses(
-      cUSD, cEUR, cBRL, usdCet
+      cUSD, cEUR, cBRL, bridgedUSDC
     );
 
     for (uint256 i = 0; i < configuredBreakers.length; i++) {
@@ -266,8 +266,8 @@ contract DeploymentChecks is Script {
   function doSwaps() public {
     console2.log("\n== Doing some test swaps... ==");
     swapCeloTocUSD();
-    swapUSDcetTocUSD();
-    swapcUSDtoUSDcet();
+    swapBridgedUSDCTocUSD();
+    swapcUSDtoBridgedUSDC();
   }
 
   function swapCeloTocUSD() public {
@@ -285,57 +285,57 @@ contract DeploymentChecks is Script {
     console2.log("\tCELO -> cUSD swap successful 🚀");
   }
 
-  function swapUSDcetTocUSD() public {
+  function swapBridgedUSDCTocUSD() public {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(3);
 
     address trader = vm.addr(1);
-    address tokenIn = usdCet;
+    address tokenIn = bridgedUSDC;
     address tokenOut = cUSD;
     uint256 amountIn = 100e18;
     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
-    MockERC20 mockUSDcetContract = MockERC20(usdCet);
+    MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
 
-    assert(mockUSDcetContract.balanceOf(trader) == 0);
-    vm.prank(mockUSDcetContract.owner());
-    assert(mockUSDcetContract.mint(trader, amountIn));
-    assert(mockUSDcetContract.balanceOf(trader) == amountIn);
+    assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
+    vm.prank(mockBridgedUSDCContract.owner());
+    assert(mockBridgedUSDCContract.mint(trader, amountIn));
+    assert(mockBridgedUSDCContract.balanceOf(trader) == amountIn);
 
     vm.startPrank(trader);
     uint256 beforecUSD = MockERC20(cUSD).balanceOf(trader);
-    mockUSDcetContract.approve(address(broker), amountIn);
+    mockBridgedUSDCContract.approve(address(broker), amountIn);
 
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
 
-    assert(mockUSDcetContract.balanceOf(trader) == 0);
+    assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
     assert(MockERC20(cUSD).balanceOf(trader) == beforecUSD + amountOut);
     vm.stopPrank();
 
-    console2.log("\tUSDCet -> cUSD swap successful 🚀");
+    console2.log("\tbridgedUSDC -> cUSD swap successful 🚀");
   }
 
-  function swapcUSDtoUSDcet() public {
+  function swapcUSDtoBridgedUSDC() public {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(3);
 
     address trader = vm.addr(1);
     address tokenIn = cUSD;
-    address tokenOut = usdCet;
+    address tokenOut = bridgedUSDC;
     uint256 amountIn = 10e18;
     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
     // fund reserve with usdc
-    MockERC20 mockUSDcetContract = MockERC20(usdCet);
-    vm.prank(mockUSDcetContract.owner());
-    assert(mockUSDcetContract.mint(address(reserve), 1000e18));
+    MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
+    vm.prank(mockBridgedUSDCContract.owner());
+    assert(mockBridgedUSDCContract.mint(address(reserve), 1000e18));
 
     vm.startPrank(trader);
     MockERC20(cUSD).approve(address(broker), amountIn);
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
     vm.stopPrank();
 
-    console2.log("\tcUSD -> USDCet swap successful 🚀");
+    console2.log("\tcUSD -> bridgedUSDC swap successful 🚀");
   }
 
   /* ================================================================ */
