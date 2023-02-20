@@ -432,41 +432,17 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
   function proposal_configurePartialReserve() private {
     address payable partialReserveProxy = contracts.deployed("PartialReserveProxy");
-
-    // add Broker as Spender to partial Reserve
-    // require(
-    //   IReserve(partialReserveProxy).isExchangeSpender(contracts.deployed("BrokerProxy")) == false,
-    //   "Broker is already a spender"
-    // );
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        partialReserveProxy,
-        abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, contracts.deployed("BrokerProxy"))
-      )
-    );
-
-    // add multisig as Spender to partial Reserve
-    // require(
-    //   IReserve(partialReserveProxy).isExchangeSpender(contracts.dependency("PartialReserveMultisig")) == false,
-    //   "MultiSig is already a spender"
-    // );
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        partialReserveProxy,
-        abi.encodeWithSelector(IReserve(0).addSpender.selector, contracts.dependency("PartialReserveMultisig"))
-      )
-    );
-
     bool reserveNotInitialized = PartialReserveProxy(partialReserveProxy)._getImplementation() == address(0);
+
+    /* ================================================================ */
+    /* ===================== 1. Add stable assets ===================== */
+    /* ================================================================ */
 
     address[] memory stableTokens = Arrays.addresses(
       contracts.celoRegistry("StableToken"),
       contracts.celoRegistry("StableTokenEUR"),
       contracts.celoRegistry("StableTokenBRL")
     );
-
     for (uint i  = 0; i < stableTokens.length; i++) {
       if (reserveNotInitialized || IReserve(partialReserveProxy).isStableAsset(stableTokens[i]) == false) {
         transactions.push(
@@ -480,6 +456,31 @@ contract MU01_BaklavaCGP is GovernanceScript {
         console2.log("Token already added to the reserve, skipping: %s", stableTokens[i]);
       }
     }
+
+    /* ================================================================ */
+    /* ====================== 2. Add spenders ========================= */
+    /* ================================================================ */
+
+    // broker as ExchangeSpender
+    address brokerProxy = contracts.deployed("BrokerProxy");
+    if (reserveNotInitialized || IReserve(partialReserveProxy).isExchangeSpender(brokerProxy) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          partialReserveProxy,
+          abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, brokerProxy)
+        )
+      );
+    }
+
+    // Mento multisig as Spender. The function doesn't throw if the spender is already added
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        partialReserveProxy,
+        abi.encodeWithSelector(IReserve(0).addSpender.selector, contracts.dependency("PartialReserveMultisig"))
+      )
+    );
   }
 
   function proposal_registryUpdates() private {
