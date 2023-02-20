@@ -7,7 +7,7 @@ import { GovernanceScript } from "script/utils/Script.sol";
 import { MU01_BaklavaCGP } from "./MU01-Baklava-CGP.sol";
 import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
 
-import { SwapTest } from "script/test/Swap.sol";
+import { DeploymentChecks } from "../tests/DeploymentChecks.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 
@@ -27,7 +27,7 @@ contract MU01_BaklavaCGPSimulation is GovernanceScript {
     MU01_BaklavaCGP rev = new MU01_BaklavaCGP();
     rev.prepare();
     simulateProposal(rev.buildProposal(), governance);
-    SwapTest test = new SwapTest();
+    DeploymentChecks test = new DeploymentChecks();
     test.runInFork();
   }
 }
