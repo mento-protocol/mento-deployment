@@ -52,7 +52,7 @@ contract DeploymentChecks is Script {
   address public usdCet;
 
   function setUp() public {
-    PrecompileHandler handler = new PrecompileHandler(); // needed for reserve CELO transfer checks
+    new PrecompileHandler(); // needed for reserve CELO transfer checks
 
     // Load addresses from deployments
     contracts.load("MU01-00-Create-Proxies", "1676642018");
@@ -102,14 +102,14 @@ contract DeploymentChecks is Script {
     checkReserveMultisigCanSpend();
   }
 
-  function checkReserveCollateralAssets() public {
+  function checkReserveCollateralAssets() public view {
     require(reserve.checkIsCollateralAsset(celoToken), "CELO is not collateral asset");
     require(reserve.checkIsCollateralAsset(usdCet), "USDCet is not collateral asset");
 
     console2.log("\t collateral assets are added 🎉");
   }
 
-  function checkReserveStableAssets() public {
+  function checkReserveStableAssets() public view {
     require(reserve.isStableAsset(cUSD), "cUSD is not a stable asset");
     require(reserve.isStableAsset(cEUR), "cEUR is not a stable asset");
     require(reserve.isStableAsset(cBRL), "cBRL is not a stable asset!!");
@@ -158,7 +158,7 @@ contract DeploymentChecks is Script {
   /* ========================= Broker checks ======================== */
   /* ================================================================ */
 
-  function verifyBroker() public {
+  function verifyBroker() public view {
     console2.log("\n== Verifying broker... ==");
 
     verifyExchangeProviders();
