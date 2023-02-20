@@ -38,7 +38,7 @@ import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
-contract MU01_BaklavaCGP is GovernanceScript {
+contract MU01_CGP is GovernanceScript {
   using TradingLimits for TradingLimits.Config;
 
   ICeloGovernance.Transaction[] private transactions;
@@ -76,10 +76,10 @@ contract MU01_BaklavaCGP is GovernanceScript {
    * @dev Loads the deployed contracts from the previous deployment step
    */
   function loadDeployedContracts() public {
-    contracts.load("MU01-00-Create-Proxies", "1676642018");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676642105");
-    contracts.load("MU01-02-Create-Implementations", "1676642427");
-    contracts.load("MU01-04-Create-MockBridgedUSDC", "1676392537");
+    contracts.load("MU01-00-Create-Proxies", "latest");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.load("MU01-02-Create-Implementations", "latest");
+    contracts.load("MU01-04-Create-MockBridgedUSDC", "latest");
   }
 
   /**

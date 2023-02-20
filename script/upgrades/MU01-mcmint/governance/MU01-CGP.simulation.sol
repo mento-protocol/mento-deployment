@@ -4,7 +4,7 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
-import { MU01_BaklavaCGP } from "./MU01-Baklava-CGP.sol";
+import { MU01_CGP } from "./MU01-CGP.sol";
 import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
 
 import { DeploymentChecks } from "../tests/DeploymentChecks.sol";
@@ -24,7 +24,7 @@ contract MU01_BaklavaCGPSimulation is GovernanceScript {
   }
 
   function simulate() internal {
-    MU01_BaklavaCGP rev = new MU01_BaklavaCGP();
+    MU01_CGP rev = new MU01_CGP();
     rev.prepare();
     simulateProposal(rev.buildProposal(), governance);
     DeploymentChecks test = new DeploymentChecks();

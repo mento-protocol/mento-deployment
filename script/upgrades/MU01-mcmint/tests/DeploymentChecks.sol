@@ -55,9 +55,9 @@ contract DeploymentChecks is Script {
     new PrecompileHandler(); // needed for reserve CELO transfer checks
 
     // Load addresses from deployments
-    contracts.load("MU01-00-Create-Proxies", "1676642018");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676642105");
-    contracts.load("MU01-02-Create-Implementations", "1676642427");
+    contracts.load("MU01-00-Create-Proxies", "latest");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.load("MU01-02-Create-Implementations", "latest");
 
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
