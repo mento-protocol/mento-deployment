@@ -493,6 +493,24 @@ contract MU01_BaklavaCGP is GovernanceScript {
         abi.encodeWithSelector(IReserve(0).addSpender.selector, contracts.dependency("PartialReserveMultisig"))
       )
     );
+
+    /* ================================================================ */
+    /* ===================== 3. Other reserves ======================== */
+    /* ================================================================ */
+
+
+    // add the main reserve as a 'otherReserve' to the partial reserve
+    // so that the multiSig spender can transfer funds from the partial reserve to the main reserve
+    address mainReserve = contracts.celoRegistry("Reserve");
+    if (reserveNotInitialized || Reserve(partialReserveProxy).isOtherReserveAddress(mainReserve) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          partialReserveProxy,
+          abi.encodeWithSelector(Reserve(0).addOtherReserveAddress.selector, mainReserve)
+        )
+      );
+    }
   }
 
   function proposal_registryUpdates() private {
