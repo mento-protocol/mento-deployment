@@ -256,7 +256,7 @@ contract MU01_CGP is GovernanceScript {
       medianDeltaBreakerCooldown: 0,
       isValueDeltaBreakerEnabled: true,
       valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
-      valueDeltaBreakerReferenceValue: 1e18, // 1$
+      valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
       valueDeltaBreakerCooldown: 1 seconds,
       referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
       asset0_timeStep0: 5 minutes,
