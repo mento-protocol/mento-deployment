@@ -13,7 +13,7 @@ APPROVER=0xb04778c00A8e30F59bFc91DD74853C4f32F34E54 # approver address
 
 # celocli governance:withdraw --from=$SIGNER || echo "There were no pending refunds" # Optional step, getting some deposits back
 
-PROPOSAL_ID=90
+PROPOSAL_ID=91
 
 echo "Proposal has ID=$PROPOSAL_ID"
 

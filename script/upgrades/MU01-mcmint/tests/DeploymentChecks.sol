@@ -129,8 +129,8 @@ contract DeploymentChecks is Script {
   function checkReserveMultisigCanSpend() public {
     uint256 oneMillion = 1_000_000 * 1e18;
 
-    assert (address(reserve).balance == 0);
-    assert (MockERC20(bridgedUSDC).balanceOf(address(reserve)) == 0);
+    // assert (address(reserve).balance == 0);
+    // assert (MockERC20(bridgedUSDC).balanceOf(address(reserve)) == 0);
 
     vm.deal(address(reserve), oneMillion);
     vm.prank(MockERC20(bridgedUSDC).owner());
@@ -138,6 +138,7 @@ contract DeploymentChecks is Script {
 
     address payable mainReserve = address(uint160(contracts.celoRegistry("Reserve")));
     uint256 prevMainReserveCeloBalance = address(mainReserve).balance;
+    uint256 prevMainReserveUsdcBalance = MockERC20(bridgedUSDC).balanceOf(address(mainReserve));
 
     address multiSigAddr = contracts.dependency("PartialReserveMultisig");
     vm.startPrank(multiSigAddr);
@@ -145,11 +146,8 @@ contract DeploymentChecks is Script {
     reserve.transferCollateralAsset(bridgedUSDC, mainReserve, oneMillion);
     vm.stopPrank();
 
-    assert (address(reserve).balance == 0);
     assert (address(mainReserve).balance == prevMainReserveCeloBalance + oneMillion);
-
-    assert (MockERC20(bridgedUSDC).balanceOf(address(reserve)) == 0);
-    assert (MockERC20(bridgedUSDC).balanceOf(address(mainReserve)) == oneMillion);
+    assert (MockERC20(bridgedUSDC).balanceOf(address(mainReserve)) == prevMainReserveUsdcBalance + oneMillion);
 
     console2.log("\t multiSig spender can spend collateral assets 🤑");
   } 

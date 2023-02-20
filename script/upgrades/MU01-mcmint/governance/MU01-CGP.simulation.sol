@@ -12,7 +12,7 @@ import { Chain } from "script/utils/Chain.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 
 // forge script {file} --rpc-url $BAKLAVA_RPC_URL
-contract MU01_BaklavaCGPSimulation is GovernanceScript {
+contract MU01_CGPSimulation is GovernanceScript {
   using Contracts for Contracts.Cache;
 
   address public governance;

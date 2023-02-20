@@ -534,12 +534,12 @@ contract MU01_CGP is GovernanceScript {
       bytes32[] memory existingExchangeIds = IBiPoolManager(contracts.deployed("BiPoolManagerProxy")).getExchangeIds();
       if (existingExchangeIds.length > 0) {
         console2.log("Destroying existing exchanges: ", existingExchangeIds.length);
-        for (uint256 i = 0; i < existingExchangeIds.length; i++) {
+        for (uint256 i = existingExchangeIds.length; i > 0; i--) {
           transactions.push(
             ICeloGovernance.Transaction(
               0,
               contracts.deployed("BiPoolManagerProxy"),
-              abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, existingExchangeIds[i], 0)
+              abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, existingExchangeIds[i-1], i-1)
             )
           );
         }
@@ -597,6 +597,10 @@ contract MU01_CGP is GovernanceScript {
    *        4. Add the new breaker box address to sorted oracles.
    */
   function proposal_configureCircuitBreaker() private {
+    bool breakerBoxInitialized = BreakerBoxProxy(
+      contracts.deployed("BreakerBoxProxy")
+    )._getImplementation() != address(0);
+    BreakerBox breakerBox = BreakerBox(contracts.deployed("BreakerBoxProxy"));
     address medianDeltaBreakerAddress = contracts.deployed("MedianDeltaBreaker");
     address valueDeltaBreakerAddress = contracts.deployed("ValueDeltaBreaker");
 
@@ -608,22 +612,26 @@ contract MU01_CGP is GovernanceScript {
     // (BreakerBox LN266 & LN290)
 
     // Add the Median Delta Breaker to the breaker box with the trading mode '1' -> No Trading
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        breakerBoxProxyAddress,
-        abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, medianDeltaBreakerAddress, 1)
-      )
-    );
+    if (breakerBoxInitialized == false || breakerBox.breakerTradingMode(medianDeltaBreakerAddress) == 0) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          contracts.deployed("BreakerBoxProxy"),
+          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, medianDeltaBreakerAddress, 1)
+        )
+      );
+    }
 
     // Add the Value Delta Breaker to the breaker box with the trading mode '2' -> No Trading
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        breakerBoxProxyAddress,
-        abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, valueDeltaBreakerAddress, 2)
-      )
-    );
+    if (breakerBoxInitialized == false || breakerBox.breakerTradingMode(valueDeltaBreakerAddress) == 0) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          breakerBoxProxyAddress,
+          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, valueDeltaBreakerAddress, 2)
+        )
+      );
+    }
 
     /* ================================================================ */
     /* ========= 2. Add rateFeed specific config to breakers ========== */
