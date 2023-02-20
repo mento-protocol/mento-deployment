@@ -148,4 +148,50 @@ contract GovernanceScript is Script, GovernanceHelper {
      */
     uint8 asset0_flags;
   }
+
+  /* ================================================================ */
+  /* ==================== Partial Reserve Config ==================== */
+  /* ================================================================ */
+  struct PartialReserveConfiguration {
+    /* ================================================================ */
+    /* ==================== Unused/non relevant config ================ */
+    /* ================================================================ */
+    /**
+      The parameters in this block are not relevant for the Partial Reserve integration with the broker 
+      but will be taken from the existing Reserve contract to not have dummy values on a mainnet contract.
+    */ 
+    uint256 tobinTaxStalenessThreshold;
+    bytes32[] assetAllocationSymbols;
+    uint256[] assetAllocationWeights;
+    uint256 tobinTax;
+    uint256 tobinTaxReserveRatio;
+    uint256 frozenGold; // not copied but should be set to 0
+    uint256 frozenDays; // not copied but should be set to 0
+
+    /* ================================================================ */
+    /* ==================== Important/required config ================= */
+    /* ================================================================ */
+    /**
+      The parameters in this block are relevant for the Partial Reserve integration with the broker
+      and need to be customized.
+    */
+
+    /**
+    * @dev The address of the celo registry
+    */
+    address registryAddress; 
+    /**
+    * @dev The % of Celo that can be spent per day by spenders (in fixidity format)
+    */
+    uint256 spendingRatioForCelo;
+    /**
+    * @dev The collateral assets of the Reserve (which are checked agains't assets of Exchanges by the broker)
+    */
+    address[] collateralAssets;
+    /**
+    * @dev The % of each collateral asset that can be spent per day by spenders (in fixidity format)
+    */
+    uint256[] collateralAssetDailySpendingRatios;
+  }
+
 }

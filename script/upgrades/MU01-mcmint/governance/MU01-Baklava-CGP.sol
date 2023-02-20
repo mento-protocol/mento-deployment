@@ -30,6 +30,8 @@ import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol"
 import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
 import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
+import { Reserve } from "mento-core/contracts/Reserve.sol";
+import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
@@ -50,6 +52,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
   PoolConfiguration private cBRLCeloConfig;
   PoolConfiguration private cUSDUSDCConfig;
   PoolConfiguration[] private poolConfigs;
+  PartialReserveConfiguration private partialReserveConfig;
 
   address private cUSD;
   address private cEUR;
@@ -66,16 +69,16 @@ contract MU01_BaklavaCGP is GovernanceScript {
   function prepare() public {
     loadDeployedContracts();
     setAddresses();
-    setUpPoolConfigs();
+    setUpConfigs();
   }
 
   /**
    * @dev Loads the deployed contracts from the previous deployment step
    */
   function loadDeployedContracts() public {
-    contracts.load("MU01-00-Create-Proxies", "1674224277");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676565026");
-    contracts.load("MU01-02-Create-Implementations", "1676504104");
+    contracts.load("MU01-00-Create-Proxies", "1676642018");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676642105");
+    contracts.load("MU01-02-Create-Implementations", "1676642427");
     contracts.load("MU01-04-Create-MockUSDCet", "1676392537");
   }
 
@@ -92,10 +95,54 @@ contract MU01_BaklavaCGP is GovernanceScript {
   }
 
   /**
-   * @dev Sets the various values needed for the configuration of the new pools.
+   * @dev Setups up various configuration structs.
    *      This function is called by the governance script runner.
    */
-  function setUpPoolConfigs() public {
+  function setUpConfigs() public {
+    /* ================================================================ */
+    /* ====================== 1. Partial Reserve ====================== */
+    /* ================================================================ */
+
+    partialReserveConfig = PartialReserveConfiguration({
+      // ===== not relevant parameters, copied from current mainnet Reserve.sol config
+      tobinTaxStalenessThreshold: 3153600000, // 100 years
+      assetAllocationSymbols: Arrays.bytes32s(
+        bytes32("cGLD"),
+        bytes32("BTC"),
+        bytes32("ETH"),
+        bytes32("DAI"),
+        bytes32("cMCO2")
+      ),
+      assetAllocationWeights: Arrays.uints(
+        uint256(0.5 * 10**24),
+        uint256(0.1 * 10**24),
+        uint256(0.1 * 10**24),
+        uint256(0.295 * 10**24),
+        uint256(0.005 * 10**24)
+      ),
+      tobinTax: FixidityLib.newFixed(0).unwrap(), // disabled
+      tobinTaxReserveRatio: FixidityLib.newFixed(0).unwrap(), // disabled
+      frozenGold: 0, // no frozen gold
+      frozenDays: 0,  // no frozen gold
+
+      // ===== relevant parameters below
+      registryAddress: address(0x000000000000000000000000000000000000ce10), // celo registry address
+      spendingRatioForCelo: FixidityLib.fixed1().unwrap(), // 100% CELO spending
+      // CELO and USDcet as collateral assets with 100% spending
+      collateralAssets: Arrays.addresses(
+        contracts.dependency("USDCet"),
+        contracts.celoRegistry("GoldToken")
+      ),
+      collateralAssetDailySpendingRatios: Arrays.uints(
+        FixidityLib.fixed1().unwrap(), 
+        FixidityLib.fixed1().unwrap()
+      )
+    });
+
+    /* ================================================================ */
+    /* ===================== 2. Broker Exchanges ===================== */
+    /* ================================================================ */
+
     // Create pool configuration for cUSD/CELO pool
     cUSDCeloConfig = PoolConfiguration({
       asset0: cUSD,
@@ -170,7 +217,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
-      stablePoolResetSize: 3_000_000 * 1e18, // 3milly
+      stablePoolResetSize: 3_000_000 * 1e18, // 3min
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
@@ -243,9 +290,10 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
+
     proposal_initializeNewProxies();
     proposal_upgradeContracts();
-    proposal_configureReserve();
+    proposal_configurePartialReserve();
     proposal_registryUpdates();
     proposal_createExchanges();
     proposal_configureCircuitBreaker();
@@ -256,10 +304,10 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
   function proposal_initializeNewProxies() private {
     address sortedOracles = contracts.celoRegistry("SortedOracles");
-    address reserve = contracts.celoRegistry("Reserve");
+    address payable partialReserveProxyAddress = contracts.deployed("PartialReserveProxy");
 
     BreakerBoxProxy breakerBoxProxy = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"));
-    if (BreakerBox(address(breakerBoxProxy)).initialized() == false) {
+    if (breakerBoxProxy._getImplementation() == address(0)) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -285,7 +333,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     }
 
     BiPoolManagerProxy biPoolManagerProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
-    if (BiPoolManager(address(biPoolManagerProxy)).initialized() == false) {
+    if (biPoolManagerProxy._getImplementation() == address(0)) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -296,7 +344,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
             abi.encodeWithSelector(
               BiPoolManager(0).initialize.selector,
               contracts.deployed("BrokerProxy"),
-              IReserve(reserve),
+              IReserve(partialReserveProxyAddress),
               ISortedOracles(sortedOracles),
               IBreakerBox(address(breakerBoxProxy))
             )
@@ -308,7 +356,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     }
 
     BrokerProxy brokerProxy = BrokerProxy(address(contracts.deployed("BrokerProxy")));
-    if (Broker(address(brokerProxy)).initialized() == false) {
+    if (brokerProxy._getImplementation() == address(0)) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -319,7 +367,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
             abi.encodeWithSelector(
               Broker(0).initialize.selector,
               Arrays.addresses(address(biPoolManagerProxy)),
-              reserve
+              partialReserveProxyAddress
             )
           )
         )
@@ -327,17 +375,40 @@ contract MU01_BaklavaCGP is GovernanceScript {
     } else {
       console2.log("Skipping BrokerProxy - already initialized");
     }
+
+    PartialReserveProxy partialReserveProxy = PartialReserveProxy(partialReserveProxyAddress);
+    if (partialReserveProxy._getImplementation() == address(0)) {
+      Reserve reserve = Reserve(contracts.deployed("Reserve"));
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          address(partialReserveProxy),
+          abi.encodeWithSelector(
+            partialReserveProxy._setAndInitializeImplementation.selector,
+            reserve,
+            abi.encodeWithSelector(
+              Reserve(0).initialize.selector,
+              partialReserveConfig.registryAddress,
+              partialReserveConfig.tobinTaxStalenessThreshold,
+              partialReserveConfig.spendingRatioForCelo,
+              partialReserveConfig.frozenGold,
+              partialReserveConfig.frozenDays,
+              partialReserveConfig.assetAllocationSymbols,
+              partialReserveConfig.assetAllocationWeights,
+              partialReserveConfig.tobinTax,
+              partialReserveConfig.tobinTaxReserveRatio,
+              partialReserveConfig.collateralAssets,
+              partialReserveConfig.collateralAssetDailySpendingRatios
+            )
+          )
+        )
+      );
+    } else {
+      console2.log("Skipping PartianReserveProxy - already initialized");
+    }
   }
 
   function proposal_upgradeContracts() private {
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        contracts.celoRegistry("Reserve"),
-        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("Reserve"))
-      )
-    );
-
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -371,34 +442,72 @@ contract MU01_BaklavaCGP is GovernanceScript {
     );
   }
 
-  function proposal_configureReserve() private {
-    address reserveProxy = contracts.celoRegistry("Reserve");
-    if (IReserve(reserveProxy).isExchangeSpender(contracts.deployed("BrokerProxy")) == false) {
+  function proposal_configurePartialReserve() private {
+    address payable partialReserveProxy = contracts.deployed("PartialReserveProxy");
+    bool reserveNotInitialized = PartialReserveProxy(partialReserveProxy)._getImplementation() == address(0);
+
+    /* ================================================================ */
+    /* ===================== 1. Add stable assets ===================== */
+    /* ================================================================ */
+
+    address[] memory stableTokens = Arrays.addresses(
+      contracts.celoRegistry("StableToken"),
+      contracts.celoRegistry("StableTokenEUR"),
+      contracts.celoRegistry("StableTokenBRL")
+    );
+    for (uint i  = 0; i < stableTokens.length; i++) {
+      if (reserveNotInitialized || IReserve(partialReserveProxy).isStableAsset(stableTokens[i]) == false) {
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            partialReserveProxy,
+            abi.encodeWithSelector(IReserve(0).addToken.selector, stableTokens[i])
+          )
+        );
+      } else {
+        console2.log("Token already added to the reserve, skipping: %s", stableTokens[i]);
+      }
+    }
+
+    /* ================================================================ */
+    /* ====================== 2. Add spenders ========================= */
+    /* ================================================================ */
+
+    // broker as ExchangeSpender
+    address brokerProxy = contracts.deployed("BrokerProxy");
+    if (reserveNotInitialized || IReserve(partialReserveProxy).isExchangeSpender(brokerProxy) == false) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
-          reserveProxy,
-          abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, contracts.deployed("BrokerProxy"))
+          partialReserveProxy,
+          abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, brokerProxy)
         )
       );
     }
 
-    if (IReserve(reserveProxy).isCollateralAsset(contracts.dependency("USDCet")) == false) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          reserveProxy,
-          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.dependency("USDCet"))
-        )
-      );
-    }
+    // Mento multisig as Spender. The function doesn't throw if the spender is already added
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        partialReserveProxy,
+        abi.encodeWithSelector(IReserve(0).addSpender.selector, contracts.dependency("PartialReserveMultisig"))
+      )
+    );
 
-    if (IReserve(reserveProxy).isCollateralAsset(contracts.celoRegistry("GoldToken")) == false) {
+    /* ================================================================ */
+    /* ===================== 3. Other reserves ======================== */
+    /* ================================================================ */
+
+
+    // add the main reserve as a 'otherReserve' to the partial reserve
+    // so that the multiSig spender can transfer funds from the partial reserve to the main reserve
+    address mainReserve = contracts.celoRegistry("Reserve");
+    if (reserveNotInitialized || Reserve(partialReserveProxy).isOtherReserveAddress(mainReserve) == false) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
-          reserveProxy,
-          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, contracts.celoRegistry("GoldToken"))
+          partialReserveProxy,
+          abi.encodeWithSelector(Reserve(0).addOtherReserveAddress.selector, mainReserve)
         )
       );
     }
@@ -419,17 +528,21 @@ contract MU01_BaklavaCGP is GovernanceScript {
    *         BiPoolManager exchanges (cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/USDCet)
    */
   function proposal_createExchanges() private {
-    bytes32[] memory existingExchangeIds = IBiPoolManager(contracts.deployed("BiPoolManagerProxy")).getExchangeIds();
-    if (existingExchangeIds.length > 0) {
-      console2.log("Destroying existing exchanges: ", existingExchangeIds.length);
-      for (uint256 i = 0; i < existingExchangeIds.length; i++) {
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            contracts.deployed("BiPoolManagerProxy"),
-            abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, existingExchangeIds[i], 0)
-          )
-        );
+    address payable biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
+    bool biPoolManagerInitialized = BiPoolManagerProxy(biPoolManagerProxy)._getImplementation() != address(0);
+    if (biPoolManagerInitialized) {
+      bytes32[] memory existingExchangeIds = IBiPoolManager(contracts.deployed("BiPoolManagerProxy")).getExchangeIds();
+      if (existingExchangeIds.length > 0) {
+        console2.log("Destroying existing exchanges: ", existingExchangeIds.length);
+        for (uint256 i = 0; i < existingExchangeIds.length; i++) {
+          transactions.push(
+            ICeloGovernance.Transaction(
+              0,
+              contracts.deployed("BiPoolManagerProxy"),
+              abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, existingExchangeIds[i], 0)
+            )
+          );
+        }
       }
     }
 
@@ -469,11 +582,6 @@ contract MU01_BaklavaCGP is GovernanceScript {
    * @notice This function creates the required transactions to configure
    *         the ϟ circuit breaker ϟ.
    * @dev    Configuration of the circuit breaker requires the following steps:
-   *        0. Add all ratefeedIds that should be monitored to the circuit breaker
-   *           This is done in the proxy initilization as the contract takes an array
-   *           of ratefeedIds as a constructor argument.
-   *           [BreakerBox.addRateFeeds || BreakerBox.addRateFeed]
-   *
    *        1. Add all breakers that should be used to the circuit breaker.
    *           [BreakerBox.addBreaker || BreakerBox.insertBreaker]
    *
