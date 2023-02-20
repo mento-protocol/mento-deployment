@@ -58,7 +58,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
   address private cEUR;
   address private cBRL;
   address private celo;
-  address private USDCet;
+  address private bridgedUSDC;
 
   address payable private breakerBoxProxyAddress;
   address private cUSDUSCDRateFeedId = address(uint256(keccak256(abi.encodePacked("USDCUSD"))));
@@ -79,7 +79,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     contracts.load("MU01-00-Create-Proxies", "1676642018");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676642105");
     contracts.load("MU01-02-Create-Implementations", "1676642427");
-    contracts.load("MU01-04-Create-MockUSDCet", "1676392537");
+    contracts.load("MU01-04-Create-MockBridgedUSDC", "1676392537");
   }
 
   /**
@@ -90,7 +90,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
     celo = contracts.celoRegistry("GoldToken");
-    USDCet = contracts.dependency("USDCet");
+    bridgedUSDC = contracts.dependency("BridgedUSDC");
     breakerBoxProxyAddress = contracts.deployed("BreakerBoxProxy");
   }
 
@@ -128,9 +128,9 @@ contract MU01_BaklavaCGP is GovernanceScript {
       // ===== relevant parameters below
       registryAddress: address(0x000000000000000000000000000000000000ce10), // celo registry address
       spendingRatioForCelo: FixidityLib.fixed1().unwrap(), // 100% CELO spending
-      // CELO and USDcet as collateral assets with 100% spending
+      // CELO and bridgedUSDC as collateral assets with 100% spending
       collateralAssets: Arrays.addresses(
-        contracts.dependency("USDCet"),
+        contracts.dependency("BridgedUSDC"),
         contracts.celoRegistry("GoldToken")
       ),
       collateralAssetDailySpendingRatios: Arrays.uints(
@@ -245,7 +245,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
     // Setup the pool configuration for cUSD/USDC pool
     cUSDUSDCConfig = PoolConfiguration({
       asset0: cUSD,
-      asset1: USDCet,
+      asset1: bridgedUSDC,
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
       referenceRateResetFrequency: 5 minutes,
@@ -525,7 +525,7 @@ contract MU01_BaklavaCGP is GovernanceScript {
 
   /**
    * @notice This function generates the transactions required to create the
-   *         BiPoolManager exchanges (cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/USDCet)
+   *         BiPoolManager exchanges (cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/bridgedUSDC)
    */
   function proposal_createExchanges() private {
     address payable biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
