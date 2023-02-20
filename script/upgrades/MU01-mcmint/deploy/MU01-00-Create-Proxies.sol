@@ -8,6 +8,7 @@ import { console2 } from "forge-std/Script.sol";
 import { BreakerBoxProxy } from "mento-core/contracts/proxies/BreakerBoxProxy.sol";
 import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerProxy.sol";
 import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
+import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 
 /*
  forge script MU01_CreateProxies --rpc-url $RPC_URL
@@ -19,12 +20,14 @@ contract MU01_CreateProxies is Script {
     address breakerBoxProxy;
     address biPoolManagerProxy;
     address brokerProxy;
+    address partialReserveProxy;
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       breakerBoxProxy = address(new BreakerBoxProxy());
       biPoolManagerProxy = address(new BiPoolManagerProxy());
       brokerProxy = address(new BrokerProxy());
+      partialReserveProxy = address(new PartialReserveProxy());
     }
     vm.stopBroadcast();
 
@@ -32,6 +35,7 @@ contract MU01_CreateProxies is Script {
     console2.log("BrokerProxy deployed at: ", brokerProxy);
     console2.log("BiPoolManagerProxy deployed at: ", biPoolManagerProxy);
     console2.log("BreakerBoxProxy deployed at: ", breakerBoxProxy);
+    console2.log("PartialReserveProxy deployed at: ", partialReserveProxy);
     console2.log("----------");
   }
 }
