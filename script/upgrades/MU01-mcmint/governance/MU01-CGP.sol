@@ -150,7 +150,7 @@ contract MU01_CGP is GovernanceScript {
       isConstantSum: false,
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
-      minimumReports: 5,
+      minimumReports: 2,
       stablePoolResetSize: 7_200_000 * 1e18, // 7.2mil
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
@@ -183,7 +183,7 @@ contract MU01_CGP is GovernanceScript {
       isConstantSum: false,
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
-      minimumReports: 5,
+      minimumReports: 2,
       stablePoolResetSize: 1_800_000 * 1e18, // 1.8mil
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
@@ -216,7 +216,7 @@ contract MU01_CGP is GovernanceScript {
       isConstantSum: false,
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
-      minimumReports: 5,
+      minimumReports: 2,
       stablePoolResetSize: 3_000_000 * 1e18, // 3min
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
@@ -248,9 +248,9 @@ contract MU01_CGP is GovernanceScript {
       asset1: bridgedUSDC,
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
+      minimumReports: 2,
       referenceRateResetFrequency: 5 minutes,
-      minimumReports: 5,
-      stablePoolResetSize: 10_000_000 * 1e18, // 10mil
+      stablePoolResetSize: 12_000_000 * 1e18, // 10mil
       isMedianDeltaBreakerEnabled: false,
       medianDeltaBreakerThreshold: FixidityLib.wrap(0),
       medianDeltaBreakerCooldown: 0,
@@ -261,7 +261,7 @@ contract MU01_CGP is GovernanceScript {
       referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: 10_000_000,
+      asset0_limit0: 5_000_000,
       asset0_limit1: 10_000_000,
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
