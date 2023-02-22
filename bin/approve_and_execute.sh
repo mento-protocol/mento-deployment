@@ -54,8 +54,8 @@ echo "🗳️ Voting proposal $PROPOSAL_ID" &&\
 echo "==========================================" &&\
 celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID --privateKey $SIGNER_PK &&\
 echo "😴 301s" &&\
-echo "💃 Executing proposal $PROPOSAL_ID" &&\
 echo -e "\a" && sleep 301 &&\
+echo "💃 Executing proposal $PROPOSAL_ID" &&\
 celocli governance:execute --from=$SIGNER --proposalID=$PROPOSAL_ID --privateKey $SIGNER_PK
 
 # Proposal passed, make some noise
