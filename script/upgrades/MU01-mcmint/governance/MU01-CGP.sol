@@ -4,7 +4,7 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
-import { console2 } from "forge-std/Script.sol";
+import { console2 as console } from "forge-std/Script.sol";
 import { FixidityLib } from "mento-core/contracts/common/FixidityLib.sol";
 
 import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
@@ -33,6 +33,8 @@ import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
 import { Reserve } from "mento-core/contracts/Reserve.sol";
 import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 
+import { Config } from './Config.sol';
+
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy 
@@ -43,16 +45,12 @@ contract MU01_CGP is GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  uint8 private constant L0 = 1; // 0b001 Limit0
-  uint8 private constant L1 = 2; // 0b010 Limit1
-  uint8 private constant LG = 4; // 0b100 LimitGlobal
-
-  PoolConfiguration private cUSDCeloConfig;
-  PoolConfiguration private cEURCeloConfig;
-  PoolConfiguration private cBRLCeloConfig;
-  PoolConfiguration private cUSDUSDCConfig;
-  PoolConfiguration[] private poolConfigs;
-  PartialReserveConfiguration private partialReserveConfig;
+  Config.PoolConfiguration private cUSDCeloConfig;
+  Config.PoolConfiguration private cEURCeloConfig;
+  Config.PoolConfiguration private cBRLCeloConfig;
+  Config.PoolConfiguration private cUSDUSDCConfig;
+  Config.PoolConfiguration[] private poolConfigs;
+  Config.PartialReserveConfiguration private partialReserveConfig;
 
   address private cUSD;
   address private cEUR;
@@ -69,6 +67,7 @@ contract MU01_CGP is GovernanceScript {
   function prepare() public {
     loadDeployedContracts();
     setAddresses();
+    console.log("Here");
     setUpConfigs();
   }
 
@@ -99,181 +98,28 @@ contract MU01_CGP is GovernanceScript {
    *      This function is called by the governance script runner.
    */
   function setUpConfigs() public {
-    /* ================================================================ */
-    /* ====================== 1. Partial Reserve ====================== */
-    /* ================================================================ */
+    partialReserveConfig = Config.partialReserveConfig(contracts);
 
-    partialReserveConfig = PartialReserveConfiguration({
-      // ===== not relevant parameters, copied from current mainnet Reserve.sol config
-      tobinTaxStalenessThreshold: 3153600000, // 100 years
-      assetAllocationSymbols: Arrays.bytes32s(
-        bytes32("cGLD"),
-        bytes32("BTC"),
-        bytes32("ETH"),
-        bytes32("DAI"),
-        bytes32("cMCO2")
-      ),
-      assetAllocationWeights: Arrays.uints(
-        uint256(0.5 * 10**24),
-        uint256(0.1 * 10**24),
-        uint256(0.1 * 10**24),
-        uint256(0.295 * 10**24),
-        uint256(0.005 * 10**24)
-      ),
-      tobinTax: FixidityLib.newFixed(0).unwrap(), // disabled
-      tobinTaxReserveRatio: FixidityLib.newFixed(0).unwrap(), // disabled
-      frozenGold: 0, // no frozen gold
-      frozenDays: 0,  // no frozen gold
+    // Create pool configurations
+    cUSDCeloConfig = Config.cUSDCeloConfig(contracts);
+    cEURCeloConfig = Config.cEURCeloConfig(contracts);
+    cBRLCeloConfig = Config.cBRLCeloConfig(contracts);
+    cUSDUSDCConfig = Config.cUSDUSDCConfig(contracts);
 
-      // ===== relevant parameters below
-      registryAddress: address(0x000000000000000000000000000000000000ce10), // celo registry address
-      spendingRatioForCelo: FixidityLib.fixed1().unwrap(), // 100% CELO spending
-      // CELO and bridgedUSDC as collateral assets with 100% spending
-      collateralAssets: Arrays.addresses(
-        contracts.dependency("BridgedUSDC"),
-        contracts.celoRegistry("GoldToken")
-      ),
-      collateralAssetDailySpendingRatios: Arrays.uints(
-        FixidityLib.fixed1().unwrap(), 
-        FixidityLib.fixed1().unwrap()
-      )
-    });
-
-    /* ================================================================ */
-    /* ===================== 2. Broker Exchanges ===================== */
-    /* ================================================================ */
-
-    // Create pool configuration for cUSD/CELO pool
-    cUSDCeloConfig = PoolConfiguration({
-      asset0: cUSD,
-      asset1: celo,
-      isConstantSum: false,
-      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
-      referenceRateResetFrequency: 5 minutes,
-      minimumReports: 2,
-      stablePoolResetSize: 7_200_000 * 1e18, // 7.2mil
-      isMedianDeltaBreakerEnabled: true,
-      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
-      medianDeltaBreakerCooldown: 30 minutes,
-      isValueDeltaBreakerEnabled: false,
-      valueDeltaBreakerThreshold: FixidityLib.wrap(0),
-      valueDeltaBreakerReferenceValue: 0,
-      valueDeltaBreakerCooldown: 0,
-      referenceRateFeedID: cUSD,
-      asset0_timeStep0: 5 minutes,
-      asset0_timeStep1: 1 days,
-      asset0_limit0: 1_000_000,
-      asset0_limit1: 5_000_000,
-      asset0_limitGlobal: 0,
-      asset0_flags: L0 | L1
-    });
+    // Push them to the array
     poolConfigs.push(cUSDCeloConfig);
-
-    // Set the exchange ID for the reference rate feed
-    referenceRateFeedIDToExchangeId[cUSDCeloConfig.referenceRateFeedID] = getExchangeId(
-      cUSDCeloConfig.asset0,
-      cUSDCeloConfig.asset1,
-      cUSDCeloConfig.isConstantSum
-    );
-
-    // Create pool configuration for cEUR/CELO pool
-    cEURCeloConfig = PoolConfiguration({
-      asset0: cEUR,
-      asset1: celo,
-      isConstantSum: false,
-      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
-      referenceRateResetFrequency: 5 minutes,
-      minimumReports: 2,
-      stablePoolResetSize: 1_800_000 * 1e18, // 1.8mil
-      isMedianDeltaBreakerEnabled: true,
-      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
-      medianDeltaBreakerCooldown: 30 minutes,
-      isValueDeltaBreakerEnabled: false,
-      valueDeltaBreakerThreshold: FixidityLib.wrap(0),
-      valueDeltaBreakerReferenceValue: 0,
-      valueDeltaBreakerCooldown: 0,
-      referenceRateFeedID: cEUR,
-      asset0_timeStep0: 5 minutes,
-      asset0_timeStep1: 1 days,
-      asset0_limit0: 1_000_000,
-      asset0_limit1: 5_000_000,
-      asset0_limitGlobal: 0,
-      asset0_flags: L0 | L1
-    });
     poolConfigs.push(cEURCeloConfig);
-
-    // Set the exchange ID for the reference rate feed
-    referenceRateFeedIDToExchangeId[cEURCeloConfig.referenceRateFeedID] = getExchangeId(
-      cEURCeloConfig.asset0,
-      cEURCeloConfig.asset1,
-      cEURCeloConfig.isConstantSum
-    );
-
-    // Create pool configuration for cBRL/CELO pool
-    cBRLCeloConfig = PoolConfiguration({
-      asset0: cBRL,
-      asset1: celo,
-      isConstantSum: false,
-      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
-      referenceRateResetFrequency: 5 minutes,
-      minimumReports: 2,
-      stablePoolResetSize: 3_000_000 * 1e18, // 3min
-      isMedianDeltaBreakerEnabled: true,
-      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
-      medianDeltaBreakerCooldown: 30 minutes,
-      isValueDeltaBreakerEnabled: false,
-      valueDeltaBreakerThreshold: FixidityLib.wrap(0),
-      valueDeltaBreakerReferenceValue: 0,
-      valueDeltaBreakerCooldown: 0,
-      referenceRateFeedID: cBRL,
-      asset0_timeStep0: 5 minutes,
-      asset0_timeStep1: 1 days,
-      asset0_limit0: 1_000_000,
-      asset0_limit1: 5_000_000,
-      asset0_limitGlobal: 0,
-      asset0_flags: L0 | L1
-    });
     poolConfigs.push(cBRLCeloConfig);
-
-    // Set the exchange ID for the reference rate feed
-    referenceRateFeedIDToExchangeId[cBRLCeloConfig.referenceRateFeedID] = getExchangeId(
-      cBRLCeloConfig.asset0,
-      cBRLCeloConfig.asset1,
-      cBRLCeloConfig.isConstantSum
-    );
-
-    // Setup the pool configuration for cUSD/USDC pool
-    cUSDUSDCConfig = PoolConfiguration({
-      asset0: cUSD,
-      asset1: bridgedUSDC,
-      isConstantSum: true,
-      spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
-      minimumReports: 2,
-      referenceRateResetFrequency: 5 minutes,
-      stablePoolResetSize: 12_000_000 * 1e18, // 10mil
-      isMedianDeltaBreakerEnabled: false,
-      medianDeltaBreakerThreshold: FixidityLib.wrap(0),
-      medianDeltaBreakerCooldown: 0,
-      isValueDeltaBreakerEnabled: true,
-      valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
-      valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
-      valueDeltaBreakerCooldown: 1 seconds,
-      referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
-      asset0_timeStep0: 5 minutes,
-      asset0_timeStep1: 1 days,
-      asset0_limit0: 5_000_000,
-      asset0_limit1: 10_000_000,
-      asset0_limitGlobal: 0,
-      asset0_flags: L0 | L1
-    });
     poolConfigs.push(cUSDUSDCConfig);
 
     // Set the exchange ID for the reference rate feed
-    referenceRateFeedIDToExchangeId[cUSDUSDCConfig.referenceRateFeedID] = getExchangeId(
-      cUSDUSDCConfig.asset0,
-      cUSDUSDCConfig.asset1,
-      cUSDUSDCConfig.isConstantSum
-    );
+    for (uint i = 0; i < poolConfigs.length; i++) {
+      referenceRateFeedIDToExchangeId[poolConfigs[i].referenceRateFeedID] = getExchangeId(
+        poolConfigs[i].asset0,
+        poolConfigs[i].asset1,
+        poolConfigs[i].isConstantSum
+      );
+    }
   }
 
   function run() public {
@@ -329,7 +175,7 @@ contract MU01_CGP is GovernanceScript {
         )
       );
     } else {
-      console2.log("Skipping BreakerBoxProxy - already initialized");
+      console.log("Skipping BreakerBoxProxy - already initialized");
     }
 
     BiPoolManagerProxy biPoolManagerProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
@@ -352,7 +198,7 @@ contract MU01_CGP is GovernanceScript {
         )
       );
     } else {
-      console2.log("Skipping BiPoolManagerProxy - already initialized");
+      console.log("Skipping BiPoolManagerProxy - already initialized");
     }
 
     BrokerProxy brokerProxy = BrokerProxy(address(contracts.deployed("BrokerProxy")));
@@ -373,7 +219,7 @@ contract MU01_CGP is GovernanceScript {
         )
       );
     } else {
-      console2.log("Skipping BrokerProxy - already initialized");
+      console.log("Skipping BrokerProxy - already initialized");
     }
 
     PartialReserveProxy partialReserveProxy = PartialReserveProxy(partialReserveProxyAddress);
@@ -404,7 +250,7 @@ contract MU01_CGP is GovernanceScript {
         )
       );
     } else {
-      console2.log("Skipping PartianReserveProxy - already initialized");
+      console.log("Skipping PartianReserveProxy - already initialized");
     }
   }
 
@@ -465,7 +311,7 @@ contract MU01_CGP is GovernanceScript {
           )
         );
       } else {
-        console2.log("Token already added to the reserve, skipping: %s", stableTokens[i]);
+        console.log("Token already added to the reserve, skipping: %s", stableTokens[i]);
       }
     }
 
@@ -533,7 +379,7 @@ contract MU01_CGP is GovernanceScript {
     if (biPoolManagerInitialized) {
       bytes32[] memory existingExchangeIds = IBiPoolManager(contracts.deployed("BiPoolManagerProxy")).getExchangeIds();
       if (existingExchangeIds.length > 0) {
-        console2.log("Destroying existing exchanges: ", existingExchangeIds.length);
+        console.log("Destroying existing exchanges: ", existingExchangeIds.length);
         for (uint256 i = existingExchangeIds.length; i > 0; i--) {
           transactions.push(
             ICeloGovernance.Transaction(
@@ -551,7 +397,7 @@ contract MU01_CGP is GovernanceScript {
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
     for (uint256 i = 0; i < poolConfigs.length; i++) {
-      PoolConfiguration memory poolConfig = poolConfigs[i];
+      Config.PoolConfiguration memory poolConfig = poolConfigs[i];
       IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
         asset0: poolConfig.asset0,
         asset1: poolConfig.asset1,
@@ -764,7 +610,7 @@ contract MU01_CGP is GovernanceScript {
   function proposal_configureTradingLimits() public {
     address brokerProxyAddress = contracts.deployed("BrokerProxy");
     for (uint256 i = 0; i < poolConfigs.length; i++) {
-      PoolConfiguration memory poolConfig = poolConfigs[i];
+      Config.PoolConfiguration memory poolConfig = poolConfigs[i];
 
       // Set the trading limits for the pool
       transactions.push(
