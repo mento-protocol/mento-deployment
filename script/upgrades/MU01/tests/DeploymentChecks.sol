@@ -129,9 +129,6 @@ contract DeploymentChecks is Script {
   function checkReserveMultisigCanSpend() public {
     uint256 oneMillion = 1_000_000 * 1e18;
 
-    // assert (address(reserve).balance == 0);
-    // assert (MockERC20(bridgedUSDC).balanceOf(address(reserve)) == 0);
-
     vm.deal(address(reserve), oneMillion);
     vm.prank(MockERC20(bridgedUSDC).owner());
     MockERC20(bridgedUSDC).mint(address(reserve), oneMillion);
