@@ -1,5 +1,10 @@
 #!/bin/bash
 
+##############################################################################
+# Script for pulling secret keys from GCP secret manager.
+# Usage: ./bin/get_secrets.sh 
+##############################################################################
+
 # Authenticate with Google Cloud
 gcloud auth login
 
