@@ -232,7 +232,8 @@ library Config {
     });
   } 
 
-  function cUSDCeloConfig(Contracts.Cache storage contracts) internal returns (PoolConfiguration memory config) {
+  function cUSDCeloConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
+    require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
     config = PoolConfiguration({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.celoRegistry("GoldToken"),
@@ -251,8 +252,8 @@ library Config {
       referenceRateFeedID: contracts.celoRegistry("StableToken"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: 1_000_000,
-      asset0_limit1: 5_000_000,
+      asset0_limit0: [10_000, 100_000, 1_000_000][phase - 1],
+      asset0_limit1: [50_000, 500_000, 5_000_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
@@ -262,7 +263,8 @@ library Config {
     }
   }
 
-  function cEURCeloConfig(Contracts.Cache storage contracts) internal returns (PoolConfiguration memory config) {
+  function cEURCeloConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
+    require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
     config = PoolConfiguration({
       asset0: contracts.celoRegistry("StableTokenEUR"),
       asset1: contracts.celoRegistry("GoldToken"),
@@ -281,8 +283,8 @@ library Config {
       referenceRateFeedID: contracts.celoRegistry("StableTokenEUR"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: 1_000_000,
-      asset0_limit1: 5_000_000,
+      asset0_limit0: [10_000, 100_000, 1_000_000][phase - 1],
+      asset0_limit1: [50_000, 500_000, 5_000_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
@@ -292,7 +294,8 @@ library Config {
     }
   }
 
-  function cBRLCeloConfig(Contracts.Cache storage contracts) internal returns (PoolConfiguration memory config) {
+  function cBRLCeloConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
+    require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
     config = PoolConfiguration({
       asset0: contracts.celoRegistry("StableTokenBRL"),
       asset1: contracts.celoRegistry("GoldToken"),
@@ -311,8 +314,8 @@ library Config {
       referenceRateFeedID: contracts.celoRegistry("StableTokenBRL"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: 1_000_000,
-      asset0_limit1: 5_000_000,
+      asset0_limit0: [10_000, 100_000, 1_000_000][phase - 1],
+      asset0_limit1: [50_000, 500_000, 5_000_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
@@ -321,7 +324,8 @@ library Config {
     }
   }
 
-  function cUSDUSDCConfig(Contracts.Cache storage contracts) internal returns (PoolConfiguration memory config) {
+  function cUSDUSDCConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
+    require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
     config = PoolConfiguration({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("BridgedUSDC"),
@@ -340,8 +344,8 @@ library Config {
       referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: 5_000_000,
-      asset0_limit1: 10_000_000,
+      asset0_limit0: [50_000, 500_000, 5_000_000][phase - 1],
+      asset0_limit1: [100_000, 1_000_000, 10_000_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });

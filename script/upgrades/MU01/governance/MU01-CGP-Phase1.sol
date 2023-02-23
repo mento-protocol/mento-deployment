@@ -33,14 +33,15 @@ import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
 import { Reserve } from "mento-core/contracts/Reserve.sol";
 import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 
-import { Config } from './Config.sol';
+import { Config } from "./Config.sol";
+import { ICGPBuilder } from "script/interfaces/ICGPBuilder.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
-contract MU01_CGP is GovernanceScript {
+contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
 
   ICeloGovernance.Transaction[] private transactions;
@@ -67,7 +68,6 @@ contract MU01_CGP is GovernanceScript {
   function prepare() public {
     loadDeployedContracts();
     setAddresses();
-    console.log("Here");
     setUpConfigs();
   }
 
@@ -78,7 +78,6 @@ contract MU01_CGP is GovernanceScript {
     contracts.load("MU01-00-Create-Proxies", "latest");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU01-02-Create-Implementations", "latest");
-    contracts.load("MU01-04-Create-MockBridgedUSDC", "latest");
   }
 
   /**
@@ -101,10 +100,10 @@ contract MU01_CGP is GovernanceScript {
     partialReserveConfig = Config.partialReserveConfig(contracts);
 
     // Create pool configurations
-    cUSDCeloConfig = Config.cUSDCeloConfig(contracts);
-    cEURCeloConfig = Config.cEURCeloConfig(contracts);
-    cBRLCeloConfig = Config.cBRLCeloConfig(contracts);
-    cUSDUSDCConfig = Config.cUSDUSDCConfig(contracts);
+    cUSDCeloConfig = Config.cUSDCeloConfig(contracts, 1);
+    cEURCeloConfig = Config.cEURCeloConfig(contracts, 1);
+    cBRLCeloConfig = Config.cBRLCeloConfig(contracts, 1);
+    cUSDUSDCConfig = Config.cUSDUSDCConfig(contracts, 1);
 
     // Push them to the array
     poolConfigs.push(cUSDCeloConfig);
