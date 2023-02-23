@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 
-# Imperfect but simple script to pass governance proposals on Celo tesnets (staging, baklava or alfajores)
+##############################################################################
+# Script for Approving and Executing a Governance Proposal on a tesnet.
+# Usage: ./bin/approve_and_execute.sh 
+#               -n <baklava|alfajores|mainnet>  -- network to submit the proposal to
+#               -u <upgrade_name>               -- name of the upgrade (MU01)
+# Example: ./bin/approve_and_execute.sh -n baklava -u MU01
+##############################################################################
+
+
 set -euo pipefail
 
 source .env
