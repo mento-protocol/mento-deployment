@@ -31,7 +31,7 @@ for SECRET_ID in $(echo "$SECRET_IDS" | tr ',' ' '); do
     if [[ -s "$ENV_FILE" ]]; then
       printf "\n%s=%s" "$SECRET_NAME" "$SECRET_VALUE" >> "$ENV_FILE"
     else
-      # If the .env file is empty, write the secret name and value to the .env file.
+      # If we don't have an .env, write the secret name and value to the .env file.
       echo -n "$SECRET_NAME=$SECRET_VALUE" >> "$ENV_FILE"
     fi
   fi
