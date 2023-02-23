@@ -252,8 +252,8 @@ library Config {
       referenceRateFeedID: contracts.celoRegistry("StableToken"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: [10_000, 100_000, 1_000_000][phase - 1],
-      asset0_limit1: [50_000, 500_000, 5_000_000][phase - 1],
+      asset0_limit0: [10_000, 100_000, 500_000][phase - 1],
+      asset0_limit1: [50_000, 500_000, 2_500_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
@@ -283,8 +283,8 @@ library Config {
       referenceRateFeedID: contracts.celoRegistry("StableTokenEUR"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: [10_000, 100_000, 1_000_000][phase - 1],
-      asset0_limit1: [50_000, 500_000, 5_000_000][phase - 1],
+      asset0_limit0: [10_000, 100_000, 500_000][phase - 1],
+      asset0_limit1: [50_000, 500_000, 2_500_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
@@ -314,8 +314,8 @@ library Config {
       referenceRateFeedID: contracts.celoRegistry("StableTokenBRL"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: [10_000, 100_000, 1_000_000][phase - 1],
-      asset0_limit1: [50_000, 500_000, 5_000_000][phase - 1],
+      asset0_limit0: [10_000, 100_000, 500_000][phase - 1],
+      asset0_limit1: [50_000, 500_000, 2_500_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
@@ -344,8 +344,8 @@ library Config {
       referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: [50_000, 500_000, 5_000_000][phase - 1],
-      asset0_limit1: [100_000, 1_000_000, 10_000_000][phase - 1],
+      asset0_limit0: [50_000, 500_000, 2_500_000][phase - 1],
+      asset0_limit1: [100_000, 1_000_000, 5_000_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
