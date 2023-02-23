@@ -19,8 +19,8 @@ import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 */
 contract MU01_GovernanceOwnershipTransfer is Script {
   function run() public {
-    contracts.load("MU01-00-Create-Proxies", "1676642018");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676642105");
+    contracts.load("MU01-00-Create-Proxies", "latest");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     address payable breakerBoxProxy = address(uint160(contracts.deployed("BreakerBoxProxy")));
     address payable biPoolManagerProxy = address(uint160(contracts.deployed("BiPoolManagerProxy")));
     address payable brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));

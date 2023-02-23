@@ -11,7 +11,7 @@ contract MockERC20 is ERC20, ERC20Detailed, Ownable {
     string memory symbol,
     uint8 decimals
   ) public ERC20Detailed(name, symbol, decimals) {
-    mint(msg.sender, 1000000 ether);
+    mint(msg.sender, 100_000_000 ether);
   }
 
   function mint(address to, uint256 amount) public onlyOwner returns (bool) {

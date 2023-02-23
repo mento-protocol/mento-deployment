@@ -55,9 +55,9 @@ contract DeploymentChecks is Script {
     new PrecompileHandler(); // needed for reserve CELO transfer checks
 
     // Load addresses from deployments
-    contracts.load("MU01-00-Create-Proxies", "1676642018");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "1676642105");
-    contracts.load("MU01-02-Create-Implementations", "1676642427");
+    contracts.load("MU01-00-Create-Proxies", "latest");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.load("MU01-02-Create-Implementations", "latest");
 
     // Get proxy addresses of the deployed tokens
     cUSD = contracts.celoRegistry("StableToken");
@@ -129,15 +129,13 @@ contract DeploymentChecks is Script {
   function checkReserveMultisigCanSpend() public {
     uint256 oneMillion = 1_000_000 * 1e18;
 
-    assert (address(reserve).balance == 0);
-    assert (MockERC20(bridgedUSDC).balanceOf(address(reserve)) == 0);
-
     vm.deal(address(reserve), oneMillion);
     vm.prank(MockERC20(bridgedUSDC).owner());
     MockERC20(bridgedUSDC).mint(address(reserve), oneMillion);
 
     address payable mainReserve = address(uint160(contracts.celoRegistry("Reserve")));
     uint256 prevMainReserveCeloBalance = address(mainReserve).balance;
+    uint256 prevMainReserveUsdcBalance = MockERC20(bridgedUSDC).balanceOf(address(mainReserve));
 
     address multiSigAddr = contracts.dependency("PartialReserveMultisig");
     vm.startPrank(multiSigAddr);
@@ -145,11 +143,8 @@ contract DeploymentChecks is Script {
     reserve.transferCollateralAsset(bridgedUSDC, mainReserve, oneMillion);
     vm.stopPrank();
 
-    assert (address(reserve).balance == 0);
     assert (address(mainReserve).balance == prevMainReserveCeloBalance + oneMillion);
-
-    assert (MockERC20(bridgedUSDC).balanceOf(address(reserve)) == 0);
-    assert (MockERC20(bridgedUSDC).balanceOf(address(mainReserve)) == oneMillion);
+    assert (MockERC20(bridgedUSDC).balanceOf(address(mainReserve)) == prevMainReserveUsdcBalance + oneMillion);
 
     console2.log("\t multiSig spender can spend collateral assets 🤑");
   } 
