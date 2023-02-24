@@ -47,10 +47,10 @@ fi
 echo "📠 Network is $NETWORK"
 if [ "$SIMULATE" = true ] ; then
     echo "🥸  Simulating $UPGRADE Phase$PHASE CGP"
-    forge script --rpc-url $BAKLAVA_RPC_URL --sig "run(uint8)" ${UPGRADE}_CGPSimulation $PHASE
+    forge script --rpc-url $RPC_URL --sig "run(uint8)" ${UPGRADE}_CGPSimulation $PHASE
 else 
     echo "🔥 Submitting $UPGRADE Phase$PHASE CGP"
-    forge script --rpc-url $BAKLAVA_RPC_URL --legacy --broadcast --verify --verifier sourcify ${UPGRADE}_CGP_Phase${PHASE}
+    forge script --rpc-url $RPC_URL --legacy --broadcast --verify --verifier sourcify ${UPGRADE}_CGP_Phase${PHASE}
 fi
 
 

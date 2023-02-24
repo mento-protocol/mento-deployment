@@ -16,6 +16,8 @@ fs_permissions = [
     { access = "read", path = "./script/upgrades/dependencies.json"}
 ]
 
+libraries = [
+########################################################################################
 # There's a foundry bug that occurs when trying to verify libraries in sourcify.
 # The verification fails for the library and it aborts the rest of the verifications
 # for all contracts in that script run.
@@ -24,12 +26,14 @@ fs_permissions = [
 # However there is no way to specify the libraries per network, so we have to
 # keep them here commented. If we don't comment them we run the risk of 
 # accidentally linking the wrong libraries on the wrong network.
-libraries = [
 # Baklava:
 #     "lib/mento-core/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x3e2cc57f83093Ce1Ee03482c1590E3B5f4225bd7",
-#     "lib/mento-core/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0x99EDce8143FF8AeFA1fBB6C2103B349Add2B9519"
+#     "lib/mento-core/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0x99EDce8143FF8AeFA1fBB6C2103B349Add2B9519",
+# Alfajores:
+#     "lib/mento-core/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0xbdBEE70764261b753cb9C59d5d6bdE96fe7d0234",
+#     "lib/mento-core/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0xa8010E684104D6684f7552C4107592e43Ed390Bd",
 # Mainnet: TBD
-# Alfajores: TBD
+########################################################################################
 ]
 
 [profile.ci]

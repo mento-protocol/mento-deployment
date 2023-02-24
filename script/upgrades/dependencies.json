@@ -7,6 +7,7 @@
   },
   "44787": {
     "BridgedUSDC": "0x2c4b568dfba1fbdbb4e7dad3f4186b68bce40db3",
+    "USDCUSDRateFeedAddr": "0xA1A8003936862E7a15092A91898D69fa8bCE290c",
     "PartialReserveMultisig": "0x56fD3F2bEE130e9867942D0F463a16fBE49B8d81"
   }
 }

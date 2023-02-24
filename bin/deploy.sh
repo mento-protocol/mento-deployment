@@ -14,11 +14,13 @@ source .env
 
 NETWORK=""
 UPGRADE=""
-while getopts n:u: flag
+FROM=""
+while getopts n:u:f: flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         u) UPGRADE=${OPTARG};;
+        f) FROM=${OPTARG};;
     esac
 done
 
@@ -49,9 +51,25 @@ else
     exit 1
 fi
 
+if [ -z "$FROM" ]; then
+    echo "🔥 Running all deploy scripts"
+else
+    echo "ℹ️ Running deploy scripts starting $FROM"
+fi
+
 for DEPLOY_SCRIPT in $UPGRADE_DIR/deploy/*; do
-    echo "=================================================================="
-    echo "🔥 Running $DEPLOY_SCRIPT"
-    echo "=================================================================="
-    forge script --rpc-url $RPC_URL --legacy --broadcast --verify --verifier sourcify $DEPLOY_SCRIPT
+    if [ -z "$FROM" ]; then
+        echo "=================================================================="
+        echo "🔥 Running $DEPLOY_SCRIPT"
+        echo "=================================================================="
+        forge script --rpc-url $RPC_URL --legacy --broadcast --verify --verifier sourcify $DEPLOY_SCRIPT
+    else
+        if [ "$DEPLOY_SCRIPT" = "$UPGRADE_DIR/deploy/$FROM" ]; then
+            echo "=================================================================="
+            echo "🔥 Running $DEPLOY_SCRIPT"
+            echo "=================================================================="
+            forge script --rpc-url $RPC_URL --legacy --broadcast --verify --verifier sourcify $DEPLOY_SCRIPT
+            FROM=""
+        fi
+    fi
 done

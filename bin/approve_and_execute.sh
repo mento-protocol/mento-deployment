@@ -35,7 +35,8 @@ case $NETWORK in
         APPROVER=$ALFAJORES_APPROVER
         APPROVER_PK=$ALFAJORES_APPROVER_PK
         SIGNER=$ALFAJORES_SIGNER
-        SIGNER_PK=$ALFAJORES_SIGNER_PK
+        # No SIGNER_PK for alfajores, use port-forwarded node
+        SIGNER_PK=
         RPC_URL=$ALFAJORES_RPC_URL
         ;;
     *)
@@ -60,11 +61,15 @@ echo "😴 301s" &&\
 echo -e "\a" && sleep 301 &&\
 echo "🗳️ Voting proposal $PROPOSAL_ID" &&\
 echo "==========================================" &&\
-celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID --privateKey $SIGNER_PK &&\
+if [ -z "$SIGNER_PK" ]; then
+    celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID
+else
+    celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID --privateKey $SIGNER_PK
+if &&\
 echo "😴 301s" &&\
 echo -e "\a" && sleep 301 &&\
 echo "💃 Executing proposal $PROPOSAL_ID" &&\
-celocli governance:execute --from=$SIGNER --proposalID=$PROPOSAL_ID --privateKey $SIGNER_PK
+celocli governance:execute --from=$APPROVER --proposalID=$PROPOSAL_ID --privateKey $APPROVER_PK
 
 # Proposal passed, make some noise
 echo -e "\a"
