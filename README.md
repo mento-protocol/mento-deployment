@@ -18,6 +18,9 @@ forge install && forge build
 # Create your .env file(Replace the PK for deployer account)
 cp .env.example .env
 
+# Pull secrets from GCP
+./bin/get_secrets.sh
+
 # Execute scripts using forge script command
 forge script DeployCircuitBreaker --rpc-url $BAKLAVA_RPC_URL --broadcast --legacy --verify --verifier sourcify
 
