@@ -14,20 +14,13 @@ source .env
 
 NETWORK=""
 UPGRADE=""
-<<<<<<< HEAD
 FROM=""
 while getopts n:u:f: flag
-=======
-while getopts n:u: flag
->>>>>>> main
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         u) UPGRADE=${OPTARG};;
-<<<<<<< HEAD
         f) FROM=${OPTARG};;
-=======
->>>>>>> main
     esac
 done
 
