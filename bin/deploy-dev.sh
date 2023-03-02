@@ -23,7 +23,7 @@ done
 parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
 
-for DEPLOY_SCRIPT in $UPGRADE_DIR/deploy/*; do
+for DEPLOY_SCRIPT in $UPGRADE_DIR/dev/*; do
     echo "=================================================================="
     echo "🔥 Running $DEPLOY_SCRIPT"
     echo "=================================================================="

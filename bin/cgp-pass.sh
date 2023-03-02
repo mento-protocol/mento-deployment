@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
 
 ##############################################################################
-# Script for Approving and Executing a Governance Proposal on a tesnet.
-# Usage: ./bin/approve_and_execute.sh 
-#               -n <baklava|alfajores|mainnet>  -- network to submit the proposal to
-#               -u <upgrade_name>               -- name of the upgrade (MU01)
-# Example: ./bin/approve_and_execute.sh -n baklava -u MU01
+# Script for passing a Celo Governance Proposal on a tesnet.
+# Usage: ./bin/cgp-pass.sh 
+#               -n <baklava|alfajores>  -- network to pass the proposal on
+#               -p <proposal_id>        -- proposal ID
+# Example: ./bin/cgp-pass.sh -n baklava -p 79
 ##############################################################################
 
-
-set -euo pipefail
-
-source .env
+source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
 PROPOSAL_ID=""
@@ -23,32 +20,13 @@ do
     esac
 done
 
-case $NETWORK in 
-    "baklava")
-        APPROVER=$BAKLAVA_APPROVER
-        APPROVER_PK=$BAKLAVA_APPROVER_PK
-        SIGNER=$BAKLAVA_SIGNER
-        SIGNER_PK=$BAKLAVA_SIGNER_PK
-        RPC_URL=$BAKLAVA_RPC_URL
-        ;;
-    "alfajores")
-        APPROVER=$ALFAJORES_APPROVER
-        APPROVER_PK=$ALFAJORES_APPROVER_PK
-        SIGNER=$ALFAJORES_SIGNER
-        SIGNER_PK=$ALFAJORES_SIGNER_PK
-        RPC_URL=$ALFAJORES_RPC_URL
-        ;;
-    *)
-        echo "🚨 Invalid network: '$NETWORK'"
-        exit 1
-esac
+parse_network "$NETWORK"
 
 if [ -z "$PROPOSAL_ID" ]; then
     echo "🚨 No proposal ID provided"
     exit 1
 fi
 
-echo "📠 Network is $NETWORK"
 celocli config:set --node $RPC_URL
 
 echo "😴 31s" &&\

@@ -1,0 +1,44 @@
+set -euo pipefail
+source "$(dirname "$0")/../.env"
+
+parse_network () { # $1: network
+    case $1 in
+        "baklava")
+            APPROVER=$BAKLAVA_APPROVER
+            APPROVER_PK=$BAKLAVA_APPROVER_PK
+            SIGNER=$BAKLAVA_SIGNER
+            SIGNER_PK=$BAKLAVA_SIGNER_PK
+            RPC_URL=$BAKLAVA_RPC_URL
+            CHAIN_ID=62320
+            export FOUNDRY_PROFILE=baklava-deployment
+            ;;
+        "alfajores")
+            APPROVER=$ALFAJORES_APPROVER
+            APPROVER_PK=$ALFAJORES_APPROVER_PK
+            SIGNER=$ALFAJORES_SIGNER
+            SIGNER_PK=$ALFAJORES_SIGNER_PK
+            RPC_URL=$ALFAJORES_RPC_URL
+            CHAIN_ID=44787
+            export FOUNDRY_PROFILE=alfajores-deployment
+            ;;
+        *)
+            echo "🚨 Invalid network: '$1'"
+            exit 1
+    esac
+    echo "📠 Network is $NETWORK"
+}
+
+parse_upgrade () { # $1: upgrade
+    if [ -z "$1" ]; then
+        echo "🚨 No upgrade provided"
+        exit 1
+    fi
+
+    UPGRADE_DIR=script/upgrades/$1
+    if test -d "$UPGRADE_DIR"; then
+        echo "🔎 Upgrade $1 found"
+    else
+        echo "🚨 Upgrade $1 not found in $UPGRADE_DIR"
+        exit 1
+    fi
+}

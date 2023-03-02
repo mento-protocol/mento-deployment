@@ -10,8 +10,7 @@
 # Example: ./bin/cgp.sh -n baklava -u MU01 -p 1 
 ##############################################################################
 
-set -euo pipefail
-source .env
+source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
 UPGRADE=""
