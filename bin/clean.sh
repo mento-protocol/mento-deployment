@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ##############################################################################
-# Script for cleaning the broadcast file for an upgrade + networ combo
+# Script for cleaning the broadcast file for an upgrade + network combo
 # Usage: ./bin/clean.sh 
 #               -n <baklava|alfajores|mainnet>  -- network to submit the proposal to
 #               -u <upgrade_name>               -- name of the upgrade (MU01)
