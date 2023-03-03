@@ -38,7 +38,7 @@
     "solhint:check": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\" -q",
     "deploy": "./bin/deploy.sh",
     "script:dev": "./bin/dev-script.sh",
-    "cgp": "./bin/chp.sh",
+    "cgp": "./bin/cgp.sh",
     "cgp:pass": "./bin/cgp-pass.sh",
     "show": "./bin/show.sh",
     "clean": "./bin/clean.sh",
