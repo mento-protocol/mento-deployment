@@ -39,4 +39,3 @@ for BROADCAST_FOLDER in broadcast/$UPGRADE*; do
 done
 
 echo "✅ Done"
-
