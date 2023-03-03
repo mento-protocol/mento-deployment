@@ -2,10 +2,17 @@
 
 ##############################################################################
 # Script for running all deployment tasks for a protocol upgrade
-# Usage: ./bin/deploy.sh 
+# Usage: ./bin/dev-script.sh 
 #               -n <baklava|alfajores|mainnet>  -- network to submit the proposal to
-#               -u <upgrade_name>               -- name of the upgrade (MU01)
-# Example: ./bin/deploy.sh -n baklava -u MU01
+#               -i <script-index>               -- index of the script (optional)
+#               -s <script-name>                -- name of the script (optional)
+# Example: 
+# To pick the script:
+# ./bin/deploy.sh -n baklava 
+# To pick the script by index:
+# ./bin/deploy.sh -n baklava -i 1
+# To pick the script by name:
+# ./bin/deploy.sh -n baklava -s CreateMockBridgedUSDC
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"
@@ -24,7 +31,7 @@ done
 
 parse_network "$NETWORK"
 
-if ! [ -z "$SCRIPT_NAME" ]; then
+if ! [ -z "$SCRIPT_NAME" ]; then # Pick the script by name
     SCRIPT_FILE="script/dev/dev-$SCRIPT_NAME.sol"
     if test -f "$SCRIPT_FILE"; then
         echo "🔎  $SCRIPT_FILE found"
@@ -36,7 +43,7 @@ if ! [ -z "$SCRIPT_NAME" ]; then
     fi
 fi
 
-if ! [ -z "$INDEX" ]; then
+if ! [ -z "$INDEX" ]; then # Pick the script by index
     SCRIPTS_COUNT=$(ls script/dev/* | wc -l)
     if ! [[ "$INDEX" =~ ^[0-9]+$ ]] || [ $INDEX -gt $SCRIPTS_COUNT ] || [ $INDEX -lt "1" ]; then
         echo "🚨 Index $INDEX is out of range or invalid"
@@ -47,10 +54,8 @@ if ! [ -z "$INDEX" ]; then
     exit 0
 fi
 
-# Choose script
+# Choose script from a selector
 SCRIPTS=$(ls script/dev/* | xargs -n 1 basename | sed 's/.sol//g' | sed 's/dev-//g')
-# echo "${SCRIPTS[@]}"
-
 echo "=================================================================="
 echo "👇 Pick a script to run"
 echo "------------------------------------------------------------------"
