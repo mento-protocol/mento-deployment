@@ -5,6 +5,7 @@
 # Usage: ./bin/deploy.sh 
 #               -n <baklava|alfajores|mainnet>  -- network to submit the proposal to
 #               -u <upgrade_name>               -- name of the upgrade (MU01)
+#               -s                              -- name of the script (optional)
 # Example: ./bin/deploy.sh -n baklava -u MU01
 ##############################################################################
 
@@ -12,16 +13,30 @@ source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
 UPGRADE=""
-while getopts n:u: flag
+SCRIPT=""
+while getopts n:u:s: flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         u) UPGRADE=${OPTARG};;
+        s) SCRIPT=${SCRIPT};;
     esac
 done
 
 parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
+
+if ! [ -z "$SCRIPT" ]; then # Pick the script by name
+    SCRIPT_FILE="script/upgrades/$UPGRADE/deploy/$SCRIPT"
+    if test -f "$SCRIPT_FILE"; then
+        echo "🔎  $SCRIPT_FILE found"
+        forge_script "$SCRIPT_NAME" "$SCRIPT_FILE"
+        exit 0
+    else
+        echo "🚨 Script $SCRIPT_NAME not found in $SCRIPT_FILE"
+        exit 1
+    fi
+fi
 
 for DEPLOY_SCRIPT in $UPGRADE_DIR/deploy/*; do
     DEPLOY_FILE=$(basename $DEPLOY_SCRIPT)
