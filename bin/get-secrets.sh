@@ -2,7 +2,7 @@
 
 ##############################################################################
 # Script for pulling secret keys from GCP secret manager.
-# Usage: ./bin/get_secrets.sh 
+# Usage: ./bin/get-secrets.sh 
 ##############################################################################
 
 # Authenticate with Google Cloud

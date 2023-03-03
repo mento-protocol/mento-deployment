@@ -2,7 +2,7 @@
 
 ##############################################################################
 # Script for cleaning the broadcast file for an upgrade + networ combo
-# Usage: ./bin/deploy.sh 
+# Usage: ./bin/clean.sh 
 #               -n <baklava|alfajores|mainnet>  -- network to submit the proposal to
 #               -u <upgrade_name>               -- name of the upgrade (MU01)
 # Example: ./bin/clean.sh -n baklava -u MU01

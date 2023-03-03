@@ -5,7 +5,7 @@
 # Usage: ./bin/show.sh 
 #               -n <baklava|alfajores>  -- network to pass the proposal on
 #               -u <upgrade_name>       -- name of the upgrade (MU01)
-# Example: ./bin/show.sh -n baklava -p 79
+# Example: ./bin/show.sh -n baklava -u MU01
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"
