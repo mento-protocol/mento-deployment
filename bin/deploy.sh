@@ -24,6 +24,6 @@ parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
 
 for DEPLOY_SCRIPT in $UPGRADE_DIR/deploy/*; do
-    DEPLOY_FILE = $(basename $DEPLOY_SCRIPT)
+    DEPLOY_FILE=$(basename $DEPLOY_SCRIPT)
     forge_script "$DEPLOY_FILE" "$DEPLOY_SCRIPT"
 done
