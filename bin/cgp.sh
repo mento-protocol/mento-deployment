@@ -10,8 +10,7 @@
 # Example: ./bin/cgp.sh -n baklava -u MU01 -p 1 
 ##############################################################################
 
-set -euo pipefail
-source .env
+source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
 UPGRADE=""
@@ -46,7 +45,7 @@ fi
 
 echo "📠 Network is $NETWORK"
 if [ "$SIMULATE" = true ] ; then
-    echo "🥸  Simulating $UPGRADE Phase$PHASE CGP"
+    echo "🥸 Simulating $UPGRADE Phase$PHASE CGP"
     forge script --rpc-url $BAKLAVA_RPC_URL --sig "run(uint8)" ${UPGRADE}_CGPSimulation $PHASE
 else 
     echo "🔥 Submitting $UPGRADE Phase$PHASE CGP"

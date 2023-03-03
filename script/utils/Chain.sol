@@ -61,6 +61,10 @@ library Chain {
     revert("unexpected network");
   }
 
+  function deployerAddr() internal view returns (address payable) {
+    return address(uint160(vm.addr(deployerPrivateKey())));
+  }
+
   /**
    * @notice Setup a fork environment for the current chain
    */

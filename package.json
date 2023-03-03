@@ -35,6 +35,13 @@
     "prettier": "prettier --config \"./.prettierrc.yml\" --write \"**/*.{json,md,sol,yml}\"",
     "prettier:check": "prettier --config \"./.prettierrc.yml\" --check \"**/*.{json,md,sol,yml}\"",
     "solhint": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\"",
-    "solhint:check": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\" -q"
+    "solhint:check": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\" -q",
+    "deploy": "./bin/deploy.sh",
+    "script:dev": "./bin/dev-script.sh",
+    "cgp": "./bin/cgp.sh",
+    "cgp:pass": "./bin/cgp-pass.sh",
+    "show": "./bin/show.sh",
+    "clean": "./bin/clean.sh",
+    "secrets:get": "./bin/get-secrets.sh"
   }
 }

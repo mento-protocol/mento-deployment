@@ -34,7 +34,7 @@ import { Reserve } from "mento-core/contracts/Reserve.sol";
 import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 
 import { Config } from "./Config.sol";
-import { ICGPBuilder } from "script/interfaces/ICGPBuilder.sol";
+import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 

@@ -16,20 +16,36 @@ fs_permissions = [
     { access = "read", path = "./script/upgrades/dependencies.json"}
 ]
 
+
 # There's a foundry bug that occurs when trying to verify libraries in sourcify.
 # The verification fails for the library and it aborts the rest of the verifications
 # for all contracts in that script run.
-# The way to get around this is by running the script once and then statically
-# specifying the libraries in the config file.
-# However there is no way to specify the libraries per network, so we have to
-# keep them here commented. If we don't comment them we run the risk of 
-# accidentally linking the wrong libraries on the wrong network.
+# The way to get around this is by running the script once, have it fail and then
+# specify the libraries under the specific network here
+#
+# However, it is important to note that the first time a deployment is run on a network
+# we will have to rerun a deployment after all libraries are deployed and linked here.
+# If not then the metadata of contracts deployed **before** the libraries were added,
+# contracts that do not require the libraries, will still have their bytecode different
+# because of the metadata hash, and the verification will fail. This is because
+# the metadata of a contract will contain the statically linked libraries during compilation
+# irrespective of whether the contract uses them or not.
+
+
+[profile.baklava-deployment]
 libraries = [
-# Baklava:
-#     "lib/mento-core/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x3e2cc57f83093Ce1Ee03482c1590E3B5f4225bd7",
-#     "lib/mento-core/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0x99EDce8143FF8AeFA1fBB6C2103B349Add2B9519"
-# Mainnet: TBD
-# Alfajores: TBD
+    "lib/mento-core/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x3e2cc57f83093Ce1Ee03482c1590E3B5f4225bd7",
+    "lib/mento-core/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0x99EDce8143FF8AeFA1fBB6C2103B349Add2B9519"
+]
+
+[profile.alfajores-deployment]
+# TODO: Add libraries during deployment
+libraries = [
+]
+
+[profile.celo-mainnet-deployment]
+# TODO: Add libraries during deployment
+libraries = [
 ]
 
 [profile.ci]

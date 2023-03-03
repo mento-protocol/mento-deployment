@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 
 ##############################################################################
-# Script for running all deployment tasks for a protocol upgrade
-# Usage: ./bin/deploy.sh 
+# Script for cleaning the broadcast file for an upgrade + network combo
+# Usage: ./bin/clean.sh 
 #               -n <baklava|alfajores|mainnet>  -- network to submit the proposal to
 #               -u <upgrade_name>               -- name of the upgrade (MU01)
-# Example: ./bin/deploy.sh -n baklava -u MU01
+# Example: ./bin/clean.sh -n baklava -u MU01
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
 UPGRADE=""
-while getopts n:u: flag
+while getopts n:u:d flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
@@ -23,7 +23,20 @@ done
 parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
 
-for DEPLOY_SCRIPT in $UPGRADE_DIR/deploy/*; do
-    DEPLOY_FILE=$(basename $DEPLOY_SCRIPT)
-    forge_script "$DEPLOY_FILE" "$DEPLOY_SCRIPT"
+for BROADCAST_FOLDER in broadcast/$UPGRADE*; do
+    echo "🧹 Cleaning $BROADCAST_FOLDER/$CHAIN_ID"
 done
+
+read -p "🚨 Continue? (y/n) " yn
+case $yn in 
+    [Yy]*) ;;
+    *) echo "🛑 Operation stopped."
+       exit;;
+esac
+
+for BROADCAST_FOLDER in broadcast/$UPGRADE*; do
+    rm -rf $BROADCAST_FOLDER/$CHAIN_ID
+done
+
+echo "✅ Done"
+
