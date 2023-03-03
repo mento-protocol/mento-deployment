@@ -34,7 +34,6 @@ if [ -z "$PHASE" ]; then
     exit 1
 fi
 
-echo "📠 Network is $NETWORK"
 if [ "$SIMULATE" = true ] ; then
     echo "🥸  Simulating $UPGRADE Phase$PHASE CGP"
     forge script --rpc-url $RPC_URL --sig "run(uint8)" ${UPGRADE}_CGPSimulation $PHASE
