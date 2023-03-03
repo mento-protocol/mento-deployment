@@ -28,11 +28,20 @@ library Contracts {
     string _dependencies;
   }
 
+  function loadUpgrade(
+    Cache storage self,
+    string memory upgrade
+  ) internal {
+    load(self, string(abi.encodePacked(upgrade, "-00-Create-Proxies")), "latest");
+    load(self, string(abi.encodePacked(upgrade, "-01-Create-Nonupgradeable-Contracts")), "latest");
+    load(self, string(abi.encodePacked(upgrade, "-02-Create-Implementations")), "latest");
+  }
+
   function load(
     Cache storage self,
     string memory script,
     string memory timestamp
-  ) internal returns (Cache storage) {
+  ) internal {
     string memory chainId = Chain.idString();
     string memory root = vm.projectRoot();
     string memory path = string(
@@ -76,8 +85,6 @@ library Contracts {
         console.log("Loaded contract %s at %s", contractName, contractAddresses[i]);
       }
     }
-
-    return self;
   }
 
   function deployed(Cache storage self, string memory contractName) internal view returns (address payable addr) {

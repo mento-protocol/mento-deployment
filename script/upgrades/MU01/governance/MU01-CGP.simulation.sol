@@ -10,7 +10,7 @@ import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICel
 import { DeploymentChecks } from "../tests/DeploymentChecks.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Contracts } from "script/utils/Contracts.sol";
-import { ICGPBuilder } from "script/interfaces/ICGPBuilder.sol";
+import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
 
 // forge script {file} --rpc-url $BAKLAVA_RPC_URL
 contract MU01_CGPSimulation is GovernanceScript {

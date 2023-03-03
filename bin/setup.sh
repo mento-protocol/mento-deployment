@@ -42,3 +42,10 @@ parse_upgrade () { # $1: upgrade
         exit 1
     fi
 }
+
+forge_script () { # $1: script name, $2: script file path
+    echo "=================================================================="
+    echo "🔥 Running $1"
+    echo "=================================================================="
+    forge script --rpc-url $RPC_URL --legacy --broadcast --verify --verifier sourcify $2
+}

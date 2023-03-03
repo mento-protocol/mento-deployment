@@ -37,10 +37,11 @@
     "solhint": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\"",
     "solhint:check": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\" -q",
     "deploy": "./bin/deploy.sh",
-    "deploy:dev": "./bin/deploy-dev.sh",
+    "script:dev": "./bin/dev-script.sh",
     "cgp": "./bin/chp.sh",
-    "cgp:pass": "./bin/approve_and_execute.sh",
+    "cgp:pass": "./bin/cgp-pass.sh",
     "show": "./bin/show.sh",
-    "clean": "./bin/clean.sh"
+    "clean": "./bin/clean.sh",
+    "secrets:get": "./bin/get-secrets.sh"
   }
 }

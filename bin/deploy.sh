@@ -25,8 +25,5 @@ parse_upgrade "$UPGRADE"
 
 for DEPLOY_SCRIPT in $UPGRADE_DIR/deploy/*; do
     DEPLOY_FILE = $(basename $DEPLOY_SCRIPT)
-    echo "=================================================================="
-    echo "🔥 Running $DEPLOY_FILE"
-    echo "=================================================================="
-    forge script --rpc-url $RPC_URL --legacy --broadcast --verify --verifier sourcify $DEPLOY_SCRIPT
+    forge_script "$DEPLOY_FILE" "$DEPLOY_SCRIPT"
 done

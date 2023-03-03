@@ -7,7 +7,7 @@ import { console2 } from "forge-std/Script.sol";
 
 import { MockERC20 } from "contracts/MockERC20.sol";
 
-contract MU01_CreateMockBridgedUSDC is Script {
+contract CreateMockBridgedUSDC is Script {
   function run() public {
     address mockBridgedUSDC;
 

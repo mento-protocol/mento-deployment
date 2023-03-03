@@ -6,7 +6,7 @@
 ##############################################################################
 
 # Authenticate with Google Cloud
-gcloud auth login
+# gcloud auth login
 
 # Set the project ID and the comma-separated list of secret IDs to retrieve
 PROJECT_ID="mento-prod"
@@ -14,6 +14,7 @@ SECRET_IDS="mento-deployer-pk,baklava-approver-pk,baklava-voter-pk"
 
 # Set the path to the .env file as the parent directory of the current directory
 ENV_FILE="$( dirname -- "$0"; )/../.env"
+echo $ENV_FILE
 
 # Loop through the comma-separated list of secret IDs and retrieve the secret values
 for SECRET_ID in $(echo "$SECRET_IDS" | tr ',' ' '); do
