@@ -92,8 +92,3 @@ Check the script file for more details on usage but here's a quick overview:
 # Pass a CGP on testnets
 > yarn cgp:pass -n baklava -p <proposal-id>
 ```
-
-
-
-
-
