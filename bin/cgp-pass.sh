@@ -22,6 +22,11 @@ done
 
 parse_network "$NETWORK"
 
+if [ "$NETWORK" = "alfajores" ]; then
+    RPC_URL="http://127.0.0.1:8545"
+    echo "🔗 Using local RPC URL $RPC_URL"
+fi
+
 if [ -z "$PROPOSAL_ID" ]; then
     echo "🚨 No proposal ID provided"
     exit 1
@@ -29,20 +34,27 @@ fi
 
 celocli config:set --node $RPC_URL
 
-echo "😴 31s" &&\
-echo -e "\a" && sleep 31 &&\
-echo "✅ Approving proposal $PROPOSAL_ID" &&\
-echo "==========================================" &&\
-celocli governance:approve --proposalID $PROPOSAL_ID --from $APPROVER --useMultiSig --privateKey $APPROVER_PK &&\
-echo "😴 301s" &&\
-echo -e "\a" && sleep 301 &&\
-echo "🗳️ Voting proposal $PROPOSAL_ID" &&\
-echo "==========================================" &&\
-celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID --privateKey $SIGNER_PK &&\
-echo "😴 301s" &&\
-echo -e "\a" && sleep 301 &&\
-echo "💃 Executing proposal $PROPOSAL_ID" &&\
-celocli governance:execute --from=$SIGNER --proposalID=$PROPOSAL_ID --privateKey $SIGNER_PK
+SIGNER_PK_PARAM="--privateKey $SIGNER_PK"
+if [ -z "$SIGNER_PK" ]; then
+    # If there's no private key, we assume the signer 
+    # is unlocked in the node and we don't need to pass it in.
+    SIGNER_PK_PARAM=""
+fi
+
+echo "😴 31s"
+echo -e "\a" && sleep 31
+echo "✅ Approving proposal $PROPOSAL_ID"
+echo "=========================================="
+celocli governance:approve --proposalID $PROPOSAL_ID --from $APPROVER --useMultiSig --privateKey $APPROVER_PK
+echo "😴 301s"
+echo -e "\a" && sleep 301
+echo "🗳️ Voting proposal $PROPOSAL_ID"
+echo "=========================================="
+celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
+echo "😴 301s"
+echo -e "\a" && sleep 301
+echo "💃 Executing proposal $PROPOSAL_ID"
+celocli governance:execute --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
 
 # Proposal passed, make some noise
 echo -e "\a"
