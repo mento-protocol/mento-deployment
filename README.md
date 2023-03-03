@@ -29,11 +29,11 @@ forge script DeployCircuitBreaker --rpc-url $BAKLAVA_RPC_URL --broadcast --legac
 
 The deployment scripts are organized in the following structure:
 - `contracts/`: Contains helper contracts that aren't core, for example a DummyERC20 contract used on testnets
-- `scripts/`: Contains all the Foundry deployment scripts
-  - `scripts/upgrade/`: Contains all the upgrade scripts, which serve as a migration from one version of mento to another 
-    - `scripts/upgrade/MU01/`: Contains all the upgrade scripts to migrate from version v1.0.0. to v2.0.0
-  - `scripts/dev/`: Contains dev scripts that are used in the deployment process, especially on testnets, but aren't central to the upgrade.
-  - `scripts/utils/`: Contains helpers and utilities used in the deployment process.
+- `script/`: Contains all the Foundry deployment scripts
+  - `script/upgrades/`: Contains all the upgrade scripts, which serve as a migration from one version of mento to another 
+    - `script/upgrades/MU01/`: Contains all the upgrade scripts to migrate from version v1.0.0. to v2.0.0
+  - `script/dev/`: Contains dev scripts that are used in the deployment process, especially on testnets, but aren't central to the upgrade.
+  - `script/utils/`: Contains helpers and utilities used in the deployment process.
 - `bin/`: Contains bash/typescript scripts that are used to execute the deployment process.
 - `broadcast/`: Contains the broadcasted transactions for the deployment process.
 

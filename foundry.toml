@@ -28,7 +28,7 @@ fs_permissions = [
 # If not then the metadata of contracts deployed **before** the libraries were added,
 # contracts that do not require the libraries, will still have their bytecode different
 # because of the metadata hash, and the verification will fail. This is because
-# the metadata of a contract will contain the staticially linked libraries during compilation
+# the metadata of a contract will contain the statically linked libraries during compilation
 # irrespective of whether the contract uses them or not.
 
 
