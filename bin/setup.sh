@@ -16,7 +16,9 @@ parse_network () { # $1: network
             APPROVER=$ALFAJORES_APPROVER
             APPROVER_PK=$ALFAJORES_APPROVER_PK
             SIGNER=$ALFAJORES_SIGNER
-            SIGNER_PK=$ALFAJORES_SIGNER_PK
+            # For alfajores we don't have access to this,
+            # we rely on the signer being unlocked in the node
+            SIGNER_PK=""
             RPC_URL=$ALFAJORES_RPC_URL
             CHAIN_ID=44787
             export FOUNDRY_PROFILE=alfajores-deployment

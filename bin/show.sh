@@ -25,4 +25,12 @@ parse_upgrade "$UPGRADE"
 
 ls broadcast/$UPGRADE-*/$CHAIN_ID/run-latest.json | \
     xargs cat | \
-    jq -c ".transactions[] | select(.transactionType == \"CREATE\") | {name: .contractName, address: .contractAddress} "
+    jq "
+    .transactions[] | 
+    select(.transactionType == \"CREATE\") | 
+    {
+        name: .contractName, 
+        address: .contractAddress,
+        url: \"https://explorer.celo.org/$NETWORK/address/\(.contractAddress)\"
+    }
+    "

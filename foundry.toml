@@ -39,11 +39,12 @@ libraries = [
 ]
 
 [profile.alfajores-deployment]
-# TODO: Add libraries during deployment
 libraries = [
+    "lib/mento-core/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x2F0F7686fFFEfc3C266403Ad600035581deaedff",
+    "lib/mento-core/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0x29B1B5e05217c751038861aF2C77494EAB10A257"
 ]
 
-[profile.celo-mainnet-deployment]
+[profile.celo-deployment]
 # TODO: Add libraries during deployment
 libraries = [
 ]
@@ -57,5 +58,6 @@ no_match_contract = "RandomTest"
 match_contract = "Integration"
 
 [rpc_endpoints]
-celo_mainnet="${CELO_RPC_URL}"
+celo="${CELO_RPC_URL}"
 baklava="${BAKLAVA_RPC_URL}"
+alfajores="${ALFAJORES_RPC_URL}"

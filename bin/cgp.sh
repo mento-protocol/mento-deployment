@@ -26,30 +26,20 @@ do
     esac
 done
 
-case $NETWORK in 
-    "baklava")
-        RPC_URL=$BAKLAVA_RPC_URL
-        ;;
-    "alfajores")
-        RPC_URL=$ALFAJORES_RPC_URL
-        ;;
-    *)
-        echo "🚨 Invalid network: '$NETWORK'"
-        exit 1
-esac
+parse_network "$NETWORK"
+parse_upgrade "$UPGRADE"
 
-if [ -z "$UPGRADE" ]; then
-    echo "🚨 No upgrade provided"
+if [ -z "$PHASE" ]; then
+    echo "🚨 No phase provided"
     exit 1
 fi
 
-echo "📠 Network is $NETWORK"
 if [ "$SIMULATE" = true ] ; then
-    echo "🥸 Simulating $UPGRADE Phase$PHASE CGP"
-    forge script --rpc-url $BAKLAVA_RPC_URL --sig "run(uint8)" ${UPGRADE}_CGPSimulation $PHASE
+    echo "🥸  Simulating $UPGRADE Phase$PHASE CGP"
+    forge script --rpc-url $RPC_URL --sig "run(uint8)" ${UPGRADE}_CGPSimulation $PHASE
 else 
     echo "🔥 Submitting $UPGRADE Phase$PHASE CGP"
-    forge script --rpc-url $BAKLAVA_RPC_URL --legacy --broadcast --verify --verifier sourcify ${UPGRADE}_CGP_Phase${PHASE}
+    forge script --rpc-url $RPC_URL --legacy --broadcast ${UPGRADE}_CGP_Phase${PHASE}
 fi
 
 

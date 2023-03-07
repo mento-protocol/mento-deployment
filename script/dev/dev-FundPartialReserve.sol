@@ -11,13 +11,13 @@ contract FundPartialReserve is Script {
   function run() public {
     contracts.loadUpgrade("MU01");
     IERC20Metadata bridgedUSDC = IERC20Metadata(contracts.dependency("BridgedUSDC"));
-    address partialReserve = contracts.dependency("PartialReserveProxy");
-    IERC20Metadata celoToken = IERC20Metadata(contracts.dependency("GoldToken"));
+    address partialReserve = contracts.deployed("PartialReserveProxy");
+    IERC20Metadata celoToken = IERC20Metadata(contracts.celoRegistry("GoldToken"));
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      bridgedUSDC.transfer(partialReserve, 100_000 ether);
-      celoToken.transfer(partialReserve, 100_000 ether);
+      bridgedUSDC.transfer(partialReserve, 10_000 ether);
+      celoToken.transfer(partialReserve, 10_000 ether);
     }
     vm.stopBroadcast();
   }
