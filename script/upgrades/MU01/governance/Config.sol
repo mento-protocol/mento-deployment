@@ -271,7 +271,7 @@ library Config {
       isConstantSum: false,
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
-      minimumReports: 2,
+      minimumReports: 5,
       stablePoolResetSize: 1_800_000 * 1e18, // 1.8mil
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
@@ -302,7 +302,7 @@ library Config {
       isConstantSum: false,
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
-      minimumReports: 2,
+      minimumReports: 5,
       stablePoolResetSize: 3_000_000 * 1e18, // 3min
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
@@ -331,7 +331,7 @@ library Config {
       asset1: contracts.dependency("BridgedUSDC"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
-      minimumReports: 2,
+      minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 12_000_000 * 1e18, // 10mil
       isMedianDeltaBreakerEnabled: false,
