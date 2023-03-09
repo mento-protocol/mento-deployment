@@ -4,22 +4,53 @@ import { parseArgs } from "node:util";
 import process from "node:process";
 import { providers } from "ethers";
 
-const networkInfoByName = {
-  baklava: {
+enum Network {
+  Baklava = "baklava",
+  Alfajores = "alfajores",
+  Celo = "celo"
+}
+
+enum Upgrade {
+  MU01 = "MU01"
+}
+
+type NetworkInfo = {
+  id: number;
+  rpcUrl: string;
+}
+
+const networkInfoByName: Record<Network, NetworkInfo> = {
+  [Network.Baklava]: {
     id: 62320,
-    forno: "https://baklava-forno.celo-testnet.org",
+    rpcUrl: "https://baklava-forno.celo-testnet.org",
   },
-  alfajores: {
+  [Network.Alfajores]: {
     id: 44787,
-    forno: "https://alfajores-forno.celo-testnet.org",
+    rpcUrl: "https://alfajores-forno.celo-testnet.org",
   },
-  celo: {
+  [Network.Celo]: {
     id: 42220,
-    forno: "https://forno.celo.org",
+    rpcUrl: "https://forno.celo.org",
   },
 };
 
-function getContractsForUpgrade(network: string, upgrade: string): Map<string, string> {
+const parseNetwork = (network: string | undefined): Network => {
+  if (network && Object.values(Network).find((n) => n === network)) {
+    return network as Network
+  }
+  console.error(`🚨 Invalid network ${network}`);
+  process.exit(1)
+}
+
+const parseUpgrade = (upgrade: string | undefined): Upgrade => {
+  if (upgrade && upgrade in Upgrade) {
+    return upgrade as Upgrade
+  }
+  console.error(`🚨 Invalid upgrade ${upgrade}`);
+  process.exit(1)
+}
+
+function getContractsForUpgrade(network: Network, upgrade: Upgrade): Map<string, string> {
   const broadcastFolders = fs
     .readdirSync("broadcast/", { withFileTypes: true })
     .filter(dirent => dirent.isDirectory())
@@ -29,7 +60,7 @@ function getContractsForUpgrade(network: string, upgrade: string): Map<string, s
     throw new Error(`No broadcast folders found for upgrade ${upgrade}`);
   }
 
-  const networkId = networkInfoByName[network as keyof typeof networkInfoByName].id;
+  const networkId = networkInfoByName[network].id;
   const contractNameToAddress = new Map<string, string>();
   for (const folder of broadcastFolders) {
     const runFile = `broadcast/${folder.name}/${networkId}/run-latest.json`;
@@ -45,8 +76,8 @@ function getContractsForUpgrade(network: string, upgrade: string): Map<string, s
   return contractNameToAddress;
 }
 
-async function getOnChainBytecode(address: string, network: string): Promise<string> {
-  const provider = new providers.JsonRpcProvider(networkInfoByName[network as keyof typeof networkInfoByName].forno);
+async function getOnChainBytecode(address: string, network: Network): Promise<string> {
+  const provider = new providers.JsonRpcProvider(networkInfoByName[network].rpcUrl);
   return await provider.getCode(address);
 }
 
@@ -89,23 +120,18 @@ async function main() {
     process.exit(1);
   }
 
-  const network = values.network!;
-  const upgrade = values.upgrade!;
+  const network = parseNetwork(values.network);
+  const upgrade = parseUpgrade(values.upgrade);
   const commit = values.commit!;
 
-  if (!Object.keys(networkInfoByName).includes(network)) {
-    console.log(`Unknown network id: ${network}`);
-    process.exit(1);
-  }
-
-  console.log(`Checking out lib/mento-core submodule @ ${commit}...`);
+  console.log(`🎣 Checking out lib/mento-core submodule @ ${commit}...`);
   executeAndFailOnError(`git -C lib/mento-core checkout ${commit} -q`);
 
-  console.log("Cleaning old artifacts and building new ones...");
+  console.log("🧹 Cleaning old artifacts and building new ones...");
   executeAndFailOnError(`forge clean && env FOUNDRY_PROFILE=${network}-deployment forge build`);
 
   console.log("\n========================================");
-  console.log("Verifying contract addresses...");
+  console.log("🕵️  Verifying contract addresses...");
 
   const contractsByName: Map<string, string> = getContractsForUpgrade(network, upgrade);
   const nOfContracts = contractsByName.size;
@@ -123,10 +149,10 @@ async function main() {
     const bytecodeFromArtifacts = getBytecodeFromArtifacts(contractName);
 
     if (onChainBytecode === bytecodeFromArtifacts) {
-      tableOutput.push({ contract: contractName, address: contractAddress, status: "✅" });
+      tableOutput.push({ contract: contractName, address: contractAddress, match: "✅" });
     } else {
       misMatches = misMatches + 1;
-      tableOutput.push({ contract: contractName, address: contractAddress, status: "❌" });
+      tableOutput.push({ contract: contractName, address: contractAddress, match: "❌" });
     }
   }
 
