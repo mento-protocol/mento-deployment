@@ -15,12 +15,15 @@
     "@commitlint/config-conventional": "^17.0.3",
     "commitizen": "^4.2.4",
     "cz-conventional-changelog": "^3.3.0",
+    "ethers": "^5.7.2",
     "husky": "^8.0.0",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
     "prettier-plugin-solidity": "^1.0.0-dev.22",
     "solhint": "^3.3.7",
-    "solhint-plugin-prettier": "^0.0.5"
+    "solhint-plugin-prettier": "^0.0.5",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
   },
   "keywords": [
     "mento",
@@ -32,6 +35,7 @@
     "lint": "yarn prettier && yarn solhint",
     "lint:check": "yarn prettier:check && yarn solhint:check",
     "postinstall": "husky install",
+    "verifyBytecodes": "yarn ts-node ./bin/verifyBytecodes.ts",
     "prettier": "prettier --config \"./.prettierrc.yml\" --write \"**/*.{json,md,sol,yml}\"",
     "prettier:check": "prettier --config \"./.prettierrc.yml\" --check \"**/*.{json,md,sol,yml}\"",
     "solhint": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\"",
