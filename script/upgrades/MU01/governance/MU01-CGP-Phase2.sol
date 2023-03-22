@@ -26,6 +26,7 @@ import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
 import { Broker } from "mento-core/contracts/Broker.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
+import { Exchange } from "mento-core/contracts/Exchange.sol";
 import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
 import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
@@ -136,83 +137,11 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    proposal_configurePartialReserve();
     proposal_createExchanges();
     proposal_configureTradingLimits();
     proposal_configureV1Exchanges();
 
     return transactions;
-  }
-
-  function proposal_configurePartialReserve() private {
-    address payable partialReserveProxy = contracts.deployed("PartialReserveProxy");
-    bool reserveNotInitialized = PartialReserveProxy(partialReserveProxy)._getImplementation() == address(0);
-
-    /* ================================================================ */
-    /* ===================== 1. Add stable assets ===================== */
-    /* ================================================================ */
-
-    address[] memory stableTokens = Arrays.addresses(
-      contracts.celoRegistry("StableToken"),
-      contracts.celoRegistry("StableTokenEUR"),
-      contracts.celoRegistry("StableTokenBRL")
-    );
-    for (uint i  = 0; i < stableTokens.length; i++) {
-      if (reserveNotInitialized || IReserve(partialReserveProxy).isStableAsset(stableTokens[i]) == false) {
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            partialReserveProxy,
-            abi.encodeWithSelector(IReserve(0).addToken.selector, stableTokens[i])
-          )
-        );
-      } else {
-        console.log("Token already added to the reserve, skipping: %s", stableTokens[i]);
-      }
-    }
-
-    /* ================================================================ */
-    /* ====================== 2. Add spenders ========================= */
-    /* ================================================================ */
-
-    // broker as ExchangeSpender
-    address brokerProxy = contracts.deployed("BrokerProxy");
-    if (reserveNotInitialized || IReserve(partialReserveProxy).isExchangeSpender(brokerProxy) == false) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          partialReserveProxy,
-          abi.encodeWithSelector(IReserve(0).addExchangeSpender.selector, brokerProxy)
-        )
-      );
-    }
-
-    // Mento multisig as Spender. The function doesn't throw if the spender is already added
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        partialReserveProxy,
-        abi.encodeWithSelector(IReserve(0).addSpender.selector, contracts.dependency("PartialReserveMultisig"))
-      )
-    );
-
-    /* ================================================================ */
-    /* ===================== 3. Other reserves ======================== */
-    /* ================================================================ */
-
-
-    // add the main reserve as a 'otherReserve' to the partial reserve
-    // so that the multiSig spender can transfer funds from the partial reserve to the main reserve
-    address mainReserve = contracts.celoRegistry("Reserve");
-    if (reserveNotInitialized || Reserve(partialReserveProxy).isOtherReserveAddress(mainReserve) == false) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          partialReserveProxy,
-          abi.encodeWithSelector(Reserve(0).addOtherReserveAddress.selector, mainReserve)
-        )
-      );
-    }
   }
 
   /**
@@ -305,7 +234,23 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
    * @notice This function creates the transactions to configure the Mento V1 Exchanges.
    */
   function proposal_configureV1Exchanges() public {
-
+   address[] memory exchangesV1 = Arrays.addresses(
+      contracts.celoRegistry("Exchange"),
+      contracts.celoRegistry("ExchangeBRL"),
+      contracts.celoRegistry("ExchangeEUR")
+    );
+    for(uint i = 0; i < exchangesV1.length; i++){
+      Exchange exchange = Exchange(exchangesV1[i]);
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          exchangesV1[i],
+          abi.encodeWithSelector(
+            exchange.setReserveFraction.selector, FixidityLib.wrap(exchange.reserveFraction()).divide(FixidityLib.newFixed(2))
+          )
+        )
+      );
+    }
    }
 
   /**

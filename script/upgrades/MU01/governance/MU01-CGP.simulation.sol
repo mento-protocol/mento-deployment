@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
 import { MU01_CGP_Phase1 } from "./MU01-CGP-Phase1.sol";
+import { MU01_CGP_Phase2 } from "./MU01-CGP-Phase2.sol";
 import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
 
 import { DeploymentChecks } from "../tests/DeploymentChecks.sol";
@@ -29,7 +30,7 @@ contract MU01_CGPSimulation is GovernanceScript {
     if (phase == 1) {
       return ICGPBuilder(new MU01_CGP_Phase1());
     } else if (phase == 2) {
-      // return ICGPBuilder(new MU01_CGP_Phase2());
+      return ICGPBuilder(new MU01_CGP_Phase2());
       revert("not implemented");
     } else if (phase == 3) {
       // return ICGPBuilder(new MU01_CGP_Phase3());
