@@ -56,7 +56,7 @@ library Config {
      */
     uint256 minimumReports;
     /**
-     * @dev The size the stable buckets should be set to during bucket updates
+     * @dev The size, in number of stable tokens, that stable buckets should be set to during bucket updates
      */
     uint256 stablePoolResetSize;
     /* ================================================================ */
@@ -241,7 +241,7 @@ library Config {
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
-      stablePoolResetSize: 7_200_000 * 1e18, // 7.2mil
+      stablePoolResetSize: 7_200_000 * 1e18, // 7.2 million
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
@@ -272,7 +272,7 @@ library Config {
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
-      stablePoolResetSize: 1_800_000 * 1e18, // 1.8mil
+      stablePoolResetSize: 1_800_000 * 1e18, // 1.8 million
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
@@ -303,7 +303,7 @@ library Config {
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
-      stablePoolResetSize: 3_000_000 * 1e18, // 3min
+      stablePoolResetSize: 3_000_000 * 1e18, // 3 million
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
@@ -333,7 +333,7 @@ library Config {
       spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
-      stablePoolResetSize: 12_000_000 * 1e18, // 10mil
+      stablePoolResetSize: 12_000_000 * 1e18, // 12 million
       isMedianDeltaBreakerEnabled: false,
       medianDeltaBreakerThreshold: FixidityLib.wrap(0),
       medianDeltaBreakerCooldown: 0,
