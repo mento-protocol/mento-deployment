@@ -64,6 +64,10 @@ function getContractsForUpgrade(network: Network, upgrade: Upgrade): Map<string,
   const contractNameToAddress = new Map<string, string>();
   for (const folder of broadcastFolders) {
     const runFile = `broadcast/${folder.name}/${networkId}/run-latest.json`;
+    if (fs.existsSync(runFile) === false) {
+      console.log("ℹ️ Skipping broadcast folder", folder.name, "as it does not contain a run file for network", network);
+      continue
+    }
     const data = JSON.parse(fs.readFileSync(runFile, "utf8"));
 
     for (const transaction of data.transactions) {

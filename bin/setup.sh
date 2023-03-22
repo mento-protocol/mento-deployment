@@ -23,6 +23,16 @@ parse_network () { # $1: network
             CHAIN_ID=44787
             export FOUNDRY_PROFILE=alfajores-deployment
             ;;
+        "celo")
+            # RPC_URL=$CELO_RPC_URL
+            RPC_URL="http://127.0.0.1:8545"
+            CHAIN_ID=42220
+            export FOUNDRY_PROFILE=celo-deployment
+            ;;
+        "local")
+            RPC_URL="http://127.0.0.1:8545"
+            CHAIN_ID=42220
+            ;;
         *)
             echo "🚨 Invalid network: '$1'"
             exit 1
@@ -47,7 +57,7 @@ parse_upgrade () { # $1: upgrade
 
 forge_script () { # $1: script name, $2: script file path
     echo "=================================================================="
-    echo "🔥 Running $1"
+    echo "🏃🏼 Running $1"
     echo "=================================================================="
     forge script --rpc-url $RPC_URL --legacy --broadcast --verify --verifier sourcify $2
 }

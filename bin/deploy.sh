@@ -19,7 +19,7 @@ do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         u) UPGRADE=${OPTARG};;
-        s) SCRIPT=${SCRIPT};;
+        s) SCRIPT=${OPTARG};;
     esac
 done
 
@@ -30,10 +30,10 @@ if ! [ -z "$SCRIPT" ]; then # Pick the script by name
     SCRIPT_FILE="script/upgrades/$UPGRADE/deploy/$SCRIPT"
     if test -f "$SCRIPT_FILE"; then
         echo "🔎  $SCRIPT_FILE found"
-        forge_script "$SCRIPT_NAME" "$SCRIPT_FILE"
+        forge_script "$SCRIPT" "$SCRIPT_FILE"
         exit 0
     else
-        echo "🚨 Script $SCRIPT_NAME not found in $SCRIPT_FILE"
+        echo "🚨 Script $SCRIPT not found in $SCRIPT_FILE"
         exit 1
     fi
 fi

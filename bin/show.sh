@@ -3,8 +3,8 @@
 ##############################################################################
 # This script will show the addresses of all contracts deployed in a given upgrade
 # Usage: ./bin/show.sh 
-#               -n <baklava|alfajores>  -- network to pass the proposal on
-#               -u <upgrade_name>       -- name of the upgrade (MU01)
+#               -n <baklava|alfajores|celo>  -- network to target
+#               -u <upgrade_name>            -- name of the upgrade (MU01)
 # Example: ./bin/show.sh -n baklava -u MU01
 ##############################################################################
 
@@ -23,6 +23,11 @@ done
 parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
 
+NETWORK_URL_SEGMENT=$NETWORK
+if [ "$NETWORK" == "celo" ]; then
+    NETWORK_URL_SEGMENT="mainnet"
+fi
+
 ls broadcast/$UPGRADE-*/$CHAIN_ID/run-latest.json | \
     xargs cat | \
     jq "
@@ -31,6 +36,6 @@ ls broadcast/$UPGRADE-*/$CHAIN_ID/run-latest.json | \
     {
         name: .contractName, 
         address: .contractAddress,
-        url: \"https://explorer.celo.org/$NETWORK/address/\(.contractAddress)\"
+        url: \"https://explorer.celo.org/$NETWORK_URL_SEGMENT/address/\(.contractAddress)\"
     }
     "

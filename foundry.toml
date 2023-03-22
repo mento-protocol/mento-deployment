@@ -17,7 +17,7 @@ fs_permissions = [
 ]
 
 
-# There's a foundry bug that occurs when trying to verify libraries in sourcify.
+# There's a bug that occurs when trying to verify libraries in sourcify, on testnets.
 # The verification fails for the library and it aborts the rest of the verifications
 # for all contracts in that script run.
 # The way to get around this is by running the script once, have it fail and then
@@ -45,8 +45,9 @@ libraries = [
 ]
 
 [profile.celo-deployment]
-# TODO: Add libraries during deployment
 libraries = [
+    "lib/mento-core/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x6200F54D73491d56b8d7A975C9ee18EFb4D518Df",
+    "lib/mento-core/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0xED477A99035d0c1e11369F1D7A4e587893cc002B"
 ]
 
 [profile.ci]
