@@ -239,6 +239,8 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
       contracts.celoRegistry("ExchangeBRL"),
       contracts.celoRegistry("ExchangeEUR")
     );
+   uint256[] memory reserveFractions = Arrays.uints(2e22, 5e21, 5e21);
+   
     for(uint i = 0; i < exchangesV1.length; i++){
       Exchange exchange = Exchange(exchangesV1[i]);
       transactions.push(
@@ -246,7 +248,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
           0,
           exchangesV1[i],
           abi.encodeWithSelector(
-            exchange.setReserveFraction.selector, FixidityLib.wrap(exchange.reserveFraction()).divide(FixidityLib.newFixed(2))
+            exchange.setReserveFraction.selector, FixidityLib.wrap(reserveFractions[i]).divide(FixidityLib.newFixed(2))
           )
         )
       );
