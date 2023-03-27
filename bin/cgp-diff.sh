@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ##############################################################################
-# Script for passing a Celo Governance Proposal on a tesnet.
+# Script for passing a Celo Governance Proposal on a testnet.
 # Usage: ./bin/cgp-diff.sh 
 #               -n <baklava|alfajores>  -- network to pass the proposal on
 #               -p <proposal_id>        -- proposal ID
