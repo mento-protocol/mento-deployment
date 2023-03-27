@@ -1,7 +1,7 @@
 set -euo pipefail
 source "$(dirname "$0")/../.env"
 
-parse_network () { # $1: network
+parse_network () { # $1: network, $2: use_fork
     case $1 in
         "baklava")
             APPROVER=$BAKLAVA_APPROVER
@@ -24,14 +24,9 @@ parse_network () { # $1: network
             export FOUNDRY_PROFILE=alfajores-deployment
             ;;
         "celo")
-            # RPC_URL=$CELO_RPC_URL
-            RPC_URL="http://127.0.0.1:8545"
+            RPC_URL=$CELO_RPC_URL
             CHAIN_ID=42220
             export FOUNDRY_PROFILE=celo-deployment
-            ;;
-        "local")
-            RPC_URL="http://127.0.0.1:8545"
-            CHAIN_ID=42220
             ;;
         *)
             echo "🚨 Invalid network: '$1'"

@@ -2,23 +2,22 @@
 
 ##############################################################################
 # Script for passing a Celo Governance Proposal on a testnet.
-# Usage: ./bin/cgp-diff.sh 
+# Usage: ./bin/cgp-diff.sh <proposal_id_alpha> <proposal_id_beta>
 #               -n <baklava|alfajores>  -- network to pass the proposal on
-#               -p <proposal_id>        -- proposal ID
-# Example: ./bin/cgp-pass.sh -n baklava -p 79
+# Example: ./bin/cgp-diff.sh -n baklava 78 79
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
-PROPOSAL_ID=""
-while getopts n:: flag
+while getopts n: flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
     esac
 done
 
+# Move the OPTIND to the start of the positional arguments
 shift $(($OPTIND - 1))
 PROPOSAL_ID_ALPHA=${1-}
 PROPOSAL_ID_BETA=${2-}
@@ -44,8 +43,6 @@ if [ "$TX_COUNT_ALPHA" != "$TX_COUNT_BETA" ]; then
     echo "🚨 Proposal transactions count is different"
     exit 1
 fi
-
-echo $TX_COUNT_ALPHA
 
 for ((i = 0; i < $TX_COUNT_ALPHA; ++i)); do
     printf "🕵️ Diffing proposal transaction $i"
