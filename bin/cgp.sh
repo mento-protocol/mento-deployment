@@ -33,6 +33,8 @@ parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
 
 if [ "$USE_FORK" = true ] ; then
+    # Make sure you're running a local anvil node:
+    # anvil --fork-url ...
     RPC_URL="http://127.0.0.1:8545"
     echo "🍴 Submitting to forked network"
 fi

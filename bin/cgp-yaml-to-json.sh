@@ -30,8 +30,7 @@
 # 5. Transform to json input: 
 #    yarn cgp:yaml-to-json cgp.yaml > cgp.json
 #
-# At this point you have a a cgp.json that's compatible with the celocli tooling 
-# (pending the celocli tooling being updated to support the new CGP format).
+# At this point you have a a cgp.json that's compatible with the celocli tooling.
 # This json file can be submitted to the governance github, and can be used to 
 # submit proposals via the celocli tooling, but it needs workarounds
 # because of issues between contractkit and the forked node.
