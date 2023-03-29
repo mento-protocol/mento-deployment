@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import { console2 } from "forge-std/Script.sol";
 import { Script } from "script/utils/Script.sol";
+import { Test } from "forge-std/Test.sol";
 import { Chain } from "script/utils/Chain.sol";
 
 import { IBroker } from "mento-core/contracts/interfaces/IBroker.sol";
@@ -38,7 +39,7 @@ interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
-contract DeploymentChecks is Script {
+contract DeploymentChecks is Script, Test {
   using TradingLimits for TradingLimits.Config;
 
   IBroker private broker;
@@ -130,8 +131,7 @@ contract DeploymentChecks is Script {
     uint256 oneMillion = 1_000_000 * 1e18;
 
     vm.deal(address(reserve), oneMillion);
-    vm.prank(MockERC20(bridgedUSDC).owner());
-    MockERC20(bridgedUSDC).mint(address(reserve), oneMillion);
+    deal(bridgedUSDC, address(reserve), oneMillion, true);
 
     address payable mainReserve = address(uint160(contracts.celoRegistry("Reserve")));
     uint256 prevMainReserveCeloBalance = address(mainReserve).balance;
@@ -293,8 +293,7 @@ contract DeploymentChecks is Script {
     MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
 
     assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
-    vm.prank(mockBridgedUSDCContract.owner());
-    assert(mockBridgedUSDCContract.mint(trader, amountIn));
+    deal(bridgedUSDC, trader, amountIn, true);
     assert(mockBridgedUSDCContract.balanceOf(trader) == amountIn);
 
     vm.startPrank(trader);
@@ -322,8 +321,7 @@ contract DeploymentChecks is Script {
 
     // fund reserve with usdc
     MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
-    vm.prank(mockBridgedUSDCContract.owner());
-    assert(mockBridgedUSDCContract.mint(address(reserve), 1000e18));
+    deal(bridgedUSDC, address(reserve), 1000e18, true);
 
     vm.startPrank(trader);
     MockERC20(cUSD).approve(address(broker), amountIn);
