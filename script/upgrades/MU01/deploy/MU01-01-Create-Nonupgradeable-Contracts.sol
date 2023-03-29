@@ -5,6 +5,7 @@ import { console2 } from "forge-std/Script.sol";
 import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 
+import { FixidityLib } from "mento-core/contracts/common/FixidityLib.sol";
 import { ConstantSumPricingModule } from "mento-core/contracts/ConstantSumPricingModule.sol";
 import { ConstantProductPricingModule } from "mento-core/contracts/ConstantProductPricingModule.sol";
 import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
@@ -12,7 +13,7 @@ import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
 import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.sol";
 
 /*
- forge script MU01_CreateNonupgradeableContracts --rpc-url $RPC_URL
+ forge script MU01_CreateNonupgradeableContracts --rpc-url $RPC_URL --private-key $PRIVATE_KEY
                              --broadcast --legacy 
                              --verify --verifier sourcify 
 */
@@ -24,11 +25,11 @@ contract MU01_CreateNonupgradeableContracts is Script {
 
   function run() public {
     //TODO: We need to get the correct values for these
-    uint256 medianDeltaBreakerCooldown = 0;
-    uint256 medianDeltaBreakerThreshold = 0;
+    uint256 medianDeltaBreakerCooldown = 30 minutes;
+    uint256 medianDeltaBreakerThreshold = FixidityLib.newFixedFraction(3, 100).unwrap(); // 0.03
 
-    uint256 valueDeltaBreakerCooldown = 0;
-    uint256 valueDeltaBreakerThreshold = 0;
+    uint256 valueDeltaBreakerCooldown = 1 seconds;
+    uint256 valueDeltaBreakerThreshold = FixidityLib.newFixedFraction(5, 1000).unwrap(); // 0.005
 
     address sortedOracles = contracts.celoRegistry("SortedOracles");
 
