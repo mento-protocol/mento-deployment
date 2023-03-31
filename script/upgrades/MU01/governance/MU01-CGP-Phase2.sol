@@ -10,29 +10,18 @@ import { FixidityLib } from "mento-core/contracts/common/FixidityLib.sol";
 import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
 import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
 import { IPricingModule } from "mento-core/contracts/interfaces/IPricingModule.sol";
-import { IReserve } from "mento-core/contracts/interfaces/IReserve.sol";
-import { IRegistry } from "mento-core/contracts/common/interfaces/IRegistry.sol";
 import { Proxy } from "mento-core/contracts/common/Proxy.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
-import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
-import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.sol";
 import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
 
-import { BreakerBoxProxy } from "mento-core/contracts/proxies/BreakerBoxProxy.sol";
 import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerProxy.sol";
 import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
 import { Broker } from "mento-core/contracts/Broker.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
-import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 import { Exchange } from "mento-core/contracts/Exchange.sol";
-import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
-import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
-import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
-import { Reserve } from "mento-core/contracts/Reserve.sol";
-import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 
 import { Config } from "./Config.sol";
 import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
@@ -52,7 +41,6 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   Config.PoolConfiguration private cBRLCeloConfig;
   Config.PoolConfiguration private cUSDUSDCConfig;
   Config.PoolConfiguration[] private poolConfigs;
-  Config.PartialReserveConfiguration private partialReserveConfig;
 
   address private cUSD;
   address private cEUR;
@@ -60,7 +48,6 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   address private celo;
   address private bridgedUSDC;
 
-  address payable private breakerBoxProxyAddress;
   address private cUSDUSCDRateFeedId = address(uint256(keccak256(abi.encodePacked("USDCUSD"))));
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
@@ -90,7 +77,6 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
     cBRL = contracts.celoRegistry("StableTokenBRL");
     celo = contracts.celoRegistry("GoldToken");
     bridgedUSDC = contracts.dependency("BridgedUSDC");
-    breakerBoxProxyAddress = contracts.deployed("BreakerBoxProxy");
   }
 
   /**
@@ -98,8 +84,6 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
    *      This function is called by the governance script runner.
    */
   function setUpConfigs() public {
-    partialReserveConfig = Config.partialReserveConfig(contracts);
-
     // Create pool configurations
     cUSDCeloConfig = Config.cUSDCeloConfig(contracts, 2);
     cEURCeloConfig = Config.cEURCeloConfig(contracts, 2);
@@ -160,7 +144,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
             ICeloGovernance.Transaction(
               0,
               contracts.deployed("BiPoolManagerProxy"),
-              abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, existingExchangeIds[i-1], i-1)
+              abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, existingExchangeIds[i - 1], i - 1)
             )
           );
         }
@@ -234,35 +218,32 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
    * @notice This function creates the transactions to configure the Mento V1 Exchanges.
    */
   function proposal_configureV1Exchanges() public {
-   address[] memory exchangesV1 = Arrays.addresses(
+    address[] memory exchangesV1 = Arrays.addresses(
       contracts.celoRegistry("Exchange"),
       contracts.celoRegistry("ExchangeBRL"),
       contracts.celoRegistry("ExchangeEUR")
     );
-   uint256[] memory reserveFractions = Arrays.uints(2e22, 5e21, 5e21);
-   
-    for(uint i = 0; i < exchangesV1.length; i++){
+    uint256[] memory reserveFractions = Arrays.uints(2e22, 5e21, 5e21); // current reserve fractions from mainnet
+
+    for (uint i = 0; i < exchangesV1.length; i++) {
       Exchange exchange = Exchange(exchangesV1[i]);
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           exchangesV1[i],
           abi.encodeWithSelector(
-            exchange.setReserveFraction.selector, FixidityLib.wrap(reserveFractions[i]).divide(FixidityLib.newFixed(2))
+            exchange.setReserveFraction.selector,
+            FixidityLib.wrap(reserveFractions[i]).divide(FixidityLib.newFixed(2))
           )
         )
       );
     }
-   }
+  }
 
   /**
    * @notice Helper function to get the exchange ID for a pool.
    */
-  function getExchangeId(
-    address asset0,
-    address asset1,
-    bool isConstantSum
-  ) internal view returns (bytes32) {
+  function getExchangeId(address asset0, address asset1, bool isConstantSum) internal view returns (bytes32) {
     return
       keccak256(
         abi.encodePacked(
