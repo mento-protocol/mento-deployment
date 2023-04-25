@@ -7,6 +7,7 @@
 #               -u <upgrade_name>               -- name of the upgrade (MU01)
 #               -p <phase_number>               -- phase number of the upgrade (1)
 #               -s                              -- simulate the proposal (optional)
+#               -f                              -- use forked network (optional)
 # Example: ./bin/cgp.sh -n baklava -u MU01 -p 1 
 ##############################################################################
 
@@ -16,18 +17,27 @@ NETWORK=""
 UPGRADE=""
 PHASE=""
 SIMULATE=false
-while getopts n:u:p:s flag
+USE_FORK=false
+while getopts n:u:p:sf flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         u) UPGRADE=${OPTARG};;
         p) PHASE=${OPTARG};;
         s) SIMULATE=true;;
+        f) USE_FORK=true;;
     esac
 done
 
 parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
+
+if [ "$USE_FORK" = true ] ; then
+    # Make sure you're running a local anvil node:
+    # anvil --fork-url ...
+    RPC_URL="http://127.0.0.1:8545"
+    echo "🍴 Submitting to forked network"
+fi
 
 if [ -z "$PHASE" ]; then
     echo "🚨 No phase provided"

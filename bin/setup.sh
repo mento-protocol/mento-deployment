@@ -1,7 +1,7 @@
 set -euo pipefail
 source "$(dirname "$0")/../.env"
 
-parse_network () { # $1: network
+parse_network () { # $1: network, $2: use_fork
     case $1 in
         "baklava")
             APPROVER=$BAKLAVA_APPROVER
@@ -22,6 +22,11 @@ parse_network () { # $1: network
             RPC_URL=$ALFAJORES_RPC_URL
             CHAIN_ID=44787
             export FOUNDRY_PROFILE=alfajores-deployment
+            ;;
+        "celo")
+            RPC_URL=$CELO_RPC_URL
+            CHAIN_ID=42220
+            export FOUNDRY_PROFILE=celo-deployment
             ;;
         *)
             echo "🚨 Invalid network: '$1'"
@@ -47,7 +52,7 @@ parse_upgrade () { # $1: upgrade
 
 forge_script () { # $1: script name, $2: script file path
     echo "=================================================================="
-    echo "🔥 Running $1"
+    echo "🏃🏼 Running $1"
     echo "=================================================================="
     forge script --rpc-url $RPC_URL --legacy --broadcast --verify --verifier sourcify $2
 }
