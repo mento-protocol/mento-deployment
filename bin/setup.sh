@@ -23,7 +23,7 @@ parse_network () { # $1: network, $2: use_fork
             CHAIN_ID=44787
             export FOUNDRY_PROFILE=alfajores-deployment
             ;;
-        "celo")
+        "mainnet")
             RPC_URL=$CELO_RPC_URL
             CHAIN_ID=42220
             export FOUNDRY_PROFILE=celo-deployment

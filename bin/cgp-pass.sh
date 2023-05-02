@@ -51,8 +51,7 @@ echo -e "\a" && sleep 31
 echo "✅ Approving proposal $PROPOSAL_ID"
 echo "=========================================="
 celocli governance:approve --proposalID $PROPOSAL_ID --from $APPROVER --useMultiSig --privateKey $APPROVER_PK
-echo "😴 301s"
-echo -e "\a" && sleep 301
+echo -e "\a"
 echo "🗳️ Voting proposal $PROPOSAL_ID"
 echo "=========================================="
 celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM

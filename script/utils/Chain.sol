@@ -14,7 +14,7 @@ library Chain {
   uint256 public constant NETWORK_CELO_CHAINID = 42220;
   string public constant NETWORK_CELO_CHAINID_STRING = "42220";
   string public constant NETWORK_CELO_RPC = "celo";
-  string public constant NETWORK_CELO_PK_ENV_VAR = "CELO_DEPLOYER_PK";
+  string public constant NETWORK_CELO_PK_ENV_VAR = "MENTO_DEPLOYER_PK";
 
   uint256 public constant NETWORK_BAKLAVA_CHAINID = 62320;
   string public constant NETWORK_BAKLAVA_CHAINID_STRING = "62320";
