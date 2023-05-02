@@ -249,7 +249,7 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
         )
       );
     } else {
-      console.log("Skipping PartianReserveProxy - already initialized");
+      console.log("Skipping PartialReserveProxy - already initialized");
     }
   }
 
