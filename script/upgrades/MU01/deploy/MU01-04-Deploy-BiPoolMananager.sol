@@ -8,11 +8,11 @@ import { console2 } from "forge-std/Script.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 
 /*
- forge script MU01_CreateImplementations --rpc-url $RPC_URL
+ forge script MU01_DeployBiPoolManager --rpc-url $RPC_URL
                              --broadcast --legacy 
                              --verify --verifier sourcify 
 */
-contract MU01_CreateImplementations is Script {
+contract MU01_DeployBiPoolManager is Script {
   function run() public {
     address biPoolManager;
 
