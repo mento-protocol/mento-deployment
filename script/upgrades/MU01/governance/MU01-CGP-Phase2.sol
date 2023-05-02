@@ -48,8 +48,6 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   address private celo;
   address private bridgedUSDC;
 
-  address private cUSDUSCDRateFeedId = address(uint256(keccak256(abi.encodePacked("USDCUSD"))));
-
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
 
