@@ -13,7 +13,7 @@ contract CreateMockBridgedUSDC is Script {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      mockBridgedUSDC = address(new MockERC20("mockBridgedUSDC", "BridgedUSDC", 18));
+      mockBridgedUSDC = address(new MockERC20("mockBridgedUSDC", "BridgedUSDC", 6));
     }
     vm.stopBroadcast();
 

@@ -293,7 +293,7 @@ library Config {
       config.minimumReports = 2;
     }
   }
-
+  
   function cBRLCeloConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
     require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
     config = PoolConfiguration({
