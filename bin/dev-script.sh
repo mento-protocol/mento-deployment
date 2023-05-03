@@ -3,7 +3,7 @@
 ##############################################################################
 # Script for running all deployment tasks for a protocol upgrade
 # Usage: ./bin/dev-script.sh 
-#               -n <baklava|alfajores|mainnet>  -- network to submit the proposal to
+#               -n <baklava|alfajores|celo>  -- network to submit the proposal to
 #               -i <script-index>               -- index of the script (optional)
 #               -s <script-name>                -- name of the script (optional)
 # Example: 

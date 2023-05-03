@@ -15,16 +15,19 @@ import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 contract MU01_DeployBiPoolManager is Script {
   function run() public {
     address biPoolManager;
+    address governance = contracts.celoRegistry("Governance");
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       // Updated implementation
       biPoolManager = address(new BiPoolManager(false));
+      BiPoolManager(biPoolManager).transferOwnership(governance);
     }
     vm.stopBroadcast();
 
     console2.log("----------");
     console2.log("BiPoolManager deployed at: ", biPoolManager);
+    console2.log("BiPoolManager(%s) ownership transferred to %s", biPoolManager, governance);
     console2.log("----------");
   }
 }
