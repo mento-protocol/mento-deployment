@@ -22,8 +22,6 @@ import { Broker } from "mento-core/contracts/Broker.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { Exchange } from "mento-core/contracts/Exchange.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
-import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
-import { Reserve } from "mento-core/contracts/Reserve.sol";
 
 import { Config } from "./Config.sol";
 import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
@@ -121,7 +119,6 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    proposal_addNewBridgedUsdcToReserve();
     proposal_createExchanges();
     proposal_configureTradingLimits();
     proposal_configureV1Exchanges();
@@ -238,56 +235,6 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
           )
         )
       );
-    }
-  }
-
-  /**
-   * @notice This function creates the transactions to add new mock USDC 
-   * with 6 decimals as a reserve asset and removes the old one.
-   */
-  function proposal_addNewBridgedUsdcToReserve() public {
-    address payable partialReserveProxy = contracts.deployed("PartialReserveProxy");
-    address[] memory oldBridgedUSDC = Arrays.addresses(
-      0x4c6B046750F9aBF6F0f3B511217438451bc6Aa02,
-      0x2C4B568DfbA1fBDBB4E7DAD3F4186B68BCE40Db3
-    );
-
-    for (uint i = 0; i < oldBridgedUSDC.length; i++) {
-      if (Reserve(partialReserveProxy).isCollateralAsset(oldBridgedUSDC[i])) {
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            partialReserveProxy,
-            abi.encodeWithSelector(Reserve(0).removeCollateralAsset.selector, oldBridgedUSDC[i], 0)
-          )
-        );
-        console.log("Old bridgedUSDC removed: %s", oldBridgedUSDC[i]);
-      }
-    }
-
-    if (Reserve(partialReserveProxy).isCollateralAsset(bridgedUSDC) == false) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          partialReserveProxy,
-          abi.encodeWithSelector(Reserve(0).addCollateralAsset.selector, bridgedUSDC)
-        )
-      );
-
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          partialReserveProxy,
-          abi.encodeWithSelector(
-            Reserve(0).setDailySpendingRatioForCollateralAssets.selector,
-            Arrays.addresses(bridgedUSDC),
-            Arrays.uints(FixidityLib.fixed1().unwrap())
-          )
-        )
-      );
-      console.log("New bridgedUSDC added: %s", bridgedUSDC);
-    } else {
-      console.log("Token already added to the reserve, skipping: %s", bridgedUSDC);
     }
   }
 
