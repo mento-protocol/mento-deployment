@@ -3,7 +3,7 @@
 ##############################################################################
 # Script for submitting a Governance Proposal for a protocol upgrade
 # Usage: ./bin/cgp.sh 
-#               -n <baklava|alfajores|mainnet>  -- network to submit the proposal to
+#               -n <baklava|alfajores|celo>  -- network to submit the proposal to
 #               -u <upgrade_name>               -- name of the upgrade (MU01)
 #               -p <phase_number>               -- phase number of the upgrade (1)
 #               -s                              -- simulate the proposal (optional)
