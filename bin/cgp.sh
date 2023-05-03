@@ -8,7 +8,7 @@
 #               -p <phase_number>               -- phase number of the upgrade (1)
 #               -s                              -- simulate the proposal (optional)
 #               -f                              -- use forked network (optional)
-# Example: ./bin/cgp.sh -n baklava -u MU01 -p 1 
+# Example: ./bin/cgp.sh -n baklava -u MU01 -p 1 || yarn cgp -n baklava -u MU01 -p 1_testnet_patch
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"

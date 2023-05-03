@@ -32,7 +32,7 @@ import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
  * and adds it as a reserve collateral. 
  * depends on: ../deploy/*.sol
  */
-contract MU01_CGP_NewBridgedUSDC is ICGPBuilder, GovernanceScript {
+contract MU01_CGP_Phase1_testnet_patch is ICGPBuilder, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
 
   ICeloGovernance.Transaction[] private transactions;
@@ -41,9 +41,6 @@ contract MU01_CGP_NewBridgedUSDC is ICGPBuilder, GovernanceScript {
   bytes32 private cUSDUSDCExchangeId;
 
   address private bridgedUSDC;
-  address payable partialReserveProxy;
-  address private brokerProxy;
-  address payable biPoolManagerProxy;
 
   function prepare() public {
     loadDeployedContracts();
@@ -65,9 +62,6 @@ contract MU01_CGP_NewBridgedUSDC is ICGPBuilder, GovernanceScript {
   function setUp() public {
     // set the addresses
     bridgedUSDC = contracts.dependency("BridgedUSDC");
-    partialReserveProxy = contracts.deployed("PartialReserveProxy");
-    brokerProxy = contracts.deployed("BrokerProxy");
-    biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
 
     // set up cUSD/USDC configs
     cUSDUSDCConfig = Config.cUSDUSDCConfig(contracts, 2);
@@ -101,6 +95,7 @@ contract MU01_CGP_NewBridgedUSDC is ICGPBuilder, GovernanceScript {
    *         cUSD/bridgedUSDC exchange
    */
   function proposal_createExchange() private {
+    address payable biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
     bool biPoolManagerInitialized = BiPoolManagerProxy(biPoolManagerProxy)._getImplementation() != address(0);
 
     if (biPoolManagerInitialized) {
@@ -153,6 +148,7 @@ contract MU01_CGP_NewBridgedUSDC is ICGPBuilder, GovernanceScript {
    * @notice This function creates the transactions to configure the trading limits for cUSD/USDC pool.
    */
   function proposal_configureTradingLimits() public {
+    address brokerProxy = contracts.deployed("BrokerProxy");
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -179,6 +175,7 @@ contract MU01_CGP_NewBridgedUSDC is ICGPBuilder, GovernanceScript {
    * with 6 decimals as a reserve asset and removes the old one.
    */
   function proposal_addNewBridgedUsdcToReserve() public {
+    address payable partialReserveProxy = contracts.deployed("PartialReserveProxy");
     address[] memory oldBridgedUSDC = Arrays.addresses(
       0x4c6B046750F9aBF6F0f3B511217438451bc6Aa02,
       0x2C4B568DfbA1fBDBB4E7DAD3F4186B68BCE40Db3
