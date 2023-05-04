@@ -3,7 +3,7 @@
 ##############################################################################
 # Script for running all deployment tasks for a protocol upgrade
 # Usage: ./bin/deploy.sh 
-#               -n <baklava|alfajores|mainnet>  -- network to submit the proposal to
+#               -n <baklava|alfajores|celo>  -- network to submit the proposal to
 #               -u <upgrade_name>               -- name of the upgrade (MU01)
 #               -s                              -- name of the script (optional)
 # Example: ./bin/deploy.sh -n baklava -u MU01
