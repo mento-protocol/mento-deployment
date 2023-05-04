@@ -2,10 +2,10 @@
 
 ##############################################################################
 # Script for passing a Celo Governance Proposal on a tesnet.
-# Usage: ./bin/cgp-pass.sh 
+# Usage: yarn cgp:pass 
 #               -n <baklava|alfajores>  -- network to pass the proposal on
 #               -p <proposal_id>        -- proposal ID
-# Example: ./bin/cgp-pass.sh -n baklava -p 79
+# Example: yarn cgp:pass -n baklava -p 79
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"
@@ -46,8 +46,8 @@ if [ -z "$SIGNER_PK" ]; then
     SIGNER_PK_PARAM=""
 fi
 
-echo "😴 31s"
-echo -e "\a" && sleep 31
+# echo "😴 31s"
+# echo -e "\a" && sleep 31
 echo "✅ Approving proposal $PROPOSAL_ID"
 echo "=========================================="
 celocli governance:approve --proposalID $PROPOSAL_ID --from $APPROVER --useMultiSig --privateKey $APPROVER_PK
