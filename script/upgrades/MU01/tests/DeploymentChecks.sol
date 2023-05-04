@@ -287,7 +287,7 @@ contract DeploymentChecks is Script, Test {
     address trader = vm.addr(1);
     address tokenIn = bridgedUSDC;
     address tokenOut = cUSD;
-    uint256 amountIn = 100e18;
+    uint256 amountIn = 100e6;
     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
     MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
