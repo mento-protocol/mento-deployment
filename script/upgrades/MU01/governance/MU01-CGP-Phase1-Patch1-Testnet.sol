@@ -32,7 +32,7 @@ import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
  * and adds it as a reserve collateral. 
  * depends on: ../deploy/*.sol
  */
-contract MU01_CGP_Phase1_testnet_patch is ICGPBuilder, GovernanceScript {
+contract MU01_CGP_Phase1_Patch1_Testnet is ICGPBuilder, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
 
   ICeloGovernance.Transaction[] private transactions;
