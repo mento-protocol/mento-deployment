@@ -46,8 +46,8 @@ if [ -z "$SIGNER_PK" ]; then
     SIGNER_PK_PARAM=""
 fi
 
-# echo "😴 31s"
-# echo -e "\a" && sleep 31
+echo "😴 31s"
+echo -e "\a" && sleep 31
 echo "✅ Approving proposal $PROPOSAL_ID"
 echo "=========================================="
 celocli governance:approve --proposalID $PROPOSAL_ID --from $APPROVER --useMultiSig --privateKey $APPROVER_PK
