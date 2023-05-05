@@ -14,7 +14,7 @@ import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICel
 import { Proxy } from "mento-core/contracts/common/Proxy.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 
-contract MUO1_CGP_Phase1_Patch1 is ICGPBuilder, GovernanceScript {
+contract MU01_CGP_Phase1_Patch1 is ICGPBuilder, GovernanceScript {
   ICeloGovernance.Transaction[] private transactions;
 
   address private cUSD;
