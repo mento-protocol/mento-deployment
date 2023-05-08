@@ -32,7 +32,7 @@ parse_network () { # $1: network, $2: use_fork
             echo "🚨 Invalid network: '$1'"
             exit 1
     esac
-    echo "📠 Network is $NETWORK"
+    echo "📠 Network is $NETWORK ($RPC_URL)"
 }
 
 parse_upgrade () { # $1: upgrade
