@@ -46,7 +46,7 @@ contract MU01_GovernanceOwnershipTransfer is Script {
         address payable proxyAddy = contracts.deployed(proxies[i]);
         Proxy proxy = Proxy(proxyAddy);
         if (proxy._getOwner() != governance) {
-          console2.log("%s(%s) ownership transferred to %s", proxies[i], governance);
+          console2.log("%s(%s) ownership transferred to %s", proxies[i], proxyAddy, governance);
           proxy._transferOwnership(governance);
         }
       }
