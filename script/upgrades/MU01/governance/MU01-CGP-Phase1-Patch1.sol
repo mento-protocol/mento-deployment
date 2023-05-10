@@ -60,7 +60,7 @@ contract MU01_CGP_Phase1_Patch1 is ICGPBuilder, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "MU01", governance);
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0081.md", governance);
     }
     vm.stopBroadcast();
   }
