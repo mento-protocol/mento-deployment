@@ -20,7 +20,7 @@ import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
 import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.sol";
 import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
 
-import { BreakerBoxProxy } from "mento-core/contracts/proxies/BreakerBoxProxy.sol";
+// import { BreakerBoxProxy } from "mento-core/contracts/proxies/BreakerBoxProxy.sol";
 import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerProxy.sol";
 import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
 import { Broker } from "mento-core/contracts/Broker.sol";
@@ -152,7 +152,7 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
     address payable partialReserveProxyAddress = contracts.deployed("PartialReserveProxy");
 
     // BreakerBox is no longer upgradable
-    BreakerBoxProxy breakerBoxProxy = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"));
+    // BreakerBoxProxy breakerBoxProxy = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"));
     // if (breakerBoxProxy._getImplementation() == address(0)) {
     //   transactions.push(
     //     ICeloGovernance.Transaction(
@@ -177,7 +177,8 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
     // } else {
     //   console.log("Skipping BreakerBoxProxy - already initialized");
     // }
-
+       
+    address breakerBox = contracts.deployed("BreakerBox");
     BiPoolManagerProxy biPoolManagerProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
     if (biPoolManagerProxy._getImplementation() == address(0)) {
       transactions.push(
@@ -192,7 +193,7 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
               contracts.deployed("BrokerProxy"),
               IReserve(partialReserveProxyAddress),
               ISortedOracles(sortedOracles),
-              IBreakerBox(address(breakerBoxProxy))
+              IBreakerBox(breakerBox)
             )
           )
         )
@@ -442,8 +443,7 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
    *        4. Add the new breaker box address to sorted oracles.
    */
   function proposal_configureCircuitBreaker() private {
-    bool breakerBoxInitialized = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"))._getImplementation() !=
-      address(0);
+    address breakerBoxDeployed = contracts.deployed("BreakerBox");
     BreakerBox breakerBox = BreakerBox(contracts.deployed("BreakerBoxProxy"));
     address medianDeltaBreakerAddress = contracts.deployed("MedianDeltaBreaker");
     address valueDeltaBreakerAddress = contracts.deployed("ValueDeltaBreaker");
@@ -456,7 +456,7 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
     // (BreakerBox LN266 & LN290)
 
     // Add the Median Delta Breaker to the breaker box with the trading mode '1' -> No Trading
-    if (breakerBoxInitialized == false || breakerBox.breakerTradingMode(medianDeltaBreakerAddress) == 0) {
+    if (breakerBoxDeployed != address(0) || breakerBox.breakerTradingMode(medianDeltaBreakerAddress) == 0) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -467,7 +467,7 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
     }
 
     // Add the Value Delta Breaker to the breaker box with the trading mode '2' -> No Trading
-    if (breakerBoxInitialized == false || breakerBox.breakerTradingMode(valueDeltaBreakerAddress) == 0) {
+    if (breakerBoxDeployed != address(0)  || breakerBox.breakerTradingMode(valueDeltaBreakerAddress) == 0) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
