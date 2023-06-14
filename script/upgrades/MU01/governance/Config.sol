@@ -354,14 +354,14 @@ library Config {
       config.minimumReports = 2;
     }
   }
-  
+
   function cEURUSDCConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
     require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
     config = PoolConfiguration({
       asset0: contracts.celoRegistry("StableTokenEUR"),
       asset1: contracts.dependency("BridgedUSDC"),
       isConstantSum: true,
-      spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
+      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 1_800_000 * 1e18, // 12 million
@@ -393,7 +393,7 @@ library Config {
       asset0: contracts.celoRegistry("StableTokenBRL"),
       asset1: contracts.dependency("BridgedUSDC"),
       isConstantSum: true,
-      spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
+      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 1_800_000 * 1e18, // 12 million
