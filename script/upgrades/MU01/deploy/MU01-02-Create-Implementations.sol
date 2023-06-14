@@ -33,7 +33,8 @@ contract MU01_CreateImplementations is Script {
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       // New implementations
-      breakerBox = address(new BreakerBox(false));
+      // BreakerBox is no longer upgradable
+      // breakerBox = address(new BreakerBox(false));
       biPoolManager = address(new BiPoolManager(false));
       broker = address(new Broker(false));
 

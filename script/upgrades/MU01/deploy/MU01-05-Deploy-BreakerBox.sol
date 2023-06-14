@@ -14,10 +14,11 @@ import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.s
                              --verify --verifier sourcify 
 */
 contract MU01_DeployBreakerBox is Script {
+  BreakerBox private breakerBox;
+
   function run() public {
     address[] memory __rateFeedIDs = new address[](0);
 
-    address breakerBox;
     address governance = contracts.celoRegistry("Governance");
     address sortedOracles = contracts.celoRegistry("SortedOracles");
 
@@ -31,8 +32,8 @@ contract MU01_DeployBreakerBox is Script {
     vm.stopBroadcast();
 
     console2.log("----------");
-    console2.log("BreakerBox deployed at: ", breakerBox);
-    console2.log("BreakerBox(%s) ownership transferred to %s", breakerBox, governance);
+    console2.log("BreakerBox deployed at: ", address(breakerBox));
+    console2.log("BreakerBox(%s) ownership transferred to %s", address(breakerBox), governance);
     console2.log("----------");
   }
 }
