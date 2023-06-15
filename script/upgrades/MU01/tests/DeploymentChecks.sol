@@ -239,7 +239,7 @@ contract DeploymentChecks is Script, Test {
 
       for (uint256 j = 0; j < breakers.length; j++) {
         (, , bool enabled) = breakerBox.rateFeedBreakerStatus(token, breakers[j]);
-        // if configured, BreakerStatus.lastUpdatedTime is greater than zero
+        // if configured, BreakerStatus.enabled is true
         if (!enabled) {
           console2.log("Circuit breaker for %s was not set ❌", token);
           revert("Not all breakers were set.");
