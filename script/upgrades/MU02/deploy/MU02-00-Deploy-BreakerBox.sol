@@ -25,7 +25,6 @@ contract MU02_DeployBreakerBox is Script {
     vm.startBroadcast(Chain.deployerPrivateKey());
 
     {
-      // deploy nonupgradeable BreakerBox
       breakerBox = new BreakerBox(__rateFeedIDs, ISortedOracles(sortedOracles));
       BreakerBox(breakerBox).transferOwnership(governance);
     }
