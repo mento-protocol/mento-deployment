@@ -179,7 +179,7 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
     // }
 
     // It was previously BreakerBoxProxy, but since BreakerBox is not longer upgradable
-    // I've changed it to BreakerBox address
+    // we are changing it to BreakerBox address
     address breakerBox = contracts.deployed("BreakerBox");
     BiPoolManagerProxy biPoolManagerProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
     if (biPoolManagerProxy._getImplementation() == address(0)) {
