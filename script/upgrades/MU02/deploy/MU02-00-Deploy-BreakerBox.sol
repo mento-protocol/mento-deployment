@@ -23,7 +23,6 @@ contract MU02_DeployBreakerBox is Script {
     address sortedOracles = contracts.celoRegistry("SortedOracles");
 
     vm.startBroadcast(Chain.deployerPrivateKey());
-
     {
       breakerBox = new BreakerBox(__rateFeedIDs, ISortedOracles(sortedOracles));
       BreakerBox(breakerBox).transferOwnership(governance);
