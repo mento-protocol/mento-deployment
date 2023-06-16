@@ -24,6 +24,7 @@ contract MU01_CreateProxies is Script {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
+      // BreakerBox has changed and is no longer upgradable
       // breakerBoxProxy = address(new BreakerBoxProxy());
       biPoolManagerProxy = address(new BiPoolManagerProxy());
       brokerProxy = address(new BrokerProxy());
@@ -32,6 +33,7 @@ contract MU01_CreateProxies is Script {
     vm.stopBroadcast();
 
     console2.log("----------");
+    // BreakerBox has changed and is no longer upgradable
     // console2.log("BrokerProxy deployed at: ", brokerProxy);
     console2.log("BiPoolManagerProxy deployed at: ", biPoolManagerProxy);
     console2.log("BreakerBoxProxy deployed at: ", breakerBoxProxy);

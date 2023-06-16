@@ -151,7 +151,7 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
     address sortedOracles = contracts.celoRegistry("SortedOracles");
     address payable partialReserveProxyAddress = contracts.deployed("PartialReserveProxy");
 
-    // BreakerBox is no longer upgradable
+    // BreakerBox has changed and is no longer upgradable
     // BreakerBoxProxy breakerBoxProxy = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"));
     // if (breakerBoxProxy._getImplementation() == address(0)) {
     //   transactions.push(
@@ -177,7 +177,9 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
     // } else {
     //   console.log("Skipping BreakerBoxProxy - already initialized");
     // }
-       
+
+    // It was previously BreakerBoxProxy, but since BreakerBox is not longer upgradable
+    // I've changed it to BreakerBox address
     address breakerBox = contracts.deployed("BreakerBox");
     BiPoolManagerProxy biPoolManagerProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
     if (biPoolManagerProxy._getImplementation() == address(0)) {
@@ -467,7 +469,7 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
     }
 
     // Add the Value Delta Breaker to the breaker box with the trading mode '2' -> No Trading
-    if (breakerBoxDeployed != address(0)  || breakerBox.breakerTradingMode(valueDeltaBreakerAddress) == 0) {
+    if (breakerBoxDeployed != address(0) || breakerBox.breakerTradingMode(valueDeltaBreakerAddress) == 0) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
