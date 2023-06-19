@@ -98,14 +98,16 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
     cEURCeloConfig = Config.cEURCeloConfig(contracts, 2);
     cBRLCeloConfig = Config.cBRLCeloConfig(contracts, 2);
     cUSDUSDCConfig = Config.cUSDUSDCConfig(contracts, 2);
-    cEURUSDCConfig = Config.cEURUSDCConfig(contracts, 2);
-    cBRLUSDCConfig = Config.cBRLUSDCConfig(contracts, 2);
+    cEURUSDCConfig = Config.cEURUSDCConfig(contracts, 1);
+    cBRLUSDCConfig = Config.cBRLUSDCConfig(contracts, 1);
 
     // Push them to the array
     poolConfigs.push(cUSDCeloConfig);
     poolConfigs.push(cEURCeloConfig);
     poolConfigs.push(cBRLCeloConfig);
     poolConfigs.push(cUSDUSDCConfig);
+    poolConfigs.push(cEURUSDCConfig);
+    poolConfigs.push(cBRLUSDCConfig);
 
     // Set the exchange ID for the reference rate feed
     for (uint i = 0; i < poolConfigs.length; i++) {
@@ -143,7 +145,8 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
 
   /**
    * @notice This function generates the transactions required to create the
-   *         BiPoolManager exchanges (cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/bridgedUSDC)
+   *         BiPoolManager exchanges (cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/bridgedUSDC,
+   *         cEUR/bridgedUSDC, cBRL/bridgedUSDC)
    */
   function proposal_createExchanges() private {
     address payable biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
@@ -164,7 +167,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
       }
     }
 
-    // Get the address of the newly deployed pricing modules
+    // Get the address of the pricing modules
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
@@ -255,7 +258,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
 
   function proposal_configureBreakerBox() public {
     // Add the Median Delta Breaker to the breaker box with the trading mode '1' -> No Trading
-    if (breakerBox != address(0) || breakerBox.breakerTradingMode(medianDeltaBreaker) == 0) {
+    if (breakerBox != address(0) || BreakerBox(breakerBox).breakerTradingMode(medianDeltaBreaker) == 0) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -266,7 +269,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
     }
 
     // Add the Value Delta Breaker to the breaker box with the trading mode '2' -> No Trading
-    if (breakerBox != address(0) || breakerBox.breakerTradingMode(valueDeltaBreaker) == 0) {
+    if (breakerBox != address(0) || BreakerBox(breakerBox).breakerTradingMode(valueDeltaBreaker) == 0) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
