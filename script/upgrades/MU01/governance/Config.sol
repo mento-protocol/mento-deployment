@@ -85,6 +85,7 @@ library Config {
      *      breaker, calculated from the moment it was triggered for the pool to the present.
      */
     uint256 medianDeltaBreakerCooldown;
+    uint256 smoothingFactor;
     /******************************************/
     /********** Value Delta Breaker ***********/
     /******************************************/
@@ -245,6 +246,7 @@ library Config {
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
+      smoothingFactor: 0,
       isValueDeltaBreakerEnabled: false,
       valueDeltaBreakerThreshold: FixidityLib.wrap(0),
       valueDeltaBreakerReferenceValue: 0,
@@ -276,6 +278,7 @@ library Config {
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
+      smoothingFactor: 0,
       isValueDeltaBreakerEnabled: false,
       valueDeltaBreakerThreshold: FixidityLib.wrap(0),
       valueDeltaBreakerReferenceValue: 0,
@@ -307,6 +310,7 @@ library Config {
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       medianDeltaBreakerCooldown: 30 minutes,
+      smoothingFactor: 0,
       isValueDeltaBreakerEnabled: false,
       valueDeltaBreakerThreshold: FixidityLib.wrap(0),
       valueDeltaBreakerReferenceValue: 0,
@@ -337,6 +341,7 @@ library Config {
       isMedianDeltaBreakerEnabled: false,
       medianDeltaBreakerThreshold: FixidityLib.wrap(0),
       medianDeltaBreakerCooldown: 0,
+      smoothingFactor: 0,
       isValueDeltaBreakerEnabled: true,
       valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
       valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
@@ -348,6 +353,70 @@ library Config {
       asset0_limit1: [100_000, 1_000_000, 5_000_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
+    });
+
+    if (Chain.isBaklava() || Chain.isAlfajores()) {
+      config.minimumReports = 2;
+    }
+  }
+
+  function cEURUSDCConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
+    require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
+    config = PoolConfiguration({
+      asset0: contracts.celoRegistry("StableTokenEUR"),
+      asset1: contracts.dependency("BridgedUSDC"),
+      isConstantSum: true,
+      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
+      minimumReports: 5,
+      referenceRateResetFrequency: 5 minutes,
+      stablePoolResetSize: 1_800_000 * 1e18, // 12 million
+      isMedianDeltaBreakerEnabled: false,
+      medianDeltaBreakerThreshold: FixidityLib.wrap(0),
+      medianDeltaBreakerCooldown: 0,
+      smoothingFactor: 0,
+      isValueDeltaBreakerEnabled: true,
+      valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
+      valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
+      valueDeltaBreakerCooldown: 1 seconds,
+      referenceRateFeedID: contracts.dependency("USDCEURRateFeedAddr"),
+      asset0_timeStep0: 5 minutes,
+      asset0_timeStep1: 1 days,
+      asset0_limit0: [10_000, 10_000, 500_000][phase - 1],
+      asset0_limit1: [50_000, 50_000, 1_000_000][phase - 1],
+      asset0_limitGlobal: [50_000, 5_000_000, 14_000_000][phase - 1],
+      asset0_flags: L0 | L1 | LG
+    });
+
+    if (Chain.isBaklava() || Chain.isAlfajores()) {
+      config.minimumReports = 2;
+    }
+  }
+
+  function cBRLUSDCConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
+    require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
+    config = PoolConfiguration({
+      asset0: contracts.celoRegistry("StableTokenBRL"),
+      asset1: contracts.dependency("BridgedUSDC"),
+      isConstantSum: true,
+      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
+      minimumReports: 5,
+      referenceRateResetFrequency: 5 minutes,
+      stablePoolResetSize: 1_800_000 * 1e18, // 12 million
+      isMedianDeltaBreakerEnabled: false,
+      medianDeltaBreakerThreshold: FixidityLib.wrap(0),
+      medianDeltaBreakerCooldown: 0,
+      smoothingFactor: 0,
+      isValueDeltaBreakerEnabled: true,
+      valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
+      valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
+      valueDeltaBreakerCooldown: 1 seconds,
+      referenceRateFeedID: contracts.dependency("USDCEURRateFeedAddr"),
+      asset0_timeStep0: 5 minutes,
+      asset0_timeStep1: 1 days,
+      asset0_limit0: [10_000, 10_000, 500_000][phase - 1],
+      asset0_limit1: [50_000, 50_000, 1_000_000][phase - 1],
+      asset0_limitGlobal: [50_000, 2_000_000, 5_000_000][phase - 1],
+      asset0_flags: L0 | L1 | LG
     });
 
     if (Chain.isBaklava() || Chain.isAlfajores()) {
