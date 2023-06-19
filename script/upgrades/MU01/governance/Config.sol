@@ -232,7 +232,7 @@ library Config {
     });
   } 
 
-  function cUSDCeloConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
+  function cUSDCeloConfig(Contracts.Cache storage contracts, uint8 phase) internal view returns (PoolConfiguration memory config) {
     require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
     config = PoolConfiguration({
       asset0: contracts.celoRegistry("StableToken"),
@@ -263,7 +263,7 @@ library Config {
     }
   }
 
-  function cEURCeloConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
+  function cEURCeloConfig(Contracts.Cache storage contracts, uint8 phase) internal view returns (PoolConfiguration memory config) {
     require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
     config = PoolConfiguration({
       asset0: contracts.celoRegistry("StableTokenEUR"),
@@ -294,7 +294,7 @@ library Config {
     }
   }
   
-  function cBRLCeloConfig(Contracts.Cache storage contracts, uint8 phase) internal returns (PoolConfiguration memory config) {
+  function cBRLCeloConfig(Contracts.Cache storage contracts, uint8 phase) internal view returns (PoolConfiguration memory config) {
     require(phase >= 1 && phase <= 3, "phase must be 1, 2, or 3");
     config = PoolConfiguration({
       asset0: contracts.celoRegistry("StableTokenBRL"),

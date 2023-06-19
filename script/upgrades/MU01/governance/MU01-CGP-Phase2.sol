@@ -24,6 +24,7 @@ import { Exchange } from "mento-core/contracts/Exchange.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
 import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
+import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
 
 import { Config } from "./Config.sol";
 import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
@@ -42,8 +43,8 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   Config.PoolConfiguration private cEURCeloConfig;
   Config.PoolConfiguration private cBRLCeloConfig;
   Config.PoolConfiguration private cUSDUSDCConfig;
-  Config.poolConfiguration private cEURUSDCConfig;
-  Config.poolConfiguration private cBRLUSDCConfig;
+  Config.PoolConfiguration private cEURUSDCConfig;
+  Config.PoolConfiguration private cBRLUSDCConfig;
   Config.PoolConfiguration[] private poolConfigs;
 
   address private cUSD;
@@ -51,6 +52,9 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   address private cBRL;
   address private celo;
   address private bridgedUSDC;
+  address private breakerBox;
+  address private medianDeltaBreaker;
+  address private valueDeltaBreaker;
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
@@ -78,8 +82,10 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
     celo = contracts.celoRegistry("GoldToken");
-    breakerbox = contracts.deployed("BreakerBox");
     bridgedUSDC = contracts.dependency("BridgedUSDC");
+    breakerBox = contracts.deployed("BreakerBox");
+    medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
+    valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
   }
 
   /**
@@ -129,6 +135,8 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
     proposal_createExchanges();
     proposal_configureTradingLimits();
     proposal_configureV1Exchanges();
+    proposal_configureBreakerBox();
+    proposal_configureMedianDeltaBreaker();
 
     return transactions;
   }
@@ -247,23 +255,23 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
 
   function proposal_configureBreakerBox() public {
     // Add the Median Delta Breaker to the breaker box with the trading mode '1' -> No Trading
-    if (breakerBox != address(0) || breakerBox.breakerTradingMode(medianDeltaBreakerAddress) == 0) {
+    if (breakerBox != address(0) || breakerBox.breakerTradingMode(medianDeltaBreaker) == 0) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           breakerBox,
-          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, medianDeltaBreakerAddress, 1)
+          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, medianDeltaBreaker, 1)
         )
       );
     }
 
     // Add the Value Delta Breaker to the breaker box with the trading mode '2' -> No Trading
-    if (breakerBox != address(0) || breakerBox.breakerTradingMode(valueDeltaBreakerAddress) == 0) {
+    if (breakerBox != address(0) || breakerBox.breakerTradingMode(valueDeltaBreaker) == 0) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           breakerBox,
-          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, valueDeltaBreakerAddress, 2)
+          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, valueDeltaBreaker, 2)
         )
       );
     }
@@ -291,7 +299,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
             breakerBox,
             abi.encodeWithSelector(
               BreakerBox(0).toggleBreaker.selector,
-              contracts.deployed("MedianDeltaBreaker"),
+              medianDeltaBreaker,
               poolConfigs[i].referenceRateFeedID,
               true
             )
@@ -309,7 +317,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
             breakerBox,
             abi.encodeWithSelector(
               BreakerBox(0).toggleBreaker.selector,
-              contracts.deployed("ValueDeltaBreaker"),
+              valueDeltaBreaker,
               poolConfigs[i].referenceRateFeedID,
               true
             )
@@ -333,7 +341,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
-        medianDeltaBreakerAddress,
+        medianDeltaBreaker,
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setCooldownTime.selector,
           Arrays.addresses(cUSD, cEUR, cBRL),
@@ -350,7 +358,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
-        medianDeltaBreakerAddress,
+        medianDeltaBreaker,
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setRateChangeThresholds.selector,
           Arrays.addresses(cUSD, cEUR, cBRL),
@@ -369,7 +377,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
         transactions.push(
           ICeloGovernance.Transaction(
             0,
-            medianDeltaBreakerAddress,
+            medianDeltaBreaker,
             abi.encodeWithSelector(
               MedianDeltaBreaker(0).setSmoothingFactor.selector,
               poolConfigs[i],
