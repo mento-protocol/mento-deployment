@@ -21,7 +21,8 @@ import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
 */
 contract MU01_CreateImplementations is Script {
   function run() public {
-    address breakerBox;
+    // BreakerBox has changed and is no longer upgradable
+    // address breakerBox;
     address biPoolManager;
     address broker;
     address reserve;
@@ -33,7 +34,8 @@ contract MU01_CreateImplementations is Script {
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       // New implementations
-      breakerBox = address(new BreakerBox(false));
+      // BreakerBox has changed and is no longer upgradable
+      // breakerBox = address(new BreakerBox(false));
       biPoolManager = address(new BiPoolManager(false));
       broker = address(new Broker(false));
 
@@ -47,7 +49,8 @@ contract MU01_CreateImplementations is Script {
     vm.stopBroadcast();
 
     console2.log("----------");
-    console2.log("BreakerBox deployed at: ", breakerBox);
+    // BreakerBox has changed and is no longer upgradable
+    // console2.log("BreakerBox deployed at: ", breakerBox);
     console2.log("BiPoolManager deployed at: ", biPoolManager);
     console2.log("Broker deployed at: ", broker);
     console2.log("Reserve deployed at: ", reserve);
