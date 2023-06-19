@@ -22,6 +22,8 @@ import { Broker } from "mento-core/contracts/Broker.sol";
 import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
 import { Exchange } from "mento-core/contracts/Exchange.sol";
 import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
+import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
+import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
 
 import { Config } from "./Config.sol";
 import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
@@ -40,6 +42,8 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   Config.PoolConfiguration private cEURCeloConfig;
   Config.PoolConfiguration private cBRLCeloConfig;
   Config.PoolConfiguration private cUSDUSDCConfig;
+  Config.poolConfiguration private cEURUSDCConfig;
+  Config.poolConfiguration private cBRLUSDCConfig;
   Config.PoolConfiguration[] private poolConfigs;
 
   address private cUSD;
@@ -74,6 +78,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
     celo = contracts.celoRegistry("GoldToken");
+    breakerbox = contracts.deployed("BreakerBox");
     bridgedUSDC = contracts.dependency("BridgedUSDC");
   }
 
@@ -87,6 +92,8 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
     cEURCeloConfig = Config.cEURCeloConfig(contracts, 2);
     cBRLCeloConfig = Config.cBRLCeloConfig(contracts, 2);
     cUSDUSDCConfig = Config.cUSDUSDCConfig(contracts, 2);
+    cEURUSDCConfig = Config.cEURUSDCConfig(contracts, 2);
+    cBRLUSDCConfig = Config.cBRLUSDCConfig(contracts, 2);
 
     // Push them to the array
     poolConfigs.push(cUSDCeloConfig);
@@ -235,6 +242,141 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
           )
         )
       );
+    }
+  }
+
+  function proposal_configureBreakerBox() public {
+    // Add the Median Delta Breaker to the breaker box with the trading mode '1' -> No Trading
+    if (breakerBox != address(0) || breakerBox.breakerTradingMode(medianDeltaBreakerAddress) == 0) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          breakerBox,
+          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, medianDeltaBreakerAddress, 1)
+        )
+      );
+    }
+
+    // Add the Value Delta Breaker to the breaker box with the trading mode '2' -> No Trading
+    if (breakerBox != address(0) || breakerBox.breakerTradingMode(valueDeltaBreakerAddress) == 0) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          breakerBox,
+          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, valueDeltaBreakerAddress, 2)
+        )
+      );
+    }
+
+    // Set rate feed dependencies cEUR/USDC, cBRL/USDC for cUSD/USDC rate feed
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBox,
+        abi.encodeWithSelector(
+          BreakerBox(0).setRateFeedDependencies.selector,
+          cUSDUSDCConfig.referenceRateFeedID,
+          cEURUSDCConfig.referenceRateFeedID,
+          cBRLUSDCConfig.referenceRateFeedID
+        )
+      )
+    );
+
+    // Enable Median Delta Breaker for rate feeds
+    for (uint256 i = 0; i < poolConfigs.length; i++) {
+      if (poolConfigs[i].isMedianDeltaBreakerEnabled) {
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            breakerBox,
+            abi.encodeWithSelector(
+              BreakerBox(0).toggleBreaker.selector,
+              contracts.deployed("MedianDeltaBreaker"),
+              poolConfigs[i].referenceRateFeedID,
+              true
+            )
+          )
+        );
+      }
+    }
+
+    // Enable Value Delta Breaker for rate feeds
+    for (uint256 i = 0; i < poolConfigs.length; i++) {
+      if (poolConfigs[i].isValueDeltaBreakerEnabled) {
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            breakerBox,
+            abi.encodeWithSelector(
+              BreakerBox(0).toggleBreaker.selector,
+              contracts.deployed("ValueDeltaBreaker"),
+              poolConfigs[i].referenceRateFeedID,
+              true
+            )
+          )
+        );
+      }
+    }
+
+    // Set BreakerBox address in SortedOracles
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        contracts.celoRegistry("SortedOracles"),
+        abi.encodeWithSelector(SortedOracles(0).setBreakerBox.selector, breakerBox)
+      )
+    );
+  }
+
+  function proposal_configureMedianDeltaBreaker() public {
+    // Set the cooldown times
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        medianDeltaBreakerAddress,
+        abi.encodeWithSelector(
+          MedianDeltaBreaker(0).setCooldownTime.selector,
+          Arrays.addresses(cUSD, cEUR, cBRL),
+          Arrays.uints(
+            cUSDCeloConfig.medianDeltaBreakerCooldown,
+            cEURCeloConfig.medianDeltaBreakerCooldown,
+            cBRLCeloConfig.medianDeltaBreakerCooldown
+          )
+        )
+      )
+    );
+
+    // Set the rate change thresholds
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        medianDeltaBreakerAddress,
+        abi.encodeWithSelector(
+          MedianDeltaBreaker(0).setRateChangeThresholds.selector,
+          Arrays.addresses(cUSD, cEUR, cBRL),
+          Arrays.uints(
+            cUSDCeloConfig.medianDeltaBreakerThreshold.unwrap(),
+            cEURCeloConfig.medianDeltaBreakerThreshold.unwrap(),
+            cBRLCeloConfig.medianDeltaBreakerThreshold.unwrap()
+          )
+        )
+      )
+    );
+
+    // Set smoothing factor for rate feeds
+    for (uint i = 0; i < poolConfigs.length; i++) {
+      if (poolConfigs[i].smoothingFactor != 0)
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            medianDeltaBreakerAddress,
+            abi.encodeWithSelector(
+              MedianDeltaBreaker(0).setSmoothingFactor.selector,
+              poolConfigs[i],
+              poolConfigs[i].smoothingFactor
+            )
+          )
+        );
     }
   }
 
