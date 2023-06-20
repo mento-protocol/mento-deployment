@@ -257,38 +257,50 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   }
 
   function proposal_configureBreakerBox() public {
-    // Add the Median Delta Breaker to the breaker box with the trading mode '1' -> No Trading
+    // Add the Median Delta Breaker to the breaker box with the trading mode '3' -> trading halted
     if (breakerBox != address(0) || BreakerBox(breakerBox).breakerTradingMode(medianDeltaBreaker) == 0) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           breakerBox,
-          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, medianDeltaBreaker, 1)
+          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, medianDeltaBreaker, 3)
         )
       );
     }
 
-    // Add the Value Delta Breaker to the breaker box with the trading mode '2' -> No Trading
+    // Add the Value Delta Breaker to the breaker box with the trading mode '3' -> trading halted
     if (breakerBox != address(0) || BreakerBox(breakerBox).breakerTradingMode(valueDeltaBreaker) == 0) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           breakerBox,
-          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, valueDeltaBreaker, 2)
+          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, valueDeltaBreaker, 3)
         )
       );
     }
 
-    // Set rate feed dependencies cEUR/USDC, cBRL/USDC for cUSD/USDC rate feed
+    // Set rate feed dependency for cEUR/USDC to cUSD/USDC.
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         breakerBox,
         abi.encodeWithSelector(
           BreakerBox(0).setRateFeedDependencies.selector,
-          cUSDUSDCConfig.referenceRateFeedID,
           cEURUSDCConfig.referenceRateFeedID,
-          cBRLUSDCConfig.referenceRateFeedID
+          Arrays.addresses(cUSDUSDCConfig.referenceRateFeedID)
+        )
+      )
+    );
+
+    // Set rate feed dependency for cBRL/USDC to cUSD/USDC.
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBox,
+        abi.encodeWithSelector(
+          BreakerBox(0).setRateFeedDependencies.selector,
+          cBRLUSDCConfig.referenceRateFeedID,
+          Arrays.addresses(cUSDUSDCConfig.referenceRateFeedID)
         )
       )
     );
