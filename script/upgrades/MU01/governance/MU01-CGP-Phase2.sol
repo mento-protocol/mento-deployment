@@ -376,14 +376,14 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
 
     // Set smoothing factor for rate feeds
     for (uint i = 0; i < poolConfigs.length; i++) {
-      if (poolConfigs[i].smoothingFactor != 0)
+      if (poolConfigs[i].isMedianDeltaBreakerEnabled && poolConfigs[i].smoothingFactor != 0)
         transactions.push(
           ICeloGovernance.Transaction(
             0,
             medianDeltaBreaker,
             abi.encodeWithSelector(
               MedianDeltaBreaker(0).setSmoothingFactor.selector,
-              poolConfigs[i],
+              poolConfigs[i].referenceRateFeedID,
               poolConfigs[i].smoothingFactor
             )
           )
