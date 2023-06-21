@@ -8,12 +8,13 @@ import { Chain } from "script/utils/Chain.sol";
 import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
 import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.sol";
 
+
 /*
- forge script MU01_Phase2_DeployMedianDeltaBreaker --rpc-url $RPC_URL
+ forge script MU01_DeployMedianDeltaBreaker --rpc-url $RPC_URL
                              --broadcast --legacy
                              --verify --verifier sourcify
 */
-contract MU02_DeployMedianDeltaBreaker is Script {
+contract MU01_DeployMedianDeltaBreaker is Script {
   MedianDeltaBreaker private medianDeltaBreaker;
 
   function run() public {
