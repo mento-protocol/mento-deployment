@@ -9,11 +9,11 @@ import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.sol";
 
 /*
- forge script MU02_DeployBreakerBox --rpc-url $RPC_URL
-                             --broadcast --legacy 
-                             --verify --verifier sourcify 
+ forge script MU01_DeployBreakerBox --rpc-url $RPC_URL
+                             --broadcast --legacy
+                             --verify --verifier sourcify
 */
-contract MU02_DeployBreakerBox is Script {
+contract MU01_DeployBreakerBox is Script {
   BreakerBox private breakerBox;
 
   function run() public {
