@@ -257,6 +257,25 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   }
 
   function proposal_configureBreakerBox() public {
+    // Add the rate feeds to breaker box
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBox,
+        abi.encodeWithSelector(
+          BreakerBox(0).addRateFeeds.selector,
+          Arrays.addresses(
+            contracts.celoRegistry("StableToken"),
+            contracts.celoRegistry("StableTokenEUR"),
+            contracts.celoRegistry("StableTokenBRL"),
+            contracts.dependency("USDCUSDRateFeedAddr"),
+            contracts.dependency("USDCEURRateFeedAddr"),
+            contracts.dependency("USDCBRLRateFeedAddr")
+          )
+        )
+      )
+    );
+
     // Add the Median Delta Breaker to the breaker box with the trading mode '3' -> trading halted
     if (breakerBox != address(0) || BreakerBox(breakerBox).breakerTradingMode(medianDeltaBreaker) == 0) {
       transactions.push(

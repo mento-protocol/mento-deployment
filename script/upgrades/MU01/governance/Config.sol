@@ -383,7 +383,7 @@ library Config {
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
-      stablePoolResetSize: 1_800_000 * 1e18, // 12 million
+      stablePoolResetSize: 1_800_000 * 1e18, // 1.8 million
       isMedianDeltaBreakerEnabled: false,
       medianDeltaBreakerThreshold: FixidityLib.wrap(0),
       medianDeltaBreakerCooldown: 0,
@@ -418,7 +418,7 @@ library Config {
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
-      stablePoolResetSize: 1_800_000 * 1e18, // 12 million
+      stablePoolResetSize: 1_800_000 * 1e18, // 1.8 million
       isMedianDeltaBreakerEnabled: false,
       medianDeltaBreakerThreshold: FixidityLib.wrap(0),
       medianDeltaBreakerCooldown: 0,
