@@ -33,7 +33,7 @@ import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
 import { Reserve } from "mento-core/contracts/Reserve.sol";
 import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 
-import { Config } from "./Config.sol";
+import { MU01Config, Config } from "./Config.sol";
 import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
 
 /**
@@ -41,7 +41,7 @@ import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
-contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
+contract MU01 is ICGPBuilder, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
 
   ICeloGovernance.Transaction[] private transactions;
@@ -97,13 +97,13 @@ contract MU01_CGP_Phase1 is ICGPBuilder, GovernanceScript {
    *      This function is called by the governance script runner.
    */
   function setUpConfigs() public {
-    partialReserveConfig = Config.partialReserveConfig(contracts);
+    partialReserveConfig = MU01Config.partialReserveConfig(contracts);
 
     // Create pool configurations
-    cUSDCeloConfig = Config.cUSDCeloConfig(contracts, 1);
-    cEURCeloConfig = Config.cEURCeloConfig(contracts, 1);
-    cBRLCeloConfig = Config.cBRLCeloConfig(contracts, 1);
-    cUSDUSDCConfig = Config.cUSDUSDCConfig(contracts, 1);
+    cUSDCeloConfig = MU01Config.cUSDCeloConfig(contracts);
+    cEURCeloConfig = MU01Config.cEURCeloConfig(contracts);
+    cBRLCeloConfig = MU01Config.cBRLCeloConfig(contracts);
+    cUSDUSDCConfig = MU01Config.cUSDUSDCConfig(contracts);
 
     // Push them to the array
     poolConfigs.push(cUSDCeloConfig);

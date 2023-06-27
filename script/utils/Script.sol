@@ -9,6 +9,7 @@ import { Contracts } from "./Contracts.sol";
 import { GovernanceHelper } from "./GovernanceHelper.sol";
 import { IPricingModule } from "mento-core/contracts/interfaces/IPricingModule.sol";
 import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
+import { Factory } from "./Factory.sol";
 
 contract Script is BaseScript {
   using Contracts for Contracts.Cache;
@@ -17,6 +18,7 @@ contract Script is BaseScript {
   address public constant REGISTRY_ADDRESS = 0x000000000000000000000000000000000000ce10;
 
   Contracts.Cache public contracts;
+  Factory public factory = new Factory();
 }
 
 contract GovernanceScript is Script, GovernanceHelper {

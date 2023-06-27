@@ -22,7 +22,7 @@ import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
 import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 import { Reserve } from "mento-core/contracts/Reserve.sol";
 
-import { Config } from "./Config.sol";
+import { MU01Config, Config } from "../upgrades/MU01/Config.sol";
 import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
 
 /**
@@ -32,7 +32,7 @@ import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
  * and adds it as a reserve collateral. 
  * depends on: ../deploy/*.sol
  */
-contract MU01_CGP_Phase1_Patch1_Testnet is ICGPBuilder, GovernanceScript {
+contract ChangeTestnetMockBridgedUSDC is ICGPBuilder, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
 
   ICeloGovernance.Transaction[] private transactions;
@@ -64,7 +64,7 @@ contract MU01_CGP_Phase1_Patch1_Testnet is ICGPBuilder, GovernanceScript {
     bridgedUSDC = contracts.dependency("BridgedUSDC");
 
     // set up cUSD/USDC configs
-    cUSDUSDCConfig = Config.cUSDUSDCConfig(contracts, 2);
+    cUSDUSDCConfig = MU01Config.cUSDUSDCConfig(contracts);
     cUSDUSDCExchangeId = getExchangeId(cUSDUSDCConfig.asset0, cUSDUSDCConfig.asset1, true);
   }
 

@@ -26,7 +26,7 @@ import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
 import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
 
-import { Config } from "./Config.sol";
+import { MU03Config, Config } from "./Config.sol";
 import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
 
 /**
@@ -94,12 +94,12 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
    */
   function setUpConfigs() public {
     // Create pool configurations
-    cUSDCeloConfig = Config.cUSDCeloConfig(contracts, 2);
-    cEURCeloConfig = Config.cEURCeloConfig(contracts, 2);
-    cBRLCeloConfig = Config.cBRLCeloConfig(contracts, 2);
-    cUSDUSDCConfig = Config.cUSDUSDCConfig(contracts, 2);
-    cEURUSDCConfig = Config.cEURUSDCConfig(contracts, 1);
-    cBRLUSDCConfig = Config.cBRLUSDCConfig(contracts, 1);
+    cUSDCeloConfig = MU03Config.cUSDCeloConfig(contracts);
+    cEURCeloConfig = MU03Config.cEURCeloConfig(contracts);
+    cBRLCeloConfig = MU03Config.cBRLCeloConfig(contracts);
+    cUSDUSDCConfig = MU03Config.cUSDUSDCConfig(contracts);
+    cEURUSDCConfig = MU03Config.cEURUSDCConfig(contracts);
+    cBRLUSDCConfig = MU03Config.cBRLUSDCConfig(contracts);
 
     // Push them to the array
     poolConfigs.push(cUSDCeloConfig);
