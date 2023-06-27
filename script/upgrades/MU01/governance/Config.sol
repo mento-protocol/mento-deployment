@@ -370,10 +370,10 @@ library Config {
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 1_800_000 * 1e18, // 12 million
-      isMedianDeltaBreakerEnabled: false,
-      medianDeltaBreakerThreshold: FixidityLib.wrap(0),
-      medianDeltaBreakerCooldown: 0,
-      smoothingFactor: 0,
+      isMedianDeltaBreakerEnabled: true,
+      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(2, 100), // 0.02
+      medianDeltaBreakerCooldown: 15 minutes,
+      smoothingFactor: FixidityLib.newFixedFraction(5, 10000), // 0.0005
       isValueDeltaBreakerEnabled: true,
       valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
       valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
@@ -402,15 +402,15 @@ library Config {
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 1_800_000 * 1e18, // 12 million
-      isMedianDeltaBreakerEnabled: false,
-      medianDeltaBreakerThreshold: FixidityLib.wrap(0),
-      medianDeltaBreakerCooldown: 0,
-      smoothingFactor: 0,
-      isValueDeltaBreakerEnabled: true,
+      isMedianDeltaBreakerEnabled: true,
+      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(25, 1000), 0.025
+      medianDeltaBreakerCooldown: 15 minutes,
+      smoothingFactor: FixidityLib.newFixedFraction(5, 10000), //0.0005 
+      isValueDeltaBreakerEnabled: true,      
       valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
       valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
       valueDeltaBreakerCooldown: 1 seconds,
-      referenceRateFeedID: contracts.dependency("USDCEURRateFeedAddr"),
+      referenceRateFeedID: contracts.dependency("USDCBRLRateFeedAddr"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
       asset0_limit0: [10_000, 10_000, 500_000][phase - 1],
