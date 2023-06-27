@@ -1,3 +1,6 @@
 [submodule "lib/celo-foundry"]
 	path = lib/celo-foundry
 	url = https://github.com/bowd/celo-foundry
+[submodule "lib/mento-core-2.0.0"]
+	path = lib/mento-core-2.0.0
+	url = https://github.com/mento-protocol/mento-core
