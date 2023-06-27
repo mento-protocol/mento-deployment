@@ -235,8 +235,6 @@ contract DeploymentChecks is Script, Test {
     console2.log("\tTrading limits set for all exchanges 🔒");
   }
 
-  // The BreakerBox implementation has changed we are keeping this to preserve history.
-  /*
   function verifyCircuitBreaker() public view {
     address[] memory configuredBreakers = Arrays.addresses(
       cUSD, cEUR, cBRL, bridgedUSDC
@@ -246,7 +244,7 @@ contract DeploymentChecks is Script, Test {
       address token = configuredBreakers[i];
       (, uint64 lastUpdatedTime, ) = breakerBox.rateFeedTradingModes(token);
 
-      if configured, TradingModeInfo.lastUpdatedTime is greater than zero
+      // if configured, TradingModeInfo.lastUpdatedTime is greater than zero
       if (lastUpdatedTime == 0) {
         console2.log("Circuit breaker for %s was not set ❌", token);
         revert("Not all breakers were set.");
@@ -255,7 +253,6 @@ contract DeploymentChecks is Script, Test {
 
     console2.log("\tCircuit breakers set for all tokens 😬");
   }
-  */
 
   /* ================================================================ */
   /* ============================= Swaps =========================== */

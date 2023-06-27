@@ -53,6 +53,7 @@ Check the script file for more details on usage but here's a quick overview:
 
 # Show the list of deployed contracts and their addresses
 > yarn show -n baklava -n MU01
+{"name":"BreakerBoxProxy","address":"0xB881aF21C5A9ff8e8d5E4C900F67F066C6CB7936"}
 {"name":"BiPoolManagerProxy","address":"0xFF9a3da00F42839CD6D33AD7adf50bCc97B41411"}
 {"name":"BrokerProxy","address":"0x6723749339e320E1EFcd9f1B0D997ecb45587208"}
 {"name":"PartialReserveProxy","address":"0x5186f2871b81F057E249c4f4c940a20D2"}
