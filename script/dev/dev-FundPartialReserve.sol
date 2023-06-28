@@ -5,7 +5,7 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
+import { IERC20Metadata } from "2.0.0/contracts/common/interfaces/IERC20Metadata.sol";
 
 contract FundPartialReserve is Script {
   function run() public {

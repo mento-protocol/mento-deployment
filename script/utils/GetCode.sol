@@ -3,7 +3,7 @@
 pragma solidity >=0.5.17 <0.9.0;
 
 library GetCode {
-  function at(address _addr) public view returns (bytes memory o_code) {
+  function at(address _addr) internal view returns (bytes memory o_code) {
     // solhint-disable-next-line no-inline-assembly
     assembly {
       // retrieve the size of the code

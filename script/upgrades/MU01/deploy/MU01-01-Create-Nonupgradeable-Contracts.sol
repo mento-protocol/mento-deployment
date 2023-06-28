@@ -5,11 +5,11 @@ import { console2 } from "forge-std/Script.sol";
 import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 
-import { ConstantSumPricingModule } from "mento-core/contracts/ConstantSumPricingModule.sol";
-import { ConstantProductPricingModule } from "mento-core/contracts/ConstantProductPricingModule.sol";
-import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
-import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
-import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.sol";
+import { ConstantSumPricingModule } from "2.0.0/contracts/ConstantSumPricingModule.sol";
+import { ConstantProductPricingModule } from "2.0.0/contracts/ConstantProductPricingModule.sol";
+import { MedianDeltaBreaker } from "2.0.0/contracts/MedianDeltaBreaker.sol";
+import { ValueDeltaBreaker } from "2.0.0/contracts/ValueDeltaBreaker.sol";
+import { ISortedOracles } from "2.0.0/contracts/interfaces/ISortedOracles.sol";
 
 /*
  forge script MU01_CreateNonupgradeableContracts --rpc-url $RPC_URL

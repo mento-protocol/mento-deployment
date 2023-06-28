@@ -112,7 +112,7 @@ library Arrays {
     return arr;
   }
 
-    function addresses(
+  function addresses(
     address e0,
     address e1,
     address e2,
@@ -120,7 +120,7 @@ library Arrays {
     address e4,
     address e5
   ) internal pure returns (address[] memory arr) {
-    arr = new address[](5);
+    arr = new address[](6);
     arr[0] = e0;
     arr[1] = e1;
     arr[2] = e2;

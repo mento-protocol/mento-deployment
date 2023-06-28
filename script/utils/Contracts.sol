@@ -7,7 +7,7 @@ import { console } from "forge-std/console.sol";
 import { Vm } from "forge-std/Vm.sol";
 import { Chain } from "./Chain.sol";
 import { stdJson } from "forge-std/StdJson.sol";
-import { IRegistry } from "mento-core/contracts/common/interfaces/IRegistry.sol";
+import { IRegistry } from "2.0.0/contracts/common/interfaces/IRegistry.sol";
 
 library Contracts {
   using stdJson for string;

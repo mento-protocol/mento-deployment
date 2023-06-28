@@ -4,10 +4,10 @@ pragma solidity ^0.5.13;
 import { GovernanceScript } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
+import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
 
-import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
-import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
-import { Reserve } from "mento-core/contracts/Reserve.sol";
+import { IERC20Metadata } from "2.0.0/contracts/common/interfaces/IERC20Metadata.sol";
+import { Reserve } from "2.0.0/contracts/Reserve.sol";
 
 contract AddOtherReserveAddress is GovernanceScript {
   // TODO: Change this when running

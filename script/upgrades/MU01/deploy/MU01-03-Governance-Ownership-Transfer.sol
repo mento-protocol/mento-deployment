@@ -6,7 +6,7 @@ import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
 import { Ownable } from "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import { Proxy } from "mento-core/contracts/common/Proxy.sol";
+import { Proxy } from "2.0.0/contracts/common/Proxy.sol";
 
 
 /*

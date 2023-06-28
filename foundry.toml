@@ -13,6 +13,7 @@ solc = "0.5.17"
 legacy = true
 fs_permissions = [
     { access = "read", path = "./broadcast"}, 
+    { access = "read", path = "./out"}, 
     { access = "read", path = "./script/upgrades/dependencies.json"}
 ]
 

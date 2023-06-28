@@ -5,37 +5,37 @@ pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
 import { console2 as console } from "forge-std/Script.sol";
-import { FixidityLib } from "mento-core/contracts/common/FixidityLib.sol";
-
-import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
-import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
-import { IPricingModule } from "mento-core/contracts/interfaces/IPricingModule.sol";
-import { Proxy } from "mento-core/contracts/common/Proxy.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
-import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
 
-import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerProxy.sol";
-import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
-import { Broker } from "mento-core/contracts/Broker.sol";
-import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
-import { Exchange } from "mento-core/contracts/Exchange.sol";
-import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
-import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
-import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
-import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
+import { FixidityLib } from "2.2.0/contracts/common/FixidityLib.sol";
+import { IBiPoolManager } from "2.2.0/contracts/interfaces/IBiPoolManager.sol";
+import { IPricingModule } from "2.2.0/contracts/interfaces/IPricingModule.sol";
+import { Proxy } from "2.2.0/contracts/common/Proxy.sol";
+import { IERC20Metadata } from "2.2.0/contracts/common/interfaces/IERC20Metadata.sol";
+
+import { BiPoolManagerProxy } from "2.2.0/contracts/proxies/BiPoolManagerProxy.sol";
+import { BrokerProxy } from "2.2.0/contracts/proxies/BrokerProxy.sol";
+import { Broker } from "2.2.0/contracts/swap/Broker.sol";
+import { BiPoolManager } from "2.2.0/contracts/swap/BiPoolManager.sol";
+import { Exchange } from "2.2.0/contracts/legacy/Exchange.sol";
+import { TradingLimits } from "2.2.0/contracts/libraries/TradingLimits.sol";
+import { BreakerBox } from "2.2.0/contracts/oracles/BreakerBox.sol";
+import { MedianDeltaBreaker } from "2.2.0/contracts/oracles/breakers/MedianDeltaBreaker.sol";
+import { SortedOracles } from "2.2.0/contracts/oracles/SortedOracles.sol";
 
 import { MU03Config, Config } from "./Config.sol";
-import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
+import { ICGPBuilder, ICeloGovernance } from "script/interfaces/ICGPBuilder.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
-contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
+contract MU03 is ICGPBuilder, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
+  using FixidityLib for FixidityLib.Fraction;
 
   ICeloGovernance.Transaction[] private transactions;
 
@@ -71,7 +71,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
   function loadDeployedContracts() public {
     contracts.load("MU01-00-Create-Proxies", "latest");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.load("MU01-02-Create-Implementations", "latest");
+    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
   }
 
   /**
@@ -181,7 +181,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
         bucket1: 0,
         lastBucketUpdate: 0,
         config: IBiPoolManager.PoolConfig({
-          spread: poolConfig.spread,
+          spread: FixidityLib.wrap(poolConfig.spread.unwrap()),
           referenceRateFeedID: poolConfig.referenceRateFeedID,
           referenceRateResetFrequency: poolConfig.referenceRateResetFrequency,
           minimumReports: poolConfig.minimumReports,
@@ -258,6 +258,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
 
   function proposal_configureBreakerBox() public {
     // Add the rate feeds to breaker box
+    console.log("asdhere");
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -275,6 +276,12 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
         )
       )
     );
+
+    console.log(breakerBox);
+    console.log(BreakerBox(breakerBox).owner());
+    console.log(contracts.celoRegistry("Governance"));
+    console.log("asdhere2");
+
 
     // Add the Median Delta Breaker to the breaker box with the trading mode '3' -> trading halted
     if (breakerBox != address(0) || BreakerBox(breakerBox).breakerTradingMode(medianDeltaBreaker) == 0) {
@@ -323,6 +330,7 @@ contract MU01_CGP_Phase2 is ICGPBuilder, GovernanceScript {
         )
       )
     );
+    console.log("asdhere");
 
     // Enable Median Delta Breaker for rate feeds
     for (uint256 i = 0; i < poolConfigs.length; i++) {

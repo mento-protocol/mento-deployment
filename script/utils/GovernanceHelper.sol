@@ -3,7 +3,7 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { Script, console2 } from "forge-std/Script.sol";
-import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
+import { ICeloGovernance } from "../interfaces/ICeloGovernance.sol";
 
 contract GovernanceHelper is Script {
   struct SerializedTransactions {

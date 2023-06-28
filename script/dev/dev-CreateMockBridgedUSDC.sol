@@ -5,7 +5,7 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-import { MockERC20 } from "contracts/MockERC20.sol";
+import { MockERC20 } from "script/contracts/MockERC20.sol";
 
 contract CreateMockBridgedUSDC is Script {
   function run() public {

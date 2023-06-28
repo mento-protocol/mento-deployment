@@ -5,36 +5,35 @@ pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
 import { console2 as console } from "forge-std/Script.sol";
-import { FixidityLib } from "mento-core/contracts/common/FixidityLib.sol";
 
-import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
-import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
-import { IPricingModule } from "mento-core/contracts/interfaces/IPricingModule.sol";
-import { IReserve } from "mento-core/contracts/interfaces/IReserve.sol";
-import { IRegistry } from "mento-core/contracts/common/interfaces/IRegistry.sol";
-import { Proxy } from "mento-core/contracts/common/Proxy.sol";
+import { FixidityLib } from "2.0.0/contracts/common/FixidityLib.sol";
+import { IBiPoolManager } from "2.0.0/contracts/interfaces/IBiPoolManager.sol";
+import { IPricingModule } from "2.0.0/contracts/interfaces/IPricingModule.sol";
+import { IReserve } from "2.0.0/contracts/interfaces/IReserve.sol";
+import { IRegistry } from "2.0.0/contracts/common/interfaces/IRegistry.sol";
+import { Proxy } from "2.0.0/contracts/common/Proxy.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
-import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
-import { ISortedOracles } from "mento-core/contracts/interfaces/ISortedOracles.sol";
-import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
+import { IBreakerBox } from "2.0.0/contracts/interfaces/IBreakerBox.sol";
+import { ISortedOracles } from "2.0.0/contracts/interfaces/ISortedOracles.sol";
+import { IERC20Metadata } from "2.0.0/contracts/common/interfaces/IERC20Metadata.sol";
 
-import { BreakerBoxProxy } from "mento-core/contracts/proxies/BreakerBoxProxy.sol";
-import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerProxy.sol";
-import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
-import { Broker } from "mento-core/contracts/Broker.sol";
-import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
-import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
-import { MedianDeltaBreaker } from "mento-core/contracts/MedianDeltaBreaker.sol";
-import { ValueDeltaBreaker } from "mento-core/contracts/ValueDeltaBreaker.sol";
-import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
-import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
-import { Reserve } from "mento-core/contracts/Reserve.sol";
-import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
+import { BreakerBoxProxy } from "2.0.0/contracts/proxies/BreakerBoxProxy.sol";
+import { BiPoolManagerProxy } from "2.0.0/contracts/proxies/BiPoolManagerProxy.sol";
+import { BrokerProxy } from "2.0.0/contracts/proxies/BrokerProxy.sol";
+import { Broker } from "2.0.0/contracts/Broker.sol";
+import { BiPoolManager } from "2.0.0/contracts/BiPoolManager.sol";
+import { BreakerBox } from "2.0.0/contracts/BreakerBox.sol";
+import { MedianDeltaBreaker } from "2.0.0/contracts/MedianDeltaBreaker.sol";
+import { ValueDeltaBreaker } from "2.0.0/contracts/ValueDeltaBreaker.sol";
+import { TradingLimits } from "2.0.0/contracts/common/TradingLimits.sol";
+import { SortedOracles } from "2.0.0/contracts/SortedOracles.sol";
+import { Reserve } from "2.0.0/contracts/Reserve.sol";
+import { PartialReserveProxy } from "script/contracts/PartialReserveProxy.sol";
 
 import { MU01Config, Config } from "./Config.sol";
-import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
+import { ICGPBuilder, ICeloGovernance } from "script/interfaces/ICGPBuilder.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
@@ -409,7 +408,7 @@ contract MU01 is ICGPBuilder, GovernanceScript {
         bucket1: 0,
         lastBucketUpdate: 0,
         config: IBiPoolManager.PoolConfig({
-          spread: poolConfig.spread,
+          spread: FixidityLib.wrap(poolConfig.spread.unwrap()),
           referenceRateFeedID: poolConfig.referenceRateFeedID,
           referenceRateResetFrequency: poolConfig.referenceRateResetFrequency,
           minimumReports: poolConfig.minimumReports,

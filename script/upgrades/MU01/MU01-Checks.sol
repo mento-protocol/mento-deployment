@@ -3,30 +3,28 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { console2 } from "forge-std/Script.sol";
-import { Script } from "script/utils/Script.sol";
 import { Test } from "forge-std/Test.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { IDeploymentChecks } from "script/utils/IDeploymentChecks.sol";
-
-import { IBroker } from "mento-core/contracts/interfaces/IBroker.sol";
-import { IStableToken } from "mento-core/contracts/interfaces/IStableToken.sol";
-import { IExchangeProvider } from "mento-core/contracts/interfaces/IExchangeProvider.sol";
-import { Reserve } from "mento-core/contracts/Reserve.sol";
-import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
-import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
-import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
-import { MockERC20 } from "contracts/MockERC20.sol";
-import { Arrays } from "script/utils/Arrays.sol";
-
-import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
-
-import { Broker } from "mento-core/contracts/Broker.sol";
-import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
-
-import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
-
 import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
+
+import { Script } from "script/utils/Script.sol";
+import { Chain } from "script/utils/Chain.sol";
+import { Arrays } from "script/utils/Arrays.sol";
+import { IDeploymentChecks } from "script/interfaces/IDeploymentChecks.sol";
+import { MockERC20 } from "script/contracts/MockERC20.sol";
+
+import { IBroker } from "2.0.0/contracts/interfaces/IBroker.sol";
+import { IStableToken } from "2.0.0/contracts/interfaces/IStableToken.sol";
+import { IExchangeProvider } from "2.0.0/contracts/interfaces/IExchangeProvider.sol";
+import { Reserve } from "2.0.0/contracts/Reserve.sol";
+import { IERC20Metadata } from "2.0.0/contracts/common/interfaces/IERC20Metadata.sol";
+import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import { BiPoolManager } from "2.0.0/contracts/BiPoolManager.sol";
+import { IBiPoolManager } from "2.0.0/contracts/interfaces/IBiPoolManager.sol";
+import { IBreakerBox } from "2.0.0/contracts/interfaces/IBreakerBox.sol";
+import { Broker } from "2.0.0/contracts/Broker.sol";
+import { BreakerBox } from "2.0.0/contracts/BreakerBox.sol";
+import { TradingLimits } from "2.0.0/contracts/common/TradingLimits.sol";
+
 
 /**
  * @title IBrokerWithCasts

@@ -3,27 +3,25 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { GovernanceScript } from "script/utils/Script.sol";
 import { console2 as console } from "forge-std/Script.sol";
-import { FixidityLib } from "mento-core/contracts/common/FixidityLib.sol";
-
-import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
-import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
-import { IPricingModule } from "mento-core/contracts/interfaces/IPricingModule.sol";
+import { GovernanceScript } from "script/utils/Script.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
-import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
 
-import { BiPoolManagerProxy } from "mento-core/contracts/proxies/BiPoolManagerProxy.sol";
-import { BrokerProxy } from "mento-core/contracts/proxies/BrokerProxy.sol";
-import { Broker } from "mento-core/contracts/Broker.sol";
-import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
-import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
-import { Reserve } from "mento-core/contracts/Reserve.sol";
+import { FixidityLib } from "2.0.0/contracts/common/FixidityLib.sol";
+import { IBiPoolManager } from "2.0.0/contracts/interfaces/IBiPoolManager.sol";
+import { IPricingModule } from "2.0.0/contracts/interfaces/IPricingModule.sol";
+import { IERC20Metadata } from "2.0.0/contracts/common/interfaces/IERC20Metadata.sol";
+import { BiPoolManagerProxy } from "2.0.0/contracts/proxies/BiPoolManagerProxy.sol";
+import { BrokerProxy } from "2.0.0/contracts/proxies/BrokerProxy.sol";
+import { Broker } from "2.0.0/contracts/Broker.sol";
+import { TradingLimits } from "2.0.0/contracts/common/TradingLimits.sol";
+import { PartialReserveProxy } from "script/contracts/PartialReserveProxy.sol";
+import { Reserve } from "2.0.0/contracts/Reserve.sol";
 
 import { MU01Config, Config } from "../upgrades/MU01/Config.sol";
-import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
+import { ICGPBuilder, ICeloGovernance } from "script/interfaces/ICGPBuilder.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
@@ -127,7 +125,7 @@ contract ChangeTestnetMockBridgedUSDC is ICGPBuilder, GovernanceScript {
       bucket1: 0,
       lastBucketUpdate: 0,
       config: IBiPoolManager.PoolConfig({
-        spread: cUSDUSDCConfig.spread,
+        spread: FixidityLib.wrap(cUSDUSDCConfig.spread.unwrap()),
         referenceRateFeedID: cUSDUSDCConfig.referenceRateFeedID,
         referenceRateResetFrequency: cUSDUSDCConfig.referenceRateResetFrequency,
         minimumReports: cUSDUSDCConfig.minimumReports,
@@ -210,7 +208,7 @@ contract ChangeTestnetMockBridgedUSDC is ICGPBuilder, GovernanceScript {
           abi.encodeWithSelector(
             Reserve(0).setDailySpendingRatioForCollateralAssets.selector,
             Arrays.addresses(bridgedUSDC),
-            Arrays.uints(FixidityLib.fixed1().unwrap())
+            Arrays.uints(FixidityLib.unwrap(FixidityLib.fixed1()))
           )
         )
       );

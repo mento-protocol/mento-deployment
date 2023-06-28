@@ -5,14 +5,14 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
-import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
-import { Broker } from "mento-core/contracts/Broker.sol";
-import { Reserve } from "mento-core/contracts/Reserve.sol";
-import { StableToken } from "mento-core/contracts/StableToken.sol";
-import { StableTokenBRL } from "mento-core/contracts/StableTokenBRL.sol";
-import { StableTokenEUR } from "mento-core/contracts/StableTokenEUR.sol";
-import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
+import { BreakerBox } from "2.0.0/contracts/BreakerBox.sol";
+import { BiPoolManager } from "2.0.0/contracts/BiPoolManager.sol";
+import { Broker } from "2.0.0/contracts/Broker.sol";
+import { Reserve } from "2.0.0/contracts/Reserve.sol";
+import { StableToken } from "2.0.0/contracts/StableToken.sol";
+import { StableTokenBRL } from "2.0.0/contracts/StableTokenBRL.sol";
+import { StableTokenEUR } from "2.0.0/contracts/StableTokenEUR.sol";
+import { SortedOracles } from "2.0.0/contracts/SortedOracles.sol";
 
 /*
  forge script MU01_CreateImplementations --rpc-url $RPC_URL
