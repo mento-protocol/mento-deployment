@@ -21,7 +21,7 @@ import { PartialReserveProxy } from "script/contracts/PartialReserveProxy.sol";
 import { Reserve } from "2.0.0/contracts/Reserve.sol";
 
 import { MU01Config, Config } from "../upgrades/MU01/Config.sol";
-import { ICGPBuilder, ICeloGovernance } from "script/interfaces/ICGPBuilder.sol";
+import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
@@ -30,7 +30,7 @@ import { ICGPBuilder, ICeloGovernance } from "script/interfaces/ICGPBuilder.sol"
  * and adds it as a reserve collateral. 
  * depends on: ../deploy/*.sol
  */
-contract ChangeTestnetMockBridgedUSDC is ICGPBuilder, GovernanceScript {
+contract ChangeTestnetMockBridgedUSDC is GovernanceScript {
   using TradingLimits for TradingLimits.Config;
 
   ICeloGovernance.Transaction[] private transactions;

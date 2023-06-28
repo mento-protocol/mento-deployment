@@ -3,48 +3,28 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-
 import { console } from "forge-std/console.sol";
 import { GovernanceScript } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Contracts } from "script/utils/Contracts.sol";
-import { ICGPBuilder } from "script/interfaces/ICGPBuilder.sol";
-import { IDeploymentChecks } from "script/interfaces/IDeploymentChecks.sol";
+import { IMentoUpgrade } from "script/interfaces/IMentoUpgrade.sol";
+
+interface IScript {
+  function run() external;
+}
 
 contract SimulateUpgrade is GovernanceScript {
   using Contracts for Contracts.Cache;
 
-  address public governance;
-  
-
-  function run(string memory upgrade) public {
+  function run(string memory _upgrade) public {
     fork();
-    governance = contracts.celoRegistry("Governance");
-    simulate(upgrade);
-  }
-
-  function getProposalBuilder(string memory upgrade) internal returns (ICGPBuilder, bool){
-    return (ICGPBuilder(factory.create(upgrade)), true);
-  }
-
-  function getDeploymentChecks(string memory upgrade) internal returns (IDeploymentChecks, bool) {
-    return (IDeploymentChecks(factory.create(string(abi.encodePacked(upgrade, "Checks")))), true);
-  }
-
-  function simulate(string memory upgrade) internal {
-    (ICGPBuilder cgp, bool foundCGP) = getProposalBuilder(upgrade);
-    if (!foundCGP) {
-      console.log("No deployment script found for: ", upgrade);
-      return;
-    }
-
-    cgp.prepare();
-    simulateProposal(cgp.buildProposal(), governance);
-
-    (IDeploymentChecks test, bool hasChecks) = getDeploymentChecks(upgrade);
-    if (hasChecks) test.runInFork();
-    else {
-      console.log("No deployment checks found for: ", upgrade);
+    address governance = contracts.celoRegistry("Governance");
+    IMentoUpgrade upgrade = IMentoUpgrade(factory.create(_upgrade));
+    upgrade.prepare();
+    simulateProposal(upgrade.buildProposal(), governance);
+    if (upgrade.hasChecks()) {
+      IScript checks = IScript(factory.create(string(abi.encodePacked(_upgrade, "Checks"))));
+      checks.run();
     }
   }
 }

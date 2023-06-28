@@ -200,7 +200,7 @@ library MU03Config {
       valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
       valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
       valueDeltaBreakerCooldown: 1 seconds,
-      referenceRateFeedID: contracts.dependency("USDCEURRateFeedAddr"),
+      referenceRateFeedID: contracts.dependency("USDCBRLRateFeedAddr"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
       asset0_limit0: 10_000, // [10_000, 10_000, 500_000][phase - 1],

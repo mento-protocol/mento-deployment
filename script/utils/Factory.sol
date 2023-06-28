@@ -31,7 +31,6 @@ contract Factory {
   }
 
   function create(string memory _contract) public returns (address addr) {
-    console.log("asd");
     return create(_contract, abi.encode());
   }
 
@@ -41,6 +40,7 @@ contract Factory {
     console.log("Deployed %s to %s", _contract, addr);
     return addr;
   }
+
   function createAt(
     string memory _contract,
     address dest,

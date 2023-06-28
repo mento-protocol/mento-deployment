@@ -33,15 +33,17 @@ import { Reserve } from "2.0.0/contracts/Reserve.sol";
 import { PartialReserveProxy } from "script/contracts/PartialReserveProxy.sol";
 
 import { MU01Config, Config } from "./Config.sol";
-import { ICGPBuilder, ICeloGovernance } from "script/interfaces/ICGPBuilder.sol";
+import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
-contract MU01 is ICGPBuilder, GovernanceScript {
+contract MU01 is IMentoUpgrade, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
+
+  bool public hasChecks = true;
 
   ICeloGovernance.Transaction[] private transactions;
 

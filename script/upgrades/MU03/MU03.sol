@@ -26,14 +26,14 @@ import { MedianDeltaBreaker } from "2.2.0/contracts/oracles/breakers/MedianDelta
 import { SortedOracles } from "2.2.0/contracts/oracles/SortedOracles.sol";
 
 import { MU03Config, Config } from "./Config.sol";
-import { ICGPBuilder, ICeloGovernance } from "script/interfaces/ICGPBuilder.sol";
+import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
 /**
  forge script {file} --rpc-url $BAKLAVA_RPC_URL 
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
-contract MU03 is ICGPBuilder, GovernanceScript {
+contract MU03 is IMentoUpgrade, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
 
@@ -58,6 +58,8 @@ contract MU03 is ICGPBuilder, GovernanceScript {
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
+
+  bool public hasChecks = false;
 
   function prepare() public {
     loadDeployedContracts();
@@ -258,7 +260,6 @@ contract MU03 is ICGPBuilder, GovernanceScript {
 
   function proposal_configureBreakerBox() public {
     // Add the rate feeds to breaker box
-    console.log("asdhere");
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -276,12 +277,6 @@ contract MU03 is ICGPBuilder, GovernanceScript {
         )
       )
     );
-
-    console.log(breakerBox);
-    console.log(BreakerBox(breakerBox).owner());
-    console.log(contracts.celoRegistry("Governance"));
-    console.log("asdhere2");
-
 
     // Add the Median Delta Breaker to the breaker box with the trading mode '3' -> trading halted
     if (breakerBox != address(0) || BreakerBox(breakerBox).breakerTradingMode(medianDeltaBreaker) == 0) {
@@ -330,7 +325,6 @@ contract MU03 is ICGPBuilder, GovernanceScript {
         )
       )
     );
-    console.log("asdhere");
 
     // Enable Median Delta Breaker for rate feeds
     for (uint256 i = 0; i < poolConfigs.length; i++) {

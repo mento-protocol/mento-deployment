@@ -9,7 +9,6 @@ import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
 import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
-import { IDeploymentChecks } from "script/interfaces/IDeploymentChecks.sol";
 import { MockERC20 } from "script/contracts/MockERC20.sol";
 
 import { IBroker } from "2.0.0/contracts/interfaces/IBroker.sol";
@@ -38,7 +37,7 @@ interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
-contract MU01Checks is Script, Test, IDeploymentChecks {
+contract MU01Checks is Script, Test {
   using TradingLimits for TradingLimits.Config;
 
   IBroker private broker;
@@ -72,14 +71,6 @@ contract MU01Checks is Script, Test, IDeploymentChecks {
   }
 
   function run() public {
-    vm.startBroadcast(Chain.deployerPrivateKey());
-    {
-      swapCeloTocUSD();
-    }
-    vm.stopBroadcast();
-  }
-
-  function runInFork() public {
     setUp();
     vm.deal(address(this), 1e20);
 
