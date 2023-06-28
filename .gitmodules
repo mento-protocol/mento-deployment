@@ -1,0 +1,3 @@
+[submodule "lib/celo-foundry"]
+	path = lib/celo-foundry
+	url = https://github.com/bowd/celo-foundry
