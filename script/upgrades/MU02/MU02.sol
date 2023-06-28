@@ -9,8 +9,8 @@ import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-import { Proxy } from "2.1.0/contracts/common/Proxy.sol";
-import { BiPoolManager } from "2.1.0/contracts/BiPoolManager.sol";
+import { Proxy } from "mento-core-2.1.0/common/Proxy.sol";
+import { BiPoolManager } from "mento-core-2.1.0/BiPoolManager.sol";
 
 contract MU02 is IMentoUpgrade, GovernanceScript {
   bool public hasChecks = false;

@@ -5,8 +5,8 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 as console } from "forge-std/Script.sol";
 
-import { IERC20Metadata } from "2.0.0/contracts/common/interfaces/IERC20Metadata.sol";
-import { IReserve } from "2.0.0/contracts/interfaces/IReserve.sol";
+import { IERC20Metadata } from "mento-core-2.0.0/common/interfaces/IERC20Metadata.sol";
+import { IReserve } from "mento-core-2.0.0/interfaces/IReserve.sol";
 
 contract DrainPartialReserve is Script {
   // TODO: Change this when running

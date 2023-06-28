@@ -5,15 +5,13 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-import { BreakerBoxProxy } from "2.0.0/contracts/proxies/BreakerBoxProxy.sol";
-import { BiPoolManagerProxy } from "2.0.0/contracts/proxies/BiPoolManagerProxy.sol";
-import { BrokerProxy } from "2.0.0/contracts/proxies/BrokerProxy.sol";
-import { PartialReserveProxy } from "script/contracts/PartialReserveProxy.sol";
+import { BreakerBoxProxy } from "mento-core-2.0.0/proxies/BreakerBoxProxy.sol";
+import { BiPoolManagerProxy } from "mento-core-2.0.0/proxies/BiPoolManagerProxy.sol";
+import { BrokerProxy } from "mento-core-2.0.0/proxies/BrokerProxy.sol";
+import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 
 /*
- forge script MU01_CreateProxies --rpc-url $RPC_URL
-                             --broadcast --legacy 
-                             --verify --verifier sourcify 
+ yarn deploy -n <network> -u MU01 -s MU01-00-Create-Proxies.sol
 */
 contract MU01_CreateProxies is Script {
   function run() public {

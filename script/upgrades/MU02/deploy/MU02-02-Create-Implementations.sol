@@ -8,8 +8,7 @@ import { console2 } from "forge-std/Script.sol";
 import { BiPoolManager } from "2.1.0/contracts/BiPoolManager.sol";
 
 /**
- * To run:
- * yarn deploy -n <network> -m MU02 -s <filename>
+ yarn deploy -n <network> -u MU02 -s MU02-02-Create-Implementations.sol
  */
 contract MU02_CreateImplementations is Script {
   function run() public {

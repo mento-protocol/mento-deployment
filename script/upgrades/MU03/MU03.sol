@@ -9,21 +9,21 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-import { FixidityLib } from "2.2.0/contracts/common/FixidityLib.sol";
-import { IBiPoolManager } from "2.2.0/contracts/interfaces/IBiPoolManager.sol";
-import { IPricingModule } from "2.2.0/contracts/interfaces/IPricingModule.sol";
-import { Proxy } from "2.2.0/contracts/common/Proxy.sol";
-import { IERC20Metadata } from "2.2.0/contracts/common/interfaces/IERC20Metadata.sol";
+import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
+import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";
+import { IPricingModule } from "mento-core-2.2.0/interfaces/IPricingModule.sol";
+import { Proxy } from "mento-core-2.2.0/common/Proxy.sol";
+import { IERC20Metadata } from "mento-core-2.2.0/common/interfaces/IERC20Metadata.sol";
 
-import { BiPoolManagerProxy } from "2.2.0/contracts/proxies/BiPoolManagerProxy.sol";
-import { BrokerProxy } from "2.2.0/contracts/proxies/BrokerProxy.sol";
-import { Broker } from "2.2.0/contracts/swap/Broker.sol";
-import { BiPoolManager } from "2.2.0/contracts/swap/BiPoolManager.sol";
-import { Exchange } from "2.2.0/contracts/legacy/Exchange.sol";
-import { TradingLimits } from "2.2.0/contracts/libraries/TradingLimits.sol";
-import { BreakerBox } from "2.2.0/contracts/oracles/BreakerBox.sol";
-import { MedianDeltaBreaker } from "2.2.0/contracts/oracles/breakers/MedianDeltaBreaker.sol";
-import { SortedOracles } from "2.2.0/contracts/oracles/SortedOracles.sol";
+import { BiPoolManagerProxy } from "mento-core-2.2.0/proxies/BiPoolManagerProxy.sol";
+import { BrokerProxy } from "mento-core-2.2.0/proxies/BrokerProxy.sol";
+import { Broker } from "mento-core-2.2.0/swap/Broker.sol";
+import { BiPoolManager } from "mento-core-2.2.0/swap/BiPoolManager.sol";
+import { Exchange } from "mento-core-2.2.0/legacy/Exchange.sol";
+import { TradingLimits } from "mento-core-2.2.0/libraries/TradingLimits.sol";
+import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
+import { MedianDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/MedianDeltaBreaker.sol";
+import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
 
 import { MU03Config, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";

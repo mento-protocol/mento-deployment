@@ -9,16 +9,16 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-import { FixidityLib } from "2.0.0/contracts/common/FixidityLib.sol";
-import { IBiPoolManager } from "2.0.0/contracts/interfaces/IBiPoolManager.sol";
-import { IPricingModule } from "2.0.0/contracts/interfaces/IPricingModule.sol";
-import { IERC20Metadata } from "2.0.0/contracts/common/interfaces/IERC20Metadata.sol";
-import { BiPoolManagerProxy } from "2.0.0/contracts/proxies/BiPoolManagerProxy.sol";
-import { BrokerProxy } from "2.0.0/contracts/proxies/BrokerProxy.sol";
-import { Broker } from "2.0.0/contracts/Broker.sol";
-import { TradingLimits } from "2.0.0/contracts/common/TradingLimits.sol";
-import { PartialReserveProxy } from "script/contracts/PartialReserveProxy.sol";
-import { Reserve } from "2.0.0/contracts/Reserve.sol";
+import { FixidityLib } from "mento-core-2.0.0/common/FixidityLib.sol";
+import { IBiPoolManager } from "mento-core-2.0.0/interfaces/IBiPoolManager.sol";
+import { IPricingModule } from "mento-core-2.0.0/interfaces/IPricingModule.sol";
+import { IERC20Metadata } from "mento-core-2.0.0/common/interfaces/IERC20Metadata.sol";
+import { BiPoolManagerProxy } from "mento-core-2.0.0/proxies/BiPoolManagerProxy.sol";
+import { BrokerProxy } from "mento-core-2.0.0/proxies/BrokerProxy.sol";
+import { Broker } from "mento-core-2.0.0/Broker.sol";
+import { TradingLimits } from "mento-core-2.0.0/common/TradingLimits.sol";
+import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
+import { Reserve } from "mento-core-2.0.0/Reserve.sol";
 
 import { MU01Config, Config } from "../upgrades/MU01/Config.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";

@@ -6,13 +6,11 @@ import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
 import { Ownable } from "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import { Proxy } from "2.0.0/contracts/common/Proxy.sol";
+import { Proxy } from "mento-core-2.0.0/common/Proxy.sol";
 
 
 /*
- forge script MU01_GovernanceOwnershipTransfer --rpc-url $RPC_URL
-                             --broadcast --legacy 
-                             --verify --verifier sourcify 
+ yarn deploy -n <network> -u MU01 -s MU01-03-Governance-Ownership-Transfer.sol
 */
 contract MU01_GovernanceOwnershipTransfer is Script {
   function run() public {

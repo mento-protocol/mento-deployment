@@ -5,19 +5,17 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-import { BreakerBox } from "2.0.0/contracts/BreakerBox.sol";
-import { BiPoolManager } from "2.0.0/contracts/BiPoolManager.sol";
-import { Broker } from "2.0.0/contracts/Broker.sol";
-import { Reserve } from "2.0.0/contracts/Reserve.sol";
-import { StableToken } from "2.0.0/contracts/StableToken.sol";
-import { StableTokenBRL } from "2.0.0/contracts/StableTokenBRL.sol";
-import { StableTokenEUR } from "2.0.0/contracts/StableTokenEUR.sol";
-import { SortedOracles } from "2.0.0/contracts/SortedOracles.sol";
+import { BreakerBox } from "mento-core-2.0.0/BreakerBox.sol";
+import { BiPoolManager } from "mento-core-2.0.0/BiPoolManager.sol";
+import { Broker } from "mento-core-2.0.0/Broker.sol";
+import { Reserve } from "mento-core-2.0.0/Reserve.sol";
+import { StableToken } from "mento-core-2.0.0/StableToken.sol";
+import { StableTokenBRL } from "mento-core-2.0.0/StableTokenBRL.sol";
+import { StableTokenEUR } from "mento-core-2.0.0/StableTokenEUR.sol";
+import { SortedOracles } from "mento-core-2.0.0/SortedOracles.sol";
 
 /*
- forge script MU01_CreateImplementations --rpc-url $RPC_URL
-                             --broadcast --legacy 
-                             --verify --verifier sourcify 
+ yarn deploy -n <network> -u MU01 -s MU01-02-Create-Implementations.sol
 */
 contract MU01_CreateImplementations is Script {
   function run() public {

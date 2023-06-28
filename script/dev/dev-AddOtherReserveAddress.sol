@@ -6,8 +6,8 @@ import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
 
-import { IERC20Metadata } from "2.0.0/contracts/common/interfaces/IERC20Metadata.sol";
-import { Reserve } from "2.0.0/contracts/Reserve.sol";
+import { IERC20Metadata } from "mento-core-2.0.0/common/interfaces/IERC20Metadata.sol";
+import { Reserve } from "mento-core-2.0.0/Reserve.sol";
 
 contract AddOtherReserveAddress is GovernanceScript {
   // TODO: Change this when running

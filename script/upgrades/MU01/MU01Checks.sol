@@ -5,24 +5,24 @@ pragma experimental ABIEncoderV2;
 import { console2 } from "forge-std/Script.sol";
 import { Test } from "forge-std/Test.sol";
 import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
+import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
 import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
-import { MockERC20 } from "script/contracts/MockERC20.sol";
+import { MockERC20 } from "contracts/MockERC20.sol";
 
-import { IBroker } from "2.0.0/contracts/interfaces/IBroker.sol";
-import { IStableToken } from "2.0.0/contracts/interfaces/IStableToken.sol";
-import { IExchangeProvider } from "2.0.0/contracts/interfaces/IExchangeProvider.sol";
-import { Reserve } from "2.0.0/contracts/Reserve.sol";
-import { IERC20Metadata } from "2.0.0/contracts/common/interfaces/IERC20Metadata.sol";
-import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-import { BiPoolManager } from "2.0.0/contracts/BiPoolManager.sol";
-import { IBiPoolManager } from "2.0.0/contracts/interfaces/IBiPoolManager.sol";
-import { IBreakerBox } from "2.0.0/contracts/interfaces/IBreakerBox.sol";
-import { Broker } from "2.0.0/contracts/Broker.sol";
-import { BreakerBox } from "2.0.0/contracts/BreakerBox.sol";
-import { TradingLimits } from "2.0.0/contracts/common/TradingLimits.sol";
+import { IBroker } from "mento-core-2.0.0/interfaces/IBroker.sol";
+import { IStableToken } from "mento-core-2.0.0/interfaces/IStableToken.sol";
+import { IExchangeProvider } from "mento-core-2.0.0/interfaces/IExchangeProvider.sol";
+import { Reserve } from "mento-core-2.0.0/Reserve.sol";
+import { IERC20Metadata } from "mento-core-2.0.0/common/interfaces/IERC20Metadata.sol";
+import { BiPoolManager } from "mento-core-2.0.0/BiPoolManager.sol";
+import { IBiPoolManager } from "mento-core-2.0.0/interfaces/IBiPoolManager.sol";
+import { IBreakerBox } from "mento-core-2.0.0/interfaces/IBreakerBox.sol";
+import { Broker } from "mento-core-2.0.0/Broker.sol";
+import { BreakerBox } from "mento-core-2.0.0/BreakerBox.sol";
+import { TradingLimits } from "mento-core-2.0.0/common/TradingLimits.sol";
 
 
 /**
