@@ -28,7 +28,7 @@ contract SimulateUpgrade is GovernanceScript {
   }
 
   function getDeploymentChecks(string memory upgrade) internal returns (IDeploymentChecks, bool) {
-    return (IDeploymentChecks(factory.create(string(abi.encodePacked(upgrade, "-Checks")))), true);
+    return (IDeploymentChecks(factory.create(string(abi.encodePacked(upgrade, "Checks")))), true);
   }
 
   function simulate(string memory upgrade) internal {

@@ -3,9 +3,14 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { console2 } from "forge-std/Script.sol";
-import { Script } from "script/utils/Script.sol";
 import { Test } from "forge-std/Test.sol";
+import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
+
+import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
+import { Arrays } from "script/utils/Arrays.sol";
+import { IDeploymentChecks } from "script/interfaces/IDeploymentChecks.sol";
+import { MockERC20 } from "script/contracts/MockERC20.sol";
 
 import { IBroker } from "2.0.0/contracts/interfaces/IBroker.sol";
 import { IStableToken } from "2.0.0/contracts/interfaces/IStableToken.sol";
@@ -15,17 +20,11 @@ import { IERC20Metadata } from "2.0.0/contracts/common/interfaces/IERC20Metadata
 import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import { BiPoolManager } from "2.0.0/contracts/BiPoolManager.sol";
 import { IBiPoolManager } from "2.0.0/contracts/interfaces/IBiPoolManager.sol";
-import { MockERC20 } from "script/contracts/MockERC20.sol";
-import { Arrays } from "script/utils/Arrays.sol";
-
 import { IBreakerBox } from "2.0.0/contracts/interfaces/IBreakerBox.sol";
-
 import { Broker } from "2.0.0/contracts/Broker.sol";
 import { BreakerBox } from "2.0.0/contracts/BreakerBox.sol";
-
 import { TradingLimits } from "2.0.0/contracts/common/TradingLimits.sol";
 
-import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
 
 /**
  * @title IBrokerWithCasts
@@ -39,7 +38,7 @@ interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
-contract DeploymentChecks is Script, Test {
+contract MU01Checks is Script, Test, IDeploymentChecks {
   using TradingLimits for TradingLimits.Config;
 
   IBroker private broker;

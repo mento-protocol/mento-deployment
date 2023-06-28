@@ -38,10 +38,10 @@ fi
 
 if [ "$SIMULATE" = true ] ; then
     echo "🥸  Simulating $UPGRADE"
-    forge script --rpc-url $RPC_URL --sig "run(string)" SimulateUpgrade $UPGRADE
+    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --skip .dev.sol --sig "run(string)" script/utils/SimulateUpgrade.sol:SimulateUpgrade $UPGRADE
 else 
     echo "🔥 Submitting $UPGRADE"
-    forge script --rpc-url $RPC_URL --legacy --broadcast ${UPGRADE}
+    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast ${UPGRADE}
 fi
 
 

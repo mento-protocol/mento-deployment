@@ -1,7 +1,8 @@
 [profile.default]
-src = "contracts"
+src = "script"
 out = "out"
 test = "test"
+script = "script"
 libs = ["lib"]
 auto_detect_solc = false
 bytecode_hash = "none"
