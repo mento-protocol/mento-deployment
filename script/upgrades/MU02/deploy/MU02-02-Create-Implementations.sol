@@ -5,7 +5,7 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-import { BiPoolManager } from "2.1.0/contracts/BiPoolManager.sol";
+import { BiPoolManager } from "mento-core-2.1.0/BiPoolManager.sol";
 
 /**
  yarn deploy -n <network> -u MU02 -s MU02-02-Create-Implementations.sol
