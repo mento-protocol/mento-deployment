@@ -62,7 +62,7 @@ contract GovernanceHelper is Script {
 
   function serializeTransactions(
     ICeloGovernance.Transaction[] memory transactions
-  ) internal pure returns (SerializedTransactions memory serTxs) { 
+  ) internal pure returns (SerializedTransactions memory serTxs) {
     serTxs.values = new uint256[](transactions.length);
     serTxs.destinations = new address[](transactions.length);
     serTxs.dataLengths = new uint256[](transactions.length);

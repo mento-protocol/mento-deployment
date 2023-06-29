@@ -11,7 +11,7 @@ import { Reserve } from "mento-core-2.0.0/Reserve.sol";
 
 contract AddOtherReserveAddress is GovernanceScript {
   // TODO: Change this when running
-  address constant private oldPartialReserveAddress = 0xAC7cf1c3c13C91b5fCE10090CE0D518853BC49C2;
+  address private constant oldPartialReserveAddress = 0xAC7cf1c3c13C91b5fCE10090CE0D518853BC49C2;
   ICeloGovernance.Transaction[] private transactions;
 
   function run() public {
@@ -22,10 +22,7 @@ contract AddOtherReserveAddress is GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         address(oldPartialReserveAddress),
-        abi.encodeWithSelector(
-          Reserve(0).addOtherReserveAddress.selector,
-          contracts.deployed("PartialReserveProxy")
-        )
+        abi.encodeWithSelector(Reserve(0).addOtherReserveAddress.selector, contracts.deployed("PartialReserveProxy"))
       )
     );
 

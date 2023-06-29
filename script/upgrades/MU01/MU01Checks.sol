@@ -24,7 +24,6 @@ import { Broker } from "mento-core-2.0.0/Broker.sol";
 import { BreakerBox } from "mento-core-2.0.0/BreakerBox.sol";
 import { TradingLimits } from "mento-core-2.0.0/common/TradingLimits.sol";
 
-
 /**
  * @title IBrokerWithCasts
  * @notice Interface for Broker with tuple -> struct casting
@@ -133,11 +132,11 @@ contract MU01Checks is Script, Test {
     reserve.transferCollateralAsset(bridgedUSDC, mainReserve, oneMillion);
     vm.stopPrank();
 
-    assert (address(mainReserve).balance == prevMainReserveCeloBalance + oneMillion);
-    assert (MockERC20(bridgedUSDC).balanceOf(address(mainReserve)) == prevMainReserveUsdcBalance + oneMillion);
+    assert(address(mainReserve).balance == prevMainReserveCeloBalance + oneMillion);
+    assert(MockERC20(bridgedUSDC).balanceOf(address(mainReserve)) == prevMainReserveUsdcBalance + oneMillion);
 
     console2.log("\t multiSig spender can spend collateral assets 🤑");
-  } 
+  }
 
   /* ================================================================ */
   /* ========================= Broker checks ======================== */
@@ -187,7 +186,7 @@ contract MU01Checks is Script, Test {
       bytes32 exchangeId = exchanges[i];
       IBiPoolManager.PoolExchange memory pool = bpm.getPoolExchange(exchangeId);
 
-      require (
+      require(
         pool.asset0 == cUSD || pool.asset0 == cEUR || pool.asset0 == cBRL,
         "asset0 is not a stable asset in the exchange"
       );
@@ -211,12 +210,7 @@ contract MU01Checks is Script, Test {
       bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(pool.asset0)));
       TradingLimits.Config memory limits = _broker.tradingLimitsConfig(limitId);
 
-      if (
-        limits.timestep0 == 0 ||
-        limits.timestep1 == 0 ||
-        limits.limit0 == 0 ||
-        limits.limit1 == 0
-      ) {
+      if (limits.timestep0 == 0 || limits.timestep1 == 0 || limits.limit0 == 0 || limits.limit1 == 0) {
         console2.log("The trading limit for %s, %s was not set ❌", pool.asset0, pool.asset1);
         revert("Not all trading limits were set.");
       }
@@ -226,9 +220,7 @@ contract MU01Checks is Script, Test {
   }
 
   function verifyCircuitBreaker() public view {
-    address[] memory configuredBreakers = Arrays.addresses(
-      cUSD, cEUR, cBRL, bridgedUSDC
-    );
+    address[] memory configuredBreakers = Arrays.addresses(cUSD, cEUR, cBRL, bridgedUSDC);
 
     for (uint256 i = 0; i < configuredBreakers.length; i++) {
       address token = configuredBreakers[i];

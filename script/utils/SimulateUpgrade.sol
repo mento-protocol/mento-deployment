@@ -28,7 +28,3 @@ contract SimulateUpgrade is GovernanceScript {
     }
   }
 }
-
-
-
-

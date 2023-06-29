@@ -30,9 +30,6 @@ contract Script is BaseScript {
     Chain.fork();
     _init();
   }
-
-
 }
 
-contract GovernanceScript is Script, GovernanceHelper {
-}
+contract GovernanceScript is Script, GovernanceHelper {}

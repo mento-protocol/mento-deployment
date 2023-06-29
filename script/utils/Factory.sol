@@ -41,11 +41,7 @@ contract Factory {
     return addr;
   }
 
-  function createAt(
-    string memory _contract,
-    address dest,
-    bytes memory args
-  ) public {
+  function createAt(string memory _contract, address dest, bytes memory args) public {
     address addr = create(_contract, args);
     vm.etch(dest, GetCode.at(addr));
     console.log("Etched %s to %s", _contract, dest);

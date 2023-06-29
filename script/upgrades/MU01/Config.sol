@@ -33,31 +33,24 @@ library MU01Config {
         bytes32("cMCO2")
       ),
       assetAllocationWeights: Arrays.uints(
-        uint256(0.5 * 10**24),
-        uint256(0.1 * 10**24),
-        uint256(0.1 * 10**24),
-        uint256(0.295 * 10**24),
-        uint256(0.005 * 10**24)
+        uint256(0.5 * 10 ** 24),
+        uint256(0.1 * 10 ** 24),
+        uint256(0.1 * 10 ** 24),
+        uint256(0.295 * 10 ** 24),
+        uint256(0.005 * 10 ** 24)
       ),
       tobinTax: FixidityLib.newFixed(0).unwrap(), // disabled
       tobinTaxReserveRatio: FixidityLib.newFixed(0).unwrap(), // disabled
       frozenGold: 0, // no frozen gold
-      frozenDays: 0,  // no frozen gold
-
+      frozenDays: 0, // no frozen gold
       // ===== relevant parameters below
       registryAddress: address(0x000000000000000000000000000000000000ce10), // celo registry address
       spendingRatioForCelo: FixidityLib.fixed1().unwrap(), // 100% CELO spending
       // CELO and bridgedUSDC as collateral assets with 100% spending
-      collateralAssets: Arrays.addresses(
-        contracts.dependency("BridgedUSDC"),
-        contracts.celoRegistry("GoldToken")
-      ),
-      collateralAssetDailySpendingRatios: Arrays.uints(
-        FixidityLib.fixed1().unwrap(), 
-        FixidityLib.fixed1().unwrap()
-      )
+      collateralAssets: Arrays.addresses(contracts.dependency("BridgedUSDC"), contracts.celoRegistry("GoldToken")),
+      collateralAssetDailySpendingRatios: Arrays.uints(FixidityLib.fixed1().unwrap(), FixidityLib.fixed1().unwrap())
     });
-  } 
+  }
 
   function cUSDCeloConfig(
     Contracts.Cache storage contracts
@@ -157,9 +150,7 @@ library MU01Config {
     }
   }
 
-  function cUSDUSDCConfig(
-    Contracts.Cache storage contracts
-  ) internal returns (Config.PoolConfiguration memory config) {
+  function cUSDUSDCConfig(Contracts.Cache storage contracts) internal returns (Config.PoolConfiguration memory config) {
     config = Config.PoolConfiguration({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("BridgedUSDC"),
@@ -190,9 +181,7 @@ library MU01Config {
     }
   }
 
-  function cEURUSDCConfig(
-    Contracts.Cache storage contracts
-  ) internal returns (Config.PoolConfiguration memory config) {
+  function cEURUSDCConfig(Contracts.Cache storage contracts) internal returns (Config.PoolConfiguration memory config) {
     config = Config.PoolConfiguration({
       asset0: contracts.celoRegistry("StableTokenEUR"),
       asset1: contracts.dependency("BridgedUSDC"),

@@ -115,9 +115,7 @@ library MU03Config {
     }
   }
 
-  function cUSDUSDCConfig(
-    Contracts.Cache storage contracts
-  ) internal returns (Config.PoolConfiguration memory config) {
+  function cUSDUSDCConfig(Contracts.Cache storage contracts) internal returns (Config.PoolConfiguration memory config) {
     config = Config.PoolConfiguration({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("BridgedUSDC"),
@@ -148,9 +146,7 @@ library MU03Config {
     }
   }
 
-  function cEURUSDCConfig(
-    Contracts.Cache storage contracts
-  ) internal returns (Config.PoolConfiguration memory config) {
+  function cEURUSDCConfig(Contracts.Cache storage contracts) internal returns (Config.PoolConfiguration memory config) {
     config = Config.PoolConfiguration({
       asset0: contracts.celoRegistry("StableTokenEUR"),
       asset1: contracts.dependency("BridgedUSDC"),
@@ -181,9 +177,7 @@ library MU03Config {
     }
   }
 
-  function cBRLUSDCConfig(
-    Contracts.Cache storage contracts
-  ) internal returns (Config.PoolConfiguration memory config) {
+  function cBRLUSDCConfig(Contracts.Cache storage contracts) internal returns (Config.PoolConfiguration memory config) {
     config = Config.PoolConfiguration({
       asset0: contracts.celoRegistry("StableTokenBRL"),
       asset1: contracts.dependency("BridgedUSDC"),

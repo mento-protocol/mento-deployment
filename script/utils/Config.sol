@@ -168,22 +168,20 @@ library Config {
     */
 
     /**
-    * @dev The address of the celo registry
-    */
-    address registryAddress; 
+     * @dev The address of the celo registry
+     */
+    address registryAddress;
     /**
-    * @dev The % of Celo that can be spent per day by spenders (in fixidity format)
-    */
+     * @dev The % of Celo that can be spent per day by spenders (in fixidity format)
+     */
     uint256 spendingRatioForCelo;
     /**
-    * @dev The collateral assets of the Reserve (which are checked agains't assets of Exchanges by the broker)
-    */
+     * @dev The collateral assets of the Reserve (which are checked agains't assets of Exchanges by the broker)
+     */
     address[] collateralAssets;
     /**
-    * @dev The % of each collateral asset that can be spent per day by spenders (in fixidity format)
-    */
+     * @dev The % of each collateral asset that can be spent per day by spenders (in fixidity format)
+     */
     uint256[] collateralAssetDailySpendingRatios;
   }
-
-
 }

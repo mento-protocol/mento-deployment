@@ -5,7 +5,9 @@ pragma experimental ABIEncoderV2;
 import { ICeloGovernance } from "./ICeloGovernance.sol";
 
 interface IMentoUpgrade {
-    function buildProposal() external returns (ICeloGovernance.Transaction[] memory);
-    function prepare() external;
-    function hasChecks() external returns (bool);
+  function buildProposal() external returns (ICeloGovernance.Transaction[] memory);
+
+  function prepare() external;
+
+  function hasChecks() external returns (bool);
 }
