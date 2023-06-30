@@ -39,8 +39,8 @@ library MU03Config {
       referenceRateFeedID: contracts.celoRegistry("StableToken"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: 100000, // [10_000, 100_000, 500_000][phase - 1],
-      asset0_limit1: 500000, // [50_000, 500_000, 2_500_000][phase - 1],
+      asset0_limit0: 100_000, // [10_000, 100_000, 500_000][phase - 1],
+      asset0_limit1: 500_000, // [50_000, 500_000, 2_500_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
@@ -72,8 +72,8 @@ library MU03Config {
       referenceRateFeedID: contracts.celoRegistry("StableTokenEUR"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: 10_000, // [10_000, 100_000, 500_000][phase - 1],
-      asset0_limit1: 100_000, // [50_000, 500_000, 2_500_000][phase - 1],
+      asset0_limit0: 100_000, // [10_000, 100_000, 500_000][phase - 1],
+      asset0_limit1: 500_000, // [50_000, 500_000, 2_500_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
@@ -105,8 +105,8 @@ library MU03Config {
       referenceRateFeedID: contracts.celoRegistry("StableTokenBRL"),
       asset0_timeStep0: 5 minutes,
       asset0_timeStep1: 1 days,
-      asset0_limit0: 100000, // [10_000, 100_000, 500_000][phase - 1],
-      asset0_limit1: 500000, // [50_000, 500_000, 2_500_000][phase - 1],
+      asset0_limit0: 100_000, // [10_000, 100_000, 500_000][phase - 1],
+      asset0_limit1: 500_000, // [50_000, 500_000, 2_500_000][phase - 1],
       asset0_limitGlobal: 0,
       asset0_flags: L0 | L1
     });
@@ -155,10 +155,10 @@ library MU03Config {
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 1_800_000 * 1e18, // 1.8 million
-      isMedianDeltaBreakerEnabled: false,
-      medianDeltaBreakerThreshold: FixidityLib.wrap(0),
-      medianDeltaBreakerCooldown: 0,
-      smoothingFactor: 0,
+      isMedianDeltaBreakerEnabled: true,
+      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(2, 100),
+      medianDeltaBreakerCooldown: 15 minutes,
+      smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap(),
       isValueDeltaBreakerEnabled: true,
       valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
       valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
@@ -186,10 +186,10 @@ library MU03Config {
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 1_800_000 * 1e18, // 1.8 million
-      isMedianDeltaBreakerEnabled: false,
-      medianDeltaBreakerThreshold: FixidityLib.wrap(0),
-      medianDeltaBreakerCooldown: 0,
-      smoothingFactor: 0,
+      isMedianDeltaBreakerEnabled: true,
+      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(25, 1000), // 0.025
+      medianDeltaBreakerCooldown: 15 minutes,
+      smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap(), //0.0005 
       isValueDeltaBreakerEnabled: true,
       valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
       valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
