@@ -37,7 +37,7 @@ if [ "$USE_FORK" = true ] ; then
 fi
 
 if [ "$SIMULATE" = true ] ; then
-    echo "🥸  Simulating $UPGRADE"
+    echo "🥸 Simulating $UPGRADE"
     forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --skip .dev.sol --sig "run(string)" script/utils/SimulateUpgrade.sol:SimulateUpgrade $UPGRADE
 else 
     echo "🔥 Submitting $UPGRADE"
