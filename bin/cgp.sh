@@ -41,7 +41,8 @@ if [ "$SIMULATE" = true ] ; then
     forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --skip .dev.sol --sig "run(string)" script/utils/SimulateUpgrade.sol:SimulateUpgrade $UPGRADE
 else 
     echo "🔥 Submitting $UPGRADE"
-    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast ${UPGRADE}
+    confirm_if_celo "$NETWORK"
+    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy ${UPGRADE}
 fi
 
 

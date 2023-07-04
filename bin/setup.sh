@@ -66,5 +66,19 @@ forge_script () { # $1: script name, $2: script file path
     echo "=================================================================="
     echo "🏃🏼 Running $1"
     echo "=================================================================="
+    confirm_if_celo "$NETWORK"
     forge script $3 --rpc-url $RPC_URL --legacy --broadcast --verify --verifier sourcify $2
+}
+
+confirm_if_celo () { # $1: network
+    if [ "celo" = $1 ]; then
+        while true; do
+            read -p "  This action will be performed on the Celo mainnet. Are you sure? [y/n]: " answer
+            case $answer in
+                [Yy]* ) break;;
+                [Nn]* ) exit;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
+    fi
 }
