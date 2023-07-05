@@ -8,6 +8,7 @@ import { console2 } from "forge-std/Script.sol";
 import { ISortedOracles } from "mento-core-2.2.0/interfaces/ISortedOracles.sol";
 import { MedianDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/MedianDeltaBreaker.sol";
 import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
+import { ConstantSumPricingModule } from "mento-core-2.2.0/swap/ConstantSumPricingModule.sol";
 
 /*
  yarn deploy -n <network> -u MU03 -s MU03-01-Create-Nonupgradeable-Contracts.sol
@@ -15,6 +16,7 @@ import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
 contract MU03_CreateNonupgradeableContracts is Script {
   BreakerBox private breakerBox;
   MedianDeltaBreaker private medianDeltaBreaker;
+  ConstantSumPriceModule private constantSumPriceModule;
 
   function run() public {
     address governance = contracts.celoRegistry("Governance");
@@ -41,6 +43,9 @@ contract MU03_CreateNonupgradeableContracts is Script {
         __cooldowns
       );
       medianDeltaBreaker.transferOwnership(governance);
+
+      constantSumPriceModule = new ConstantSumPricingModule();
+      constantSumPriceModule.transferOwnership(governance);
     }
     vm.stopBroadcast();
 
@@ -49,6 +54,7 @@ contract MU03_CreateNonupgradeableContracts is Script {
     console2.log("BreakerBox(%s) ownership transferred to %s", address(breakerBox), governance);
     console2.log("MedianDeltaBreaker deployed at: ", address(medianDeltaBreaker));
     console2.log("MedianDeltaBreaker(%s) ownership transferred to %s", address(medianDeltaBreaker), governance);
+    console2.log("ConstantSumPricingModule(%s) ownership transferred to %s", address(constantSumPriceModule), governance);
     console2.log("----------");
   }
 }
