@@ -30,7 +30,7 @@ if ! [ -z "$SCRIPT" ]; then # Pick the script by name
     SCRIPT_FILE="script/upgrades/$UPGRADE/deploy/$SCRIPT"
     if test -f "$SCRIPT_FILE"; then
         echo "🔎  $SCRIPT_FILE found"
-        forge_script "$SCRIPT" "$SCRIPT_FILE"
+        forge_script "$SCRIPT" "$SCRIPT_FILE" "$(forge_skip $UPGRADE)"
         exit 0
     else
         echo "🚨 Script $SCRIPT not found in $SCRIPT_FILE"
@@ -40,5 +40,5 @@ fi
 
 for DEPLOY_SCRIPT in $UPGRADE_DIR/deploy/*; do
     DEPLOY_FILE=$(basename $DEPLOY_SCRIPT)
-    forge_script "$DEPLOY_FILE" "$DEPLOY_SCRIPT"
+    forge_script "$DEPLOY_FILE" "$DEPLOY_SCRIPT" "$(forge_skip $UPGRADE)"
 done

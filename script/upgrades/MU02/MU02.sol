@@ -3,18 +3,18 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { Config } from "./Config.sol";
-
 import { GovernanceScript } from "script/utils/Script.sol";
-import { ICGPBuilder } from "script/utils/ICGPBuilder.sol";
+import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
+
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-import { ICeloGovernance } from "mento-core/contracts/governance/interfaces/ICeloGovernance.sol";
-import { Proxy } from "mento-core/contracts/common/Proxy.sol";
-import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
+import { Proxy } from "mento-core-2.1.0/common/Proxy.sol";
+import { BiPoolManager } from "mento-core-2.1.0/BiPoolManager.sol";
 
-contract MU01_CGP_Phase1_Patch1 is ICGPBuilder, GovernanceScript {
+contract MU02 is IMentoUpgrade, GovernanceScript {
+  bool public hasChecks = false;
+
   ICeloGovernance.Transaction[] private transactions;
 
   address private cUSD;
@@ -38,7 +38,7 @@ contract MU01_CGP_Phase1_Patch1 is ICGPBuilder, GovernanceScript {
    */
   function loadDeployedContracts() public {
     contracts.load("MU01-00-Create-Proxies", "latest");
-    contracts.load("MU01-04-Deploy-BiPoolMananager", "latest");
+    contracts.load("MU02-02-Create-Implementations", "latest");
   }
 
   /**

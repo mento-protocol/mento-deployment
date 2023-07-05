@@ -7,7 +7,7 @@ import { console } from "forge-std/console.sol";
 import { Vm } from "forge-std/Vm.sol";
 import { Chain } from "./Chain.sol";
 import { stdJson } from "forge-std/StdJson.sol";
-import { IRegistry } from "mento-core/contracts/common/interfaces/IRegistry.sol";
+import { IRegistry } from "script/interfaces/IRegistry.sol";
 
 library Contracts {
   using stdJson for string;
@@ -28,20 +28,13 @@ library Contracts {
     string _dependencies;
   }
 
-  function loadUpgrade(
-    Cache storage self,
-    string memory upgrade
-  ) internal {
+  function loadUpgrade(Cache storage self, string memory upgrade) internal {
     load(self, string(abi.encodePacked(upgrade, "-00-Create-Proxies")), "latest");
     load(self, string(abi.encodePacked(upgrade, "-01-Create-Nonupgradeable-Contracts")), "latest");
     load(self, string(abi.encodePacked(upgrade, "-02-Create-Implementations")), "latest");
   }
 
-  function load(
-    Cache storage self,
-    string memory script,
-    string memory timestamp
-  ) internal {
+  function load(Cache storage self, string memory script, string memory timestamp) internal {
     string memory chainId = Chain.idString();
     string memory root = vm.projectRoot();
     string memory path = string(

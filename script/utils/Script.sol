@@ -3,12 +3,11 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { Script as BaseScript, console2 } from "forge-std/Script.sol";
-import { FixidityLib } from "mento-core/contracts/common/FixidityLib.sol";
+import { FixidityLib } from "./FixidityLib.sol";
 import { Chain } from "./Chain.sol";
 import { Contracts } from "./Contracts.sol";
 import { GovernanceHelper } from "./GovernanceHelper.sol";
-import { IPricingModule } from "mento-core/contracts/interfaces/IPricingModule.sol";
-import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
+import { Factory } from "./Factory.sol";
 
 contract Script is BaseScript {
   using Contracts for Contracts.Cache;
@@ -17,7 +16,20 @@ contract Script is BaseScript {
   address public constant REGISTRY_ADDRESS = 0x000000000000000000000000000000000000ce10;
 
   Contracts.Cache public contracts;
+  Factory public factory;
+
+  constructor() public {
+    _init();
+  }
+
+  function _init() internal {
+    factory = new Factory();
+  }
+
+  function fork() public {
+    Chain.fork();
+    _init();
+  }
 }
 
-contract GovernanceScript is Script, GovernanceHelper {
-}
+contract GovernanceScript is Script, GovernanceHelper {}

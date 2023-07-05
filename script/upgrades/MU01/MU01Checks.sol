@@ -3,29 +3,26 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { console2 } from "forge-std/Script.sol";
-import { Script } from "script/utils/Script.sol";
 import { Test } from "forge-std/Test.sol";
-import { Chain } from "script/utils/Chain.sol";
-
-import { IBroker } from "mento-core/contracts/interfaces/IBroker.sol";
-import { IStableToken } from "mento-core/contracts/interfaces/IStableToken.sol";
-import { IExchangeProvider } from "mento-core/contracts/interfaces/IExchangeProvider.sol";
-import { Reserve } from "mento-core/contracts/Reserve.sol";
-import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
-import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
-import { IBiPoolManager } from "mento-core/contracts/interfaces/IBiPoolManager.sol";
-import { MockERC20 } from "../../../../contracts/MockERC20.sol";
-import { Arrays } from "script/utils/Arrays.sol";
-
-import { IBreakerBox } from "mento-core/contracts/interfaces/IBreakerBox.sol";
-
-import { Broker } from "mento-core/contracts/Broker.sol";
-import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
-
-import { TradingLimits } from "mento-core/contracts/common/TradingLimits.sol";
-
 import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
+import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+
+import { Script } from "script/utils/Script.sol";
+import { Chain } from "script/utils/Chain.sol";
+import { Arrays } from "script/utils/Arrays.sol";
+import { MockERC20 } from "contracts/MockERC20.sol";
+
+import { IBroker } from "mento-core-2.0.0/interfaces/IBroker.sol";
+import { IStableToken } from "mento-core-2.0.0/interfaces/IStableToken.sol";
+import { IExchangeProvider } from "mento-core-2.0.0/interfaces/IExchangeProvider.sol";
+import { Reserve } from "mento-core-2.0.0/Reserve.sol";
+import { IERC20Metadata } from "mento-core-2.0.0/common/interfaces/IERC20Metadata.sol";
+import { BiPoolManager } from "mento-core-2.0.0/BiPoolManager.sol";
+import { IBiPoolManager } from "mento-core-2.0.0/interfaces/IBiPoolManager.sol";
+import { IBreakerBox } from "mento-core-2.0.0/interfaces/IBreakerBox.sol";
+import { Broker } from "mento-core-2.0.0/Broker.sol";
+import { BreakerBox } from "mento-core-2.0.0/BreakerBox.sol";
+import { TradingLimits } from "mento-core-2.0.0/common/TradingLimits.sol";
 
 /**
  * @title IBrokerWithCasts
@@ -39,7 +36,7 @@ interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
-contract DeploymentChecks is Script, Test {
+contract MU01Checks is Script, Test {
   using TradingLimits for TradingLimits.Config;
 
   IBroker private broker;
@@ -73,14 +70,6 @@ contract DeploymentChecks is Script, Test {
   }
 
   function run() public {
-    vm.startBroadcast(Chain.deployerPrivateKey());
-    {
-      swapCeloTocUSD();
-    }
-    vm.stopBroadcast();
-  }
-
-  function runInFork() public {
     setUp();
     vm.deal(address(this), 1e20);
 
@@ -143,11 +132,11 @@ contract DeploymentChecks is Script, Test {
     reserve.transferCollateralAsset(bridgedUSDC, mainReserve, oneMillion);
     vm.stopPrank();
 
-    assert (address(mainReserve).balance == prevMainReserveCeloBalance + oneMillion);
-    assert (MockERC20(bridgedUSDC).balanceOf(address(mainReserve)) == prevMainReserveUsdcBalance + oneMillion);
+    assert(address(mainReserve).balance == prevMainReserveCeloBalance + oneMillion);
+    assert(MockERC20(bridgedUSDC).balanceOf(address(mainReserve)) == prevMainReserveUsdcBalance + oneMillion);
 
     console2.log("\t multiSig spender can spend collateral assets 🤑");
-  } 
+  }
 
   /* ================================================================ */
   /* ========================= Broker checks ======================== */
@@ -197,7 +186,7 @@ contract DeploymentChecks is Script, Test {
       bytes32 exchangeId = exchanges[i];
       IBiPoolManager.PoolExchange memory pool = bpm.getPoolExchange(exchangeId);
 
-      require (
+      require(
         pool.asset0 == cUSD || pool.asset0 == cEUR || pool.asset0 == cBRL,
         "asset0 is not a stable asset in the exchange"
       );
@@ -221,12 +210,7 @@ contract DeploymentChecks is Script, Test {
       bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(pool.asset0)));
       TradingLimits.Config memory limits = _broker.tradingLimitsConfig(limitId);
 
-      if (
-        limits.timestep0 == 0 ||
-        limits.timestep1 == 0 ||
-        limits.limit0 == 0 ||
-        limits.limit1 == 0
-      ) {
+      if (limits.timestep0 == 0 || limits.timestep1 == 0 || limits.limit0 == 0 || limits.limit1 == 0) {
         console2.log("The trading limit for %s, %s was not set ❌", pool.asset0, pool.asset1);
         revert("Not all trading limits were set.");
       }
@@ -235,18 +219,14 @@ contract DeploymentChecks is Script, Test {
     console2.log("\tTrading limits set for all exchanges 🔒");
   }
 
-  // The BreakerBox implementation has changed we are keeping this to preserve history.
-  /*
   function verifyCircuitBreaker() public view {
-    address[] memory configuredBreakers = Arrays.addresses(
-      cUSD, cEUR, cBRL, bridgedUSDC
-    );
+    address[] memory configuredBreakers = Arrays.addresses(cUSD, cEUR, cBRL, bridgedUSDC);
 
     for (uint256 i = 0; i < configuredBreakers.length; i++) {
       address token = configuredBreakers[i];
       (, uint64 lastUpdatedTime, ) = breakerBox.rateFeedTradingModes(token);
 
-      if configured, TradingModeInfo.lastUpdatedTime is greater than zero
+      // if configured, TradingModeInfo.lastUpdatedTime is greater than zero
       if (lastUpdatedTime == 0) {
         console2.log("Circuit breaker for %s was not set ❌", token);
         revert("Not all breakers were set.");
@@ -255,7 +235,6 @@ contract DeploymentChecks is Script, Test {
 
     console2.log("\tCircuit breakers set for all tokens 😬");
   }
-  */
 
   /* ================================================================ */
   /* ============================= Swaps =========================== */

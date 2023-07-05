@@ -6,13 +6,10 @@ import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
 import { Ownable } from "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import { Proxy } from "mento-core/contracts/common/Proxy.sol";
-
+import { Proxy } from "mento-core-2.0.0/common/Proxy.sol";
 
 /*
- forge script MU01_GovernanceOwnershipTransfer --rpc-url $RPC_URL
-                             --broadcast --legacy 
-                             --verify --verifier sourcify 
+ yarn deploy -n <network> -u MU01 -s MU01-03-Governance-Ownership-Transfer.sol
 */
 contract MU01_GovernanceOwnershipTransfer is Script {
   function run() public {
@@ -20,12 +17,7 @@ contract MU01_GovernanceOwnershipTransfer is Script {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU01-02-Create-Implementations", "latest");
 
-    string[4] memory proxies = [
-      "BreakerBoxProxy",
-      "BiPoolManagerProxy",
-      "PartialReserveProxy",
-      "BrokerProxy"
-    ];
+    string[4] memory proxies = ["BreakerBoxProxy", "BiPoolManagerProxy", "PartialReserveProxy", "BrokerProxy"];
     string[9] memory ownables = [
       "BreakerBox",
       "BiPoolManager",

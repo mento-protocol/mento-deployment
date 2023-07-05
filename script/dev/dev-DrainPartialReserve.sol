@@ -5,12 +5,12 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 as console } from "forge-std/Script.sol";
 
-import { IERC20Metadata } from "mento-core/contracts/common/interfaces/IERC20Metadata.sol";
-import { IReserve } from "mento-core/contracts/interfaces/IReserve.sol";
+import { IERC20Metadata } from "mento-core-2.0.0/common/interfaces/IERC20Metadata.sol";
+import { IReserve } from "mento-core-2.0.0/interfaces/IReserve.sol";
 
 contract DrainPartialReserve is Script {
   // TODO: Change this when running
-  address constant private oldPartialReserveAddress = 0xAC7cf1c3c13C91b5fCE10090CE0D518853BC49C2;
+  address private constant oldPartialReserveAddress = 0xAC7cf1c3c13C91b5fCE10090CE0D518853BC49C2;
 
   function run() public {
     contracts.loadUpgrade("MU01");

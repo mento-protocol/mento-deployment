@@ -5,14 +5,12 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
+import { BiPoolManager } from "mento-core-2.1.0/BiPoolManager.sol";
 
-/*
- forge script MU01_DeployBiPoolManager --rpc-url $RPC_URL
-                             --broadcast --legacy 
-                             --verify --verifier sourcify 
-*/
-contract MU01_DeployBiPoolManager is Script {
+/**
+ yarn deploy -n <network> -u MU02 -s MU02-02-Create-Implementations.sol
+ */
+contract MU02_CreateImplementations is Script {
   function run() public {
     address biPoolManager;
     address governance = contracts.celoRegistry("Governance");

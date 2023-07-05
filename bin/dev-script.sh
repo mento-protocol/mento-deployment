@@ -35,7 +35,7 @@ if ! [ -z "$SCRIPT_NAME" ]; then # Pick the script by name
     SCRIPT_FILE="script/dev/dev-$SCRIPT_NAME.sol"
     if test -f "$SCRIPT_FILE"; then
         echo "🔎  $SCRIPT_FILE found"
-        forge_script "$SCRIPT_NAME" "$SCRIPT_FILE"
+        forge_script "$SCRIPT_NAME" "$SCRIPT_FILE" $(forge_skip "dev")
         exit 0
     else
         echo "🚨 Script $SCRIPT_NAME not found in $SCRIPT_FILE"
@@ -49,8 +49,8 @@ if ! [ -z "$INDEX" ]; then # Pick the script by index
         echo "🚨 Index $INDEX is out of range or invalid"
         exit 1
     fi
-    SCRIPT=$(ls script/dev/* | head -n $INDEX | tail -n 1) 
-    forge_script "$(basename $SCRIPT .sol | sed 's/dev-//g')" "$SCRIPT"
+    SCRIPT=$(ls script/dev/* | head -n $INDEX | tail -n 1)
+    forge_script "$(basename $SCRIPT .sol | sed 's/dev-//g')" "$SCRIPT" $(forge_skip "dev")
     exit 0
 fi
 
@@ -64,7 +64,7 @@ do
     SCRIPT_FILE="script/dev/dev-$SCRIPT.sol"
     if test -f "$SCRIPT_FILE"; then
         echo "🔎  $SCRIPT_FILE found"
-        forge_script "$SCRIPT" "$SCRIPT_FILE"
+        forge_script "$SCRIPT" "$SCRIPT_FILE" "$(forge_skip "dev")"
         exit 0
     else
         echo "Invalid option, press Ctrl+C to exit"

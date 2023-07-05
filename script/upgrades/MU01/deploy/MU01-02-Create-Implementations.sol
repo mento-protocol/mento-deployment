@@ -5,24 +5,21 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-import { BreakerBox } from "mento-core/contracts/BreakerBox.sol";
-import { BiPoolManager } from "mento-core/contracts/BiPoolManager.sol";
-import { Broker } from "mento-core/contracts/Broker.sol";
-import { Reserve } from "mento-core/contracts/Reserve.sol";
-import { StableToken } from "mento-core/contracts/StableToken.sol";
-import { StableTokenBRL } from "mento-core/contracts/StableTokenBRL.sol";
-import { StableTokenEUR } from "mento-core/contracts/StableTokenEUR.sol";
-import { SortedOracles } from "mento-core/contracts/SortedOracles.sol";
+import { BreakerBox } from "mento-core-2.0.0/BreakerBox.sol";
+import { BiPoolManager } from "mento-core-2.0.0/BiPoolManager.sol";
+import { Broker } from "mento-core-2.0.0/Broker.sol";
+import { Reserve } from "mento-core-2.0.0/Reserve.sol";
+import { StableToken } from "mento-core-2.0.0/StableToken.sol";
+import { StableTokenBRL } from "mento-core-2.0.0/StableTokenBRL.sol";
+import { StableTokenEUR } from "mento-core-2.0.0/StableTokenEUR.sol";
+import { SortedOracles } from "mento-core-2.0.0/SortedOracles.sol";
 
 /*
- forge script MU01_CreateImplementations --rpc-url $RPC_URL
-                             --broadcast --legacy 
-                             --verify --verifier sourcify 
+ yarn deploy -n <network> -u MU01 -s MU01-02-Create-Implementations.sol
 */
 contract MU01_CreateImplementations is Script {
   function run() public {
-    // BreakerBox has changed and is no longer upgradable
-    // address breakerBox;
+    address breakerBox;
     address biPoolManager;
     address broker;
     address reserve;
@@ -34,8 +31,7 @@ contract MU01_CreateImplementations is Script {
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       // New implementations
-      // BreakerBox has changed and is no longer upgradable
-      // breakerBox = address(new BreakerBox(false));
+      breakerBox = address(new BreakerBox(false));
       biPoolManager = address(new BiPoolManager(false));
       broker = address(new Broker(false));
 
@@ -49,8 +45,7 @@ contract MU01_CreateImplementations is Script {
     vm.stopBroadcast();
 
     console2.log("----------");
-    // BreakerBox has changed and is no longer upgradable
-    // console2.log("BreakerBox deployed at: ", breakerBox);
+    console2.log("BreakerBox deployed at: ", breakerBox);
     console2.log("BiPoolManager deployed at: ", biPoolManager);
     console2.log("Broker deployed at: ", broker);
     console2.log("Reserve deployed at: ", reserve);
