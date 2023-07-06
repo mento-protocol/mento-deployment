@@ -405,8 +405,8 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
             cUSDCeloConfig.medianDeltaBreakerThreshold.unwrap(),
             cEURCeloConfig.medianDeltaBreakerThreshold.unwrap(),
             cBRLCeloConfig.medianDeltaBreakerThreshold.unwrap(),
-            cBRLUSDCConfig.medianDeltaBreakerThreshold.unwrap(),
-            cEURUSDCConfig.medianDeltaBreakerThreshold.unwrap()
+            cEURUSDCConfig.medianDeltaBreakerThreshold.unwrap(),
+            cBRLUSDCConfig.medianDeltaBreakerThreshold.unwrap()
           )
         )
       )
@@ -468,8 +468,8 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
           Arrays.addresses(cEURUSDCConfig.referenceRateFeedID, cBRLUSDCConfig.referenceRateFeedID),
           Arrays.uints(
-            cBRLUSDCConfig.valueDeltaBreakerThreshold.unwrap(),
-            cEURUSDCConfig.valueDeltaBreakerThreshold.unwrap()
+            cEURUSDCConfig.valueDeltaBreakerThreshold.unwrap(),
+            cBRLUSDCConfig.valueDeltaBreakerThreshold.unwrap()
           )
         )
       )
