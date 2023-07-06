@@ -16,7 +16,7 @@ import { ConstantSumPricingModule } from "mento-core-2.2.0/swap/ConstantSumPrici
 contract MU03_CreateNonupgradeableContracts is Script {
   BreakerBox private breakerBox;
   MedianDeltaBreaker private medianDeltaBreaker;
-  ConstantSumPriceModule private constantSumPriceModule;
+  ConstantSumPricingModule private constantSumPriceModule;
 
   function run() public {
     address governance = contracts.celoRegistry("Governance");
@@ -45,7 +45,6 @@ contract MU03_CreateNonupgradeableContracts is Script {
       medianDeltaBreaker.transferOwnership(governance);
 
       constantSumPriceModule = new ConstantSumPricingModule();
-      constantSumPriceModule.transferOwnership(governance);
     }
     vm.stopBroadcast();
 
@@ -54,7 +53,7 @@ contract MU03_CreateNonupgradeableContracts is Script {
     console2.log("BreakerBox(%s) ownership transferred to %s", address(breakerBox), governance);
     console2.log("MedianDeltaBreaker deployed at: ", address(medianDeltaBreaker));
     console2.log("MedianDeltaBreaker(%s) ownership transferred to %s", address(medianDeltaBreaker), governance);
-    console2.log("ConstantSumPricingModule(%s) ownership transferred to %s", address(constantSumPriceModule), governance);
+    console2.log("ConstantSumPricingModule(%s) deployed at %s", address(constantSumPriceModule));
     console2.log("----------");
   }
 }
