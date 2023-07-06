@@ -279,7 +279,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     );
 
     // Add the Median Delta Breaker to the breaker box with the trading mode '3' -> trading halted
-    if (breakerBox != address(0) || BreakerBox(breakerBox).breakerTradingMode(medianDeltaBreaker) == 0) {
+    if (breakerBox != address(0) || !BreakerBox(breakerBox).isBreaker(medianDeltaBreaker)) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
