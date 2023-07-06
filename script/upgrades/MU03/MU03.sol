@@ -23,6 +23,7 @@ import { Exchange } from "mento-core-2.2.0/legacy/Exchange.sol";
 import { TradingLimits } from "mento-core-2.2.0/libraries/TradingLimits.sol";
 import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/MedianDeltaBreaker.sol";
+import { ValueDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/ValueDeltaBreaker.sol";
 import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
 
 import { MU03Config, Config } from "./Config.sol";
@@ -380,11 +381,13 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         medianDeltaBreaker,
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setCooldownTime.selector,
-          Arrays.addresses(cUSD, cEUR, cBRL),
+          Arrays.addresses(cUSD, cEUR, cBRL, cEURUSDCConfig.referenceRateFeedID, cBRLUSDCConfig.referenceRateFeedID),
           Arrays.uints(
             cUSDCeloConfig.medianDeltaBreakerCooldown,
             cEURCeloConfig.medianDeltaBreakerCooldown,
-            cBRLCeloConfig.medianDeltaBreakerCooldown
+            cBRLCeloConfig.medianDeltaBreakerCooldown,
+            cEURUSDCConfig.medianDeltaBreakerCooldown,
+            cBRLUSDCConfig.medianDeltaBreakerCooldown
           )
         )
       )
@@ -397,11 +400,13 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         medianDeltaBreaker,
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(cUSD, cEUR, cBRL),
+          Arrays.addresses(cUSD, cEUR, cBRL, cEURUSDCConfig.referenceRateFeedID, cBRLUSDCConfig.referenceRateFeedID),
           Arrays.uints(
             cUSDCeloConfig.medianDeltaBreakerThreshold.unwrap(),
             cEURCeloConfig.medianDeltaBreakerThreshold.unwrap(),
-            cBRLCeloConfig.medianDeltaBreakerThreshold.unwrap()
+            cBRLCeloConfig.medianDeltaBreakerThreshold.unwrap(),
+            cBRLUSDCConfig.medianDeltaBreakerThreshold.unwrap(),
+            cEURUSDCConfig.medianDeltaBreakerThreshold.unwrap()
           )
         )
       )
@@ -422,6 +427,53 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
           )
         );
     }
+  }
+
+  function proposal_configureValueDeltaBreaker() public {
+    // Set the reference values
+      transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        valueDeltaBreaker,
+        abi.encodeWithSelector(
+          ValueDeltaBreaker(0).setReferenceValues.selector,
+          Arrays.addresses(cEURUSDCConfig.referenceRateFeedID, cBRLUSDCConfig.referenceRateFeedID),
+          Arrays.uints(cEURUSDCConfig.valueDeltaBreakerReferenceValue, cBRLUSDCConfig.valueDeltaBreakerReferenceValue)
+        )
+      )
+    );
+
+    // Set the cooldown times
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        valueDeltaBreaker,
+        abi.encodeWithSelector(
+          ValueDeltaBreaker(0).setCooldownTimes.selector,
+          Arrays.addresses(cEURUSDCConfig.referenceRateFeedID, cBRLUSDCConfig.referenceRateFeedID),
+          Arrays.uints(
+            cEURUSDCConfig.valueDeltaBreakerCooldown,
+            cBRLUSDCConfig.valueDeltaBreakerCooldown
+          )
+        )
+      )
+    );
+
+    // Set the rate change thresholds
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        valueDeltaBreaker,
+        abi.encodeWithSelector(
+          ValueDeltaBreaker(0).setRateChangeThresholds.selector,
+          Arrays.addresses(cEURUSDCConfig.referenceRateFeedID, cBRLUSDCConfig.referenceRateFeedID),
+          Arrays.uints(
+            cBRLUSDCConfig.valueDeltaBreakerThreshold.unwrap(),
+            cEURUSDCConfig.valueDeltaBreakerThreshold.unwrap()
+          )
+        )
+      )
+    );
   }
 
   /**
