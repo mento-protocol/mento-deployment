@@ -55,6 +55,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   address private breakerBox;
   address private medianDeltaBreaker;
   address private valueDeltaBreaker;
+  address private biPoolManagerProxyAddress;
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
@@ -88,6 +89,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
+    biPoolManagerProxyAddress = contracts.deployed("BiPoolManagerProxy");
   }
 
   /**
@@ -138,6 +140,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
 
     proposal_createExchanges();
     proposal_configureTradingLimits();
+    proposal_updateBiPoolManagerImplementation();
     proposal_configureV1Exchanges();
     proposal_configureBreakerBox();
     proposal_configureMedianDeltaBreaker();
@@ -256,6 +259,16 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         )
       );
     }
+  }
+
+    function proposal_updateBiPoolManagerImplementation() public {
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        biPoolManagerProxyAddress,
+        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("BiPoolManager"))
+      )
+    );
   }
 
   function proposal_configureBreakerBox() public {
