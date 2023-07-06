@@ -75,6 +75,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     contracts.load("MU01-00-Create-Proxies", "latest");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.load("MU03-02-Create-Implementations", "latest");
   }
 
   /**
@@ -138,9 +139,9 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
+    proposal_updateBiPoolManagerImplementation();
     proposal_createExchanges();
     proposal_configureTradingLimits();
-    proposal_updateBiPoolManagerImplementation();
     proposal_configureV1Exchanges();
     proposal_configureBreakerBox();
     proposal_configureMedianDeltaBreaker();
