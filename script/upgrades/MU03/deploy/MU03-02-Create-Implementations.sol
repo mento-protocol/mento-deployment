@@ -8,7 +8,7 @@ import { console2 } from "forge-std/Script.sol";
 import { BiPoolManager } from "mento-core-2.2.0/swap/BiPoolManager.sol";
 
 /*
- yarn deploy -n <network> -u MU01 -s MU01-02-Create-Implementations.sol
+ yarn deploy -n <network> -u MU01 -s MU03-02-Create-Implementations.sol
 */
 contract MU03_CreateImplementations is Script {
   function run() public {
