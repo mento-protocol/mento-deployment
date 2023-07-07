@@ -30,11 +30,6 @@
     "celo",
     "solidity"
   ],
-  "husky": {
-    "hooks": {
-      "pre-push": "yarn lint:check"
-    }
-  },
   "private": true,
   "scripts": {
     "lint": "yarn prettier && yarn solhint",
