@@ -23,6 +23,7 @@ import { Exchange } from "mento-core-2.2.0/legacy/Exchange.sol";
 import { TradingLimits } from "mento-core-2.2.0/libraries/TradingLimits.sol";
 import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/MedianDeltaBreaker.sol";
+import { ConstantSumPricingModule } from "mento-core-2.2.0/swap/ConstantSumPricingModule.sol";
 import { MU03Config, Config } from "./Config.sol";
 
 // import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
@@ -50,6 +51,7 @@ contract MU03Checks is Script, Test {
   address public cEUR;
   address public cBRL;
   address public bridgedUSDC;
+  address public governance;
 
   // Pool Configs
   Config.PoolConfiguration private cUSDCeloConfig;
@@ -77,6 +79,7 @@ contract MU03Checks is Script, Test {
     celoToken = contracts.celoRegistry("GoldToken");
     broker = IBroker(contracts.celoRegistry("Broker"));
     breakerBox = BreakerBox(contracts.deployed("BreakerBox"));
+    governance = contracts.celoRegistry("Governance");
     // reserve = Reserve(contracts.deployed("PartialReserveProxy"));
 
     setUpConfigs();
@@ -86,10 +89,28 @@ contract MU03Checks is Script, Test {
     setUp();
     vm.deal(address(this), 1e20);
 
+    verifyOwner();
     verifyBiPoolManager();
     verifyExchanges();
+    verifyTradingLimits();
 
     // doSwaps();
+  }
+
+  function verifyOwner() public view {
+    require(
+      BiPoolManager(contracts.deployed("BiPoolManager")).owner() == governance,
+      "BiPoolManager ownership not transferred to governance"
+    );
+    require(
+      BreakerBox(contracts.deployed("BreakerBox")).owner() == governance,
+      "BreakerBox ownership not transferred to governance"
+    );
+    require(
+      MedianDeltaBreaker(contracts.deployed("MedianDeltaBreaker")).owner() == governance,
+      "MedianDeltaBreaker ownership not transferred to governance"
+    );
+    console2.log("Contract ownerships transferred to governance 🤝");
   }
 
   function verifyBiPoolManager() public view {
@@ -137,25 +158,29 @@ contract MU03Checks is Script, Test {
     console2.log("\texchanges correctly configured 🤘🏼");
   }
 
-//   function verifyTradingLimits() public view {
-//     IBrokerWithCasts _broker = IBrokerWithCasts(address(broker));
-//     BiPoolManager bpm = getBiPoolManager();
-//     bytes32[] memory exchanges = bpm.getExchangeIds();
+    function verifyTradingLimits() public view {
+      IBrokerWithCasts _broker = IBrokerWithCasts(address(broker));
+      BiPoolManager bpm = getBiPoolManager();
+      bytes32[] memory exchanges = bpm.getExchangeIds();
 
-//     for (uint256 i = 0; i < exchanges.length; i++) {
-//       bytes32 exchangeId = exchanges[i];
-//       IBiPoolManager.PoolExchange memory pool = bpm.getPoolExchange(exchangeId);
-//       bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(pool.asset0)));
-//       TradingLimits.Config memory limits = _broker.tradingLimitsConfig(limitId);
-
-//       if (limits.timestep0 == 0 || limits.timestep1 == 0 || limits.limit0 == 0 || limits.limit1 == 0) {
-//         console2.log("The trading limit for %s, %s was not set ❌", pool.asset0, pool.asset1);
-//         revert("Not all trading limits were set.");
-//       }
-//     }
-
-//     console2.log("\tTrading limits set for all exchanges 🔒");
-//   }
+      for (uint256 i = 0; i < exchanges.length; i++) {
+        bytes32 exchangeId = exchanges[i];
+        IBiPoolManager.PoolExchange memory pool = bpm.getPoolExchange(exchangeId);
+        bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(pool.asset0)));
+        TradingLimits.Config memory limits = _broker.tradingLimitsConfig(limitId);
+ 
+        if (limits.timestep0 == 0 || limits.timestep1 == 0 || limits.limit0 == 0 || limits.limit1 == 0) {
+          console2.log("The trading limit for %s, %s was not set ❌", pool.asset0, pool.asset1);
+          revert("Not all trading limits were set.");
+        }
+        require(poolConfigs[i].asset0_limit0 == limits.limit0, "limit0 does not match config");
+        require(poolConfigs[i].asset0_limit1 == limits.limit1, "limit1 does not match config");
+        require(poolConfigs[i].asset0_limitGlobal == limits.limitGlobal, "limitGlobal does not match config");
+        require(poolConfigs[i].asset0_timeStep0 == limits.timestep0, "timestep0 does not match config");
+        require(poolConfigs[i].asset0_timeStep1 == limits.timestep1, "timestep1 does not match config");
+      }
+      console2.log("\tTrading limits set for all exchanges 🔒");
+    }
 
   //   function verifyCircuitBreaker() public view {
   //     address[] memory configuredBreakers = Arrays.addresses(cUSD, cEUR, cBRL, bridgedUSDC);
