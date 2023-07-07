@@ -129,7 +129,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "MU01-Phase2", governance);
+      createProposal(_transactions, "MU03", governance);
     }
     vm.stopBroadcast();
   }
@@ -431,7 +431,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
 
   function proposal_configureValueDeltaBreaker() public {
     // Set the reference values
-      transactions.push(
+    transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
@@ -451,10 +451,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
           Arrays.addresses(cEURUSDCConfig.referenceRateFeedID, cBRLUSDCConfig.referenceRateFeedID),
-          Arrays.uints(
-            cEURUSDCConfig.valueDeltaBreakerCooldown,
-            cBRLUSDCConfig.valueDeltaBreakerCooldown
-          )
+          Arrays.uints(cEURUSDCConfig.valueDeltaBreakerCooldown, cBRLUSDCConfig.valueDeltaBreakerCooldown)
         )
       )
     );
