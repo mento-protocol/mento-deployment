@@ -61,7 +61,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
 
-  bool public hasChecks = false;
+  bool public hasChecks = true;
 
   function prepare() public {
     loadDeployedContracts();
