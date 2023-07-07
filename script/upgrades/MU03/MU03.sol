@@ -56,6 +56,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   address private breakerBox;
   address private medianDeltaBreaker;
   address private valueDeltaBreaker;
+  address private biPoolManagerProxyAddress;
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
@@ -75,6 +76,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     contracts.load("MU01-00-Create-Proxies", "latest");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.load("MU03-02-Create-Implementations", "latest");
   }
 
   /**
@@ -89,6 +91,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
+    biPoolManagerProxyAddress = contracts.deployed("BiPoolManagerProxy");
   }
 
   /**
@@ -137,6 +140,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
+    proposal_updateBiPoolManagerImplementation();
     proposal_createExchanges();
     proposal_configureTradingLimits();
     proposal_configureV1Exchanges();
@@ -259,6 +263,16 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     }
   }
 
+    function proposal_updateBiPoolManagerImplementation() public {
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        biPoolManagerProxyAddress,
+        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("BiPoolManager"))
+      )
+    );
+  }
+
   function proposal_configureBreakerBox() public {
     // Add the rate feeds to breaker box
     transactions.push(
@@ -280,7 +294,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     );
 
     // Add the Median Delta Breaker to the breaker box with the trading mode '3' -> trading halted
-    if (breakerBox != address(0) || !BreakerBox(breakerBox).isBreaker(medianDeltaBreaker)) {
+    if (!BreakerBox(breakerBox).isBreaker(medianDeltaBreaker)) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -291,7 +305,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     }
 
     // Add the Value Delta Breaker to the breaker box with the trading mode '3' -> trading halted
-    if (breakerBox != address(0) || !BreakerBox(breakerBox).isBreaker(valueDeltaBreaker)) {
+    if (!BreakerBox(breakerBox).isBreaker(valueDeltaBreaker)) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -405,8 +419,8 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
             cUSDCeloConfig.medianDeltaBreakerThreshold.unwrap(),
             cEURCeloConfig.medianDeltaBreakerThreshold.unwrap(),
             cBRLCeloConfig.medianDeltaBreakerThreshold.unwrap(),
-            cBRLUSDCConfig.medianDeltaBreakerThreshold.unwrap(),
-            cEURUSDCConfig.medianDeltaBreakerThreshold.unwrap()
+            cEURUSDCConfig.medianDeltaBreakerThreshold.unwrap(),
+            cBRLUSDCConfig.medianDeltaBreakerThreshold.unwrap()
           )
         )
       )
@@ -465,8 +479,8 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
           Arrays.addresses(cEURUSDCConfig.referenceRateFeedID, cBRLUSDCConfig.referenceRateFeedID),
           Arrays.uints(
-            cBRLUSDCConfig.valueDeltaBreakerThreshold.unwrap(),
-            cEURUSDCConfig.valueDeltaBreakerThreshold.unwrap()
+            cEURUSDCConfig.valueDeltaBreakerThreshold.unwrap(),
+            cBRLUSDCConfig.valueDeltaBreakerThreshold.unwrap()
           )
         )
       )
