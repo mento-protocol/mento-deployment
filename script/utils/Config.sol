@@ -11,6 +11,123 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
 library Config {
+  uint8 private constant L0 = 1; // 0b001 Limit0
+  uint8 private constant L1 = 2; // 0b010 Limit1
+  uint8 private constant LG = 4; // 0b100 LimitGlobal
+
+  struct MedianDeltaBreakerConfig {
+    /* ================================================================ */
+    /* ================ Median Delta Breaker Config =================== */
+    /* ================================================================ */
+    /**
+     * @dev This determines the permitted deviation of the median report changes.
+     *      The new median must fall within a range calculated based on this threshold
+     *      to be considered valid. This range also affects whether the breaker will
+     *      trigger or not. The threshold is stored as a FixidityLib.Fraction, with 24
+     *      decimal places. When setting the value, it should be scaled by 10^24.
+     *      For example, to set it to 0.1%, you would pass 100000000000000000000000 (0.1% * 10^24)
+     */
+    FixidityLib.Fraction threshold;
+    /**
+     * @dev Time interval (in seconds) required before resetting the median delta
+     *      breaker, calculated from the moment it was triggered for the pool to the present.
+     */
+    uint256 cooldown;
+    /**
+     * @dev Attenuation factor for the exponential moving average calculation:
+     *      EMA_n = a * X_n + (1 - a) * EMA_n-1
+     *      with `a` being the smoothing factor in the example above.
+     */
+    uint256 smoothingFactor;
+  }
+
+  struct ValueDeltaBreakerConfig {
+    /* ================================================================ */
+    /* ================= Value Delta Breaker Config =================== */
+    /* ================================================================ */
+    /**
+     * @dev  The allowed change in the new median relative to the reference value.
+     *       This variable determines the range of acceptable values for the new median,
+     *       which in turn affects whether the breaker will trigger or not. The range is
+     *       represented as a FixidityLib.Fraction using 24 decimal places. To set the
+     *       value to 0.8%, you need to pass 800000000000000000000000 (0.8% * 10^24)
+     */
+    FixidityLib.Fraction threshold;
+    /**
+     * @dev The reference value used to calculate the value delta breakers allowed min and max threshold.
+     *      This value has the same precision as the numerator of the median value, which is 24 decimal places.
+     *      however the setter expects the value is already scaled by 10^24.
+     *      So if you want to set the value to 1.0, you would pass in 1000000000000000000000000 (1.0 * 10^24).
+     */
+    uint256 referenceValue;
+    /**
+     * @dev Time interval (in seconds) required before resetting the value delta
+     *      breaker, calculated from the moment it was triggered for the pool to the present.
+     */
+    uint256 cooldown;
+
+  }
+
+  struct RateFeedConfig {
+    /* ================================================================ */
+    /* ==================== Oracle RateFeed Config ==================== */
+    /* ================================================================ */
+    /**
+     * @dev The ID of the oracle rate feed.
+     */
+    address rateFeedID;
+    /**
+     * @dev List of Median Delta Breaker Configurations for the rate feed.
+     */
+    MedianDeltaBreakerConfig[] medianDeltaBreakerConfigs;
+    /**
+     * @dev List of Value Delta Breaker Configurations for the rate feed.
+     */
+    ValueDeltaBreakerConfig[] valueDeltaBreakerConfigs;
+    /**
+     * @dev List of dependent rate feeds.
+     */
+    address[] dependentRateFeeds;
+  }
+
+  struct TradingLimitConfig {
+    /**
+     * @dev L0 enabled flag.
+     */
+    bool enabled0;
+    /**
+     * @dev The time window in seconds for the L0 trading limit of asset0.
+     */
+    uint32 timeStep0;
+    /**
+     * @dev The maximum allowed netflow for L0 within the time window.
+     * The value is in unints, without any decimal places. See TradingLimit.sol for more details.
+     */
+    int48 limit0;
+    /**
+     * @dev L1 enabled flag.
+     */
+    bool enabled1;
+    /**
+     * @dev The time window in seconds for the L1 trading limit of asset0.
+     */
+    uint32 timeStep1;
+    /**
+     * @dev The maximum allowed netflow for L1 within the time window.
+     * The value is in unints, without any decimal places. See TradingLimit.sol for more details.
+     */
+    int48 limit1;
+    /**
+     * @dev LG enabled flag.
+     */
+    bool enabledGlobal;
+    /**
+     * @dev The maximum allowed netflow for the lifetime of the limit.
+     * The value is in unints, without any decimal places. See TradingLimit.sol for more details.
+     */
+    int48 limitGlobal;
+  }
+
   struct PoolConfiguration {
     /* ================================================================ */
     /* ==================== BiPool Exchange Config ==================== */
@@ -52,93 +169,14 @@ library Config {
      * @dev The size, in number of stable tokens, that stable buckets should be set to during bucket updates
      */
     uint256 stablePoolResetSize;
-    /* ================================================================ */
-    /* ==================== Circuit Breaker Config ==================== */
-    /* ================================================================ */
-
-    /******************************************/
-    /********** Median Delta Breaker **********/
-    /******************************************/
-
     /**
-     * @dev This determines whether a MedianDeltaBreaker is enabled
-     */
-    bool isMedianDeltaBreakerEnabled;
+      * @dev Trading Limit Configurations for asset0
+      */
+    TradingLimitConfig asset0limits;
     /**
-     * @dev This determines the permitted deviation of the median report changes.
-     *      The new median must fall within a range calculated based on this threshold
-     *      to be considered valid. This range also affects whether the breaker will
-     *      trigger or not. The threshold is stored as a FixidityLib.Fraction, with 24
-     *      decimal places. When setting the value, it should be scaled by 10^24.
-     *      For example, to set it to 0.1%, you would pass 100000000000000000000000 (0.1% * 10^24)
-     */
-    FixidityLib.Fraction medianDeltaBreakerThreshold;
-    /**
-     * @dev Time interval (in seconds) required before resetting the median delta
-     *      breaker, calculated from the moment it was triggered for the pool to the present.
-     */
-    uint256 medianDeltaBreakerCooldown;
-    uint256 smoothingFactor;
-    /******************************************/
-    /********** Value Delta Breaker ***********/
-    /******************************************/
-
-    /**
-     * @dev This determines whether a MedianDeltaBreaker is enabled
-     */
-    bool isValueDeltaBreakerEnabled;
-    /**
-     * @dev  The allowed change in the new median relative to the reference value.
-     *       This variable determines the range of acceptable values for the new median,
-     *       which in turn affects whether the breaker will trigger or not. The range is
-     *       represented as a FixidityLib.Fraction using 24 decimal places. To set the
-     *       value to 0.8%, you need to pass 800000000000000000000000 (0.8% * 10^24)
-     */
-    FixidityLib.Fraction valueDeltaBreakerThreshold;
-    /**
-     * @dev The reference value used to calculate the value delta breakers allowed min and max threshold.
-     *      This value has the same precision as the numerator of the median value, which is 24 decimal places.
-     *      however the setter expects the value is already scaled by 10^24.
-     *      So if you want to set the value to 1.0, you would pass in 1000000000000000000000000 (1.0 * 10^24).
-     */
-    uint256 valueDeltaBreakerReferenceValue;
-    /**
-     * @dev Time interval (in seconds) required before resetting the value delta
-     *      breaker, calculated from the moment it was triggered for the pool to the present.
-     */
-    uint256 valueDeltaBreakerCooldown;
-    /* ================================================================ */
-    /* ==================== Trading Limit Config ==================== */
-    /* ================================================================ */
-
-    /**
-     * @dev The time window in seconds for the L0 trading limit of asset0.
-     */
-    uint32 asset0_timeStep0;
-    /**
-     * @dev The time window in seconds for the L1 trading limit of asset0.
-     */
-    uint32 asset0_timeStep1;
-    /**
-     * @dev The maximum allowed netflow of asset0 for L0 within the time window.
-     * The value is in unints, without any decimal places. See TradingLimit.sol for more details.
-     */
-    int48 asset0_limit0;
-    /**
-     * @dev The maximum allowed netflow of asset0 for L1 within the time window.
-     * The value is in unints, without any decimal places. See TradingLimit.sol for more details.
-     */
-    int48 asset0_limit1;
-    /**
-     * @dev The maximum allowed netflow of asset0 for the lifetime of the limit.
-     * The value is in unints, without any decimal places. See TradingLimit.sol for more details.
-     */
-    int48 asset0_limitGlobal;
-    /**
-     * @dev Configuration flags that can enable or disable the three different
-     *      trading limits for asset 0.
-     */
-    uint8 asset0_flags;
+      * @dev Trading Limit Configurations for asset1
+      */
+    TradingLimitConfig asset1limits;
   }
 
   /* ================================================================ */
@@ -183,5 +221,32 @@ library Config {
      * @dev The % of each collateral asset that can be spent per day by spenders (in fixidity format)
      */
     uint256[] collateralAssetDailySpendingRatios;
+  }
+
+  /**
+   * @dev Helper to create an empty trading limit config.
+   */
+  function emptyTradingLimitConfig() internal pure returns (TradingLimitConfig memory) {
+    TradingLimitConfig memory tlc;
+    return tlc;
+  }
+
+  /**
+   * @dev Helper to convert the trading limit config individual flags to a bitmap flag
+   * @param tlc The trading limit config to convert
+   * @return The bitmap flag
+   */
+  function tradingLimitConfigToFlag(TradingLimitConfig memory tlc) internal pure returns (uint256) {
+    uint256 flag = 0;
+    if (tlc.enabled0) {
+      flag = flag | L0;
+    }
+    if (tlc.enabled1) {
+      flag = flag | L1;
+    }
+    if (tlc.enabledGlobal) {
+      flag = flag | LG;
+    }
+    return flag;
   }
 }

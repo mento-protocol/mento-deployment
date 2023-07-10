@@ -52,32 +52,33 @@ library MU01Config {
     });
   }
 
-  function cUSDCeloConfig(
+  function cUSDCelo_PoolConfig(
     Contracts.Cache storage contracts
   ) internal view returns (Config.PoolConfiguration memory config) {
     config = Config.PoolConfiguration({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
+
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 7_200_000 * 1e18, // 7.2 million
-      isMedianDeltaBreakerEnabled: true,
-      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
-      medianDeltaBreakerCooldown: 30 minutes,
-      smoothingFactor: 0,
-      isValueDeltaBreakerEnabled: false,
-      valueDeltaBreakerThreshold: FixidityLib.wrap(0),
-      valueDeltaBreakerReferenceValue: 0,
-      valueDeltaBreakerCooldown: 0,
       referenceRateFeedID: contracts.celoRegistry("StableToken"),
-      asset0_timeStep0: 5 minutes,
-      asset0_timeStep1: 1 days,
-      asset0_limit0: 10_000, // [10_000, 100_000, 500_000][phase - 1],
-      asset0_limit1: 50_000, // [50_000, 500_000, 2_500_000][phase - 1],
-      asset0_limitGlobal: 0,
-      asset0_flags: L0 | L1
+
+      asset0limits: Config.TradingLimitConfig({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 10_000,
+
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 50_000,
+
+        enabledGlobal: false,
+        limitGlobal: 0
+      }),
+      asset1limits: Config.emptyTradingLimitConfig()
     });
 
     if (Chain.isBaklava() || Chain.isAlfajores()) {
@@ -85,32 +86,45 @@ library MU01Config {
     }
   }
 
-  function cEURCeloConfig(
+  function CELOUSD_RateFeedConfig(
+    Contracts.Cache storage contracts
+  ) internal view returns (Config.RateFeedConfig memory config) {
+    config.rateFeedID = contracts.celoRegistry("StableToken");
+    config.medianDeltaBreakerConfigs = new Config.MedianDeltaBreakerConfig[](1);
+    config.medianDeltaBreakerConfigs[0] = Config.MedianDeltaBreakerConfig({
+      threshold: FixidityLib.newFixedFraction(3, 100), // 0.03
+      cooldown: 30 minutes,
+      smoothingFactor: 0
+    });
+  }
+
+  function cEURCelo_PoolConfig(
     Contracts.Cache storage contracts
   ) internal view returns (Config.PoolConfiguration memory config) {
     config = Config.PoolConfiguration({
       asset0: contracts.celoRegistry("StableTokenEUR"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
+
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 1_800_000 * 1e18, // 1.8 million
-      isMedianDeltaBreakerEnabled: true,
-      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
-      medianDeltaBreakerCooldown: 30 minutes,
-      smoothingFactor: 0,
-      isValueDeltaBreakerEnabled: false,
-      valueDeltaBreakerThreshold: FixidityLib.wrap(0),
-      valueDeltaBreakerReferenceValue: 0,
-      valueDeltaBreakerCooldown: 0,
       referenceRateFeedID: contracts.celoRegistry("StableTokenEUR"),
-      asset0_timeStep0: 5 minutes,
-      asset0_timeStep1: 1 days,
-      asset0_limit0: 10_000, // [10_000, 100_000, 500_000][phase - 1],
-      asset0_limit1: 50_000, // [50_000, 500_000, 2_500_000][phase - 1],
-      asset0_limitGlobal: 0,
-      asset0_flags: L0 | L1
+
+      asset0limits: Config.TradingLimitConfig({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 10_000,
+
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 50_000,
+
+        enabledGlobal: false,
+        limitGlobal: 0
+      }),
+      asset1limits: Config.emptyTradingLimitConfig()
     });
 
     if (Chain.isBaklava() || Chain.isAlfajores()) {
@@ -118,66 +132,101 @@ library MU01Config {
     }
   }
 
-  function cBRLCeloConfig(
+  function CELOEUR_RateFeedConfig(Contracts.Cache storage contracts) internal view returns (Config.RateFeedConfig memory config) {
+    config.rateFeedID = contracts.celoRegistry("StableTokenEUR");
+    config.medianDeltaBreakerConfigs = new Config.MedianDeltaBreakerConfig[](1);
+    config.medianDeltaBreakerConfigs[0] = Config.MedianDeltaBreakerConfig({
+      threshold: FixidityLib.newFixedFraction(3, 100), // 0.03
+      cooldown: 30 minutes,
+      smoothingFactor: 0
+    });
+  }
+
+
+  function cREALCelo_PoolConfig(
     Contracts.Cache storage contracts
   ) internal view returns (Config.PoolConfiguration memory config) {
     config = Config.PoolConfiguration({
       asset0: contracts.celoRegistry("StableTokenBRL"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
+
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 3_000_000 * 1e18, // 3 million
-      isMedianDeltaBreakerEnabled: true,
-      medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(3, 100), // 0.03
-      medianDeltaBreakerCooldown: 30 minutes,
-      smoothingFactor: 0,
-      isValueDeltaBreakerEnabled: false,
-      valueDeltaBreakerThreshold: FixidityLib.wrap(0),
-      valueDeltaBreakerReferenceValue: 0,
-      valueDeltaBreakerCooldown: 0,
       referenceRateFeedID: contracts.celoRegistry("StableTokenBRL"),
-      asset0_timeStep0: 5 minutes,
-      asset0_timeStep1: 1 days,
-      asset0_limit0: 10_000, // [10_000, 100_000, 500_000][phase - 1],
-      asset0_limit1: 50_000, // [50_000, 500_000, 2_500_000][phase - 1],
-      asset0_limitGlobal: 0,
-      asset0_flags: L0 | L1
+
+      asset0limits: Config.TradingLimitConfig({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 10_000,
+
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 50_000,
+
+        enabledGlobal: false,
+        limitGlobal: 0
+      }),
+      asset1limits: Config.emptyTradingLimitConfig()
     });
     if (Chain.isBaklava() || Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
 
-  function cUSDUSDCConfig(Contracts.Cache storage contracts) internal returns (Config.PoolConfiguration memory config) {
+  function CELOBRL_RateFeedConfig(Contracts.Cache storage contracts) internal view returns (Config.RateFeedConfig memory config) {
+    config.rateFeedID = contracts.celoRegistry("StableTokenBRL");
+    config.medianDeltaBreakerConfigs = new Config.MedianDeltaBreakerConfig[](1);
+    config.medianDeltaBreakerConfigs[0] = Config.MedianDeltaBreakerConfig({
+      threshold: FixidityLib.newFixedFraction(3, 100), // 0.03
+      cooldown: 30 minutes,
+      smoothingFactor: 0
+    });
+  }
+
+  function cUSDUSDC_PoolConfig(Contracts.Cache storage contracts) internal returns (Config.PoolConfiguration memory config) {
     config = Config.PoolConfiguration({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("BridgedUSDC"),
       isConstantSum: true,
+
       spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 12_000_000 * 1e18, // 12 million
-      isMedianDeltaBreakerEnabled: false,
-      medianDeltaBreakerThreshold: FixidityLib.wrap(0),
-      medianDeltaBreakerCooldown: 0,
-      smoothingFactor: 0,
-      isValueDeltaBreakerEnabled: true,
-      valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
-      valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
-      valueDeltaBreakerCooldown: 1 seconds,
+
       referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
-      asset0_timeStep0: 5 minutes,
-      asset0_timeStep1: 1 days,
-      asset0_limit0: 50_000, // [50_000, 500_000, 2_500_000][phase - 1],
-      asset0_limit1: 100_000, // [100_000, 1_000_000, 5_000_000][phase - 1],
-      asset0_limitGlobal: 0,
-      asset0_flags: L0 | L1
+      asset0limits: Config.TradingLimitConfig({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 50_000,
+
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 100_000,
+
+        enabledGlobal: false,
+        limitGlobal: 0
+      }),
+      asset1limits: Config.emptyTradingLimitConfig()
     });
 
     if (Chain.isBaklava() || Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
+  }
+
+  function USDCUSD_RateFeedConfig(
+    Contracts.Cache storage contracts
+  ) internal returns (Config.RateFeedConfig memory config) {
+    config.rateFeedID = contracts.dependency("USDCUSDRateFeedAddr");
+    config.valueDeltaBreakerConfigs = new Config.ValueDeltaBreakerConfig[](1);
+    config.valueDeltaBreakerConfigs[0] = Config.ValueDeltaBreakerConfig({
+      threshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
+      referenceValue: 1e24, // 1$ numerator for 1e24 denominator
+      cooldown: 1 seconds
+    });
   }
 }
