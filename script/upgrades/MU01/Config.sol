@@ -54,8 +54,8 @@ library MU01Config {
 
   function cUSDCelo_PoolConfig(
     Contracts.Cache storage contracts
-  ) internal view returns (Config.PoolConfiguration memory config) {
-    config = Config.PoolConfiguration({
+  ) internal view returns (Config.PoolConfig memory config) {
+    config = Config.PoolConfig({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
@@ -100,8 +100,8 @@ library MU01Config {
 
   function cEURCelo_PoolConfig(
     Contracts.Cache storage contracts
-  ) internal view returns (Config.PoolConfiguration memory config) {
-    config = Config.PoolConfiguration({
+  ) internal view returns (Config.PoolConfig memory config) {
+    config = Config.PoolConfig({
       asset0: contracts.celoRegistry("StableTokenEUR"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
@@ -145,8 +145,8 @@ library MU01Config {
 
   function cREALCelo_PoolConfig(
     Contracts.Cache storage contracts
-  ) internal view returns (Config.PoolConfiguration memory config) {
-    config = Config.PoolConfiguration({
+  ) internal view returns (Config.PoolConfig memory config) {
+    config = Config.PoolConfig({
       asset0: contracts.celoRegistry("StableTokenBRL"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
@@ -186,8 +186,8 @@ library MU01Config {
     });
   }
 
-  function cUSDUSDC_PoolConfig(Contracts.Cache storage contracts) internal returns (Config.PoolConfiguration memory config) {
-    config = Config.PoolConfiguration({
+  function cUSDUSDC_PoolConfig(Contracts.Cache storage contracts) internal returns (Config.PoolConfig memory config) {
+    config = Config.PoolConfig({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("BridgedUSDC"),
       isConstantSum: true,

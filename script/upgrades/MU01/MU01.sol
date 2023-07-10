@@ -47,11 +47,11 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  Config.PoolConfiguration private cUSDCelo_PoolConfig;
-  Config.PoolConfiguration private cEURCelo_PoolConfig;
-  Config.PoolConfiguration private cREALCelo_PoolConfig;
-  Config.PoolConfiguration private cUSDUSDC_PoolConfig;
-  Config.PoolConfiguration[] private poolConfigs;
+  Config.PoolConfig private cUSDCelo_PoolConfig;
+  Config.PoolConfig private cEURCelo_PoolConfig;
+  Config.PoolConfig private cREALCelo_PoolConfig;
+  Config.PoolConfig private cUSDUSDC_PoolConfig;
+  Config.PoolConfig[] private poolConfigs;
   Config.RateFeedConfig private CELOUSD_RateFeedConfig;
   Config.RateFeedConfig private CELOEUR_RateFeedConfig;
   Config.RateFeedConfig private CELOBRL_RateFeedConfig;
@@ -413,7 +413,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
     for (uint256 i = 0; i < poolConfigs.length; i++) {
-      Config.PoolConfiguration memory poolConfig = poolConfigs[i];
+      Config.PoolConfig memory poolConfig = poolConfigs[i];
       IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
         asset0: poolConfig.asset0,
         asset1: poolConfig.asset1,
@@ -643,7 +643,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
   function proposal_configureTradingLimits() public {
     address brokerProxyAddress = contracts.deployed("BrokerProxy");
     for (uint256 i = 0; i < poolConfigs.length; i++) {
-      Config.PoolConfiguration memory poolConfig = poolConfigs[i];
+      Config.PoolConfig memory poolConfig = poolConfigs[i];
 
       // Set the trading limits for the pool
       transactions.push(
