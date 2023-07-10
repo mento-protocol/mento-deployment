@@ -139,7 +139,7 @@ contract MU03Checks is Script, Test {
     address expectedBiPoolManager = biPoolManager;
     if (bpmProxyImplementation != expectedBiPoolManager) {
       console2.log(
-        "The address of the BiPoolManager retrieved from the BiPoolManagerProxy: %s was not the address found in the deployment json: %s.",
+        "The address of BiPoolManager from BiPoolManagerProxy: %s does not match the deployed address: %s.",
         bpmProxyImplementation,
         expectedBiPoolManager
       );
@@ -448,43 +448,43 @@ contract MU03Checks is Script, Test {
     console2.log("\tcUSD -> bridgedUSDC swap successful 🚀");
   }
 
-//   function swapBridgedUSDCTocEUR() public {
-//      BiPoolManager bpm = getBiPoolManager();
-//     bytes32 exchangeID = bpm.exchangeIds(4);
-//     console2.log(bpm.getExchangeIds().length, "exchangeeeeeee");
+  //   function swapBridgedUSDCTocEUR() public {
+  //      BiPoolManager bpm = getBiPoolManager();
+  //     bytes32 exchangeID = bpm.exchangeIds(4);
+  //     console2.log(bpm.getExchangeIds().length, "exchangeeeeeee");
 
-//     address trader = vm.addr(2);
-//     address tokenIn = bridgedUSDC;
-//     address tokenOut = cEUR;
-//     uint256 amountIn = 100e6;
-//     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
+  //     address trader = vm.addr(2);
+  //     address tokenIn = bridgedUSDC;
+  //     address tokenOut = cEUR;
+  //     uint256 amountIn = 100e6;
+  //     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
-//     MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
-//     console2.log("here");
+  //     MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
+  //     console2.log("here");
 
-//     assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
-//     deal(bridgedUSDC, trader, amountIn, true);
-//     assert(mockBridgedUSDCContract.balanceOf(trader) == amountIn);
-//     console2.log("here2");
+  //     assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
+  //     deal(bridgedUSDC, trader, amountIn, true);
+  //     assert(mockBridgedUSDCContract.balanceOf(trader) == amountIn);
+  //     console2.log("here2");
 
-    // vm.startPrank(trader);
-    // uint256 beforecEUR = MockERC20(cEUR).balanceOf(trader);
-    // mockBridgedUSDCContract.approve(address(broker), amountIn);
-    // console2.log("here3");
+  // vm.startPrank(trader);
+  // uint256 beforecEUR = MockERC20(cEUR).balanceOf(trader);
+  // mockBridgedUSDCContract.approve(address(broker), amountIn);
+  // console2.log("here3");
 
-    // broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+  // broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
 
-    // assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
-    // assert(MockERC20(cEUR).balanceOf(trader) == beforecEUR + amountOut);
-    // vm.stopPrank();
+  // assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
+  // assert(MockERC20(cEUR).balanceOf(trader) == beforecEUR + amountOut);
+  // vm.stopPrank();
 
-    // console2.log("\tbridgedUSDC -> cEUR swap successful 🚀");
+  // console2.log("\tbridgedUSDC -> cEUR swap successful 🚀");
 
-//   }
+  //   }
 
-//   function swapcEURtoBridgedUSDC() public {
+  //   function swapcEURtoBridgedUSDC() public {
 
-//   }
+  //   }
 
   function setUpConfigs() public {
     // Create pool configurations
