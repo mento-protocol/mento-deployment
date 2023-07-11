@@ -51,6 +51,7 @@ contract MU03Checks is Script, Test {
   BreakerBox private breakerBox;
   Reserve private reserve;
   IBroker private broker;
+  MockERC20 mockBridgedUSDCContract;
 
   address public celoToken;
   address public cUSD;
@@ -99,6 +100,8 @@ contract MU03Checks is Script, Test {
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
     breakerBoxAddress = contracts.deployed("BreakerBox");
     biPoolManager = contracts.deployed("BiPoolManager");
+
+    mockBridgedUSDCContract = MockERC20(bridgedUSDC);
 
     setUpConfigs();
   }
@@ -393,6 +396,9 @@ contract MU03Checks is Script, Test {
     swapBridgedUSDCTocUSD();
     swapcUSDtoBridgedUSDC();
     swapBridgedUSDCTocEUR();
+    swapcEURtoBridgedUSDC();
+    swapBridgedUSDCtocBRL();
+    swapcBRLtoBridgedUSDC();
   }
 
   function swapCeloTocUSD() public {
@@ -418,23 +424,11 @@ contract MU03Checks is Script, Test {
     address tokenIn = bridgedUSDC;
     address tokenOut = cUSD;
     uint256 amountIn = 100e6;
-    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
-    MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
-
-    assertEq(mockBridgedUSDCContract.balanceOf(trader), 0);
+    // Mint some USDC to trader
     deal(bridgedUSDC, trader, amountIn, true);
-    assertEq(mockBridgedUSDCContract.balanceOf(trader), amountIn);
 
-    vm.startPrank(trader);
-    uint256 beforecUSD = MockERC20(cUSD).balanceOf(trader);
-    mockBridgedUSDCContract.approve(address(broker), amountIn);
-
-    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
-
-    assertEq(mockBridgedUSDCContract.balanceOf(trader), 0);
-    assertEq(MockERC20(cUSD).balanceOf(trader), beforecUSD + amountOut);
-    vm.stopPrank();
+    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
 
     console2.log("\tbridgedUSDC -> cUSD swap successful 🚀");
   }
@@ -447,22 +441,11 @@ contract MU03Checks is Script, Test {
     address tokenIn = cUSD;
     address tokenOut = bridgedUSDC;
     uint256 amountIn = 10e18;
-    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
-    // fund reserve with usdc
-    MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
+    // Fund reserve with USDC
     deal(bridgedUSDC, address(reserve), 1000e18, true);
 
-    vm.startPrank(trader);
-    uint256 beforeBuyingUSDC = mockBridgedUSDCContract.balanceOf(trader);
-    uint256 beforeSellingcUSD = MockERC20(cUSD).balanceOf(trader);
-
-    MockERC20(cUSD).approve(address(broker), amountIn);
-    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
-
-    assertEq(mockBridgedUSDCContract.balanceOf(trader), beforeBuyingUSDC + amountOut);
-    assertEq(MockERC20(cUSD).balanceOf(trader), beforeSellingcUSD - amountIn);
-    vm.stopPrank();
+    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
 
     console2.log("\tcUSD -> bridgedUSDC swap successful 🚀");
   }
@@ -475,25 +458,72 @@ contract MU03Checks is Script, Test {
     address tokenIn = bridgedUSDC;
     address tokenOut = cEUR;
     uint256 amountIn = 100e6;
-    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
-    MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
-
-    assertEq(mockBridgedUSDCContract.balanceOf(trader), 0);
+    // Mint some USDC to trader
     deal(bridgedUSDC, trader, amountIn, true);
-    assertEq(mockBridgedUSDCContract.balanceOf(trader), amountIn);
 
-    vm.startPrank(trader);
-    uint256 beforecEUR = MockERC20(cEUR).balanceOf(trader);
-    mockBridgedUSDCContract.approve(address(broker), amountIn);
-
-    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
-
-    assertEq(mockBridgedUSDCContract.balanceOf(trader), 0);
-    assertEq(MockERC20(cEUR).balanceOf(trader), beforecEUR + amountOut);
-    vm.stopPrank();
+    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
 
     console2.log("\tbridgedUSDC -> cEUR swap successful 🚀");
+  }
+
+  function swapcEURtoBridgedUSDC() public {
+    BiPoolManager bpm = getBiPoolManager();
+    bytes32 exchangeID = bpm.exchangeIds(4);
+
+    address trader = vm.addr(3);
+    address tokenIn = cEUR;
+    address tokenOut = bridgedUSDC;
+    uint256 amountIn = 10e18;
+
+    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+
+    console2.log("\tcEUR -> bridgedUSDC swap successful 🚀");
+  }
+
+  function swapBridgedUSDCtocBRL() public {
+    BiPoolManager bpm = getBiPoolManager();
+    bytes32 exchangeID = bpm.exchangeIds(5);
+
+    address trader = vm.addr(4);
+    address tokenIn = bridgedUSDC;
+    address tokenOut = cBRL;
+    uint256 amountIn = 100e6;
+
+    // Mint some USDC to trader
+    deal(bridgedUSDC, trader, amountIn, true);
+
+    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+
+    console2.log("\tbridgedUSDC -> cBRL swap successful 🚀");
+  }
+
+  function swapcBRLtoBridgedUSDC() public {
+    BiPoolManager bpm = getBiPoolManager();
+    bytes32 exchangeID = bpm.exchangeIds(5);
+
+    address trader = vm.addr(4);
+    address tokenIn = cBRL;
+    address tokenOut = bridgedUSDC;
+    uint256 amountIn = 10e18;
+
+    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+
+    console2.log("\tcBRL -> bridgedUSDC swap successful 🚀");
+  }
+
+  function doSwapIn(bytes32 exchangeID, address trader, address tokenIn, address tokenOut, uint256 amountIn) public {
+    BiPoolManager bpm = getBiPoolManager();
+
+    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
+    uint256 beforeBuyingTokenOut = MockERC20(tokenOut).balanceOf(trader);
+    uint256 beforeSellingTokenIn = MockERC20(tokenIn).balanceOf(trader);
+    vm.startPrank(trader);
+    MockERC20(tokenIn).approve(address(broker), amountIn);
+    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+    assertEq(MockERC20(tokenOut).balanceOf(trader), beforeBuyingTokenOut + amountOut);
+    assertEq(MockERC20(tokenIn).balanceOf(trader), beforeSellingTokenIn - amountIn);
+    vm.stopPrank();
   }
 
   /* ================================================================ */
