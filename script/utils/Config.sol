@@ -15,6 +15,10 @@ library Config {
     /* ================================================================ */
     /* ================ Median Delta Breaker Config =================== */
     /* ================================================================ */
+    /*
+     * @dev Used to distinguish between an empty struct
+     */
+    bool enabled;
     /**
      * @dev This determines the permitted deviation of the median report changes.
      *      The new median must fall within a range calculated based on this threshold
@@ -41,6 +45,10 @@ library Config {
     /* ================================================================ */
     /* ================= Value Delta Breaker Config =================== */
     /* ================================================================ */
+    /*
+     * @dev Used to distinguish between an empty struct
+     */
+    bool enabled;
     /**
      * @dev  The allowed change in the new median relative to the reference value.
      *       This variable determines the range of acceptable values for the new median,
@@ -64,22 +72,22 @@ library Config {
 
   }
 
-  struct Breaker {
+  struct RateFeed {
     /* ================================================================ */
-    /* ================ Breaker Config for a RateFeed ================= */
+    /* ================ RateFeed Config for a RateFeed ================= */
     /* ================================================================ */
     /**
      * @dev The ID of the oracle rate feed.
      */
     address rateFeedID;
     /**
-     * @dev List of Median Delta Breaker Configurations for the rate feed.
+     * @dev List of Median Delta RateFeed Configurations for the rate feed.
      */
-    MedianDeltaBreaker[] medianDeltaBreakers;
+    MedianDeltaBreaker medianDeltaBreaker0;
     /**
-     * @dev List of Value Delta Breaker Configurations for the rate feed.
+     * @dev List of Value Delta RateFeed Configurations for the rate feed.
      */
-    ValueDeltaBreaker[] valueDeltaBreakers;
+    ValueDeltaBreaker valueDeltaBreaker0;
     /**
      * @dev List of dependent rate feeds.
      */

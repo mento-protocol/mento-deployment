@@ -15,9 +15,39 @@ library MU01Config {
   using FixidityLib for FixidityLib.Fraction;
   using Contracts for Contracts.Cache;
 
-  uint8 private constant L0 = 1; // 0b001 Limit0
-  uint8 private constant L1 = 2; // 0b010 Limit1
-  uint8 private constant LG = 4; // 0b100 LimitGlobal
+  struct MU01 {
+    Config.PartialReserve partialReserve;
+
+    Config.Pool cUSDCelo;
+    Config.Pool cEURCelo;
+    Config.Pool cBRLCelo;
+    Config.Pool cUSDUSDC;
+    Config.Pool[] pools;
+
+    Config.RateFeed CELOUSD;
+    Config.RateFeed CELOEUR;
+    Config.RateFeed CELOBRL;
+    Config.RateFeed USDCUSD;
+    Config.RateFeed[] rateFeeds;
+  }
+
+  function get(Contracts.Cache storage contracts) internal returns (
+    MU01 memory config
+  ) {
+    config.pools = new Config.Pool[](4);
+    config.pools[0] = config.cUSDCelo = cUSDCelo_PoolConfig(contracts);
+    config.pools[1] = config.cEURCelo = cEURCelo_PoolConfig(contracts);
+    config.pools[2] = config.cBRLCelo = cBRLCelo_PoolConfig(contracts);
+    config.pools[3] = config.cUSDUSDC = cUSDUSDC_PoolConfig(contracts);
+
+    config.rateFeeds = new Config.RateFeed[](4);
+    config.rateFeeds[0] = config.CELOUSD = CELOUSD_RateFeedConfig(contracts);
+    config.rateFeeds[1] = config.CELOEUR = CELOEUR_RateFeedConfig(contracts);
+    config.rateFeeds[2] = config.CELOBRL = CELOBRL_RateFeedConfig(contracts);
+    config.rateFeeds[3] = config.USDCUSD = USDCUSD_RateFeedConfig(contracts);
+
+    config.partialReserve = partialReserveConfig(contracts);
+  }
 
   function partialReserveConfig(
     Contracts.Cache storage contracts
@@ -86,12 +116,12 @@ library MU01Config {
     }
   }
 
-  function CELOUSD_BreakerConfig(
+  function CELOUSD_RateFeedConfig(
     Contracts.Cache storage contracts
-  ) internal view returns (Config.Breaker memory config) {
+  ) internal view returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.celoRegistry("StableToken");
-    config.medianDeltaBreakers = new Config.MedianDeltaBreaker[](1);
-    config.medianDeltaBreakers[0] = Config.MedianDeltaBreaker({
+    config.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
+      enabled: true,
       threshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       cooldown: 30 minutes,
       smoothingFactor: 0
@@ -132,10 +162,10 @@ library MU01Config {
     }
   }
 
-  function CELOEUR_BreakerConfig(Contracts.Cache storage contracts) internal view returns (Config.Breaker memory config) {
+  function CELOEUR_RateFeedConfig(Contracts.Cache storage contracts) internal view returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.celoRegistry("StableTokenEUR");
-    config.medianDeltaBreakers = new Config.MedianDeltaBreaker[](1);
-    config.medianDeltaBreakers[0] = Config.MedianDeltaBreaker({
+    config.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
+      enabled: true,
       threshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       cooldown: 30 minutes,
       smoothingFactor: 0
@@ -143,7 +173,7 @@ library MU01Config {
   }
 
 
-  function cREALCelo_PoolConfig(
+  function cBRLCelo_PoolConfig(
     Contracts.Cache storage contracts
   ) internal view returns (Config.Pool memory config) {
     config = Config.Pool({
@@ -176,10 +206,10 @@ library MU01Config {
     }
   }
 
-  function CELOBRL_BreakerConfig(Contracts.Cache storage contracts) internal view returns (Config.Breaker memory config) {
+  function CELOBRL_RateFeedConfig(Contracts.Cache storage contracts) internal view returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.celoRegistry("StableTokenBRL");
-    config.medianDeltaBreakers = new Config.MedianDeltaBreaker[](1);
-    config.medianDeltaBreakers[0] = Config.MedianDeltaBreaker({
+    config.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
+      enabled: true,
       threshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       cooldown: 30 minutes,
       smoothingFactor: 0
@@ -218,12 +248,12 @@ library MU01Config {
     }
   }
 
-  function USDCUSD_BreakerConfig(
+  function USDCUSD_RateFeedConfig(
     Contracts.Cache storage contracts
-  ) internal returns (Config.Breaker memory config) {
+  ) internal returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.dependency("USDCUSDRateFeedAddr");
-    config.valueDeltaBreakers = new Config.ValueDeltaBreaker[](1);
-    config.valueDeltaBreakers[0] = Config.ValueDeltaBreaker({
+    config.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
+      enabled: true,
       threshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
       referenceValue: 1e24, // 1$ numerator for 1e24 denominator
       cooldown: 1 seconds

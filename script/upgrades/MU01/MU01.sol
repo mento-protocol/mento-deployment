@@ -47,9 +47,11 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
+  MU01Config.MU01 private config;
+
   Config.Pool private cUSDCelo_PoolConfig;
   Config.Pool private cEURCelo_PoolConfig;
-  Config.Pool private cREALCelo_PoolConfig;
+  Config.Pool private cBRLCelo_PoolConfig;
   Config.Pool private cUSDUSDC_PoolConfig;
   Config.Pool[] private poolConfigs;
   Config.Breaker private CELOUSD_BreakerConfig;
@@ -103,38 +105,14 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
    *      This function is called by the governance script runner.
    */
   function setUpConfigs() public {
-    partialReserveConfig = MU01Config.partialReserveConfig(contracts);
-
-    // Create pool configurations
-    cUSDCelo_PoolConfig = MU01Config.cUSDCelo_PoolConfig(contracts);
-    cEURCelo_PoolConfig = MU01Config.cEURCelo_PoolConfig(contracts);
-    cREALCelo_PoolConfig = MU01Config.cREALCelo_PoolConfig(contracts);
-    cUSDUSDC_PoolConfig = MU01Config.cUSDUSDC_PoolConfig(contracts);
-
-    // Push them to the array
-    poolConfigs.push(cUSDCelo_PoolConfig);
-    poolConfigs.push(cEURCelo_PoolConfig);
-    poolConfigs.push(cREALCelo_PoolConfig);
-    poolConfigs.push(cUSDUSDC_PoolConfig);
-
-    // Create rate feed configurations
-    CELOUSD_BreakerConfig = MU01Config.CELOUSD_BreakerConfig(contracts);
-    CELOEUR_BreakerConfig = MU01Config.CELOEUR_BreakerConfig(contracts);
-    CELOBRL_BreakerConfig = MU01Config.CELOBRL_BreakerConfig(contracts);
-    USDCUSD_BreakerConfig = MU01Config.USDCUSD_BreakerConfig(contracts);
-
-    // Push them to the array
-    rateFeedConfigs.push(CELOUSD_BreakerConfig);
-    rateFeedConfigs.push(CELOEUR_BreakerConfig);
-    rateFeedConfigs.push(CELOBRL_BreakerConfig);
-    rateFeedConfigs.push(USDCUSD_BreakerConfig);
+    config = MU01Config.get(contracts);
 
     // Set the exchange ID for the reference rate feed
-    for (uint i = 0; i < poolConfigs.length; i++) {
-      referenceRateFeedIDToExchangeId[poolConfigs[i].referenceRateFeedID] = getExchangeId(
-        poolConfigs[i].asset0,
-        poolConfigs[i].asset1,
-        poolConfigs[i].isConstantSum
+    for (uint i = 0; i < config.pools.length; i++) {
+      referenceRateFeedIDToExchangeId[config.pools[i].referenceRateFeedID] = getExchangeId(
+        config.pools[i].asset0,
+        config.pools[i].asset1,
+        config.pools[i].isConstantSum
       );
     }
   }
