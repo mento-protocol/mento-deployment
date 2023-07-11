@@ -47,17 +47,17 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  Config.PoolConfig private cUSDCelo_PoolConfig;
-  Config.PoolConfig private cEURCelo_PoolConfig;
-  Config.PoolConfig private cREALCelo_PoolConfig;
-  Config.PoolConfig private cUSDUSDC_PoolConfig;
-  Config.PoolConfig[] private poolConfigs;
-  Config.RateFeedConfig private CELOUSD_RateFeedConfig;
-  Config.RateFeedConfig private CELOEUR_RateFeedConfig;
-  Config.RateFeedConfig private CELOBRL_RateFeedConfig;
-  Config.RateFeedConfig private USDCUSD_RateFeedConfig;
-  Config.RateFeedConfig[] private rateFeedConfigs;
-  Config.PartialReserveConfiguration private partialReserveConfig;
+  Config.Pool private cUSDCelo_PoolConfig;
+  Config.Pool private cEURCelo_PoolConfig;
+  Config.Pool private cREALCelo_PoolConfig;
+  Config.Pool private cUSDUSDC_PoolConfig;
+  Config.Pool[] private poolConfigs;
+  Config.Breaker private CELOUSD_BreakerConfig;
+  Config.Breaker private CELOEUR_BreakerConfig;
+  Config.Breaker private CELOBRL_BreakerConfig;
+  Config.Breaker private USDCUSD_BreakerConfig;
+  Config.Breaker[] private rateFeedConfigs;
+  Config.PartialReserve private partialReserveConfig;
 
   address private cUSD;
   address private cEUR;
@@ -118,16 +118,16 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     poolConfigs.push(cUSDUSDC_PoolConfig);
 
     // Create rate feed configurations
-    CELOUSD_RateFeedConfig = MU01Config.CELOUSD_RateFeedConfig(contracts);
-    CELOEUR_RateFeedConfig = MU01Config.CELOEUR_RateFeedConfig(contracts);
-    CELOBRL_RateFeedConfig = MU01Config.CELOBRL_RateFeedConfig(contracts);
-    USDCUSD_RateFeedConfig = MU01Config.USDCUSD_RateFeedConfig(contracts);
+    CELOUSD_BreakerConfig = MU01Config.CELOUSD_BreakerConfig(contracts);
+    CELOEUR_BreakerConfig = MU01Config.CELOEUR_BreakerConfig(contracts);
+    CELOBRL_BreakerConfig = MU01Config.CELOBRL_BreakerConfig(contracts);
+    USDCUSD_BreakerConfig = MU01Config.USDCUSD_BreakerConfig(contracts);
 
     // Push them to the array
-    rateFeedConfigs.push(CELOUSD_RateFeedConfig);
-    rateFeedConfigs.push(CELOEUR_RateFeedConfig);
-    rateFeedConfigs.push(CELOBRL_RateFeedConfig);
-    rateFeedConfigs.push(USDCUSD_RateFeedConfig);
+    rateFeedConfigs.push(CELOUSD_BreakerConfig);
+    rateFeedConfigs.push(CELOEUR_BreakerConfig);
+    rateFeedConfigs.push(CELOBRL_BreakerConfig);
+    rateFeedConfigs.push(USDCUSD_BreakerConfig);
 
     // Set the exchange ID for the reference rate feed
     for (uint i = 0; i < poolConfigs.length; i++) {
@@ -413,7 +413,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
     for (uint256 i = 0; i < poolConfigs.length; i++) {
-      Config.PoolConfig memory poolConfig = poolConfigs[i];
+      Config.Pool memory poolConfig = poolConfigs[i];
       IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
         asset0: poolConfig.asset0,
         asset1: poolConfig.asset1,
@@ -509,9 +509,9 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
           MedianDeltaBreaker(0).setCooldownTime.selector,
           Arrays.addresses(cUSD, cEUR, cBRL),
           Arrays.uints(
-            CELOUSD_RateFeedConfig.medianDeltaBreakerConfigs[0].cooldown,
-            CELOEUR_RateFeedConfig.medianDeltaBreakerConfigs[0].cooldown,
-            CELOBRL_RateFeedConfig.medianDeltaBreakerConfigs[0].cooldown,
+            CELOUSD_BreakerConfig.medianDeltaBreakers[0].cooldown,
+            CELOEUR_BreakerConfig.medianDeltaBreakers[0].cooldown,
+            CELOBRL_BreakerConfig.medianDeltaBreakers[0].cooldown
           )
         )
       )
@@ -526,9 +526,9 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
           MedianDeltaBreaker(0).setRateChangeThresholds.selector,
           Arrays.addresses(cUSD, cEUR, cBRL),
           Arrays.uints(
-            CELOUSD_RateFeedConfig.medianDeltaBreakerConfigs[0].threshold,
-            CELOEUR_RateFeedConfig.medianDeltaBreakerConfigs[0].threshold,
-            CELOBRL_RateFeedConfig.medianDeltaBreakerConfigs[0].threshold,
+            CELOUSD_BreakerConfig.medianDeltaBreakers[0].threshold,
+            CELOEUR_BreakerConfig.medianDeltaBreakers[0].threshold,
+            CELOBRL_BreakerConfig.medianDeltaBreakers[0].threshold
           )
         )
       )
@@ -545,7 +545,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
           ValueDeltaBreaker(0).setReferenceValues.selector,
           Arrays.addresses(cUSDUSCDRateFeedId),
           Arrays.uints(
-            USDCUSD_RateFeedConfig.valueDeltaBreakerConfigs[0].referenceValue,
+            USDCUSD_BreakerConfig.valueDeltaBreakers[0].referenceValue
           )
         )
       )
@@ -560,7 +560,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
           ValueDeltaBreaker(0).setCooldownTimes.selector,
           Arrays.addresses(cUSDUSCDRateFeedId),
           Arrays.uints(
-            USDCUSD_RateFeedConfig.valueDeltaBreakerConfigs[0].cooldown
+            USDCUSD_BreakerConfig.valueDeltaBreakers[0].cooldown
           )
         )
       )
@@ -575,7 +575,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
           Arrays.addresses(cUSDUSCDRateFeedId),
           Arrays.uints(
-            USDCUSD_RateFeedConfig.valueDeltaBreakerConfigs[0].threshold
+            USDCUSD_BreakerConfig.valueDeltaBreakers[0].threshold
           )
         )
       )
@@ -587,7 +587,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
 
     // Enable the Median Delta Breaker for the rate feeds
     for (uint256 i = 0; i < rateFeedConfigs.length; i++) {
-      if (rateFeedConfigs[i].medianDeltaBreakerConfigs.length == 0) {
+      if (rateFeedConfigs[i].medianDeltaBreakers.length == 0) {
         continue;
       }
       transactions.push(
@@ -606,7 +606,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
 
     // Enable Value Delta Breaker for cUSD/USDC rate feed
     for (uint256 i = 0; i < rateFeedConfigs.length; i++) {
-      if (rateFeedConfigs[i].valueDeltaBreakerConfigs.length == 0) {
+      if (rateFeedConfigs[i].valueDeltaBreakers.length == 0) {
         continue;
       }
       transactions.push(
@@ -643,7 +643,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
   function proposal_configureTradingLimits() public {
     address brokerProxyAddress = contracts.deployed("BrokerProxy");
     for (uint256 i = 0; i < poolConfigs.length; i++) {
-      Config.PoolConfig memory poolConfig = poolConfigs[i];
+      Config.Pool memory poolConfig = poolConfigs[i];
 
       // Set the trading limits for the pool
       transactions.push(

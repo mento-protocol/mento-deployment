@@ -35,7 +35,7 @@ contract ChangeTestnetMockBridgedUSDC is GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  Config.PoolConfiguration private cUSDUSDCConfig;
+  Config.Pool private cUSDUSDCConfig;
   bytes32 private cUSDUSDCExchangeId;
 
   address private bridgedUSDC;

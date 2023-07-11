@@ -11,11 +11,7 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
 library Config {
-  uint8 private constant L0 = 1; // 0b001 Limit0
-  uint8 private constant L1 = 2; // 0b010 Limit1
-  uint8 private constant LG = 4; // 0b100 LimitGlobal
-
-  struct MedianDeltaBreakerConfig {
+  struct MedianDeltaBreaker {
     /* ================================================================ */
     /* ================ Median Delta Breaker Config =================== */
     /* ================================================================ */
@@ -41,7 +37,7 @@ library Config {
     uint256 smoothingFactor;
   }
 
-  struct ValueDeltaBreakerConfig {
+  struct ValueDeltaBreaker {
     /* ================================================================ */
     /* ================= Value Delta Breaker Config =================== */
     /* ================================================================ */
@@ -68,9 +64,9 @@ library Config {
 
   }
 
-  struct RateFeedConfig {
+  struct Breaker {
     /* ================================================================ */
-    /* ==================== Oracle RateFeed Config ==================== */
+    /* ================ Breaker Config for a RateFeed ================= */
     /* ================================================================ */
     /**
      * @dev The ID of the oracle rate feed.
@@ -79,18 +75,21 @@ library Config {
     /**
      * @dev List of Median Delta Breaker Configurations for the rate feed.
      */
-    MedianDeltaBreakerConfig[] medianDeltaBreakerConfigs;
+    MedianDeltaBreaker[] medianDeltaBreakers;
     /**
      * @dev List of Value Delta Breaker Configurations for the rate feed.
      */
-    ValueDeltaBreakerConfig[] valueDeltaBreakerConfigs;
+    ValueDeltaBreaker[] valueDeltaBreakers;
     /**
      * @dev List of dependent rate feeds.
      */
     address[] dependentRateFeeds;
   }
 
-  struct TradingLimitConfig {
+  struct TradingLimit {
+    /* ================================================================ */
+    /* ===================== Trading Limit Config ===================== */
+    /* ================================================================ */
     /**
      * @dev L0 enabled flag.
      */
@@ -128,7 +127,7 @@ library Config {
     int48 limitGlobal;
   }
 
-  struct PoolConfig {
+  struct Pool {
     /* ================================================================ */
     /* ==================== BiPool Exchange Config ==================== */
     /* ================================================================ */
@@ -172,21 +171,19 @@ library Config {
     /**
       * @dev Trading Limit Configurations for asset0
       */
-    TradingLimitConfig asset0limits;
+    TradingLimit asset0limits;
     /**
       * @dev Trading Limit Configurations for asset1
       */
-    TradingLimitConfig asset1limits;
+    TradingLimit asset1limits;
   }
 
-  /* ================================================================ */
-  /* ==================== Partial Reserve Config ==================== */
-  /* ================================================================ */
-  struct PartialReserveConfiguration {
+  struct PartialReserve {
     /* ================================================================ */
-    /* ==================== Unused/non relevant config ================ */
+    /* ==================== Partial Reserve Config ==================== */
     /* ================================================================ */
     /**
+      ==================== Unused/non relevant config ================
       The parameters in this block are not relevant for the Partial Reserve integration with the broker 
       but will be taken from the existing Reserve contract to not have dummy values on a mainnet contract.
     */
@@ -226,8 +223,8 @@ library Config {
   /**
    * @dev Helper to create an empty trading limit config.
    */
-  function emptyTradingLimitConfig() internal pure returns (TradingLimitConfig memory) {
-    TradingLimitConfig memory tlc;
+  function emptyTradingLimitConfig() internal pure returns (TradingLimit memory) {
+    TradingLimit memory tlc;
     return tlc;
   }
 
@@ -236,16 +233,16 @@ library Config {
    * @param tlc The trading limit config to convert
    * @return The bitmap flag
    */
-  function tradingLimitConfigToFlag(TradingLimitConfig memory tlc) internal pure returns (uint256) {
+  function tradingLimitConfigToFlag(TradingLimit memory tlc) internal pure returns (uint256) {
     uint256 flag = 0;
     if (tlc.enabled0) {
-      flag = flag | L0;
+      flag = flag | 1; // L0
     }
     if (tlc.enabled1) {
-      flag = flag | L1;
+      flag = flag | 2; // L1
     }
     if (tlc.enabledGlobal) {
-      flag = flag | LG;
+      flag = flag | 4; // LG
     }
     return flag;
   }
