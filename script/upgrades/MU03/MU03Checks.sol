@@ -41,8 +41,6 @@ import { MU03Config, Config } from "./Config.sol";
  * config as structs as opposed to tuples.
  */
 interface IBrokerWithCasts {
-  function tradingLimitsState(bytes32 id) external view returns (TradingLimits.State memory);
-
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
@@ -84,22 +82,23 @@ contract MU03Checks is Script, Test {
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU03-02-Create-Implementations", "latest");
 
-    // Get proxy addresses of the deployed tokens
+    // Get proxy addresses
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
-
-    bridgedUSDC = contracts.dependency("BridgedUSDC");
+    reserve = Reserve(contracts.deployed("PartialReserveProxy"));
     celoToken = contracts.celoRegistry("GoldToken");
     broker = IBroker(contracts.celoRegistry("Broker"));
-    breakerBox = BreakerBox(contracts.deployed("BreakerBox"));
     governance = contracts.celoRegistry("Governance");
+    sortedOracles = contracts.celoRegistry("SortedOracles");
+
+    // Get Deployment addresses
+    bridgedUSDC = contracts.dependency("BridgedUSDC");
+    breakerBox = BreakerBox(contracts.deployed("BreakerBox"));
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
     breakerBoxAddress = contracts.deployed("BreakerBox");
     biPoolManager = contracts.deployed("BiPoolManager");
-    sortedOracles = contracts.celoRegistry("SortedOracles");
-    reserve = Reserve(contracts.deployed("PartialReserveProxy"));
 
     setUpConfigs();
   }
@@ -112,9 +111,7 @@ contract MU03Checks is Script, Test {
     // verifyBiPoolManager();
     // verifyExchanges();
     // verifyTradingLimits();
-    // verifyBreakerBox();
-    // verifyMedianDeltaBreaker();
-    // verifyValueDeltaBreaker();
+    // verifyCircuitBreaker();
     // verifyReserveFraction();
 
     doSwaps();
@@ -132,6 +129,10 @@ contract MU03Checks is Script, Test {
     );
     console2.log("Contract ownerships transferred to governance 🤝");
   }
+
+  /* ================================================================ */
+  /* =========================== Exchanges ========================== */
+  /* ================================================================ */
 
   function verifyBiPoolManager() public view {
     BiPoolManagerProxy bpmProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
@@ -214,6 +215,33 @@ contract MU03Checks is Script, Test {
     console2.log("\tTrading limits set for all exchanges 🔒");
   }
 
+  function verifyReserveFraction() public view {
+    address[] memory exchangesV1 = Arrays.addresses(
+      contracts.celoRegistry("Exchange"),
+      contracts.celoRegistry("ExchangeBRL"),
+      contracts.celoRegistry("ExchangeEUR")
+    );
+    uint256[] memory reserveFractions = Arrays.uints(2e22, 5e21, 5e21);
+    for (uint256 i = 0; i < exchangesV1.length; i++) {
+      if (Exchange(exchangesV1[i]).reserveFraction() != (reserveFractions[i] / 2)) {
+        console2.log("Reserve fraction not scaled down to correct value for exchange %s", exchangesV1[i]);
+        revert("Reserve fraction not scaled down correctly for all exchanges");
+      }
+    }
+    console2.log("\tReserve fraction scaled down correctly for all exchanges 🧾");
+  }
+
+  /* ================================================================ */
+  /* ======================== Circuit Breaker ======================= */
+  /* ================================================================ */
+
+  function verifyCircuitBreaker() public view {
+    console2.log("\n== Checking circuit breaker... ==");
+    verifyBreakerBox();
+    verifyMedianDeltaBreaker();
+    verifyValueDeltaBreaker();
+  }
+
   function verifyBreakerBox() public view {
     // verify that breakers were set with trading mode 3
     if (
@@ -242,6 +270,7 @@ contract MU03Checks is Script, Test {
           console2.log("MedianDeltaBreaker not enabled for rate feed %s", poolConfigs[i].referenceRateFeedID);
           revert("MedianDeltaBreaker not enabled for all rate feeds");
         }
+
         if (poolConfigs[i].isValueDeltaBreakerEnabled) {
           (, , bool valueDeltaStatus) = breakerBox.rateFeedBreakerStatus(
             poolConfigs[i].referenceRateFeedID,
@@ -354,32 +383,16 @@ contract MU03Checks is Script, Test {
     console2.log("\tValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒");
   }
 
-  function verifyReserveFraction() public view {
-    address[] memory exchangesV1 = Arrays.addresses(
-      contracts.celoRegistry("Exchange"),
-      contracts.celoRegistry("ExchangeBRL"),
-      contracts.celoRegistry("ExchangeEUR")
-    );
-    uint256[] memory reserveFractions = Arrays.uints(2e22, 5e21, 5e21);
-    for (uint256 i = 0; i < exchangesV1.length; i++) {
-      if (Exchange(exchangesV1[i]).reserveFraction() != (reserveFractions[i] / 2)) {
-        console2.log("Reserve fraction not scaled down to correct value for exchange %s", exchangesV1[i]);
-        revert("Reserve fraction not scaled down correctly for all exchanges");
-      }
-    }
-    console2.log("\tReserve fraction scaled down correctly for all exchanges 🧾");
-  }
-
   /* ================================================================ */
-  /* ============================= Swaps =========================== */
+  /* ============================= Swaps ============================ */
   /* ================================================================ */
 
   function doSwaps() public {
     console2.log("\n== Doing some test swaps... ==");
     swapCeloTocUSD();
-    // swapBridgedUSDCTocUSD();
+    swapBridgedUSDCTocUSD();
     swapcUSDtoBridgedUSDC();
-    // swapBridgedUSDCTocEUR();
+    swapBridgedUSDCTocEUR();
   }
 
   function swapCeloTocUSD() public {
@@ -409,9 +422,9 @@ contract MU03Checks is Script, Test {
 
     MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
 
-    assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
+    assertEq(mockBridgedUSDCContract.balanceOf(trader), 0);
     deal(bridgedUSDC, trader, amountIn, true);
-    assert(mockBridgedUSDCContract.balanceOf(trader) == amountIn);
+    assertEq(mockBridgedUSDCContract.balanceOf(trader), amountIn);
 
     vm.startPrank(trader);
     uint256 beforecUSD = MockERC20(cUSD).balanceOf(trader);
@@ -419,8 +432,8 @@ contract MU03Checks is Script, Test {
 
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
 
-    assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
-    assert(MockERC20(cUSD).balanceOf(trader) == beforecUSD + amountOut);
+    assertEq(mockBridgedUSDCContract.balanceOf(trader), 0);
+    assertEq(MockERC20(cUSD).balanceOf(trader), beforecUSD + amountOut);
     vm.stopPrank();
 
     console2.log("\tbridgedUSDC -> cUSD swap successful 🚀");
@@ -441,50 +454,51 @@ contract MU03Checks is Script, Test {
     deal(bridgedUSDC, address(reserve), 1000e18, true);
 
     vm.startPrank(trader);
+    uint256 beforeBuyingUSDC = mockBridgedUSDCContract.balanceOf(trader);
+    uint256 beforeSellingcUSD = MockERC20(cUSD).balanceOf(trader);
+
     MockERC20(cUSD).approve(address(broker), amountIn);
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+
+    assertEq(mockBridgedUSDCContract.balanceOf(trader), beforeBuyingUSDC + amountOut);
+    assertEq(MockERC20(cUSD).balanceOf(trader), beforeSellingcUSD - amountIn);
     vm.stopPrank();
 
     console2.log("\tcUSD -> bridgedUSDC swap successful 🚀");
   }
 
-  //   function swapBridgedUSDCTocEUR() public {
-  //      BiPoolManager bpm = getBiPoolManager();
-  //     bytes32 exchangeID = bpm.exchangeIds(4);
-  //     console2.log(bpm.getExchangeIds().length, "exchangeeeeeee");
+  function swapBridgedUSDCTocEUR() public {
+    BiPoolManager bpm = getBiPoolManager();
+    bytes32 exchangeID = bpm.exchangeIds(4);
 
-  //     address trader = vm.addr(2);
-  //     address tokenIn = bridgedUSDC;
-  //     address tokenOut = cEUR;
-  //     uint256 amountIn = 100e6;
-  //     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
+    address trader = vm.addr(3);
+    address tokenIn = bridgedUSDC;
+    address tokenOut = cEUR;
+    uint256 amountIn = 100e6;
+    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
-  //     MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
-  //     console2.log("here");
+    MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
 
-  //     assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
-  //     deal(bridgedUSDC, trader, amountIn, true);
-  //     assert(mockBridgedUSDCContract.balanceOf(trader) == amountIn);
-  //     console2.log("here2");
+    assertEq(mockBridgedUSDCContract.balanceOf(trader), 0);
+    deal(bridgedUSDC, trader, amountIn, true);
+    assertEq(mockBridgedUSDCContract.balanceOf(trader), amountIn);
 
-  // vm.startPrank(trader);
-  // uint256 beforecEUR = MockERC20(cEUR).balanceOf(trader);
-  // mockBridgedUSDCContract.approve(address(broker), amountIn);
-  // console2.log("here3");
+    vm.startPrank(trader);
+    uint256 beforecEUR = MockERC20(cEUR).balanceOf(trader);
+    mockBridgedUSDCContract.approve(address(broker), amountIn);
 
-  // broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
 
-  // assert(mockBridgedUSDCContract.balanceOf(trader) == 0);
-  // assert(MockERC20(cEUR).balanceOf(trader) == beforecEUR + amountOut);
-  // vm.stopPrank();
+    assertEq(mockBridgedUSDCContract.balanceOf(trader), 0);
+    assertEq(MockERC20(cEUR).balanceOf(trader), beforecEUR + amountOut);
+    vm.stopPrank();
 
-  // console2.log("\tbridgedUSDC -> cEUR swap successful 🚀");
+    console2.log("\tbridgedUSDC -> cEUR swap successful 🚀");
+  }
 
-  //   }
-
-  //   function swapcEURtoBridgedUSDC() public {
-
-  //   }
+  /* ================================================================ */
+  /* ============================ Helpers =========================== */
+  /* ================================================================ */
 
   function setUpConfigs() public {
     // Create pool configurations
