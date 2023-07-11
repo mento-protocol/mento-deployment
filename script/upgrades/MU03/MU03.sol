@@ -263,7 +263,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     }
   }
 
-    function proposal_updateBiPoolManagerImplementation() public {
+  function proposal_updateBiPoolManagerImplementation() public {
     transactions.push(
       ICeloGovernance.Transaction(
         0,

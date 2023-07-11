@@ -189,7 +189,7 @@ library MU03Config {
       isMedianDeltaBreakerEnabled: true,
       medianDeltaBreakerThreshold: FixidityLib.newFixedFraction(25, 1000), // 0.025
       medianDeltaBreakerCooldown: 15 minutes,
-      smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap(), //0.0005 
+      smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap(), //0.0005
       isValueDeltaBreakerEnabled: true,
       valueDeltaBreakerThreshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
       valueDeltaBreakerReferenceValue: 1e24, // 1$ numerator for 1e24 denominator
