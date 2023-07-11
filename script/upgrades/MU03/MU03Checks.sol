@@ -32,8 +32,6 @@ import { ConstantSumPricingModule } from "mento-core-2.2.0/swap/ConstantSumPrici
 
 import { MU03Config, Config } from "./Config.sol";
 
-// import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
-
 /**
  * @title IBrokerWithCasts
  * @notice Interface for Broker with tuple -> struct casting
@@ -139,7 +137,7 @@ contract MU03Checks is Script, Test {
       );
       revert("Deployed BiPoolManager does not match what proxy points to. See logs.");
     }
-    console2.log("\tchecked biPoolManager address 🫡");
+    console2.log("\tBiPoolManagerProxy has a correct implementation address 🫡");
   }
 
   /* ================================================================ */
@@ -164,7 +162,7 @@ contract MU03Checks is Script, Test {
         poolConfigs.length,
         exchanges.length
       );
-      revert("Number of expecyed pools does not match the number of deployed pools. See logs.");
+      revert("Number of expected pools does not match the number of deployed pools. See logs.");
     }
 
     for (uint256 i = 0; i < exchanges.length; i++) {
@@ -202,7 +200,7 @@ contract MU03Checks is Script, Test {
         "asset1 is not CELO or bridgedUSDC in the exchange"
       );
     }
-    console2.log("\texchanges correctly configured 🤘🏼");
+    console2.log("\tExchanges correctly configured 🤘🏼");
   }
 
   function verifyTradingLimits() public view {
@@ -220,6 +218,7 @@ contract MU03Checks is Script, Test {
         console2.log("The trading limit for %s, %s was not set ❌", pool.asset0, pool.asset1);
         revert("Not all trading limits were set.");
       }
+      // verify configured trading limits for all pools
       if (poolConfigs[i].asset0_limit0 != limits.limit0) {
         console2.log("limit0 for %s, %s was not set ❌", pool.asset0, pool.asset1);
         revert("Not all trading limits were configured correctly.");
