@@ -17,13 +17,11 @@ library MU01Config {
 
   struct MU01 {
     Config.PartialReserve partialReserve;
-
     Config.Pool cUSDCelo;
     Config.Pool cEURCelo;
     Config.Pool cBRLCelo;
     Config.Pool cUSDUSDC;
     Config.Pool[] pools;
-
     Config.RateFeed CELOUSD;
     Config.RateFeed CELOEUR;
     Config.RateFeed CELOBRL;
@@ -31,9 +29,7 @@ library MU01Config {
     Config.RateFeed[] rateFeeds;
   }
 
-  function get(Contracts.Cache storage contracts) internal returns (
-    MU01 memory config
-  ) {
+  function get(Contracts.Cache storage contracts) internal returns (MU01 memory config) {
     config.pools = new Config.Pool[](4);
     config.pools[0] = config.cUSDCelo = cUSDCelo_PoolConfig(contracts);
     config.pools[1] = config.cEURCelo = cEURCelo_PoolConfig(contracts);
@@ -82,29 +78,23 @@ library MU01Config {
     });
   }
 
-  function cUSDCelo_PoolConfig(
-    Contracts.Cache storage contracts
-  ) internal view returns (Config.Pool memory config) {
+  function cUSDCelo_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory config) {
     config = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
-
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 7_200_000 * 1e18, // 7.2 million
       referenceRateFeedID: contracts.celoRegistry("StableToken"),
-
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
         limit0: 10_000,
-
         enabled1: true,
         timeStep1: 1 days,
         limit1: 50_000,
-
         enabledGlobal: false,
         limitGlobal: 0
       }),
@@ -128,29 +118,23 @@ library MU01Config {
     });
   }
 
-  function cEURCelo_PoolConfig(
-    Contracts.Cache storage contracts
-  ) internal view returns (Config.Pool memory config) {
+  function cEURCelo_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory config) {
     config = Config.Pool({
       asset0: contracts.celoRegistry("StableTokenEUR"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
-
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 1_800_000 * 1e18, // 1.8 million
       referenceRateFeedID: contracts.celoRegistry("StableTokenEUR"),
-
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
         limit0: 10_000,
-
         enabled1: true,
         timeStep1: 1 days,
         limit1: 50_000,
-
         enabledGlobal: false,
         limitGlobal: 0
       }),
@@ -162,7 +146,9 @@ library MU01Config {
     }
   }
 
-  function CELOEUR_RateFeedConfig(Contracts.Cache storage contracts) internal view returns (Config.RateFeed memory config) {
+  function CELOEUR_RateFeedConfig(
+    Contracts.Cache storage contracts
+  ) internal view returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.celoRegistry("StableTokenEUR");
     config.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
@@ -172,30 +158,23 @@ library MU01Config {
     });
   }
 
-
-  function cBRLCelo_PoolConfig(
-    Contracts.Cache storage contracts
-  ) internal view returns (Config.Pool memory config) {
+  function cBRLCelo_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory config) {
     config = Config.Pool({
       asset0: contracts.celoRegistry("StableTokenBRL"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
-
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 3_000_000 * 1e18, // 3 million
       referenceRateFeedID: contracts.celoRegistry("StableTokenBRL"),
-
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
         limit0: 10_000,
-
         enabled1: true,
         timeStep1: 1 days,
         limit1: 50_000,
-
         enabledGlobal: false,
         limitGlobal: 0
       }),
@@ -206,7 +185,9 @@ library MU01Config {
     }
   }
 
-  function CELOBRL_RateFeedConfig(Contracts.Cache storage contracts) internal view returns (Config.RateFeed memory config) {
+  function CELOBRL_RateFeedConfig(
+    Contracts.Cache storage contracts
+  ) internal view returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.celoRegistry("StableTokenBRL");
     config.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
@@ -221,22 +202,18 @@ library MU01Config {
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("BridgedUSDC"),
       isConstantSum: true,
-
       spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
       minimumReports: 5,
       stablePoolResetSize: 12_000_000 * 1e18, // 12 million
       referenceRateResetFrequency: 5 minutes,
       referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
-
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
         limit0: 50_000,
-
         enabled1: true,
         timeStep1: 1 days,
         limit1: 100_000,
-
         enabledGlobal: false,
         limitGlobal: 0
       }),
@@ -248,9 +225,7 @@ library MU01Config {
     }
   }
 
-  function USDCUSD_RateFeedConfig(
-    Contracts.Cache storage contracts
-  ) internal returns (Config.RateFeed memory config) {
+  function USDCUSD_RateFeedConfig(Contracts.Cache storage contracts) internal returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.dependency("USDCUSDRateFeedAddr");
     config.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
       enabled: true,

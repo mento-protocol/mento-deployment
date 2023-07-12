@@ -21,7 +21,6 @@ library MU03Config {
     Config.Pool cEURUSDC;
     Config.Pool cBRLUSDC;
     Config.Pool[] pools;
-
     Config.RateFeed CELOUSD;
     Config.RateFeed CELOEUR;
     Config.RateFeed CELOBRL;
@@ -31,9 +30,7 @@ library MU03Config {
     Config.RateFeed[] rateFeeds;
   }
 
-  function get(Contracts.Cache storage contracts) internal returns (
-    MU03 memory config
-  ) {
+  function get(Contracts.Cache storage contracts) internal returns (MU03 memory config) {
     config.pools = new Config.Pool[](6);
     config.pools[0] = config.cUSDCelo = cUSDCelo_PoolConfig(contracts);
     config.pools[1] = config.cEURCelo = cEURCelo_PoolConfig(contracts);
@@ -51,30 +48,23 @@ library MU03Config {
     config.rateFeeds[5] = config.USDCBRL = USDCBRL_RateFeedConfig(contracts);
   }
 
-
-  function cUSDCelo_PoolConfig(
-    Contracts.Cache storage contracts
-  ) internal view returns (Config.Pool memory config) {
+  function cUSDCelo_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory config) {
     config = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
-
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 7_200_000 * 1e18, // 7.2 million
       referenceRateFeedID: contracts.celoRegistry("StableToken"),
-
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
         limit0: 100_000,
-
         enabled1: true,
         timeStep1: 1 days,
         limit1: 500_000,
-
         enabledGlobal: false,
         limitGlobal: 0
       }),
@@ -98,29 +88,23 @@ library MU03Config {
     });
   }
 
-  function cEURCelo_PoolConfig(
-    Contracts.Cache storage contracts
-  ) internal view returns (Config.Pool memory config) {
+  function cEURCelo_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory config) {
     config = Config.Pool({
       asset0: contracts.celoRegistry("StableTokenEUR"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
-
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 1_800_000 * 1e18, // 1.8 million
       referenceRateFeedID: contracts.celoRegistry("StableTokenEUR"),
-
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
         limit0: 100_000,
-
         enabled1: true,
         timeStep1: 1 days,
         limit1: 500_000,
-
         enabledGlobal: false,
         limitGlobal: 0
       }),
@@ -132,7 +116,9 @@ library MU03Config {
     }
   }
 
-  function CELOEUR_RateFeedConfig(Contracts.Cache storage contracts) internal view returns (Config.RateFeed memory config) {
+  function CELOEUR_RateFeedConfig(
+    Contracts.Cache storage contracts
+  ) internal view returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.celoRegistry("StableTokenEUR");
     config.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
@@ -142,29 +128,23 @@ library MU03Config {
     });
   }
 
-  function cBRLCelo_PoolConfig(
-    Contracts.Cache storage contracts
-  ) internal view returns (Config.Pool memory config) {
+  function cBRLCelo_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory config) {
     config = Config.Pool({
       asset0: contracts.celoRegistry("StableTokenBRL"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
-
       spread: FixidityLib.newFixedFraction(25, 10_000), // 0.0025
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 3_000_000 * 1e18, // 3 million
       referenceRateFeedID: contracts.celoRegistry("StableTokenBRL"),
-
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
         limit0: 100_000,
-
         enabled1: true,
         timeStep1: 1 days,
         limit1: 500_000,
-
         enabledGlobal: false,
         limitGlobal: 0
       }),
@@ -176,7 +156,9 @@ library MU03Config {
     }
   }
 
-  function CELOBRL_RateFeedConfig(Contracts.Cache storage contracts) internal view returns (Config.RateFeed memory config) {
+  function CELOBRL_RateFeedConfig(
+    Contracts.Cache storage contracts
+  ) internal view returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.celoRegistry("StableTokenBRL");
     config.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
@@ -191,22 +173,18 @@ library MU03Config {
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("BridgedUSDC"),
       isConstantSum: true,
-
       spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 12_000_000 * 1e18, // 12 million
       referenceRateFeedID: contracts.dependency("USDCUSDRateFeedAddr"),
-
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
         limit0: 500_000,
-
         enabled1: true,
         timeStep1: 1 days,
         limit1: 1_000_000,
-
         enabledGlobal: false,
         limitGlobal: 0
       }),
@@ -218,9 +196,7 @@ library MU03Config {
     }
   }
 
-  function USDCUSD_RateFeedConfig(
-    Contracts.Cache storage contracts
-  ) internal returns (Config.RateFeed memory config) {
+  function USDCUSD_RateFeedConfig(Contracts.Cache storage contracts) internal returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.dependency("USDCUSDRateFeedAddr");
     config.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
       enabled: true,
@@ -235,22 +211,18 @@ library MU03Config {
       asset0: contracts.celoRegistry("StableTokenEUR"),
       asset1: contracts.dependency("BridgedUSDC"),
       isConstantSum: true,
-
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       minimumReports: 5,
       stablePoolResetSize: 1_800_000 * 1e18, // 1.8 million
       referenceRateResetFrequency: 5 minutes,
       referenceRateFeedID: contracts.dependency("USDCEURRateFeedAddr"),
-
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
         limit0: 10_000,
-
         enabled1: true,
         timeStep1: 1 days,
         limit1: 50_000,
-
         enabledGlobal: true,
         limitGlobal: 5_000_000
       }),
@@ -270,9 +242,7 @@ library MU03Config {
       cooldown: 15 minutes,
       smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap()
     });
-    config.dependentRateFeeds = Arrays.addresses(
-      contracts.dependency("USDCUSDRateFeedAddr")
-    );
+    config.dependentRateFeeds = Arrays.addresses(contracts.dependency("USDCUSDRateFeedAddr"));
   }
 
   function cBRLUSDC_PoolConfig(Contracts.Cache storage contracts) internal returns (Config.Pool memory config) {
@@ -280,22 +250,18 @@ library MU03Config {
       asset0: contracts.celoRegistry("StableTokenBRL"),
       asset1: contracts.dependency("BridgedUSDC"),
       isConstantSum: true,
-
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       minimumReports: 5,
       stablePoolResetSize: 1_800_000 * 1e18, // 1.8 million
       referenceRateResetFrequency: 5 minutes,
       referenceRateFeedID: contracts.dependency("USDCBRLRateFeedAddr"),
-
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
         limit0: 10_000,
-
         enabled1: true,
         timeStep1: 1 days,
         limit1: 50_000,
-
         enabledGlobal: true,
         limitGlobal: 2_000_000
       }),
@@ -315,8 +281,6 @@ library MU03Config {
       cooldown: 15 minutes,
       smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap()
     });
-    config.dependentRateFeeds = Arrays.addresses(
-      contracts.dependency("USDCUSDRateFeedAddr")
-    );
+    config.dependentRateFeeds = Arrays.addresses(contracts.dependency("USDCUSDRateFeedAddr"));
   }
 }

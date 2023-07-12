@@ -69,7 +69,6 @@ library Config {
      *      breaker, calculated from the moment it was triggered for the pool to the present.
      */
     uint256 cooldown;
-
   }
 
   struct RateFeed {
@@ -177,12 +176,12 @@ library Config {
      */
     uint256 stablePoolResetSize;
     /**
-      * @dev Trading Limit Configurations for asset0
-      */
+     * @dev Trading Limit Configurations for asset0
+     */
     TradingLimit asset0limits;
     /**
-      * @dev Trading Limit Configurations for asset1
-      */
+     * @dev Trading Limit Configurations for asset1
+     */
     TradingLimit asset1limits;
   }
 

@@ -296,7 +296,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       );
     }
 
-    // Set rate feed dependencies 
+    // Set rate feed dependencies
     for (uint i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
       if (rateFeed.dependentRateFeeds.length > 0) {
@@ -383,11 +383,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         medianDeltaBreaker,
-        abi.encodeWithSelector(
-          MedianDeltaBreaker(0).setCooldownTime.selector,
-          rateFeeds,
-          cooldowns
-        )
+        abi.encodeWithSelector(MedianDeltaBreaker(0).setCooldownTime.selector, rateFeeds, cooldowns)
       )
     );
 
@@ -405,11 +401,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         medianDeltaBreaker,
-        abi.encodeWithSelector(
-          MedianDeltaBreaker(0).setRateChangeThresholds.selector,
-          rateFeeds,
-          thresholds
-        )
+        abi.encodeWithSelector(MedianDeltaBreaker(0).setRateChangeThresholds.selector, rateFeeds, thresholds)
       )
     );
 

@@ -223,21 +223,24 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     }
   }
 
-  function partialReserveInitCalldata(Config.PartialReserve memory partialReserve) internal pure returns (bytes memory) {
-    return abi.encodeWithSelector(
-      Reserve(0).initialize.selector,
-      partialReserve.registryAddress,
-      partialReserve.tobinTaxStalenessThreshold,
-      partialReserve.spendingRatioForCelo,
-      partialReserve.frozenGold,
-      partialReserve.frozenDays,
-      partialReserve.assetAllocationSymbols,
-      partialReserve.assetAllocationWeights,
-      partialReserve.tobinTax,
-      partialReserve.tobinTaxReserveRatio,
-      partialReserve.collateralAssets,
-      partialReserve.collateralAssetDailySpendingRatios
-    );
+  function partialReserveInitCalldata(
+    Config.PartialReserve memory partialReserve
+  ) internal pure returns (bytes memory) {
+    return
+      abi.encodeWithSelector(
+        Reserve(0).initialize.selector,
+        partialReserve.registryAddress,
+        partialReserve.tobinTaxStalenessThreshold,
+        partialReserve.spendingRatioForCelo,
+        partialReserve.frozenGold,
+        partialReserve.frozenDays,
+        partialReserve.assetAllocationSymbols,
+        partialReserve.assetAllocationWeights,
+        partialReserve.tobinTax,
+        partialReserve.tobinTaxReserveRatio,
+        partialReserve.collateralAssets,
+        partialReserve.collateralAssetDailySpendingRatios
+      );
   }
 
   function proposal_upgradeContracts(MU01Config.MU01 memory config) private {
@@ -476,11 +479,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         medianDeltaBreakerAddress,
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setCooldownTime.selector,
-          Arrays.addresses(
-            config.CELOUSD.rateFeedID,
-            config.CELOEUR.rateFeedID,
-            config.CELOBRL.rateFeedID
-          ),
+          Arrays.addresses(config.CELOUSD.rateFeedID, config.CELOEUR.rateFeedID, config.CELOBRL.rateFeedID),
           Arrays.uints(
             config.CELOUSD.medianDeltaBreaker0.cooldown,
             config.CELOEUR.medianDeltaBreaker0.cooldown,
@@ -497,11 +496,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         medianDeltaBreakerAddress,
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(
-            config.CELOUSD.rateFeedID,
-            config.CELOEUR.rateFeedID,
-            config.CELOBRL.rateFeedID
-          ),
+          Arrays.addresses(config.CELOUSD.rateFeedID, config.CELOEUR.rateFeedID, config.CELOBRL.rateFeedID),
           Arrays.uints(
             config.CELOUSD.medianDeltaBreaker0.threshold.unwrap(),
             config.CELOEUR.medianDeltaBreaker0.threshold.unwrap(),
@@ -521,9 +516,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
           Arrays.addresses(config.USDCUSD.rateFeedID),
-          Arrays.uints(
-            config.USDCUSD.valueDeltaBreaker0.referenceValue
-          )
+          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.referenceValue)
         )
       )
     );
@@ -536,9 +529,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
           Arrays.addresses(config.USDCUSD.rateFeedID),
-          Arrays.uints(
-            config.USDCUSD.valueDeltaBreaker0.cooldown
-          )
+          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.cooldown)
         )
       )
     );
@@ -551,9 +542,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
           Arrays.addresses(config.USDCUSD.rateFeedID),
-          Arrays.uints(
-            config.USDCUSD.valueDeltaBreaker0.threshold.unwrap()
-          )
+          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.threshold.unwrap())
         )
       )
     );
