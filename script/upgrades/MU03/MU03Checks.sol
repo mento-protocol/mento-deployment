@@ -60,6 +60,8 @@ contract MU03Checks is Script, Test {
   address public valueDeltaBreaker;
   address public biPoolManager;
   address public sortedOracles;
+  address public constantSum;
+  address public constantProduct;
 
   // Pool Configs
   Config.PoolConfiguration private cUSDCeloConfig;
@@ -95,6 +97,8 @@ contract MU03Checks is Script, Test {
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
     biPoolManager = contracts.deployed("BiPoolManager");
+    constantSum = contracts.deployed("ConstantSumPricingModule");
+    constantProduct = contracts.deployed("ConstantProductPricingModule");
 
     setUpConfigs();
   }
@@ -110,7 +114,7 @@ contract MU03Checks is Script, Test {
     doSwaps();
   }
 
-  function verifyOwner() public view {
+  function verifyOwner() internal view {
     require(
       BiPoolManager(biPoolManager).owner() == governance,
       "BiPoolManager ownership not transferred to governance"
@@ -123,7 +127,7 @@ contract MU03Checks is Script, Test {
     console2.log("Contract ownerships transferred to governance 🤝");
   }
 
-  function verifyBiPoolManager() public view {
+  function verifyBiPoolManager() internal view {
     BiPoolManagerProxy bpmProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
     address bpmProxyImplementation = bpmProxy._getImplementation();
     address expectedBiPoolManager = biPoolManager;
@@ -142,14 +146,15 @@ contract MU03Checks is Script, Test {
   /* =========================== Exchanges ========================== */
   /* ================================================================ */
 
-  function verifyExchanges() public view {
+  function verifyExchanges() internal view {
     console2.log("== Verifying exchanges... ==");
-    verifyV2Exchanges();
+    verifyPoolExchange();
+    verifyPoolConfig();
     verifyTradingLimits();
     verifyReserveFraction();
   }
 
-  function verifyV2Exchanges() public view {
+  function verifyPoolExchange() internal view {
     BiPoolManager bpm = getBiPoolManager();
     bytes32[] memory exchanges = bpm.getExchangeIds();
 
@@ -187,6 +192,25 @@ contract MU03Checks is Script, Test {
         revert("asset1 of pool does not match the expected asset1. See logs.");
       }
 
+      if (poolConfigs[i].isConstantSum) {
+        if (address(pool.pricingModule) != constantSum) {
+          console2.log(
+            "The pricing module of deployed pool: %s does not match the expected pricing module: %s.",
+            address(pool.pricingModule),
+            constantSum
+          );
+          revert("pricing module of pool does not match the expected pricing module. See logs.");
+        }
+      } else {
+        if (address(pool.pricingModule) != constantProduct) {
+          console2.log(
+            "The pricing module of deployed pool: %s does not match the expected pricing module: %s.",
+            address(pool.pricingModule),
+            constantProduct
+          );
+          revert("pricing module of pool does not match the expected pricing module. See logs.");
+        }
+      }
       // verify asset0 is always a stable asset
       require(
         pool.asset0 == cUSD || pool.asset0 == cEUR || pool.asset0 == cBRL,
@@ -198,10 +222,68 @@ contract MU03Checks is Script, Test {
         "asset1 is not CELO or bridgedUSDC in the exchange"
       );
     }
-    console2.log("\tExchanges correctly configured 🤘🏼");
+    console2.log("\tPoolExchange correctly configured 🤘🏼");
   }
 
-  function verifyTradingLimits() public view {
+  function verifyPoolConfig() internal view {
+    BiPoolManager bpm = getBiPoolManager();
+    bytes32[] memory exchanges = bpm.getExchangeIds();
+
+    for (uint256 i = 0; i < exchanges.length; i++) {
+      bytes32 exchangeId = exchanges[i];
+      IBiPoolManager.PoolExchange memory pool = bpm.getPoolExchange(exchangeId);
+
+      if (pool.config.spread.unwrap() != poolConfigs[i].spread.unwrap()) {
+        console2.log(
+          "The spread of deployed pool: %s does not match the expected spread: %s.",
+          pool.config.spread.unwrap(),
+          poolConfigs[i].spread.unwrap()
+        );
+        revert("spread of pool does not match the expected spread. See logs.");
+      }
+
+      if (pool.config.referenceRateFeedID != poolConfigs[i].referenceRateFeedID) {
+        console2.log(
+          "The referenceRateFeedID of deployed pool: %s does not match the expected referenceRateFeedID: %s.",
+          pool.config.referenceRateFeedID,
+          poolConfigs[i].referenceRateFeedID
+        );
+        revert("referenceRateFeedID of pool does not match the expected referenceRateFeedID. See logs.");
+      }
+
+      if (pool.config.minimumReports != poolConfigs[i].minimumReports) {
+        console2.log(
+          "The minimumReports of deployed pool: %s does not match the expected minimumReports: %s.",
+          pool.config.minimumReports,
+          poolConfigs[i].minimumReports
+        );
+        revert("minimumReports of pool does not match the expected minimumReports. See logs.");
+      }
+
+      if (pool.config.referenceRateResetFrequency != poolConfigs[i].referenceRateResetFrequency) {
+        console2.log(
+          "The referenceRateResetFrequency of deployed pool: %s does not match the expected: %s.",
+          pool.config.referenceRateResetFrequency,
+          poolConfigs[i].referenceRateResetFrequency
+        );
+        revert(
+          "referenceRateResetFrequency of pool does not match the expected referenceRateResetFrequency. See logs."
+        );
+      }
+
+      if (pool.config.stablePoolResetSize != poolConfigs[i].stablePoolResetSize) {
+        console2.log(
+          "The stablePoolResetSize of deployed pool: %s does not match the expected stablePoolResetSize: %s.",
+          pool.config.stablePoolResetSize,
+          poolConfigs[i].stablePoolResetSize
+        );
+        revert("stablePoolResetSize of pool does not match the expected stablePoolResetSize. See logs.");
+      }
+    }
+    console2.log("\tPool config is correctly configured 🤘🏼");
+  }
+
+  function verifyTradingLimits() internal view {
     IBrokerWithCasts _broker = IBrokerWithCasts(address(broker));
     BiPoolManager bpm = getBiPoolManager();
     bytes32[] memory exchanges = bpm.getExchangeIds();
@@ -212,10 +294,6 @@ contract MU03Checks is Script, Test {
       bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(pool.asset0)));
       TradingLimits.Config memory limits = _broker.tradingLimitsConfig(limitId);
 
-      if (limits.timestep0 == 0 || limits.timestep1 == 0 || limits.limit0 == 0 || limits.limit1 == 0) {
-        console2.log("The trading limit for %s, %s was not set ❌", pool.asset0, pool.asset1);
-        revert("Not all trading limits were set.");
-      }
       // verify configured trading limits for all pools
       if (poolConfigs[i].asset0_limit0 != limits.limit0) {
         console2.log("limit0 for %s, %s was not set ❌", pool.asset0, pool.asset1);
@@ -237,11 +315,15 @@ contract MU03Checks is Script, Test {
         console2.log("timestep1 for %s, %s was not set ❌", pool.asset0, pool.asset1);
         revert("Not all trading limits were configured correctly.");
       }
+      if (poolConfigs[i].asset0_flags != limits.flags) {
+        console2.log("flags for %s, %s was not set ❌", pool.asset0, pool.asset1);
+        revert("Not all trading limits were configured correctly.");
+      }
     }
     console2.log("\tTrading limits set for all exchanges 🔒");
   }
 
-  function verifyReserveFraction() public view {
+  function verifyReserveFraction() internal view {
     address[] memory exchangesV1 = Arrays.addresses(
       contracts.celoRegistry("Exchange"),
       contracts.celoRegistry("ExchangeBRL"),
@@ -261,14 +343,14 @@ contract MU03Checks is Script, Test {
   /* ======================== Circuit Breaker ======================= */
   /* ================================================================ */
 
-  function verifyCircuitBreaker() public view {
+  function verifyCircuitBreaker() internal view {
     console2.log("\n== Checking circuit breaker... ==");
     verifyBreakerBox();
     verifyMedianDeltaBreaker();
     verifyValueDeltaBreaker();
   }
 
-  function verifyBreakerBox() public view {
+  function verifyBreakerBox() internal view {
     // verify that breakers were set with trading mode 3
     if (
       breakerBox.breakerTradingMode(medianDeltaBreaker) != 3 || breakerBox.breakerTradingMode(valueDeltaBreaker) != 3
@@ -288,21 +370,15 @@ contract MU03Checks is Script, Test {
     // verify that MedianDeltaBreaker && ValueDeltaBreaker were enabled for rateFeeds
     for (uint256 i = 0; i < poolConfigs.length; i++) {
       if (poolConfigs[i].isMedianDeltaBreakerEnabled) {
-        (, , bool medianDeltaStatus) = breakerBox.rateFeedBreakerStatus(
-          poolConfigs[i].referenceRateFeedID,
-          medianDeltaBreaker
-        );
-        if (!medianDeltaStatus) {
+        bool medianDeltaEnabled = breakerBox.isBreakerEnabled(medianDeltaBreaker, poolConfigs[i].referenceRateFeedID);
+        if (!medianDeltaEnabled) {
           console2.log("MedianDeltaBreaker not enabled for rate feed %s", poolConfigs[i].referenceRateFeedID);
           revert("MedianDeltaBreaker not enabled for all rate feeds");
         }
 
         if (poolConfigs[i].isValueDeltaBreakerEnabled) {
-          (, , bool valueDeltaStatus) = breakerBox.rateFeedBreakerStatus(
-            poolConfigs[i].referenceRateFeedID,
-            valueDeltaBreaker
-          );
-          if (!valueDeltaStatus) {
+          bool valueDeltaEnabled = breakerBox.isBreakerEnabled(valueDeltaBreaker, poolConfigs[i].referenceRateFeedID);
+          if (!valueDeltaEnabled) {
             console2.log("ValueDeltaBreaker not enabled for rate feed %s", poolConfigs[i].referenceRateFeedID);
             revert("ValueDeltaBreaker not enabled for all rate feeds");
           }
@@ -318,7 +394,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tBreakerBox address updated in SortedOracles 🗳️");
   }
 
-  function verifyMedianDeltaBreaker() public view {
+  function verifyMedianDeltaBreaker() internal view {
     // verify that cooldown period, rate change threshold and smoothing factor were set correctly
     for (uint256 i = 0; i < poolConfigs.length; i++) {
       if (poolConfigs[i].isMedianDeltaBreakerEnabled) {
@@ -361,7 +437,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tMedianDeltaBreaker cooldown, rate change threshold and smoothing factor set correctly 🔒");
   }
 
-  function verifyValueDeltaBreaker() public view {
+  function verifyValueDeltaBreaker() internal view {
     // verify that cooldown period, rate change threshold and reference value were set correctly
     for (uint256 i = 0; i < poolConfigs.length; i++) {
       if (poolConfigs[i].isValueDeltaBreakerEnabled) {
@@ -408,7 +484,7 @@ contract MU03Checks is Script, Test {
   /* ============================= Swaps ============================ */
   /* ================================================================ */
 
-  function doSwaps() public {
+  function doSwaps() internal {
     console2.log("\n== Doing some test swaps... ==");
     swapCeloTocUSD();
     swapcUSDtoCelo();
@@ -424,7 +500,7 @@ contract MU03Checks is Script, Test {
     swapcBRLtoBridgedUSDC();
   }
 
-  function swapCeloTocUSD() public {
+  function swapCeloTocUSD() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(0);
 
@@ -441,7 +517,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tCELO -> cUSD swap successful 🚀");
   }
 
-  function swapcUSDtoCelo() public {
+  function swapcUSDtoCelo() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(0);
 
@@ -455,7 +531,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tcUSD -> CELO swap successful 🚀");
   }
 
-  function swapCeloTocEUR() public {
+  function swapCeloTocEUR() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(1);
 
@@ -472,7 +548,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tCELO -> cEUR swap successful 🚀");
   }
 
-  function swapcEURtoCELO() public {
+  function swapcEURtoCELO() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(1);
 
@@ -486,7 +562,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tcEUR -> CELO swap successful 🚀");
   }
 
-  function swapCeloTocBRL() public {
+  function swapCeloTocBRL() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(2);
 
@@ -503,7 +579,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tCELO -> cBRL swap successful 🚀");
   }
 
-  function swapcBrlToCELO() public {
+  function swapcBrlToCELO() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(2);
 
@@ -517,7 +593,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tcBRL -> CELO swap successful 🚀");
   }
 
-  function swapBridgedUSDCTocUSD() public {
+  function swapBridgedUSDCTocUSD() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(3);
 
@@ -534,7 +610,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tbridgedUSDC -> cUSD swap successful 🚀");
   }
 
-  function swapcUSDtoBridgedUSDC() public {
+  function swapcUSDtoBridgedUSDC() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(3);
 
@@ -551,7 +627,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tcUSD -> bridgedUSDC swap successful 🚀");
   }
 
-  function swapBridgedUSDCTocEUR() public {
+  function swapBridgedUSDCTocEUR() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(4);
 
@@ -568,7 +644,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tbridgedUSDC -> cEUR swap successful 🚀");
   }
 
-  function swapcEURtoBridgedUSDC() public {
+  function swapcEURtoBridgedUSDC() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(4);
 
@@ -582,7 +658,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tcEUR -> bridgedUSDC swap successful 🚀");
   }
 
-  function swapBridgedUSDCtocBRL() public {
+  function swapBridgedUSDCtocBRL() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(5);
 
@@ -599,7 +675,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tbridgedUSDC -> cBRL swap successful 🚀");
   }
 
-  function swapcBRLtoBridgedUSDC() public {
+  function swapcBRLtoBridgedUSDC() internal {
     BiPoolManager bpm = getBiPoolManager();
     bytes32 exchangeID = bpm.exchangeIds(5);
 
@@ -622,7 +698,7 @@ contract MU03Checks is Script, Test {
     uint256 expectedThreshold,
     address rateFeedID,
     bool isValueDeltaBreaker
-  ) public view {
+  ) internal view {
     if (currentThreshold != expectedThreshold) {
       if (isValueDeltaBreaker) {
         console2.log("ValueDeltaBreaker rate change threshold not set correctly for rate feed %s", rateFeedID);
@@ -638,7 +714,7 @@ contract MU03Checks is Script, Test {
     uint256 expectedCoolDown,
     address rateFeedID,
     bool isValueDeltaBreaker
-  ) public view {
+  ) internal view {
     if (currentCoolDown != expectedCoolDown) {
       if (isValueDeltaBreaker) {
         console2.log("ValueDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);
@@ -649,7 +725,7 @@ contract MU03Checks is Script, Test {
     }
   }
 
-  function doSwapIn(bytes32 exchangeID, address trader, address tokenIn, address tokenOut, uint256 amountIn) public {
+  function doSwapIn(bytes32 exchangeID, address trader, address tokenIn, address tokenOut, uint256 amountIn) internal {
     BiPoolManager bpm = getBiPoolManager();
 
     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
@@ -663,7 +739,7 @@ contract MU03Checks is Script, Test {
     vm.stopPrank();
   }
 
-  function setUpConfigs() public {
+  function setUpConfigs() internal {
     // Create pool configurations
     cUSDCeloConfig = MU03Config.cUSDCeloConfig(contracts);
     cEURCeloConfig = MU03Config.cEURCeloConfig(contracts);
@@ -681,7 +757,7 @@ contract MU03Checks is Script, Test {
     poolConfigs.push(cBRLUSDCConfig);
   }
 
-  function getBiPoolManager() public view returns (BiPoolManager) {
+  function getBiPoolManager() internal view returns (BiPoolManager) {
     return BiPoolManager(broker.getExchangeProviders()[0]);
   }
 }
