@@ -58,7 +58,6 @@ contract MU03Checks is Script, Test {
   address public governance;
   address public medianDeltaBreaker;
   address public valueDeltaBreaker;
-  address public breakerBoxAddress;
   address public biPoolManager;
   address public sortedOracles;
 
@@ -95,7 +94,6 @@ contract MU03Checks is Script, Test {
     breakerBox = BreakerBox(contracts.deployed("BreakerBox"));
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
-    breakerBoxAddress = contracts.deployed("BreakerBox");
     biPoolManager = contracts.deployed("BiPoolManager");
 
     setUpConfigs();
@@ -315,7 +313,6 @@ contract MU03Checks is Script, Test {
 
     // verify that breakerBox address was updated in SortedOracles
     if (breakerBox != SortedOracles(sortedOracles).breakerBox()) {
-      console2.log("BreakerBox address not updated in SortedOracles");
       revert("BreakerBox address not updated in SortedOracles");
     }
     console2.log("\tBreakerBox address updated in SortedOracles 🗳️");
@@ -394,10 +391,10 @@ contract MU03Checks is Script, Test {
           true
         );
 
-        // verify smoothing factor
+        // verify reference value
         if (referenceValue != poolConfigs[i].valueDeltaBreakerReferenceValue) {
           console2.log(
-            "ValueDeltaBrealer reference value not set correctly for rate feed %s",
+            "ValueDeltaBreaker reference value not set correctly for rate feed %s",
             poolConfigs[i].referenceRateFeedID
           );
           revert("ValueDeltaBreaker reference value not set correctly for all rate feeds");
