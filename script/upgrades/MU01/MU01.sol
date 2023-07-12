@@ -47,20 +47,6 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  MU01Config.MU01 private config;
-
-  Config.Pool private cUSDCelo_PoolConfig;
-  Config.Pool private cEURCelo_PoolConfig;
-  Config.Pool private cBRLCelo_PoolConfig;
-  Config.Pool private cUSDUSDC_PoolConfig;
-  Config.Pool[] private poolConfigs;
-  Config.Breaker private CELOUSD_BreakerConfig;
-  Config.Breaker private CELOEUR_BreakerConfig;
-  Config.Breaker private CELOBRL_BreakerConfig;
-  Config.Breaker private USDCUSD_BreakerConfig;
-  Config.Breaker[] private rateFeedConfigs;
-  Config.PartialReserve private partialReserveConfig;
-
   address private cUSD;
   address private cEUR;
   address private cBRL;
@@ -105,7 +91,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
    *      This function is called by the governance script runner.
    */
   function setUpConfigs() public {
-    config = MU01Config.get(contracts);
+    MU01Config.MU01 memory config = MU01Config.get(contracts);
 
     // Set the exchange ID for the reference rate feed
     for (uint i = 0; i < config.pools.length; i++) {
@@ -131,19 +117,20 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
+    MU01Config.MU01 memory config = MU01Config.get(contracts);
 
-    proposal_initializeNewProxies();
-    proposal_upgradeContracts();
-    proposal_configurePartialReserve();
-    proposal_registryUpdates();
-    proposal_createExchanges();
-    proposal_configureCircuitBreaker();
-    proposal_configureTradingLimits();
+    proposal_initializeNewProxies(config);
+    proposal_upgradeContracts(config);
+    proposal_configurePartialReserve(config);
+    proposal_registryUpdates(config);
+    proposal_createExchanges(config);
+    proposal_configureCircuitBreaker(config);
+    proposal_configureTradingLimits(config);
 
     return transactions;
   }
 
-  function proposal_initializeNewProxies() private {
+  function proposal_initializeNewProxies(MU01Config.MU01 memory config) private {
     address sortedOracles = contracts.celoRegistry("SortedOracles");
     address payable partialReserveProxyAddress = contracts.deployed("PartialReserveProxy");
 
@@ -217,39 +204,43 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
       console.log("Skipping BrokerProxy - already initialized");
     }
 
-    PartialReserveProxy partialReserveProxy = PartialReserveProxy(partialReserveProxyAddress);
-    if (partialReserveProxy._getImplementation() == address(0)) {
-      Reserve reserve = Reserve(contracts.deployed("Reserve"));
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          address(partialReserveProxy),
-          abi.encodeWithSelector(
-            partialReserveProxy._setAndInitializeImplementation.selector,
-            reserve,
+    {
+      PartialReserveProxy partialReserveProxy = PartialReserveProxy(partialReserveProxyAddress);
+      if (partialReserveProxy._getImplementation() == address(0)) {
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            address(partialReserveProxy),
             abi.encodeWithSelector(
-              Reserve(0).initialize.selector,
-              partialReserveConfig.registryAddress,
-              partialReserveConfig.tobinTaxStalenessThreshold,
-              partialReserveConfig.spendingRatioForCelo,
-              partialReserveConfig.frozenGold,
-              partialReserveConfig.frozenDays,
-              partialReserveConfig.assetAllocationSymbols,
-              partialReserveConfig.assetAllocationWeights,
-              partialReserveConfig.tobinTax,
-              partialReserveConfig.tobinTaxReserveRatio,
-              partialReserveConfig.collateralAssets,
-              partialReserveConfig.collateralAssetDailySpendingRatios
+              partialReserveProxy._setAndInitializeImplementation.selector,
+              partialReserveInitCalldata(config.partialReserve)
             )
           )
-        )
-      );
-    } else {
-      console.log("Skipping PartialReserveProxy - already initialized");
+        );
+      } else {
+        console.log("Skipping PartialReserveProxy - already initialized");
+      }
     }
   }
 
-  function proposal_upgradeContracts() private {
+  function partialReserveInitCalldata(Config.PartialReserve memory partialReserve) internal pure returns (bytes memory) {
+    return abi.encodeWithSelector(
+      Reserve(0).initialize.selector,
+      partialReserve.registryAddress,
+      partialReserve.tobinTaxStalenessThreshold,
+      partialReserve.spendingRatioForCelo,
+      partialReserve.frozenGold,
+      partialReserve.frozenDays,
+      partialReserve.assetAllocationSymbols,
+      partialReserve.assetAllocationWeights,
+      partialReserve.tobinTax,
+      partialReserve.tobinTaxReserveRatio,
+      partialReserve.collateralAssets,
+      partialReserve.collateralAssetDailySpendingRatios
+    );
+  }
+
+  function proposal_upgradeContracts(MU01Config.MU01 memory config) private {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -283,7 +274,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     );
   }
 
-  function proposal_configurePartialReserve() private {
+  function proposal_configurePartialReserve(MU01Config.MU01 memory config) private {
     address payable partialReserveProxy = contracts.deployed("PartialReserveProxy");
     bool reserveNotInitialized = PartialReserveProxy(partialReserveProxy)._getImplementation() == address(0);
 
@@ -353,7 +344,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     }
   }
 
-  function proposal_registryUpdates() private {
+  function proposal_registryUpdates(MU01Config.MU01 memory config) private {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -367,7 +358,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
    * @notice This function generates the transactions required to create the
    *         BiPoolManager exchanges (cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/bridgedUSDC)
    */
-  function proposal_createExchanges() private {
+  function proposal_createExchanges(MU01Config.MU01 memory config) private {
     address payable biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
     bool biPoolManagerInitialized = BiPoolManagerProxy(biPoolManagerProxy)._getImplementation() != address(0);
     if (biPoolManagerInitialized) {
@@ -390,8 +381,8 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
-    for (uint256 i = 0; i < poolConfigs.length; i++) {
-      Config.Pool memory poolConfig = poolConfigs[i];
+    for (uint256 i = 0; i < config.pools.length; i++) {
+      Config.Pool memory poolConfig = config.pools[i];
       IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
         asset0: poolConfig.asset0,
         asset1: poolConfig.asset1,
@@ -436,7 +427,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
    *
    *        4. Add the new breaker box address to sorted oracles.
    */
-  function proposal_configureCircuitBreaker() private {
+  function proposal_configureCircuitBreaker(MU01Config.MU01 memory config) private {
     bool breakerBoxInitialized = BreakerBoxProxy(contracts.deployed("BreakerBoxProxy"))._getImplementation() !=
       address(0);
     BreakerBox breakerBox = BreakerBox(contracts.deployed("BreakerBoxProxy"));
@@ -485,11 +476,15 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         medianDeltaBreakerAddress,
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setCooldownTime.selector,
-          Arrays.addresses(cUSD, cEUR, cBRL),
+          Arrays.addresses(
+            config.CELOUSD.rateFeedID,
+            config.CELOEUR.rateFeedID,
+            config.CELOBRL.rateFeedID
+          ),
           Arrays.uints(
-            CELOUSD_BreakerConfig.medianDeltaBreakers[0].cooldown,
-            CELOEUR_BreakerConfig.medianDeltaBreakers[0].cooldown,
-            CELOBRL_BreakerConfig.medianDeltaBreakers[0].cooldown
+            config.CELOUSD.medianDeltaBreaker0.cooldown,
+            config.CELOEUR.medianDeltaBreaker0.cooldown,
+            config.CELOBRL.medianDeltaBreaker0.cooldown
           )
         )
       )
@@ -502,11 +497,15 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         medianDeltaBreakerAddress,
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(cUSD, cEUR, cBRL),
+          Arrays.addresses(
+            config.CELOUSD.rateFeedID,
+            config.CELOEUR.rateFeedID,
+            config.CELOBRL.rateFeedID
+          ),
           Arrays.uints(
-            CELOUSD_BreakerConfig.medianDeltaBreakers[0].threshold,
-            CELOEUR_BreakerConfig.medianDeltaBreakers[0].threshold,
-            CELOBRL_BreakerConfig.medianDeltaBreakers[0].threshold
+            config.CELOUSD.medianDeltaBreaker0.threshold.unwrap(),
+            config.CELOEUR.medianDeltaBreaker0.threshold.unwrap(),
+            config.CELOBRL.medianDeltaBreaker0.threshold.unwrap()
           )
         )
       )
@@ -521,9 +520,9 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         valueDeltaBreakerAddress,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(cUSDUSCDRateFeedId),
+          Arrays.addresses(config.USDCUSD.rateFeedID),
           Arrays.uints(
-            USDCUSD_BreakerConfig.valueDeltaBreakers[0].referenceValue
+            config.USDCUSD.valueDeltaBreaker0.referenceValue
           )
         )
       )
@@ -536,9 +535,9 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         valueDeltaBreakerAddress,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(cUSDUSCDRateFeedId),
+          Arrays.addresses(config.USDCUSD.rateFeedID),
           Arrays.uints(
-            USDCUSD_BreakerConfig.valueDeltaBreakers[0].cooldown
+            config.USDCUSD.valueDeltaBreaker0.cooldown
           )
         )
       )
@@ -551,9 +550,9 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         valueDeltaBreakerAddress,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(cUSDUSCDRateFeedId),
+          Arrays.addresses(config.USDCUSD.rateFeedID),
           Arrays.uints(
-            USDCUSD_BreakerConfig.valueDeltaBreakers[0].threshold
+            config.USDCUSD.valueDeltaBreaker0.threshold.unwrap()
           )
         )
       )
@@ -564,42 +563,35 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     /* ==========================ϟϟϟϟϟϟϟϟϟϟϟ=========================== */
 
     // Enable the Median Delta Breaker for the rate feeds
-    for (uint256 i = 0; i < rateFeedConfigs.length; i++) {
-      if (rateFeedConfigs[i].medianDeltaBreakers.length == 0) {
-        continue;
-      }
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          breakerBoxProxyAddress,
-          abi.encodeWithSelector(
-            BreakerBox(0).toggleBreaker.selector,
-            contracts.deployed("MedianDeltaBreaker"),
-            rateFeedConfigs[i].rateFeedID,
-            true
+    for (uint256 i = 0; i < config.rateFeeds.length; i++) {
+      if (config.rateFeeds[i].medianDeltaBreaker0.enabled) {
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            breakerBoxProxyAddress,
+            abi.encodeWithSelector(
+              BreakerBox(0).toggleBreaker.selector,
+              contracts.deployed("MedianDeltaBreaker"),
+              config.rateFeeds[i].rateFeedID,
+              true
+            )
           )
-        )
-      );
-    }
-
-    // Enable Value Delta Breaker for cUSD/USDC rate feed
-    for (uint256 i = 0; i < rateFeedConfigs.length; i++) {
-      if (rateFeedConfigs[i].valueDeltaBreakers.length == 0) {
-        continue;
+        );
       }
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          breakerBoxProxyAddress,
-          abi.encodeWithSelector(
-            BreakerBox(0).toggleBreaker.selector,
-            contracts.deployed("MedianDeltaBreaker"),
-            valueDeltaBreakerAddress,
-            rateFeedConfigs[i].rateFeedID,
-            true
+      if (config.rateFeeds[i].valueDeltaBreaker0.enabled) {
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            breakerBoxProxyAddress,
+            abi.encodeWithSelector(
+              BreakerBox(0).toggleBreaker.selector,
+              contracts.deployed("ValueDeltaBreaker"),
+              config.rateFeeds[i].rateFeedID,
+              true
+            )
           )
-        )
-      );
+        );
+      }
     }
 
     /* ================================================================ */
@@ -618,10 +610,10 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the trading limits.
    */
-  function proposal_configureTradingLimits() public {
+  function proposal_configureTradingLimits(MU01Config.MU01 memory config) public {
     address brokerProxyAddress = contracts.deployed("BrokerProxy");
-    for (uint256 i = 0; i < poolConfigs.length; i++) {
-      Config.Pool memory poolConfig = poolConfigs[i];
+    for (uint256 i = 0; i < config.pools.length; i++) {
+      Config.Pool memory poolConfig = config.pools[i];
 
       // Set the trading limits for the pool
       transactions.push(

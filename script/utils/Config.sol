@@ -241,8 +241,8 @@ library Config {
    * @param tlc The trading limit config to convert
    * @return The bitmap flag
    */
-  function tradingLimitConfigToFlag(TradingLimit memory tlc) internal pure returns (uint256) {
-    uint256 flag = 0;
+  function tradingLimitConfigToFlag(TradingLimit memory tlc) internal pure returns (uint8) {
+    uint8 flag = 0;
     if (tlc.enabled0) {
       flag = flag | 1; // L0
     }

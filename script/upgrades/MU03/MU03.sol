@@ -40,8 +40,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  MU03Config.MU03 private config;
-
   address private cUSD;
   address private cEUR;
   address private cBRL;
@@ -94,7 +92,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
    */
   function setUpConfigs() public {
     // Create pool configurations
-    config = MU03Config.get(contracts);
+    MU03Config.MU03 memory config = MU03Config.get(contracts);
 
     // Set the exchange ID for the reference rate feed
     for (uint i = 0; i < config.pools.length; i++) {
@@ -120,14 +118,15 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
+    MU03Config.MU03 memory config = MU03Config.get(contracts);
 
-    proposal_updateBiPoolManagerImplementation();
-    proposal_createExchanges();
-    proposal_configureTradingLimits();
-    proposal_configureV1Exchanges();
-    proposal_configureBreakerBox();
-    proposal_configureMedianDeltaBreaker0();
-    proposal_configureValueDeltaBreaker0();
+    proposal_updateBiPoolManagerImplementation(config);
+    proposal_createExchanges(config);
+    proposal_configureTradingLimits(config);
+    proposal_configureV1Exchanges(config);
+    proposal_configureBreakerBox(config);
+    proposal_configureMedianDeltaBreaker0(config);
+    proposal_configureValueDeltaBreaker0(config);
 
     return transactions;
   }
@@ -137,7 +136,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
    *         BiPoolManager exchanges (cUSD/CELO, cEUR/CELO, cBRL/CELO, cUSD/bridgedUSDC,
    *         cEUR/bridgedUSDC, cBRL/bridgedUSDC)
    */
-  function proposal_createExchanges() private {
+  function proposal_createExchanges(MU03Config.MU03 memory config) private {
     address payable biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
     bool biPoolManagerInitialized = BiPoolManagerProxy(biPoolManagerProxy)._getImplementation() != address(0);
     if (biPoolManagerInitialized) {
@@ -191,7 +190,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the trading limits.
    */
-  function proposal_configureTradingLimits() public {
+  function proposal_configureTradingLimits(MU03Config.MU03 memory config) public {
     address brokerProxyAddress = contracts.deployed("BrokerProxy");
     for (uint256 i = 0; i < config.pools.length; i++) {
       Config.Pool memory poolConfig = config.pools[i];
@@ -206,11 +205,11 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
             referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
             poolConfig.asset0,
             TradingLimits.Config({
-              timestep0: poolConfig.asset0limit.timestep0,
-              timestep1: poolConfig.asset0limit.timeStep1,
-              limit0: poolConfig.asset0limit.limit0,
-              limit1: poolConfig.asset0limit.limit1,
-              limitGlobal: poolConfig.asset0limit.limitGlobal,
+              timestep0: poolConfig.asset0limits.timeStep0,
+              timestep1: poolConfig.asset0limits.timeStep1,
+              limit0: poolConfig.asset0limits.limit0,
+              limit1: poolConfig.asset0limits.limit1,
+              limitGlobal: poolConfig.asset0limits.limitGlobal,
               flags: Config.tradingLimitConfigToFlag(poolConfig.asset0limits)
             })
           )
@@ -222,7 +221,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the Mento V1 Exchanges.
    */
-  function proposal_configureV1Exchanges() public {
+  function proposal_configureV1Exchanges(MU03Config.MU03 memory config) public {
     address[] memory exchangesV1 = Arrays.addresses(
       contracts.celoRegistry("Exchange"),
       contracts.celoRegistry("ExchangeBRL"),
@@ -245,7 +244,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     }
   }
 
-    function proposal_updateBiPoolManagerImplementation() public {
+  function proposal_updateBiPoolManagerImplementation(MU03Config.MU03 memory config) public {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -255,7 +254,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     );
   }
 
-  function proposal_configureBreakerBox() public {
+  function proposal_configureBreakerBox(MU03Config.MU03 memory config) public {
     // Add the rate feeds to breaker box
     transactions.push(
       ICeloGovernance.Transaction(
@@ -318,33 +317,31 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     for (uint256 i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
       // Enable Median Delta Breaker for rate feed
-      for (uint256 j = 0; j < rateFeed.medianDeltaBreakers; j++) {
-        Config.MedianDeltaBreaker memory breaker = rateFeed.medianDeltaBreakerConfigs[j];
+      if (rateFeed.medianDeltaBreaker0.enabled) {
         transactions.push(
           ICeloGovernance.Transaction(
             0,
             breakerBox,
             abi.encodeWithSelector(
               BreakerBox(0).toggleBreaker.selector,
-              breaker.breaker,
-              config.rateFeedID,
+              contracts.deployed("MedianDeltaBreaker"),
+              rateFeed.rateFeedID,
               true
             )
           )
         );
       }
-
       // Enable Value Delta Breaker for rate feeds
-      for (uint256 j = 0; j < rateFeed.valueDeltaBreakers; j++) {
-        Config.ValueDeltaBreaker memory breaker = rateFeed.valueDeltaBreakerConfigs[j];
+
+      if (rateFeed.valueDeltaBreaker0.enabled) {
         transactions.push(
           ICeloGovernance.Transaction(
             0,
             breakerBox,
             abi.encodeWithSelector(
               BreakerBox(0).toggleBreaker.selector,
-              breaker.breaker,
-              config.rateFeedID,
+              contracts.deployed("ValueDeltaBreaker"),
+              rateFeed.rateFeedID,
               true
             )
           )
@@ -362,7 +359,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     );
   }
 
-  function proposal_configureMedianDeltaBreaker0() public {
+  function proposal_configureMedianDeltaBreaker0(MU03Config.MU03 memory config) public {
     address[] memory rateFeeds = Arrays.addresses(
       config.CELOUSD.rateFeedID,
       config.CELOEUR.rateFeedID,
@@ -395,12 +392,12 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     );
 
     uint[] memory thresholds = Arrays.uints(
-      config.CELOUSD.medianDeltaBreaker0.threshold,
-      config.CELOEUR.medianDeltaBreaker0.threshold,
-      config.CELOBRL.medianDeltaBreaker0.threshold,
-      config.USDCUSD.medianDeltaBreaker0.threshold,
-      config.USDCEUR.medianDeltaBreaker0.threshold,
-      config.USDCBRL.medianDeltaBreaker0.threshold
+      config.CELOUSD.medianDeltaBreaker0.threshold.unwrap(),
+      config.CELOEUR.medianDeltaBreaker0.threshold.unwrap(),
+      config.CELOBRL.medianDeltaBreaker0.threshold.unwrap(),
+      config.USDCUSD.medianDeltaBreaker0.threshold.unwrap(),
+      config.USDCEUR.medianDeltaBreaker0.threshold.unwrap(),
+      config.USDCBRL.medianDeltaBreaker0.threshold.unwrap()
     );
 
     // Set the rate change thresholds
@@ -434,7 +431,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     }
   }
 
-  function proposal_configureValueDeltaBreaker0() public {
+  function proposal_configureValueDeltaBreaker0(MU03Config.MU03 memory config) public {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -465,12 +462,10 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
-
-        valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
           Arrays.addresses(config.USDCUSD.rateFeedID),
-          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.thershold)
+          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.threshold.unwrap())
         )
       )
     );
