@@ -86,9 +86,6 @@ contract GovernanceHelper is Script {
       descriptionPrefix[i] = bytes(descriptionURL)[i];
     }
 
-    require(
-      keccak256(descriptionPrefix) == keccak256("https://"),
-      "Description URL must start with https://"
-    );
+    require(keccak256(descriptionPrefix) == keccak256("https://"), "Description URL must start with https://");
   }
 }
