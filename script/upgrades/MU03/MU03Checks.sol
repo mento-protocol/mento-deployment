@@ -10,7 +10,6 @@ import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
-import { MockERC20 } from "contracts/MockERC20.sol";
 
 import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
 import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";
@@ -18,7 +17,6 @@ import { IBroker } from "mento-core-2.2.0/interfaces/IBroker.sol";
 import { IERC20Metadata } from "mento-core-2.2.0/common/interfaces/IERC20Metadata.sol";
 
 import { BiPoolManagerProxy } from "mento-core-2.2.0/proxies/BiPoolManagerProxy.sol";
-import { BrokerProxy } from "mento-core-2.2.0/proxies/BrokerProxy.sol";
 import { Broker } from "mento-core-2.2.0/swap/Broker.sol";
 import { BiPoolManager } from "mento-core-2.2.0/swap/BiPoolManager.sol";
 import { Exchange } from "mento-core-2.2.0/legacy/Exchange.sol";
