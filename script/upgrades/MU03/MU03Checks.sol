@@ -728,8 +728,6 @@ contract MU03Checks is Script, Test {
       false
     );
 
-    // swapStableToBridgedUsdc(exchangeID, trader, tokenIn, tokenOut, amountIn, cBRLUSDCConfig.referenceRateFeedID);
-
     console2.log("\tcBRL -> bridgedUSDC swap successful 🚀");
   }
 
