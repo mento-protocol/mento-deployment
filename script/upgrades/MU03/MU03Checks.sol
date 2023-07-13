@@ -29,6 +29,9 @@ import { Reserve } from "mento-core-2.2.0/swap/Reserve.sol";
 import { MedianDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/MedianDeltaBreaker.sol";
 import { ValueDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/ValueDeltaBreaker.sol";
 import { ConstantSumPricingModule } from "mento-core-2.2.0/swap/ConstantSumPricingModule.sol";
+import { SafeMath } from "celo-foundry/test/SafeMath.sol";
+
+import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
 
 import { MU03Config, Config } from "./Config.sol";
 
@@ -45,6 +48,7 @@ interface IBrokerWithCasts {
 contract MU03Checks is Script, Test {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
+  using SafeMath for uint256;
 
   BreakerBox private breakerBox;
   Reserve private reserve;
@@ -62,6 +66,7 @@ contract MU03Checks is Script, Test {
   address public sortedOracles;
   address public constantSum;
   address public constantProduct;
+  address public biPoolManagerProxy;
 
   // Pool Configs
   Config.PoolConfiguration private cUSDCeloConfig;
@@ -99,6 +104,7 @@ contract MU03Checks is Script, Test {
     biPoolManager = contracts.deployed("BiPoolManager");
     constantSum = contracts.deployed("ConstantSumPricingModule");
     constantProduct = contracts.deployed("ConstantProductPricingModule");
+    biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
 
     setUpConfigs();
   }
@@ -501,8 +507,7 @@ contract MU03Checks is Script, Test {
   }
 
   function swapCeloTocUSD() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(0);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(0);
 
     address trader = vm.addr(5);
     address tokenIn = celoToken;
@@ -512,28 +517,26 @@ contract MU03Checks is Script, Test {
     // Give trader some celo
     vm.deal(trader, amountIn);
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantProductSwap(exchangeID, trader, tokenIn, tokenOut, amountIn);
 
     console2.log("\tCELO -> cUSD swap successful 🚀");
   }
 
   function swapcUSDtoCelo() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(0);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(0);
 
     address trader = vm.addr(5);
     address tokenIn = cUSD;
     address tokenOut = celoToken;
     uint256 amountIn = 1e18;
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantProductSwap(exchangeID, trader, tokenIn, tokenOut, amountIn);
 
     console2.log("\tcUSD -> CELO swap successful 🚀");
   }
 
   function swapCeloTocEUR() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(1);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(1);
 
     address trader = vm.addr(5);
     address tokenIn = celoToken;
@@ -543,28 +546,26 @@ contract MU03Checks is Script, Test {
     // Give trader some celo
     vm.deal(trader, amountIn);
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantProductSwap(exchangeID, trader, tokenIn, tokenOut, amountIn);
 
     console2.log("\tCELO -> cEUR swap successful 🚀");
   }
 
   function swapcEURtoCELO() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(1);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(1);
 
     address trader = vm.addr(5);
     address tokenIn = cEUR;
     address tokenOut = celoToken;
     uint256 amountIn = 1e18;
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantProductSwap(exchangeID, trader, tokenIn, tokenOut, amountIn);
 
     console2.log("\tcEUR -> CELO swap successful 🚀");
   }
 
   function swapCeloTocBRL() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(2);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(2);
 
     address trader = vm.addr(5);
     address tokenIn = celoToken;
@@ -574,28 +575,26 @@ contract MU03Checks is Script, Test {
     // Give trader some celo
     vm.deal(trader, amountIn);
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantProductSwap(exchangeID, trader, tokenIn, tokenOut, amountIn);
 
     console2.log("\tCELO -> cBRL swap successful 🚀");
   }
 
   function swapcBrlToCELO() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(2);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(2);
 
     address trader = vm.addr(5);
     address tokenIn = cBRL;
     address tokenOut = celoToken;
     uint256 amountIn = 1e18;
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantProductSwap(exchangeID, trader, tokenIn, tokenOut, amountIn);
 
     console2.log("\tcBRL -> CELO swap successful 🚀");
   }
 
   function swapBridgedUSDCTocUSD() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(3);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(3);
 
     address trader = vm.addr(1);
     address tokenIn = bridgedUSDC;
@@ -605,31 +604,45 @@ contract MU03Checks is Script, Test {
     // Mint some USDC to trader
     deal(bridgedUSDC, trader, amountIn, true);
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantSumSwap(
+      exchangeID,
+      trader,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      cUSDUSDCConfig.referenceRateFeedID,
+      true
+    );
 
     console2.log("\tbridgedUSDC -> cUSD swap successful 🚀");
   }
 
   function swapcUSDtoBridgedUSDC() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(3);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(3);
 
     address trader = vm.addr(1);
     address tokenIn = cUSD;
     address tokenOut = bridgedUSDC;
     uint256 amountIn = 10e18;
 
-    // Fund reserve with USDC
+    // Mint some USDC to the reserve
     deal(bridgedUSDC, address(reserve), 1000e18, true);
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantSumSwap(
+      exchangeID,
+      trader,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      cUSDUSDCConfig.referenceRateFeedID,
+      false
+    );
 
     console2.log("\tcUSD -> bridgedUSDC swap successful 🚀");
   }
 
   function swapBridgedUSDCTocEUR() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(4);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(4);
 
     address trader = vm.addr(3);
     address tokenIn = bridgedUSDC;
@@ -639,28 +652,42 @@ contract MU03Checks is Script, Test {
     // Mint some USDC to trader
     deal(bridgedUSDC, trader, amountIn, true);
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantSumSwap(
+      exchangeID,
+      trader,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      cEURUSDCConfig.referenceRateFeedID,
+      true
+    );
 
     console2.log("\tbridgedUSDC -> cEUR swap successful 🚀");
   }
 
   function swapcEURtoBridgedUSDC() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(4);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(4);
 
     address trader = vm.addr(3);
     address tokenIn = cEUR;
     address tokenOut = bridgedUSDC;
     uint256 amountIn = 10e18;
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantSumSwap(
+      exchangeID,
+      trader,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      cEURUSDCConfig.referenceRateFeedID,
+      false
+    );
 
     console2.log("\tcEUR -> bridgedUSDC swap successful 🚀");
   }
 
   function swapBridgedUSDCtocBRL() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(5);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(5);
 
     address trader = vm.addr(4);
     address tokenIn = bridgedUSDC;
@@ -670,21 +697,38 @@ contract MU03Checks is Script, Test {
     // Mint some USDC to trader
     deal(bridgedUSDC, trader, amountIn, true);
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantSumSwap(
+      exchangeID,
+      trader,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      cBRLUSDCConfig.referenceRateFeedID,
+      true
+    );
 
     console2.log("\tbridgedUSDC -> cBRL swap successful 🚀");
   }
 
   function swapcBRLtoBridgedUSDC() internal {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32 exchangeID = bpm.exchangeIds(5);
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(5);
 
     address trader = vm.addr(4);
     address tokenIn = cBRL;
     address tokenOut = bridgedUSDC;
     uint256 amountIn = 10e18;
 
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn);
+    testAndPerformConstantSumSwap(
+      exchangeID,
+      trader,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      cBRLUSDCConfig.referenceRateFeedID,
+      false
+    );
+
+    // swapStableToBridgedUsdc(exchangeID, trader, tokenIn, tokenOut, amountIn, cBRLUSDCConfig.referenceRateFeedID);
 
     console2.log("\tcBRL -> bridgedUSDC swap successful 🚀");
   }
@@ -725,15 +769,82 @@ contract MU03Checks is Script, Test {
     }
   }
 
-  function doSwapIn(bytes32 exchangeID, address trader, address tokenIn, address tokenOut, uint256 amountIn) internal {
-    BiPoolManager bpm = getBiPoolManager();
+  function testAndPerformConstantProductSwap(
+    bytes32 exchangeID,
+    address trader,
+    address tokenIn,
+    address tokenOut,
+    uint256 amountIn
+  ) internal {
+    uint256 amountOut = broker.getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
+    IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeID);
+    FixidityLib.Fraction memory spreadFraction = FixidityLib.newFixedFraction(3, 100);
 
-    uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
+    FixidityLib.Fraction memory numerator;
+    FixidityLib.Fraction memory denominator;
+
+    if (tokenIn == pool.asset0) {
+      numerator = FixidityLib.newFixed(amountIn).multiply(FixidityLib.newFixed(pool.bucket1));
+      denominator = FixidityLib.newFixed(pool.bucket0).add(FixidityLib.newFixed(amountIn));
+    } else {
+      numerator = FixidityLib.newFixed(amountIn).multiply(FixidityLib.newFixed(pool.bucket0));
+      denominator = FixidityLib.newFixed(pool.bucket1).add(FixidityLib.newFixed(amountIn));
+    }
+
+    uint256 estimatedAmountOut = numerator.unwrap().div(denominator.unwrap());
+    uint256 spreadValue = FixidityLib.newFixed(estimatedAmountOut).multiply(spreadFraction).fromFixed();
+    assertApproxEqAbs(amountOut, estimatedAmountOut, spreadValue);
+
+    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn, amountOut);
+  }
+
+  function testAndPerformConstantSumSwap(
+    bytes32 exchangeID,
+    address trader,
+    address tokenIn,
+    address tokenOut,
+    uint256 amountIn,
+    address rateFeedID,
+    bool isBridgedUsdcToStable
+  ) internal {
+    uint256 amountOut = broker.getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
+    (uint256 numerator, uint256 denominator) = SortedOracles(sortedOracles).medianRate(rateFeedID);
+    FixidityLib.Fraction memory spreadFraction = FixidityLib.newFixedFraction(25, 1000);
+    uint256 estimatedAmountOut;
+
+    if (isBridgedUsdcToStable) {
+      estimatedAmountOut = FixidityLib
+        .newFixed(amountIn.mul(1e12))
+        .multiply(FixidityLib.wrap(numerator).divide(FixidityLib.wrap(denominator)))
+        .fromFixed();
+    } else {
+      estimatedAmountOut = FixidityLib
+        .newFixed(amountIn)
+        .multiply(FixidityLib.wrap(denominator).divide(FixidityLib.wrap(numerator)))
+        .fromFixed();
+      estimatedAmountOut = estimatedAmountOut.div(1e12);
+    }
+
+    uint256 spreadValue = FixidityLib.newFixed(estimatedAmountOut).multiply(spreadFraction).fromFixed();
+    assertApproxEqAbs(amountOut, estimatedAmountOut, spreadValue);
+
+    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn, amountOut);
+  }
+
+  function doSwapIn(
+    bytes32 exchangeID,
+    address trader,
+    address tokenIn,
+    address tokenOut,
+    uint256 amountIn,
+    uint256 amountOut
+  ) internal {
     uint256 beforeBuyingTokenOut = MockERC20(tokenOut).balanceOf(trader);
     uint256 beforeSellingTokenIn = MockERC20(tokenIn).balanceOf(trader);
+
     vm.startPrank(trader);
     MockERC20(tokenIn).approve(address(broker), amountIn);
-    broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+    broker.swapIn(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn, amountOut);
     assertEq(MockERC20(tokenOut).balanceOf(trader), beforeBuyingTokenOut + amountOut);
     assertEq(MockERC20(tokenIn).balanceOf(trader), beforeSellingTokenIn - amountIn);
     vm.stopPrank();
