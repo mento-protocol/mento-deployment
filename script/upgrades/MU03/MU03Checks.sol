@@ -38,8 +38,8 @@ import { MU03Config, Config } from "./Config.sol";
 /**
  * @title IBrokerWithCasts
  * @notice Interface for Broker with tuple -> struct casting
- * @dev This is used to access the internal trading limits state and
- * config as structs as opposed to tuples.
+ * @dev This is used to access the internal trading limits
+ * config as a struct as opposed to a tuple.
  */
 interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
@@ -49,10 +49,6 @@ contract MU03Checks is Script, Test {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
   using SafeMath for uint256;
-
-  BreakerBox private breakerBox;
-  Reserve private reserve;
-  IBroker private broker;
 
   address public celoToken;
   address public cUSD;
@@ -66,7 +62,10 @@ contract MU03Checks is Script, Test {
   address public sortedOracles;
   address public constantSum;
   address public constantProduct;
-  address public biPoolManagerProxy;
+  address payable biPoolManagerProxy;
+  address public reserve;
+  address public broker;
+  address public breakerBox;
 
   // Pool Configs
   Config.PoolConfiguration private cUSDCeloConfig;
@@ -90,15 +89,15 @@ contract MU03Checks is Script, Test {
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
-    reserve = Reserve(contracts.deployed("PartialReserveProxy"));
+    reserve = contracts.deployed("PartialReserveProxy");
     celoToken = contracts.celoRegistry("GoldToken");
-    broker = IBroker(contracts.celoRegistry("Broker"));
+    broker = contracts.celoRegistry("Broker");
     governance = contracts.celoRegistry("Governance");
     sortedOracles = contracts.celoRegistry("SortedOracles");
 
     // Get Deployment addresses
     bridgedUSDC = contracts.dependency("BridgedUSDC");
-    breakerBox = BreakerBox(contracts.deployed("BreakerBox"));
+    breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
     biPoolManager = contracts.deployed("BiPoolManager");
@@ -134,7 +133,7 @@ contract MU03Checks is Script, Test {
   }
 
   function verifyBiPoolManager() internal view {
-    BiPoolManagerProxy bpmProxy = BiPoolManagerProxy(contracts.deployed("BiPoolManagerProxy"));
+    BiPoolManagerProxy bpmProxy = BiPoolManagerProxy(biPoolManagerProxy);
     address bpmProxyImplementation = bpmProxy._getImplementation();
     address expectedBiPoolManager = biPoolManager;
     if (bpmProxyImplementation != expectedBiPoolManager) {
@@ -161,8 +160,7 @@ contract MU03Checks is Script, Test {
   }
 
   function verifyPoolExchange() internal view {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32[] memory exchanges = bpm.getExchangeIds();
+    bytes32[] memory exchanges = BiPoolManager(biPoolManagerProxy).getExchangeIds();
 
     // check configured pools against the config
     if (poolConfigs.length != exchanges.length) {
@@ -176,7 +174,7 @@ contract MU03Checks is Script, Test {
 
     for (uint256 i = 0; i < exchanges.length; i++) {
       bytes32 exchangeId = exchanges[i];
-      IBiPoolManager.PoolExchange memory pool = bpm.getPoolExchange(exchangeId);
+      IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeId);
 
       // verify asset0 of the deployed pool against the config
       if (pool.asset0 != poolConfigs[i].asset0) {
@@ -232,12 +230,11 @@ contract MU03Checks is Script, Test {
   }
 
   function verifyPoolConfig() internal view {
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32[] memory exchanges = bpm.getExchangeIds();
+    bytes32[] memory exchanges = BiPoolManager(biPoolManagerProxy).getExchangeIds();
 
     for (uint256 i = 0; i < exchanges.length; i++) {
       bytes32 exchangeId = exchanges[i];
-      IBiPoolManager.PoolExchange memory pool = bpm.getPoolExchange(exchangeId);
+      IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeId);
 
       if (pool.config.spread.unwrap() != poolConfigs[i].spread.unwrap()) {
         console2.log(
@@ -291,12 +288,11 @@ contract MU03Checks is Script, Test {
 
   function verifyTradingLimits() internal view {
     IBrokerWithCasts _broker = IBrokerWithCasts(address(broker));
-    BiPoolManager bpm = getBiPoolManager();
-    bytes32[] memory exchanges = bpm.getExchangeIds();
+    bytes32[] memory exchanges = BiPoolManager(biPoolManagerProxy).getExchangeIds();
 
     for (uint256 i = 0; i < exchanges.length; i++) {
       bytes32 exchangeId = exchanges[i];
-      IBiPoolManager.PoolExchange memory pool = bpm.getPoolExchange(exchangeId);
+      IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeId);
       bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(pool.asset0)));
       TradingLimits.Config memory limits = _broker.tradingLimitsConfig(limitId);
 
@@ -359,7 +355,8 @@ contract MU03Checks is Script, Test {
   function verifyBreakerBox() internal view {
     // verify that breakers were set with trading mode 3
     if (
-      breakerBox.breakerTradingMode(medianDeltaBreaker) != 3 || breakerBox.breakerTradingMode(valueDeltaBreaker) != 3
+      BreakerBox(breakerBox).breakerTradingMode(medianDeltaBreaker) != 3 ||
+      BreakerBox(breakerBox).breakerTradingMode(valueDeltaBreaker) != 3
     ) {
       console2.log("Breakers were not set with trading halted ❌");
       revert("Breakers were not set with trading halted");
@@ -367,8 +364,8 @@ contract MU03Checks is Script, Test {
     console2.log("\tBreakers set with trading mode 3");
 
     // verify that rate feed dependencies were configured correctly
-    address cEurDependency = breakerBox.rateFeedDependencies(cEURUSDCConfig.referenceRateFeedID, 0);
-    address cBrlDependency = breakerBox.rateFeedDependencies(cBRLUSDCConfig.referenceRateFeedID, 0);
+    address cEurDependency = BreakerBox(breakerBox).rateFeedDependencies(cEURUSDCConfig.referenceRateFeedID, 0);
+    address cBrlDependency = BreakerBox(breakerBox).rateFeedDependencies(cBRLUSDCConfig.referenceRateFeedID, 0);
     require(cEurDependency == cUSDUSDCConfig.referenceRateFeedID, "cEUR/USDC dependency not set correctly");
     require(cBrlDependency == cUSDUSDCConfig.referenceRateFeedID, "cBRL/USDC dependency not set correctly");
     console2.log("\tRate feed dependencies configured correctly 🗳️");
@@ -376,14 +373,20 @@ contract MU03Checks is Script, Test {
     // verify that MedianDeltaBreaker && ValueDeltaBreaker were enabled for rateFeeds
     for (uint256 i = 0; i < poolConfigs.length; i++) {
       if (poolConfigs[i].isMedianDeltaBreakerEnabled) {
-        bool medianDeltaEnabled = breakerBox.isBreakerEnabled(medianDeltaBreaker, poolConfigs[i].referenceRateFeedID);
+        bool medianDeltaEnabled = BreakerBox(breakerBox).isBreakerEnabled(
+          medianDeltaBreaker,
+          poolConfigs[i].referenceRateFeedID
+        );
         if (!medianDeltaEnabled) {
           console2.log("MedianDeltaBreaker not enabled for rate feed %s", poolConfigs[i].referenceRateFeedID);
           revert("MedianDeltaBreaker not enabled for all rate feeds");
         }
 
         if (poolConfigs[i].isValueDeltaBreakerEnabled) {
-          bool valueDeltaEnabled = breakerBox.isBreakerEnabled(valueDeltaBreaker, poolConfigs[i].referenceRateFeedID);
+          bool valueDeltaEnabled = BreakerBox(breakerBox).isBreakerEnabled(
+            valueDeltaBreaker,
+            poolConfigs[i].referenceRateFeedID
+          );
           if (!valueDeltaEnabled) {
             console2.log("ValueDeltaBreaker not enabled for rate feed %s", poolConfigs[i].referenceRateFeedID);
             revert("ValueDeltaBreaker not enabled for all rate feeds");
@@ -394,7 +397,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tBreakers enabled for all rate feeds 🗳️");
 
     // verify that breakerBox address was updated in SortedOracles
-    if (breakerBox != SortedOracles(sortedOracles).breakerBox()) {
+    if (BreakerBox(breakerBox) != SortedOracles(sortedOracles).breakerBox()) {
       revert("BreakerBox address not updated in SortedOracles");
     }
     console2.log("\tBreakerBox address updated in SortedOracles 🗳️");
@@ -626,7 +629,7 @@ contract MU03Checks is Script, Test {
     uint256 amountIn = 10e18;
 
     // Mint some USDC to the reserve
-    deal(bridgedUSDC, address(reserve), 1000e18, true);
+    deal(bridgedUSDC, reserve, 1000e18, true);
 
     testAndPerformConstantSumSwap(
       exchangeID,
@@ -774,7 +777,7 @@ contract MU03Checks is Script, Test {
     address tokenOut,
     uint256 amountIn
   ) internal {
-    uint256 amountOut = broker.getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
+    uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
     IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeID);
     FixidityLib.Fraction memory spreadFraction = FixidityLib.newFixedFraction(3, 100);
 
@@ -805,7 +808,7 @@ contract MU03Checks is Script, Test {
     address rateFeedID,
     bool isBridgedUsdcToStable
   ) internal {
-    uint256 amountOut = broker.getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
+    uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
     (uint256 numerator, uint256 denominator) = SortedOracles(sortedOracles).medianRate(rateFeedID);
     FixidityLib.Fraction memory spreadFraction = FixidityLib.newFixedFraction(25, 1000);
     uint256 estimatedAmountOut;
@@ -837,14 +840,14 @@ contract MU03Checks is Script, Test {
     uint256 amountIn,
     uint256 amountOut
   ) internal {
-    uint256 beforeBuyingTokenOut = MockERC20(tokenOut).balanceOf(trader);
-    uint256 beforeSellingTokenIn = MockERC20(tokenIn).balanceOf(trader);
+    uint256 beforeBuyingTokenOut = IERC20(tokenOut).balanceOf(trader);
+    uint256 beforeSellingTokenIn = IERC20(tokenIn).balanceOf(trader);
 
     vm.startPrank(trader);
-    MockERC20(tokenIn).approve(address(broker), amountIn);
-    broker.swapIn(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn, amountOut);
-    assertEq(MockERC20(tokenOut).balanceOf(trader), beforeBuyingTokenOut + amountOut);
-    assertEq(MockERC20(tokenIn).balanceOf(trader), beforeSellingTokenIn - amountIn);
+    IERC20(tokenIn).approve(address(broker), amountIn);
+    Broker(broker).swapIn(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+    assertEq(IERC20(tokenOut).balanceOf(trader), beforeBuyingTokenOut + amountOut);
+    assertEq(IERC20(tokenIn).balanceOf(trader), beforeSellingTokenIn - amountIn);
     vm.stopPrank();
   }
 
@@ -864,9 +867,5 @@ contract MU03Checks is Script, Test {
     poolConfigs.push(cUSDUSDCConfig);
     poolConfigs.push(cEURUSDCConfig);
     poolConfigs.push(cBRLUSDCConfig);
-  }
-
-  function getBiPoolManager() internal view returns (BiPoolManager) {
-    return BiPoolManager(broker.getExchangeProviders()[0]);
   }
 }
