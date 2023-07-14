@@ -777,7 +777,6 @@ contract MU03Checks is Script, Test {
   ) internal {
     uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
     IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeID);
-    FixidityLib.Fraction memory spreadFraction = FixidityLib.newFixedFraction(3, 100);
 
     FixidityLib.Fraction memory numerator;
     FixidityLib.Fraction memory denominator;
@@ -791,8 +790,10 @@ contract MU03Checks is Script, Test {
     }
 
     uint256 estimatedAmountOut = numerator.unwrap().div(denominator.unwrap());
-    uint256 spreadValue = FixidityLib.newFixed(estimatedAmountOut).multiply(spreadFraction).fromFixed();
-    assertApproxEqAbs(amountOut, estimatedAmountOut, spreadValue);
+
+    FixidityLib.Fraction memory maxTolerance = FixidityLib.newFixedFraction(25, 10000);
+    uint256 threshold = FixidityLib.newFixed(estimatedAmountOut).multiply(maxTolerance).fromFixed();
+    assertApproxEqAbs(amountOut, estimatedAmountOut, threshold);
 
     doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn, amountOut);
   }
@@ -808,7 +809,6 @@ contract MU03Checks is Script, Test {
   ) internal {
     uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
     (uint256 numerator, uint256 denominator) = SortedOracles(sortedOracles).medianRate(rateFeedID);
-    FixidityLib.Fraction memory spreadFraction = FixidityLib.newFixedFraction(25, 1000);
     uint256 estimatedAmountOut;
 
     if (isBridgedUsdcToStable) {
@@ -824,8 +824,9 @@ contract MU03Checks is Script, Test {
       estimatedAmountOut = estimatedAmountOut.div(1e12);
     }
 
-    uint256 spreadValue = FixidityLib.newFixed(estimatedAmountOut).multiply(spreadFraction).fromFixed();
-    assertApproxEqAbs(amountOut, estimatedAmountOut, spreadValue);
+    FixidityLib.Fraction memory maxTolerance = FixidityLib.newFixedFraction(25, 1000);
+    uint256 threshold = FixidityLib.newFixed(estimatedAmountOut).multiply(maxTolerance).fromFixed();
+    assertApproxEqAbs(amountOut, estimatedAmountOut, threshold);
 
     doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn, amountOut);
   }
