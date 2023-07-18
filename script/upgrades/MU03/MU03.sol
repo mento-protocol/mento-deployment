@@ -53,7 +53,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
 
-  bool public hasChecks = false;
+  bool public hasChecks = true;
 
   function prepare() public {
     loadDeployedContracts();
@@ -123,7 +123,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     proposal_updateBiPoolManagerImplementation(config);
     proposal_createExchanges(config);
     proposal_configureTradingLimits(config);
-    proposal_configureV1Exchanges(config);
+    proposal_scaleDownReserveFraction(config);
     proposal_configureBreakerBox(config);
     proposal_configureMedianDeltaBreaker0(config);
     proposal_configureValueDeltaBreaker0(config);
@@ -221,7 +221,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the Mento V1 Exchanges.
    */
-  function proposal_configureV1Exchanges(MU03Config.MU03 memory config) public {
+  function proposal_scaleDownReserveFraction(MU03Config.MU03 memory config) public {
     address[] memory exchangesV1 = Arrays.addresses(
       contracts.celoRegistry("Exchange"),
       contracts.celoRegistry("ExchangeBRL"),

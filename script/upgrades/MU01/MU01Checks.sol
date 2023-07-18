@@ -31,8 +31,6 @@ import { TradingLimits } from "mento-core-2.0.0/common/TradingLimits.sol";
  * config as structs as opposed to tuples.
  */
 interface IBrokerWithCasts {
-  function tradingLimitsState(bytes32 id) external view returns (TradingLimits.State memory);
-
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
