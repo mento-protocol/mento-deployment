@@ -331,8 +331,8 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
           )
         );
       }
-      // Enable Value Delta Breaker for rate feeds
 
+      // Enable Value Delta Breaker for rate feeds
       if (rateFeed.valueDeltaBreaker0.enabled) {
         transactions.push(
           ICeloGovernance.Transaction(
@@ -424,6 +424,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_configureValueDeltaBreaker0(MU03Config.MU03 memory config) public {
+    // Set reference value for cUSD/USDC pool
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -436,7 +437,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       )
     );
 
-    // Set the cooldown times
+    // Set the cooldown time for cUSD/USDC pool
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -449,13 +450,13 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       )
     );
 
-    // Set the rate change thresholds
+    // Set the rate change threshold for cUSD/USDC pool
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
-          ValueDeltaBreaker(0).setReferenceValues.selector,
+          ValueDeltaBreaker(0).setRateChangeThresholds.selector,
           Arrays.addresses(config.USDCUSD.rateFeedID),
           Arrays.uints(config.USDCUSD.valueDeltaBreaker0.threshold.unwrap())
         )
