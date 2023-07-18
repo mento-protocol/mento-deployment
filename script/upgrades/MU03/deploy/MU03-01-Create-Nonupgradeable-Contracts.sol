@@ -53,7 +53,7 @@ contract MU03_CreateNonupgradeableContracts is Script {
     console2.log("BreakerBox(%s) ownership transferred to %s", address(breakerBox), governance);
     console2.log("MedianDeltaBreaker deployed at: ", address(medianDeltaBreaker));
     console2.log("MedianDeltaBreaker(%s) ownership transferred to %s", address(medianDeltaBreaker), governance);
-    console2.log("ConstantSumPricingModule(%s) deployed at %s", address(constantSumPriceModule));
+    console2.log("ConstantSumPricingModule deployed at %s", address(constantSumPriceModule));
     console2.log("----------");
   }
 }
