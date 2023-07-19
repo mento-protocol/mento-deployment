@@ -17,6 +17,7 @@ import { IBroker } from "mento-core-2.2.0/interfaces/IBroker.sol";
 import { IERC20Metadata } from "mento-core-2.2.0/common/interfaces/IERC20Metadata.sol";
 
 import { BiPoolManagerProxy } from "mento-core-2.2.0/proxies/BiPoolManagerProxy.sol";
+import { SortedOraclesProxy } from "mento-core-2.0.0/proxies/SortedOraclesProxy.sol";
 import { Broker } from "mento-core-2.2.0/swap/Broker.sol";
 import { BiPoolManager } from "mento-core-2.2.0/swap/BiPoolManager.sol";
 import { Exchange } from "mento-core-2.2.0/legacy/Exchange.sol";
@@ -57,7 +58,7 @@ contract MU03Checks is Script, Test {
   address public medianDeltaBreaker;
   address public valueDeltaBreaker;
   address public biPoolManager;
-  address public sortedOraclesProxy;
+  address payable sortedOraclesProxy;
   address public sortedOracles;
   address public constantSum;
   address public constantProduct;
@@ -83,7 +84,7 @@ contract MU03Checks is Script, Test {
     celoToken = contracts.celoRegistry("GoldToken");
     broker = contracts.celoRegistry("Broker");
     governance = contracts.celoRegistry("Governance");
-    sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
+    sortedOraclesProxy = address(uint160(contracts.celoRegistry("SortedOracles")));
 
     // Get Deployment addresses
     bridgedUSDC = contracts.dependency("BridgedUSDC");
@@ -102,6 +103,7 @@ contract MU03Checks is Script, Test {
 
     verifyOwner();
     verifyBiPoolManager();
+    verifySortedOracles();
     verifyExchanges();
     verifyCircuitBreaker();
 
@@ -138,6 +140,21 @@ contract MU03Checks is Script, Test {
       revert("Deployed BiPoolManager does not match what proxy points to. See logs.");
     }
     console2.log("\tBiPoolManagerProxy has a correct implementation address 🫡");
+  }
+
+  function verifySortedOracles() internal view {
+    SortedOraclesProxy soProxy = SortedOraclesProxy(sortedOraclesProxy);
+    address sortedOraclesImplementation = soProxy._getImplementation();
+    address expectedSortedOracles = sortedOracles;
+    if (sortedOraclesImplementation != expectedSortedOracles) {
+      console2.log(
+        "The address of SortedOracles from SortedOraclesProxy: %s does not match the deployed address: %s.",
+        sortedOraclesImplementation,
+        expectedSortedOracles
+      );
+      revert("Deployed SortedOracles does not match what proxy points to. See logs.");
+    }
+    console2.log("\tSortedOraclesProxy has a correct implementation address 🫡");
   }
 
   /* ================================================================ */
