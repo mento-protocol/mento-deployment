@@ -360,10 +360,13 @@ contract MU03Checks is Script, Test {
     console2.log("\tBreakers set with trading mode 3");
 
     // verify that rate feed dependencies were configured correctly
-    address cEurDependency = BreakerBox(breakerBox).rateFeedDependencies(config.cEURUSDC.referenceRateFeedID, 0);
-    address cBrlDependency = BreakerBox(breakerBox).rateFeedDependencies(config.cBRLUSDC.referenceRateFeedID, 0);
-    require(cEurDependency == config.cUSDUSDC.referenceRateFeedID, "cEUR/USDC dependency not set correctly");
-    require(cBrlDependency == config.cUSDUSDC.referenceRateFeedID, "cBRL/USDC dependency not set correctly");
+    address USDCEURDependency0 = BreakerBox(breakerBox).rateFeedDependencies(config.USDCEUR.rateFeedID, 0);
+    address USDCBRLDependency0 = BreakerBox(breakerBox).rateFeedDependencies(config.USDCBRL.rateFeedID, 0);
+    require(
+      USDCEURDependency0 == config.cUSDUSDC.referenceRateFeedID,
+      "USDC/EUR rate feed dependency not set correctly"
+    );
+    require(USDCBRLDependency0 == config.cUSDUSDC.referenceRateFeedID, "USDC/BRL dependency not set correctly");
     console2.log("\tRate feed dependencies configured correctly 🗳️");
 
     // verify that MedianDeltaBreaker && ValueDeltaBreaker were enabled for rateFeeds
@@ -418,8 +421,11 @@ contract MU03Checks is Script, Test {
 
         // verify smoothing factor
         if (smoothingFactor != rateFeed.medianDeltaBreaker0.smoothingFactor) {
-          console2.log("MedianDeltaBreaker smoothing factor not set correctly for cUSD/USDC %s", rateFeed.rateFeedID);
-          revert("MedianDeltaBreaker smoothing factor not set correctly for cUSD/USDC");
+          console2.log(
+            "MedianDeltaBreaker smoothing factor not set correctly for the rate feed: %s",
+            rateFeed.rateFeedID
+          );
+          revert("MedianDeltaBreaker smoothing factor not set correctly for all rate feeds");
         }
       }
     }
@@ -444,8 +450,11 @@ contract MU03Checks is Script, Test {
     );
 
     if (referenceValue != config.USDCUSD.valueDeltaBreaker0.referenceValue) {
-      console2.log("ValueDeltaBreaker reference value not set correctly for cUSD/USDC %s", config.USDCUSD.rateFeedID);
-      revert("ValueDeltaBreaker reference value not set correctly for all rate feeds");
+      console2.log(
+        "ValueDeltaBreaker reference value not set correctly for USDC/USD rate feed %s",
+        config.USDCUSD.rateFeedID
+      );
+      revert("ValueDeltaBreaker reference value not set correctly for USDC/USD rate feed");
     }
     console2.log("\tValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒");
   }
@@ -710,8 +719,8 @@ contract MU03Checks is Script, Test {
   ) internal view {
     if (currentThreshold != expectedThreshold) {
       if (isValueDeltaBreaker) {
-        console2.log("ValueDeltaBreaker rate change threshold not set correctly for cUSD/USDC %s", rateFeedID);
-        revert("ValueDeltaBreaker rate change threshold not set correctly for all cUSD/USDC");
+        console2.log("ValueDeltaBreaker rate change threshold not set correctly for USDC/USD rate feed %s", rateFeedID);
+        revert("ValueDeltaBreaker rate change threshold not set correctly for USDC/USD rate feed");
       }
       console2.log("MedianDeltaBreaker rate change threshold not set correctly for rate feed %s", rateFeedID);
       revert("MedianDeltaBreaker rate change threshold not set correctly for all rate feeds");
@@ -726,8 +735,8 @@ contract MU03Checks is Script, Test {
   ) internal view {
     if (currentCoolDown != expectedCoolDown) {
       if (isValueDeltaBreaker) {
-        console2.log("ValueDeltaBreaker cooldown not set correctly for cUSD/USDC %s", rateFeedID);
-        revert("ValueDeltaBreaker cooldown not set correctly for cUSD/USDC");
+        console2.log("ValueDeltaBreaker cooldown not set correctly for USDC/USD rate feed %s", rateFeedID);
+        revert("ValueDeltaBreaker cooldown not set correctly for USDC/USD rate feed");
       }
       console2.log("MedianDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);
       revert("MedianDeltaBreaker cooldown not set correctly for all rate feeds");
