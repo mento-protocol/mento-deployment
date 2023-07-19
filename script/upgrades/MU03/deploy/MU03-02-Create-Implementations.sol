@@ -22,7 +22,7 @@ contract MU03_CreateImplementations is Script {
       // Deploy BiPoolManager implementation
       biPoolManager = address(new BiPoolManager(false));
       BiPoolManager(biPoolManager).transferOwnership(governance);
-      
+
       // Deploy SortedOracles implementation
       sortedOracles = address(new SortedOracles(false));
       SortedOracles(sortedOracles).transferOwnership(governance);

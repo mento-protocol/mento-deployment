@@ -118,7 +118,10 @@ contract MU03Checks is Script, Test {
       MedianDeltaBreaker(medianDeltaBreaker).owner() == governance,
       "MedianDeltaBreaker ownership not transferred to governance"
     );
-    require(SortedOracles(sortedOracles).owner() == governance, "SortedOracles ownership not transferred to governance");
+    require(
+      SortedOracles(sortedOracles).owner() == governance,
+      "SortedOracles ownership not transferred to governance"
+    );
     console2.log("Contract ownerships transferred to governance 🤝");
   }
 
