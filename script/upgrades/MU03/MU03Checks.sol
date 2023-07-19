@@ -57,6 +57,7 @@ contract MU03Checks is Script, Test {
   address public medianDeltaBreaker;
   address public valueDeltaBreaker;
   address public biPoolManager;
+  address public sortedOraclesProxy;
   address public sortedOracles;
   address public constantSum;
   address public constantProduct;
@@ -82,7 +83,7 @@ contract MU03Checks is Script, Test {
     celoToken = contracts.celoRegistry("GoldToken");
     broker = contracts.celoRegistry("Broker");
     governance = contracts.celoRegistry("Governance");
-    sortedOracles = contracts.celoRegistry("SortedOracles");
+    sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
 
     // Get Deployment addresses
     bridgedUSDC = contracts.dependency("BridgedUSDC");
@@ -93,6 +94,7 @@ contract MU03Checks is Script, Test {
     constantSum = contracts.deployed("ConstantSumPricingModule");
     constantProduct = contracts.deployed("ConstantProductPricingModule");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
+    sortedOracles = contracts.deployed("SortedOracles");
   }
 
   function run() public {
@@ -116,6 +118,7 @@ contract MU03Checks is Script, Test {
       MedianDeltaBreaker(medianDeltaBreaker).owner() == governance,
       "MedianDeltaBreaker ownership not transferred to governance"
     );
+    require(SortedOracles(sortedOracles).owner() == governance, "SortedOracles ownership not transferred to governance");
     console2.log("Contract ownerships transferred to governance 🤝");
   }
 
@@ -389,7 +392,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tBreakers enabled for all rate feeds 🗳️");
 
     // verify that breakerBox address was updated in SortedOracles
-    if (BreakerBox(breakerBox) != SortedOracles(sortedOracles).breakerBox()) {
+    if (BreakerBox(breakerBox) != SortedOracles(sortedOraclesProxy).breakerBox()) {
       revert("BreakerBox address not updated in SortedOracles");
     }
     console2.log("\tBreakerBox address updated in SortedOracles 🗳️");
@@ -774,7 +777,7 @@ contract MU03Checks is Script, Test {
     bool isBridgedUsdcToStable
   ) internal {
     uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
-    (uint256 numerator, uint256 denominator) = SortedOracles(sortedOracles).medianRate(rateFeedID);
+    (uint256 numerator, uint256 denominator) = SortedOracles(sortedOraclesProxy).medianRate(rateFeedID);
     uint256 estimatedAmountOut;
 
     if (isBridgedUsdcToStable) {
