@@ -17,7 +17,6 @@ import { IBroker } from "mento-core-2.2.0/interfaces/IBroker.sol";
 import { IERC20Metadata } from "mento-core-2.2.0/common/interfaces/IERC20Metadata.sol";
 
 import { BiPoolManagerProxy } from "mento-core-2.2.0/proxies/BiPoolManagerProxy.sol";
-import { SortedOraclesProxy } from "mento-core-2.0.0/proxies/SortedOraclesProxy.sol";
 import { Broker } from "mento-core-2.2.0/swap/Broker.sol";
 import { BiPoolManager } from "mento-core-2.2.0/swap/BiPoolManager.sol";
 import { Exchange } from "mento-core-2.2.0/legacy/Exchange.sol";
@@ -29,6 +28,7 @@ import { MedianDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/MedianDelt
 import { ValueDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/ValueDeltaBreaker.sol";
 import { ConstantSumPricingModule } from "mento-core-2.2.0/swap/ConstantSumPricingModule.sol";
 import { SafeMath } from "celo-foundry/test/SafeMath.sol";
+import { Proxy } from "mento-core-2.2.0/common/Proxy.sol";
 
 import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
 
@@ -143,8 +143,7 @@ contract MU03Checks is Script, Test {
   }
 
   function verifySortedOracles() internal view {
-    SortedOraclesProxy soProxy = SortedOraclesProxy(sortedOraclesProxy);
-    address sortedOraclesImplementation = soProxy._getImplementation();
+    address sortedOraclesImplementation = Proxy(sortedOraclesProxy)._getImplementation();
     address expectedSortedOracles = sortedOracles;
     if (sortedOraclesImplementation != expectedSortedOracles) {
       console2.log(
