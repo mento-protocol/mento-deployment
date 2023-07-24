@@ -49,6 +49,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   address private medianDeltaBreaker;
   address private valueDeltaBreaker;
   address private biPoolManagerProxyAddress;
+  address private sortedOraclesProxy;
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
@@ -84,6 +85,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
     biPoolManagerProxyAddress = contracts.deployed("BiPoolManagerProxy");
+    sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
   }
 
   /**
@@ -121,6 +123,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     MU03Config.MU03 memory config = MU03Config.get(contracts);
 
     proposal_updateBiPoolManagerImplementation(config);
+    proposal_updateSortedOraclesImplementation(config);
     proposal_createExchanges(config);
     proposal_configureTradingLimits(config);
     proposal_scaleDownReserveFraction(config);
@@ -254,6 +257,16 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     );
   }
 
+  function proposal_updateSortedOraclesImplementation(MU03Config.MU03 memory config) public {
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        sortedOraclesProxy,
+        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("SortedOracles"))
+      )
+    );
+  }
+
   function proposal_configureBreakerBox(MU03Config.MU03 memory config) public {
     // Add the rate feeds to breaker box
     transactions.push(
@@ -353,7 +366,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
-        contracts.celoRegistry("SortedOracles"),
+        sortedOraclesProxy,
         abi.encodeWithSelector(SortedOracles(0).setBreakerBox.selector, breakerBox)
       )
     );

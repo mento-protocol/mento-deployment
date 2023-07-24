@@ -28,6 +28,7 @@ import { MedianDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/MedianDelt
 import { ValueDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/ValueDeltaBreaker.sol";
 import { ConstantSumPricingModule } from "mento-core-2.2.0/swap/ConstantSumPricingModule.sol";
 import { SafeMath } from "celo-foundry/test/SafeMath.sol";
+import { Proxy } from "mento-core-2.2.0/common/Proxy.sol";
 
 import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
 
@@ -57,6 +58,7 @@ contract MU03Checks is Script, Test {
   address public medianDeltaBreaker;
   address public valueDeltaBreaker;
   address public biPoolManager;
+  address payable sortedOraclesProxy;
   address public sortedOracles;
   address public constantSum;
   address public constantProduct;
@@ -82,7 +84,7 @@ contract MU03Checks is Script, Test {
     celoToken = contracts.celoRegistry("GoldToken");
     broker = contracts.celoRegistry("Broker");
     governance = contracts.celoRegistry("Governance");
-    sortedOracles = contracts.celoRegistry("SortedOracles");
+    sortedOraclesProxy = address(uint160(contracts.celoRegistry("SortedOracles")));
 
     // Get Deployment addresses
     bridgedUSDC = contracts.dependency("BridgedUSDC");
@@ -93,6 +95,7 @@ contract MU03Checks is Script, Test {
     constantSum = contracts.deployed("ConstantSumPricingModule");
     constantProduct = contracts.deployed("ConstantProductPricingModule");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
+    sortedOracles = contracts.deployed("SortedOracles");
   }
 
   function run() public {
@@ -100,6 +103,7 @@ contract MU03Checks is Script, Test {
 
     verifyOwner();
     verifyBiPoolManager();
+    verifySortedOracles();
     verifyExchanges();
     verifyCircuitBreaker();
 
@@ -115,6 +119,10 @@ contract MU03Checks is Script, Test {
     require(
       MedianDeltaBreaker(medianDeltaBreaker).owner() == governance,
       "MedianDeltaBreaker ownership not transferred to governance"
+    );
+    require(
+      SortedOracles(sortedOracles).owner() == governance,
+      "SortedOracles ownership not transferred to governance"
     );
     console2.log("Contract ownerships transferred to governance 🤝");
   }
@@ -132,6 +140,20 @@ contract MU03Checks is Script, Test {
       revert("Deployed BiPoolManager does not match what proxy points to. See logs.");
     }
     console2.log("\tBiPoolManagerProxy has a correct implementation address 🫡");
+  }
+
+  function verifySortedOracles() internal view {
+    address sortedOraclesImplementation = Proxy(sortedOraclesProxy)._getImplementation();
+    address expectedSortedOracles = sortedOracles;
+    if (sortedOraclesImplementation != expectedSortedOracles) {
+      console2.log(
+        "The address of SortedOracles from SortedOraclesProxy: %s does not match the deployed address: %s.",
+        sortedOraclesImplementation,
+        expectedSortedOracles
+      );
+      revert("Deployed SortedOracles does not match what proxy points to. See logs.");
+    }
+    console2.log("\tSortedOraclesProxy has a correct implementation address 🫡");
   }
 
   /* ================================================================ */
@@ -392,7 +414,7 @@ contract MU03Checks is Script, Test {
     console2.log("\tBreakers enabled for all rate feeds 🗳️");
 
     // verify that breakerBox address was updated in SortedOracles
-    if (BreakerBox(breakerBox) != SortedOracles(sortedOracles).breakerBox()) {
+    if (BreakerBox(breakerBox) != SortedOracles(sortedOraclesProxy).breakerBox()) {
       revert("BreakerBox address not updated in SortedOracles");
     }
     console2.log("\tBreakerBox address updated in SortedOracles 🗳️");
@@ -783,7 +805,7 @@ contract MU03Checks is Script, Test {
     bool isBridgedUsdcToStable
   ) internal {
     uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
-    (uint256 numerator, uint256 denominator) = SortedOracles(sortedOracles).medianRate(rateFeedID);
+    (uint256 numerator, uint256 denominator) = SortedOracles(sortedOraclesProxy).medianRate(rateFeedID);
     uint256 estimatedAmountOut;
 
     if (isBridgedUsdcToStable) {
