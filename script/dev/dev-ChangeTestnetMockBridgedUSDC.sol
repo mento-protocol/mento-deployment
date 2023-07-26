@@ -35,7 +35,7 @@ contract ChangeTestnetMockBridgedUSDC is GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  Config.PoolConfiguration private cUSDUSDCConfig;
+  Config.Pool private cUSDUSDCConfig;
   bytes32 private cUSDUSDCExchangeId;
 
   address private bridgedUSDC;
@@ -62,7 +62,7 @@ contract ChangeTestnetMockBridgedUSDC is GovernanceScript {
     bridgedUSDC = contracts.dependency("BridgedUSDC");
 
     // set up cUSD/USDC configs
-    cUSDUSDCConfig = MU01Config.cUSDUSDCConfig(contracts);
+    cUSDUSDCConfig = MU01Config.cUSDUSDC_PoolConfig(contracts);
     cUSDUSDCExchangeId = getExchangeId(cUSDUSDCConfig.asset0, cUSDUSDCConfig.asset1, true);
   }
 
@@ -156,12 +156,12 @@ contract ChangeTestnetMockBridgedUSDC is GovernanceScript {
           cUSDUSDCExchangeId,
           cUSDUSDCConfig.asset0,
           TradingLimits.Config({
-            timestep0: cUSDUSDCConfig.asset0_timeStep0,
-            timestep1: cUSDUSDCConfig.asset0_timeStep1,
-            limit0: cUSDUSDCConfig.asset0_limit0,
-            limit1: cUSDUSDCConfig.asset0_limit1,
-            limitGlobal: cUSDUSDCConfig.asset0_limitGlobal,
-            flags: cUSDUSDCConfig.asset0_flags
+            timestep0: cUSDUSDCConfig.asset0limits.timeStep0,
+            timestep1: cUSDUSDCConfig.asset0limits.timeStep1,
+            limit0: cUSDUSDCConfig.asset0limits.limit0,
+            limit1: cUSDUSDCConfig.asset0limits.limit1,
+            limitGlobal: cUSDUSDCConfig.asset0limits.limitGlobal,
+            flags: Config.tradingLimitConfigToFlag(cUSDUSDCConfig.asset0limits)
           })
         )
       )

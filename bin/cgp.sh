@@ -42,7 +42,7 @@ if [ "$SIMULATE" = true ] ; then
 else 
     echo "🔥 Submitting $UPGRADE"
     confirm_if_celo "$NETWORK"
-    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy ${UPGRADE}
+    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast ${UPGRADE}
 fi
 
 
