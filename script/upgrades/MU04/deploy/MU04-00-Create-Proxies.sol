@@ -12,16 +12,19 @@ import { StableTokenXOFProxy } from "mento-core-2.2.0/legacy/proxies/StableToken
 */
 contract MU04_CreateProxies is Script {
   function run() public {
-    address stableTokenXOFProxy;
+    address payable stableTokenXOFProxy;
+    address governance = contracts.celoRegistry("Governance");
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       stableTokenXOFProxy = address(new StableTokenXOFProxy());
+      StableTokenXOFProxy(stableTokenXOFProxy)._transferOwnership(governance);
     }
     vm.stopBroadcast();
 
     console2.log("----------");
     console2.log("StableTokenXOFProxy deployed at: ", stableTokenXOFProxy);
+    console2.log("StableTokenXOFProxy(%s) ownership transferred to %s", stableTokenXOFProxy, governance);
     console2.log("----------");
   }
 }
