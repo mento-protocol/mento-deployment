@@ -13,16 +13,19 @@ import { StableTokenXOF } from "mento-core-2.2.0/legacy/StableTokenXOF.sol";
 contract MU01_CreateImplementations is Script {
   function run() public {
     address stableTokenXOF;
+    address governance = contracts.celoRegistry("Governance");
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       // New implementations
       stableTokenXOF = address(new StableTokenXOF(false));
+      StableTokenXOF(stableTokenXOF).transferOwnership(governance);
     }
     vm.stopBroadcast();
 
     console2.log("----------");
     console2.log("StableTokenXOF deployed at: ", stableTokenXOF);
+    console2.log("StableTokenXOF(%s) ownership transferred to %s", stableTokenXOF, governance);
     console2.log("----------");
   }
 }
