@@ -17,7 +17,6 @@ contract MU01_CreateImplementations is Script {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      // New implementations
       stableTokenXOF = address(new StableTokenXOF(false));
       StableTokenXOF(stableTokenXOF).transferOwnership(governance);
     }
