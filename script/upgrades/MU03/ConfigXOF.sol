@@ -142,11 +142,10 @@ library MU03Config {
 
   function EUROCXOF_RateFeedConfig(Contracts.Cache storage contracts) internal returns (Config.RateFeed memory config) {
     config.rateFeedID = contracts.dependency("USDCEURRateFeedAddr");
-    config.valueDeltaBreaker0 = Config.MedianDeltaBreaker({
+    config.valueDeltaBreaker0 = Config.valueDeltaBreaker({
       enabled: true,
       threshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
       cooldown: 15 minutes,
-      smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap()
     });
     config.valueDeltaBreaker1 = Config.ValueDeltaBreaker({
       enabled: true,
