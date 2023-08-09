@@ -88,6 +88,10 @@ library Config {
      */
     ValueDeltaBreaker valueDeltaBreaker0;
     /**
+     * @dev List of Value Delta RateFeed Configurations for the rate feed.
+     */
+    ValueDeltaBreaker valueDeltaBreaker1;
+    /**
      * @dev List of dependent rate feeds.
      */
     address[] dependentRateFeeds;
@@ -225,6 +229,45 @@ library Config {
      * @dev The % of each collateral asset that can be spent per day by spenders (in fixidity format)
      */
     uint256[] collateralAssetDailySpendingRatios;
+  }
+
+  struct StableToken {
+    /**
+     * @dev The name of the stable token.
+     */
+    string name;
+    /**
+     * @dev The symbol of the stable token.
+     */
+    string symbol;
+    /**
+     * @dev The number of decimal places for the stable token.
+     */
+    uint8 decimals;
+    /**
+     * @dev The address of the celo registry
+     */
+    address registryAddress;
+    /**
+     * @dev the inflation rate ... TODO.
+     */
+    uint256 inflationRate;
+    /**
+     * @dev TODO
+     */
+    uint256 inflationFactorUpdatePeriod;
+    /**
+     * @dev
+     */
+    address[] initialBalanceAddresses;
+    /**
+     * @dev
+     */
+    uint256[] initialBalanceValues;
+    /**
+     * @dev
+     */
+    string exchangeIdentifier;
   }
 
   /**

@@ -17,4 +17,6 @@ interface ICeloGovernance {
     uint256[] calldata dataLengths,
     string calldata descriptionUrl
   ) external payable returns (uint256);
+
+  function setConstitution(address destination, bytes4 functionId, uint256 threshold) external;
 }
