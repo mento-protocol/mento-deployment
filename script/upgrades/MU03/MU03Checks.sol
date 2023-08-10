@@ -54,18 +54,21 @@ contract MU03Checks is Script, Test {
   address public cEUR;
   address public cBRL;
   address public bridgedUSDC;
+  address public bridgedEUROC;
+
   address public governance;
   address public medianDeltaBreaker;
   address public valueDeltaBreaker;
   address public biPoolManager;
-  address payable sortedOraclesProxy;
   address public sortedOracles;
   address public constantSum;
   address public constantProduct;
-  address payable biPoolManagerProxy;
   address public reserve;
   address public broker;
   address public breakerBox;
+
+  address payable public sortedOraclesProxy;
+  address payable public biPoolManagerProxy;
 
   function setUp() public {
     new PrecompileHandler(); // needed for reserve CELO transfer checks
@@ -88,6 +91,7 @@ contract MU03Checks is Script, Test {
 
     // Get Deployment addresses
     bridgedUSDC = contracts.dependency("BridgedUSDC");
+    bridgedEUROC = contracts.dependency("BridgedEUROC");
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
@@ -102,6 +106,7 @@ contract MU03Checks is Script, Test {
     setUp();
 
     verifyOwner();
+    verifyEUROCSetUp();
     verifyBiPoolManager();
     verifySortedOracles();
     verifyExchanges();
@@ -125,6 +130,16 @@ contract MU03Checks is Script, Test {
       "SortedOracles ownership not transferred to governance"
     );
     console2.log("Contract ownerships transferred to governance 🤝");
+  }
+
+  function verifyEUROCSetUp() internal view {
+    Reserve partialReserve = Reserve(address(uint160(contracts.celoRegistry("PartialReserve"))));
+    if (partialReserve.checkIsCollateralAsset(bridgedEUROC)) {
+      console2.log("EUROC is a collateral asset 🏦");
+    } else {
+      console2.log("EUROC is not a collateral asset 🏦");
+      revert("EUROC is not a collateral asset");
+    }
   }
 
   function verifyBiPoolManager() internal view {
@@ -457,26 +472,35 @@ contract MU03Checks is Script, Test {
   }
 
   function verifyValueDeltaBreaker(MU03Config.MU03 memory config) internal view {
-    // verify that cooldown period, rate change threshold and reference value for cUSD/USDC pool
-    uint256 cooldown = ValueDeltaBreaker(valueDeltaBreaker).rateFeedCooldownTime(config.USDCUSD.rateFeedID);
-    uint256 rateChangeThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(config.USDCUSD.rateFeedID);
-    uint256 referenceValue = ValueDeltaBreaker(valueDeltaBreaker).referenceValues(config.USDCUSD.rateFeedID);
+    // verify that cooldown period, rate change threshold and reference value were set correctly
+    for (uint256 i = 0; i < config.rateFeeds.length; i++) {
+      Config.RateFeed memory rateFeed = config.rateFeeds[i];
 
-    verifyCooldownTime(cooldown, config.USDCUSD.valueDeltaBreaker0.cooldown, config.USDCUSD.rateFeedID, true);
+      if (rateFeed.valueDeltaBreaker0.enabled) {
+        uint256 cooldown = ValueDeltaBreaker(valueDeltaBreaker).rateFeedCooldownTime(rateFeed.rateFeedID);
+        uint256 rateChangeThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(rateFeed.rateFeedID);
+        uint256 referenceValue = ValueDeltaBreaker(valueDeltaBreaker).referenceValues(rateFeed.rateFeedID);
 
-    verifyRateChangeTheshold(
-      rateChangeThreshold,
-      config.USDCUSD.valueDeltaBreaker0.threshold.unwrap(),
-      config.USDCUSD.rateFeedID,
-      true
-    );
+        // verify cooldown period
+        verifyCooldownTime(cooldown, rateFeed.valueDeltaBreaker0.cooldown, rateFeed.rateFeedID, true);
 
-    if (referenceValue != config.USDCUSD.valueDeltaBreaker0.referenceValue) {
-      console2.log(
-        "ValueDeltaBreaker reference value not set correctly for USDC/USD rate feed %s",
-        config.USDCUSD.rateFeedID
-      );
-      revert("ValueDeltaBreaker reference value not set correctly for USDC/USD rate feed");
+        // verify rate change threshold
+        verifyRateChangeTheshold(
+          rateChangeThreshold,
+          rateFeed.valueDeltaBreaker0.threshold.unwrap(),
+          rateFeed.rateFeedID,
+          true
+        );
+
+        // verify refernece value
+        if (referenceValue != rateFeed.valueDeltaBreaker0.referenceValue) {
+          console2.log(
+            "ValueDeltaBreaker reference value not set correctly for the rate feed: %s",
+            rateFeed.rateFeedID
+          );
+          revert("ValueDeltaBreaker reference values not set correctly for all rate feeds");
+        }
+      }
     }
     console2.log("\tValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒");
   }
@@ -502,6 +526,8 @@ contract MU03Checks is Script, Test {
     swapcEURtoBridgedUSDC(config);
     swapBridgedUSDCtocBRL(config);
     swapcBRLtoBridgedUSDC(config);
+    swapBridgedEUROCTocEUR(config);
+    swapcEURtoBridgedEUROC(config);
   }
 
   function swapCeloTocUSD() internal {
@@ -729,6 +755,54 @@ contract MU03Checks is Script, Test {
     console2.log("\tcBRL -> bridgedUSDC swap successful 🚀");
   }
 
+  function swapBridgedEUROCTocEUR(MU03Config.MU03 memory config) internal {
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(6);
+
+    address trader = vm.addr(1);
+    address tokenIn = bridgedEUROC;
+    address tokenOut = cEUR;
+    uint256 amountIn = 100e6;
+
+    // Mint some EUROC to trader
+    deal(bridgedEUROC, trader, amountIn, true);
+
+    testAndPerformConstantSumSwap(
+      exchangeID,
+      trader,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      config.cEUREUROC.referenceRateFeedID,
+      true
+    );
+
+    console2.log("\tbridgedEUROC -> cEUR swap successful 🚀");
+  }
+
+  function swapcEURtoBridgedEUROC(MU03Config.MU03 memory config) internal {
+    bytes32 exchangeID = BiPoolManager(biPoolManagerProxy).exchangeIds(6);
+
+    address trader = vm.addr(1);
+    address tokenIn = cEUR;
+    address tokenOut = bridgedEUROC;
+    uint256 amountIn = 10e18;
+
+    // Mint some USDC to the reserve
+    deal(bridgedEUROC, reserve, 1000e18, true);
+
+    testAndPerformConstantSumSwap(
+      exchangeID,
+      trader,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      config.cEUREUROC.referenceRateFeedID,
+      false
+    );
+
+    console2.log("\tcEUR -> bridgedEUROC swap successful 🚀");
+  }
+
   // /* ================================================================ */
   // /* ============================ Helpers =========================== */
   // /* ================================================================ */
@@ -741,8 +815,8 @@ contract MU03Checks is Script, Test {
   ) internal view {
     if (currentThreshold != expectedThreshold) {
       if (isValueDeltaBreaker) {
-        console2.log("ValueDeltaBreaker rate change threshold not set correctly for USDC/USD rate feed %s", rateFeedID);
-        revert("ValueDeltaBreaker rate change threshold not set correctly for USDC/USD rate feed");
+        console2.log("ValueDeltaBreaker rate change threshold not set correctly for rate feed %s", rateFeedID);
+        revert("ValueDeltaBreaker rate change threshold not set correctly for all rate feeds");
       }
       console2.log("MedianDeltaBreaker rate change threshold not set correctly for rate feed %s", rateFeedID);
       revert("MedianDeltaBreaker rate change threshold not set correctly for all rate feeds");
@@ -757,8 +831,8 @@ contract MU03Checks is Script, Test {
   ) internal view {
     if (currentCoolDown != expectedCoolDown) {
       if (isValueDeltaBreaker) {
-        console2.log("ValueDeltaBreaker cooldown not set correctly for USDC/USD rate feed %s", rateFeedID);
-        revert("ValueDeltaBreaker cooldown not set correctly for USDC/USD rate feed");
+        console2.log("ValueDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);
+        revert("ValueDeltaBreaker cooldown not set correctly for all rate feeds");
       }
       console2.log("MedianDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);
       revert("MedianDeltaBreaker cooldown not set correctly for all rate feeds");

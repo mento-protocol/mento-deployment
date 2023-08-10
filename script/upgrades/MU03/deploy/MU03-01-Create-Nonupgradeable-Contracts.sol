@@ -38,6 +38,7 @@ contract MU03_CreateNonupgradeableContracts is Script {
         medianDeltaBreakerCooldown,
         medianDeltaBreakerThreshold,
         ISortedOracles(sortedOracles),
+        address(breakerBox),
         __rateFeedIDs,
         __rateChangeThresholds,
         __cooldowns
