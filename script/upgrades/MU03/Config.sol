@@ -28,7 +28,7 @@ library MU03Config {
     Config.RateFeed USDCUSD;
     Config.RateFeed USDCEUR;
     Config.RateFeed USDCBRL;
-    Config.RateFeed EUREUROC;
+    Config.RateFeed EUROCEUR;
     Config.RateFeed[] rateFeeds;
   }
 
@@ -42,14 +42,14 @@ library MU03Config {
     config.pools[5] = config.cBRLUSDC = cBRLUSDC_PoolConfig(contracts);
     config.pools[6] = config.cEUREUROC = cEUREUROC_PoolConfig(contracts);
 
-    config.rateFeeds = new Config.RateFeed[](6);
+    config.rateFeeds = new Config.RateFeed[](7);
     config.rateFeeds[0] = config.CELOUSD = CELOUSD_RateFeedConfig(contracts);
     config.rateFeeds[1] = config.CELOEUR = CELOEUR_RateFeedConfig(contracts);
     config.rateFeeds[2] = config.CELOBRL = CELOBRL_RateFeedConfig(contracts);
     config.rateFeeds[3] = config.USDCUSD = USDCUSD_RateFeedConfig(contracts);
     config.rateFeeds[4] = config.USDCEUR = USDCEUR_RateFeedConfig(contracts);
     config.rateFeeds[5] = config.USDCBRL = USDCBRL_RateFeedConfig(contracts);
-    config.rateFeeds[6] = config.EUREUROC = EUROCEUR_RateFeedConfig(contracts);
+    config.rateFeeds[6] = config.EUROCEUR = EUROCEUR_RateFeedConfig(contracts);
   }
 
   function cUSDCelo_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory config) {

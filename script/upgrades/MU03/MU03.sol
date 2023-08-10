@@ -145,7 +145,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
-        contracts.celoRegistry("PartialReserve"),
+        contracts.deployed("PartialReserveProxy"),
         abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, bridgedEUROC)
       )
     );
@@ -486,10 +486,10 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUREUROC.rateFeedID),
+          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
           Arrays.uints(
             config.USDCUSD.valueDeltaBreaker0.referenceValue,
-            config.EUREUROC.valueDeltaBreaker0.referenceValue
+            config.EUROCEUR.valueDeltaBreaker0.referenceValue
           )
         )
       )
@@ -502,8 +502,8 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUREUROC.rateFeedID),
-          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.cooldown, config.EUREUROC.valueDeltaBreaker0.cooldown)
+          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
+          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.cooldown, config.EUROCEUR.valueDeltaBreaker0.cooldown)
         )
       )
     );
@@ -515,10 +515,10 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUREUROC.rateFeedID),
+          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
           Arrays.uints(
             config.USDCUSD.valueDeltaBreaker0.threshold.unwrap(),
-            config.EUREUROC.valueDeltaBreaker0.threshold.unwrap()
+            config.EUROCEUR.valueDeltaBreaker0.threshold.unwrap()
           )
         )
       )
