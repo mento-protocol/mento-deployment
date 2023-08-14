@@ -133,7 +133,7 @@ contract MU03Checks is Script, Test {
   }
 
   function verifyEUROCSetUp() internal view {
-    Reserve partialReserve = Reserve(address(uint160(contracts.celoRegistry("PartialReserve"))));
+    Reserve partialReserve = Reserve(address(uint160(contracts.deployed("PartialReserveProxy"))));
     if (partialReserve.checkIsCollateralAsset(bridgedEUROC)) {
       console2.log("EUROC is a collateral asset 🏦");
     } else {
@@ -250,7 +250,7 @@ contract MU03Checks is Script, Test {
       );
       // verify asset1 is always a collateral asset
       require(
-        pool.asset1 == celoToken || pool.asset1 == bridgedUSDC,
+        pool.asset1 == celoToken || pool.asset1 == bridgedUSDC || pool.asset1 == bridgedEUROC,
         "asset1 is not CELO or bridgedUSDC in the exchange"
       );
     }
