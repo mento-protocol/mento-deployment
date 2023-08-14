@@ -64,9 +64,10 @@ contract MU03Checks is Script, Test {
   address public constantSum;
   address public constantProduct;
   address public reserve;
-  address public broker;
   address public breakerBox;
+  address public broker;
 
+  address payable public brokerProxy;
   address payable public sortedOraclesProxy;
   address payable public biPoolManagerProxy;
 
@@ -85,8 +86,8 @@ contract MU03Checks is Script, Test {
     cBRL = contracts.celoRegistry("StableTokenBRL");
     reserve = contracts.deployed("PartialReserveProxy");
     celoToken = contracts.celoRegistry("GoldToken");
-    broker = contracts.celoRegistry("Broker");
     governance = contracts.celoRegistry("Governance");
+    brokerProxy = address(uint160(contracts.celoRegistry("Broker")));
     sortedOraclesProxy = address(uint160(contracts.celoRegistry("SortedOracles")));
 
     // Get Deployment addresses
@@ -96,6 +97,7 @@ contract MU03Checks is Script, Test {
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
     biPoolManager = contracts.deployed("BiPoolManager");
+    broker = contracts.deployed("Broker");
     constantSum = contracts.deployed("ConstantSumPricingModule");
     constantProduct = contracts.deployed("ConstantProductPricingModule");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
@@ -109,6 +111,7 @@ contract MU03Checks is Script, Test {
     verifyEUROCSetUp();
     verifyBiPoolManager();
     verifySortedOracles();
+    verifyBroker();
     verifyExchanges();
     verifyCircuitBreaker();
 
@@ -129,6 +132,7 @@ contract MU03Checks is Script, Test {
       SortedOracles(sortedOracles).owner() == governance,
       "SortedOracles ownership not transferred to governance"
     );
+    require(Broker(broker).owner() == governance, "Broker ownership not transferred to governance");
     console2.log("Contract ownerships transferred to governance 🤝");
   }
 
@@ -169,6 +173,20 @@ contract MU03Checks is Script, Test {
       revert("Deployed SortedOracles does not match what proxy points to. See logs.");
     }
     console2.log("\tSortedOraclesProxy has a correct implementation address 🫡");
+  }
+
+  function verifyBroker() internal view {
+    address brokerImplementation = Proxy(brokerProxy)._getImplementation();
+    address expectedBroker = broker;
+    if (brokerImplementation != expectedBroker) {
+      console2.log(
+        "The address of Broker from BrokerProxy: %s does not match the deployed address: %s.",
+        brokerImplementation,
+        expectedBroker
+      );
+      revert("Deployed Broker does not match what proxy points to. See logs.");
+    }
+    console2.log("\tBrokerProxy has a correct implementation address 🫡");
   }
 
   /* ================================================================ */
@@ -316,7 +334,7 @@ contract MU03Checks is Script, Test {
   }
 
   function verifyTradingLimits(MU03Config.MU03 memory config) internal view {
-    IBrokerWithCasts _broker = IBrokerWithCasts(address(broker));
+    IBrokerWithCasts _broker = IBrokerWithCasts(brokerProxy);
     bytes32[] memory exchanges = BiPoolManager(biPoolManagerProxy).getExchangeIds();
 
     for (uint256 i = 0; i < exchanges.length; i++) {
@@ -492,7 +510,7 @@ contract MU03Checks is Script, Test {
           true
         );
 
-        // verify refernece value
+        // verify reference value
         if (referenceValue != rateFeed.valueDeltaBreaker0.referenceValue) {
           console2.log(
             "ValueDeltaBreaker reference value not set correctly for the rate feed: %s",
@@ -846,7 +864,7 @@ contract MU03Checks is Script, Test {
     address tokenOut,
     uint256 amountIn
   ) internal {
-    uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
+    uint256 amountOut = Broker(brokerProxy).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
     IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeID);
 
     FixidityLib.Fraction memory numerator;
@@ -878,7 +896,7 @@ contract MU03Checks is Script, Test {
     address rateFeedID,
     bool isBridgedUsdcToStable
   ) internal {
-    uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
+    uint256 amountOut = Broker(brokerProxy).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
     (uint256 numerator, uint256 denominator) = SortedOracles(sortedOraclesProxy).medianRate(rateFeedID);
     uint256 estimatedAmountOut;
 
@@ -914,8 +932,8 @@ contract MU03Checks is Script, Test {
     uint256 beforeSellingTokenIn = IERC20(tokenIn).balanceOf(trader);
 
     vm.startPrank(trader);
-    IERC20(tokenIn).approve(address(broker), amountIn);
-    Broker(broker).swapIn(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+    IERC20(tokenIn).approve(address(brokerProxy), amountIn);
+    Broker(brokerProxy).swapIn(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn, amountOut);
     assertEq(IERC20(tokenOut).balanceOf(trader), beforeBuyingTokenOut + amountOut);
     assertEq(IERC20(tokenIn).balanceOf(trader), beforeSellingTokenIn - amountIn);
     vm.stopPrank();

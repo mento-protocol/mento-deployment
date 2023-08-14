@@ -495,7 +495,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       )
     );
 
-    // Set reference value for USDC/USD, EUROC/EUR rate Feed
+    // Set cooldown time for USDC/USD, EUROC/EUR rate Feeds
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -508,7 +508,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       )
     );
 
-    /// Set reference value for USDC/USD, EUROC/EUR rate Feed
+    /// Set rate change thresholds for USDC/USD, EUROC/EUR rate Feeds
     transactions.push(
       ICeloGovernance.Transaction(
         0,
