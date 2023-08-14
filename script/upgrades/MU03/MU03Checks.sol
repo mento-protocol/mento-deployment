@@ -251,7 +251,7 @@ contract MU03Checks is Script, Test {
       // verify asset1 is always a collateral asset
       require(
         pool.asset1 == celoToken || pool.asset1 == bridgedUSDC || pool.asset1 == bridgedEUROC,
-        "asset1 is not CELO or bridgedUSDC in the exchange"
+        "asset1 is not CELO, bridgedUSDC or bridgedEUROC in the exchange"
       );
     }
     console2.log("\tPoolExchange correctly configured 🤘🏼");
