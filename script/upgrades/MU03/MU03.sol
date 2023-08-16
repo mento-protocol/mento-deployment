@@ -419,7 +419,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       config.CELOUSD.rateFeedID,
       config.CELOEUR.rateFeedID,
       config.CELOBRL.rateFeedID,
-      config.USDCUSD.rateFeedID,
       config.USDCEUR.rateFeedID,
       config.USDCBRL.rateFeedID
     );
@@ -428,7 +427,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       config.CELOUSD.medianDeltaBreaker0.cooldown,
       config.CELOEUR.medianDeltaBreaker0.cooldown,
       config.CELOBRL.medianDeltaBreaker0.cooldown,
-      config.USDCUSD.medianDeltaBreaker0.cooldown,
       config.USDCEUR.medianDeltaBreaker0.cooldown,
       config.USDCBRL.medianDeltaBreaker0.cooldown
     );
@@ -446,7 +444,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       config.CELOUSD.medianDeltaBreaker0.threshold.unwrap(),
       config.CELOEUR.medianDeltaBreaker0.threshold.unwrap(),
       config.CELOBRL.medianDeltaBreaker0.threshold.unwrap(),
-      config.USDCUSD.medianDeltaBreaker0.threshold.unwrap(),
       config.USDCEUR.medianDeltaBreaker0.threshold.unwrap(),
       config.USDCBRL.medianDeltaBreaker0.threshold.unwrap()
     );

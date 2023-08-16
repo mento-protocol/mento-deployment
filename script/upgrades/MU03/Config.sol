@@ -301,10 +301,10 @@ library MU03Config {
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 500_000,
+        limit0: 50_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 1_000_000,
+        limit1: 100_000,
         enabledGlobal: false,
         limitGlobal: 0
       }),

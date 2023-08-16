@@ -63,7 +63,7 @@ contract MU03Checks is Script, Test {
   address public sortedOracles;
   address public constantSum;
   address public constantProduct;
-  address public reserve;
+  address payable public reserve;
   address public breakerBox;
   address public broker;
 
@@ -84,7 +84,7 @@ contract MU03Checks is Script, Test {
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
-    reserve = contracts.deployed("PartialReserveProxy");
+    reserve = address(uint160(contracts.deployed("PartialReserveProxy")));
     celoToken = contracts.celoRegistry("GoldToken");
     governance = contracts.celoRegistry("Governance");
     brokerProxy = address(uint160(contracts.celoRegistry("Broker")));
@@ -137,7 +137,7 @@ contract MU03Checks is Script, Test {
   }
 
   function verifyEUROCSetUp() internal view {
-    Reserve partialReserve = Reserve(address(uint160(contracts.deployed("PartialReserveProxy"))));
+    Reserve partialReserve = Reserve(reserve);
     if (partialReserve.checkIsCollateralAsset(bridgedEUROC)) {
       console2.log("EUROC is a collateral asset 🏦");
     } else {
@@ -262,13 +262,11 @@ contract MU03Checks is Script, Test {
         }
       }
       // verify asset0 is always a stable asset
-      require(
-        pool.asset0 == cUSD || pool.asset0 == cEUR || pool.asset0 == cBRL,
-        "asset0 is not a stable asset in the exchange"
-      );
+      Reserve partialReserve = Reserve(reserve);
+      require(partialReserve.isStableAsset(pool.asset0), "asset0 is not a stable asset in the exchange");
       // verify asset1 is always a collateral asset
       require(
-        pool.asset1 == celoToken || pool.asset1 == bridgedUSDC || pool.asset1 == bridgedEUROC,
+        partialReserve.isCollateralAsset(pool.asset1),
         "asset1 is not CELO, bridgedUSDC or bridgedEUROC in the exchange"
       );
     }
