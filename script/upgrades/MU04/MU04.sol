@@ -76,9 +76,9 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU03-02-Create-Implementations", "latest");
-    contracts.load("MU04-00-Create-Proxies.sol", "latest");
-    contracts.load("MU04-01-Create-Implementations.sol", "latest");
-    contracts.load("MU04-02-Create-Nonupgradeable-Contracts.sol", "latest");
+    contracts.load("MU04-00-Create-Proxies", "latest");
+    contracts.load("MU04-01-Create-Implementations", "latest");
+    contracts.load("MU04-02-Create-Nonupgradeable-Contracts", "latest");
   }
 
   /**
@@ -369,11 +369,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
         breakerBox,
         abi.encodeWithSelector(
           BreakerBox(0).addRateFeeds.selector,
-          Arrays.addresses(
-            contracts.celoRegistry("StableTokenXOF"),
-            contracts.dependency("EUROCXOFRateFeedAddr"),
-            contracts.dependency("EUROCEURRateFeedAddr")
-          )
+          Arrays.addresses(contracts.celoRegistry("StableTokenXOF"), contracts.dependency("EUROCXOFRateFeedAddr"))
         )
       )
     );
@@ -495,22 +491,10 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
    * @notice This function creates the transactions to configure the first Value Delta Breaker .
    */
   function proposal_configureValueDeltaBreaker(MU04Config.MU04 memory config) private {
-    address[] memory valueDeltaBreakerRateFeeds = Arrays.addresses(
-      config.EUROCXOF.rateFeedID,
-      config.EUROCEUR.rateFeedID
-    );
-    uint[] memory valueDeltaBreakerCooldownTimes = Arrays.uints(
-      config.EUROCXOF.valueDeltaBreaker0.cooldown,
-      config.EUROCEUR.valueDeltaBreaker0.cooldown
-    );
-    uint[] memory valueDeltaBreakerThresholds = Arrays.uints(
-      config.EUROCXOF.valueDeltaBreaker0.threshold.unwrap(),
-      config.EUROCEUR.valueDeltaBreaker0.threshold.unwrap()
-    );
-    uint[] memory valueDeltaBreakerReferenceValues = Arrays.uints(
-      config.EUROCXOF.valueDeltaBreaker0.referenceValue,
-      config.EUROCEUR.valueDeltaBreaker0.referenceValue
-    );
+    address[] memory valueDeltaBreakerRateFeeds = Arrays.addresses(config.EUROCXOF.rateFeedID);
+    uint[] memory valueDeltaBreakerCooldownTimes = Arrays.uints(config.EUROCXOF.valueDeltaBreaker0.cooldown);
+    uint[] memory valueDeltaBreakerThresholds = Arrays.uints(config.EUROCXOF.valueDeltaBreaker0.threshold.unwrap());
+    uint[] memory valueDeltaBreakerReferenceValues = Arrays.uints(config.EUROCXOF.valueDeltaBreaker0.referenceValue);
 
     // Set the cooldown times
     transactions.push(

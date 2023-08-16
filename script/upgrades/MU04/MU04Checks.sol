@@ -74,7 +74,6 @@ contract MU04Checks is Script, Test {
 
   function setUp() public {
     new PrecompileHandler(); // needed for reserve CELO transfer checks
-
     // Load addresses from deployments
     contracts.load("MU01-00-Create-Proxies", "latest");
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
@@ -85,7 +84,7 @@ contract MU04Checks is Script, Test {
     contracts.load("MU04-02-Create-Nonupgradeable-Contracts", "latest");
 
     // Get proxy addresses
-    eXOF = contracts.celoRegistry("StableTokenXOF");
+    eXOF = address(uint160(contracts.celoRegistry("StableTokenXOF")));
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
@@ -111,8 +110,23 @@ contract MU04Checks is Script, Test {
 
   function run() public {
     setUp();
+    verifyOwner();
+    verifyEXOFStableToken();
     verifyExchanges();
     verifyCircuitBreaker();
+  }
+
+  function verifyOwner() internal view {
+    address eXOFImplementation = contracts.deployed("StableTokenXOF");
+    require(
+      StableTokenXOF(eXOFImplementation).owner() == governance,
+      "StableTokenXOF ownership not transferred to governance"
+    );
+    require(
+      ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).owner() == governance,
+      "Nonrecoverable Value Delta Breaker ownership not transferred to governance"
+    );
+    console.log("Contract ownerships transferred to governance 🤝");
   }
 
   function verifyEXOFStableToken() internal view {
@@ -319,13 +333,14 @@ contract MU04Checks is Script, Test {
     console.log("\n== Checking circuit breaker... ==");
 
     verifyBreakerBox(config);
+    verifyBreakersAreEnabled(config);
     verifyMedianDeltaBreaker(config);
     verifyValueDeltaBreaker(config);
   }
 
   function verifyBreakerBox(MU04Config.MU04 memory config) internal view {
     // verify that breakers were set with trading mode 3
-    /* if (BreakerBox(breakerBox).breakerTradingMode(nonrecoverableValueDeltaBreaker) != 3) {
+    if (BreakerBox(breakerBox).breakerTradingMode(nonrecoverableValueDeltaBreaker) != 3) {
       console.log("The Nonrecoverable ValueDeltaBreaker was not set with trading halted ❌");
       revert("Nonrecoverable ValueDeltaBreaker was not set with trading halted");
     }
@@ -334,11 +349,13 @@ contract MU04Checks is Script, Test {
     // verify that rate feed dependencies were configured correctly
     address EUROCXOFDependency = BreakerBox(breakerBox).rateFeedDependencies(config.EUROCXOF.rateFeedID, 0);
     require(
-      EUROCXOFDependency == contracts.dependency("EUROCEURRateFeedAddr"),
+      EUROCXOFDependency == config.EUROCXOF.dependentRateFeeds[0],
       "EUROC/XOF rate feed dependency not set correctly"
     );
     console.log("\tRate feed dependencies configured correctly 🗳️");
+  }
 
+  function verifyBreakersAreEnabled(MU04Config.MU04 memory config) internal view {
     // verify that MedianDeltaBreaker && ValueDeltaBreakers were enabled for rateFeeds
     for (uint256 i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
@@ -370,7 +387,7 @@ contract MU04Checks is Script, Test {
         }
       }
     }
-    console.log("\tBreakers enabled for all rate feeds 🗳️");*/
+    console.log("\tBreakers enabled for all rate feeds 🗳️");
   }
 
   function verifyMedianDeltaBreaker(MU04Config.MU04 memory config) internal view {
@@ -453,18 +470,18 @@ contract MU04Checks is Script, Test {
         );
 
         // verify cooldown period
-        verifyCooldownTime(cooldown, rateFeed.valueDeltaBreaker0.cooldown, rateFeed.rateFeedID, true);
+        verifyCooldownTime(cooldown, rateFeed.valueDeltaBreaker1.cooldown, rateFeed.rateFeedID, true);
 
         // verify rate change threshold
         verifyRateChangeTheshold(
           rateChangeThreshold,
-          rateFeed.valueDeltaBreaker0.threshold.unwrap(),
+          rateFeed.valueDeltaBreaker1.threshold.unwrap(),
           rateFeed.rateFeedID,
           true
         );
 
         // verify refernece value
-        if (referenceValue != rateFeed.valueDeltaBreaker0.referenceValue) {
+        if (referenceValue != rateFeed.valueDeltaBreaker1.referenceValue) {
           console.log(
             "Nonrecoverable ValueDeltaBreaker reference value not set correctly for the rate feed: %s",
             rateFeed.rateFeedID
@@ -481,6 +498,98 @@ contract MU04Checks is Script, Test {
   // /* ================================================================ */
   // /* ============================= Swaps ============================ */
   // /* ================================================================ */
+  function doSwaps() internal {
+    MU04Config.MU04 memory config = MU04Config.get(contracts);
+
+    console.log("\n== Doing some test swaps... ==");
+
+    swapCeloToEXOF(config);
+    swapEXOFtoCelo(config);
+    swapBridgedEUROCtoEXOF(config);
+    swapEXOFtoBridgedEUROC(config);
+  }
+
+  function swapCeloToEXOF(MU04Config.MU04 memory config) internal {
+    bytes32 exchangeID = getExchangeId(config.eXOFCelo.asset0, config.eXOFCelo.asset1, config.eXOFCelo.isConstantSum);
+
+    address trader = vm.addr(5);
+    address tokenIn = celoToken;
+    address tokenOut = eXOF;
+    uint256 amountIn = 100e18;
+
+    // Give trader some celo
+    vm.deal(trader, amountIn);
+
+    testAndPerformConstantProductSwap(exchangeID, trader, tokenIn, tokenOut, amountIn);
+
+    console.log("\tCELO -> eXOF swap successful 🚀");
+  }
+
+  function swapEXOFtoCelo(MU04Config.MU04 memory config) internal {
+    bytes32 exchangeID = getExchangeId(config.eXOFCelo.asset0, config.eXOFCelo.asset1, config.eXOFCelo.isConstantSum);
+
+    address trader = vm.addr(5);
+    address tokenIn = eXOF;
+    address tokenOut = celoToken;
+    uint256 amountIn = 100e18;
+
+    testAndPerformConstantProductSwap(exchangeID, trader, tokenIn, tokenOut, amountIn);
+
+    console.log("\teXOF -> CELO swap successful 🚀");
+  }
+
+  function swapBridgedEUROCtoEXOF(MU04Config.MU04 memory config) internal {
+    bytes32 exchangeID = getExchangeId(
+      config.eXOFEUROC.asset0,
+      config.eXOFEUROC.asset1,
+      config.eXOFEUROC.isConstantSum
+    );
+
+    address trader = vm.addr(4);
+    address tokenIn = bridgedEUROC;
+    address tokenOut = eXOF;
+    uint256 amountIn = 10e6;
+
+    // Mint some EUROC to trader
+    deal(bridgedUSDC, trader, amountIn, true);
+
+    testAndPerformConstantSumSwap(
+      exchangeID,
+      trader,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      config.eXOFEUROC.referenceRateFeedID,
+      true
+    );
+
+    console.log("\tbridgedEUROC -> eXOF swap successful 🚀");
+  }
+
+  function swapEXOFtoBridgedEUROC(MU04Config.MU04 memory config) internal {
+    bytes32 exchangeID = getExchangeId(
+      config.eXOFEUROC.asset0,
+      config.eXOFEUROC.asset1,
+      config.eXOFEUROC.isConstantSum
+    );
+
+    address trader = vm.addr(4);
+    address tokenIn = eXOF;
+    address tokenOut = bridgedEUROC;
+    uint256 amountIn = 100e18;
+
+    testAndPerformConstantSumSwap(
+      exchangeID,
+      trader,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      config.eXOFEUROC.referenceRateFeedID,
+      false
+    );
+
+    console.log("\teXOF -> bridgedEUROC swap successful 🚀");
+  }
 
   // /* ================================================================ */
   // /* ============================ Helpers =========================== */

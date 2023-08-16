@@ -19,7 +19,6 @@ library MU04Config {
     Config.Pool[] pools;
     Config.RateFeed CELOXOF;
     Config.RateFeed EUROCXOF;
-    Config.RateFeed EUROCEUR;
     Config.RateFeed[] rateFeeds;
     Config.StableToken stableTokenXOF;
   }
@@ -32,14 +31,13 @@ library MU04Config {
     config.rateFeeds = new Config.RateFeed[](3);
     config.rateFeeds[0] = config.CELOXOF = CELOXOF_RateFeedConfig(contracts);
     config.rateFeeds[1] = config.EUROCXOF = EUROCXOF_RateFeedConfig(contracts);
-    config.rateFeeds[2] = config.EUROCEUR = EUROCEUR_RateFeedConfig(contracts);
 
     config.stableTokenXOF = stableTokenXOFConfig();
   }
 
   function stableTokenXOFConfig() internal pure returns (Config.StableToken memory config) {
     config = Config.StableToken({
-      name: "EcoLabs West African Franc",
+      name: "ECO CFA",
       symbol: "eXOF",
       decimals: 18,
       registryAddress: address(0x000000000000000000000000000000000000ce10),
@@ -151,15 +149,5 @@ library MU04Config {
       cooldown: 0 seconds
     });
     config.dependentRateFeeds = Arrays.addresses(contracts.dependency("EUROCEURRateFeedAddr"));
-  }
-
-  function EUROCEUR_RateFeedConfig(Contracts.Cache storage contracts) internal returns (Config.RateFeed memory config) {
-    config.rateFeedID = contracts.dependency("EUROCEURRateFeedAddr");
-    config.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
-      enabled: true,
-      threshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
-      referenceValue: 1e24, // 1€ numerator for 1e24 denominator
-      cooldown: 1 seconds
-    });
   }
 }
