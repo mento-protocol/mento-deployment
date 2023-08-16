@@ -20,6 +20,7 @@ library MU03Config {
     Config.Pool cUSDUSDC;
     Config.Pool cEURUSDC;
     Config.Pool cBRLUSDC;
+    Config.Pool cEUREUROC;
     Config.Pool[] pools;
     Config.RateFeed CELOUSD;
     Config.RateFeed CELOEUR;
@@ -27,25 +28,28 @@ library MU03Config {
     Config.RateFeed USDCUSD;
     Config.RateFeed USDCEUR;
     Config.RateFeed USDCBRL;
+    Config.RateFeed EUROCEUR;
     Config.RateFeed[] rateFeeds;
   }
 
   function get(Contracts.Cache storage contracts) internal returns (MU03 memory config) {
-    config.pools = new Config.Pool[](6);
+    config.pools = new Config.Pool[](7);
     config.pools[0] = config.cUSDCelo = cUSDCelo_PoolConfig(contracts);
     config.pools[1] = config.cEURCelo = cEURCelo_PoolConfig(contracts);
     config.pools[2] = config.cBRLCelo = cBRLCelo_PoolConfig(contracts);
     config.pools[3] = config.cUSDUSDC = cUSDUSDC_PoolConfig(contracts);
     config.pools[4] = config.cEURUSDC = cEURUSDC_PoolConfig(contracts);
     config.pools[5] = config.cBRLUSDC = cBRLUSDC_PoolConfig(contracts);
+    config.pools[6] = config.cEUREUROC = cEUREUROC_PoolConfig(contracts);
 
-    config.rateFeeds = new Config.RateFeed[](6);
+    config.rateFeeds = new Config.RateFeed[](7);
     config.rateFeeds[0] = config.CELOUSD = CELOUSD_RateFeedConfig(contracts);
     config.rateFeeds[1] = config.CELOEUR = CELOEUR_RateFeedConfig(contracts);
     config.rateFeeds[2] = config.CELOBRL = CELOBRL_RateFeedConfig(contracts);
     config.rateFeeds[3] = config.USDCUSD = USDCUSD_RateFeedConfig(contracts);
     config.rateFeeds[4] = config.USDCEUR = USDCEUR_RateFeedConfig(contracts);
     config.rateFeeds[5] = config.USDCBRL = USDCBRL_RateFeedConfig(contracts);
+    config.rateFeeds[6] = config.EUROCEUR = EUROCEUR_RateFeedConfig(contracts);
   }
 
   function cUSDCelo_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory config) {
@@ -282,5 +286,43 @@ library MU03Config {
       smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap()
     });
     config.dependentRateFeeds = Arrays.addresses(contracts.dependency("USDCUSDRateFeedAddr"));
+  }
+
+  function cEUREUROC_PoolConfig(Contracts.Cache storage contracts) internal returns (Config.Pool memory config) {
+    config = Config.Pool({
+      asset0: contracts.celoRegistry("StableTokenEUR"),
+      asset1: contracts.dependency("BridgedEUROC"),
+      isConstantSum: true,
+      spread: FixidityLib.newFixedFraction(2, 10000), // 0.0002
+      minimumReports: 5,
+      referenceRateResetFrequency: 5 minutes,
+      stablePoolResetSize: 12_000_000 * 1e18, // 12 million
+      referenceRateFeedID: contracts.dependency("EUROCEURRateFeedAddr"),
+      asset0limits: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 50_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 100_000,
+        enabledGlobal: false,
+        limitGlobal: 0
+      }),
+      asset1limits: Config.emptyTradingLimitConfig()
+    });
+
+    if (Chain.isBaklava() || Chain.isAlfajores()) {
+      config.minimumReports = 2;
+    }
+  }
+
+  function EUROCEUR_RateFeedConfig(Contracts.Cache storage contracts) internal returns (Config.RateFeed memory config) {
+    config.rateFeedID = contracts.dependency("EUROCEURRateFeedAddr");
+    config.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
+      enabled: true,
+      threshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
+      referenceValue: 1e24, // 1€ numerator for 1e24 denominator
+      cooldown: 1 seconds
+    });
   }
 }
