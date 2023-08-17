@@ -6,28 +6,7 @@ import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
 import { ISortedOracles } from "mento-core-2.2.0/interfaces/ISortedOracles.sol";
-import { ValueDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/ValueDeltaBreaker.sol";
-
-contract NonrecoverableValueDeltaBreaker is ValueDeltaBreaker {
-  constructor(
-    uint256 _defaultCooldownTime,
-    uint256 _defaultRateChangeThreshold,
-    ISortedOracles _sortedOracles,
-    address[] memory rateFeedIDs,
-    uint256[] memory rateChangeThresholds,
-    uint256[] memory cooldownTimes
-  )
-    public
-    ValueDeltaBreaker(
-      _defaultCooldownTime,
-      _defaultRateChangeThreshold,
-      _sortedOracles,
-      rateFeedIDs,
-      rateChangeThresholds,
-      cooldownTimes
-    )
-  {}
-}
+import { NonrecoverableValueDeltaBreaker } from "contracts/NonrecoverableValueDeltaBreaker.sol";
 
 /*
  yarn deploy -n <network> -u MU04 -s MU04-02-Create-Nonupgradeable-Contracts.sol

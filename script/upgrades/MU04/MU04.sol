@@ -134,7 +134,6 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
 
     proposal_initializeEXOFToken(config);
     proposal_addEXOFToReserves();
-    proposal_addEXOFToRegistry();
     proposal_enableGasPaymentsWithEXOF();
     proposal_configureEXOFConstitutionParameters();
     proposal_createExchanges(config);
@@ -207,19 +206,6 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
     } else {
       console.log("Token already added to the main reserve, skipping: %s", eXOFProxy);
     }
-  }
-
-  /**
-   * @notice Adds eXOF to the registry
-   */
-  function proposal_addEXOFToRegistry() private {
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        REGISTRY_ADDRESS,
-        abi.encodeWithSelector(IRegistry(0).setAddressFor.selector, "StableTokenXOF", eXOFProxy)
-      )
-    );
   }
 
   /**
@@ -369,7 +355,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
         breakerBox,
         abi.encodeWithSelector(
           BreakerBox(0).addRateFeeds.selector,
-          Arrays.addresses(contracts.celoRegistry("StableTokenXOF"), contracts.dependency("EUROCXOFRateFeedAddr"))
+          Arrays.addresses(eXOFProxy, contracts.dependency("EUROCXOFRateFeedAddr"))
         )
       )
     );
@@ -403,7 +389,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
       }
     }
 
-    for (uint256 i = 0; i < config.rateFeeds.length; i++) {
+    for (uint i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
       // Enable Median Delta Breaker for rate feed
       if (rateFeed.medianDeltaBreaker0.enabled) {
@@ -488,14 +474,9 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   }
 
   /**
-   * @notice This function creates the transactions to configure the first Value Delta Breaker .
+   * @notice This function creates the transactions to configure the recoverable Value Delta Breaker .
    */
   function proposal_configureValueDeltaBreaker(MU04Config.MU04 memory config) private {
-    address[] memory valueDeltaBreakerRateFeeds = Arrays.addresses(config.EUROCXOF.rateFeedID);
-    uint[] memory valueDeltaBreakerCooldownTimes = Arrays.uints(config.EUROCXOF.valueDeltaBreaker0.cooldown);
-    uint[] memory valueDeltaBreakerThresholds = Arrays.uints(config.EUROCXOF.valueDeltaBreaker0.threshold.unwrap());
-    uint[] memory valueDeltaBreakerReferenceValues = Arrays.uints(config.EUROCXOF.valueDeltaBreaker0.referenceValue);
-
     // Set the cooldown times
     transactions.push(
       ICeloGovernance.Transaction(
@@ -503,8 +484,8 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          valueDeltaBreakerRateFeeds,
-          valueDeltaBreakerCooldownTimes
+          Arrays.addresses(config.EUROCXOF.rateFeedID),
+          Arrays.uints(config.EUROCXOF.valueDeltaBreaker0.cooldown)
         )
       )
     );
@@ -515,8 +496,8 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          valueDeltaBreakerRateFeeds,
-          valueDeltaBreakerThresholds
+          Arrays.addresses(config.EUROCXOF.rateFeedID),
+          Arrays.uints(config.EUROCXOF.valueDeltaBreaker0.threshold.unwrap())
         )
       )
     );
@@ -527,8 +508,8 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          valueDeltaBreakerRateFeeds,
-          valueDeltaBreakerReferenceValues
+          Arrays.addresses(config.EUROCXOF.rateFeedID),
+          Arrays.uints(config.EUROCXOF.valueDeltaBreaker0.referenceValue)
         )
       )
     );
