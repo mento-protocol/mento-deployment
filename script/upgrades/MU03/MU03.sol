@@ -127,8 +127,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     require(transactions.length == 0, "buildProposal() should only be called once");
     MU03Config.MU03 memory config = MU03Config.get(contracts);
 
-    //proposal_cleanUp(config);
-
     proposal_addEUROCToPartialReserve();
     proposal_updateBiPoolManagerImplementation();
     proposal_updateBrokerImplementation();
@@ -141,31 +139,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     proposal_configureValueDeltaBreaker0(config);
 
     return transactions;
-  }
-
-  function proposal_cleanUp(MU03Config.MU03 memory config) private {
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        contracts.deployed("BiPoolManagerProxy"),
-        abi.encodeWithSelector(
-          IBiPoolManager(0).destroyExchange.selector,
-          getExchangeId(config.cEURUSDC.asset0, config.cEURUSDC.asset1, config.cEURUSDC.isConstantSum),
-          4
-        )
-      )
-    );
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        contracts.deployed("BiPoolManagerProxy"),
-        abi.encodeWithSelector(
-          IBiPoolManager(0).destroyExchange.selector,
-          getExchangeId(config.cBRLUSDC.asset0, config.cBRLUSDC.asset1, config.cBRLUSDC.isConstantSum),
-          4
-        )
-      )
-    );
   }
 
   function proposal_addEUROCToPartialReserve() private {
@@ -241,7 +214,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
 
     bool biPoolManagerInitialized = BiPoolManagerProxy(biPoolManagerProxyAddress)._getImplementation() != address(0);
     if (biPoolManagerInitialized) {
-      // Destroy cUSD/brdgedUSDC exchange -> since ConstantSum has changed
+      // Destroy cUSD/brdgedUSDC exchange -> since ConstantSum logic has changed
       bytes32 cUSDUSDCExchangeId = getExchangeId(
         config.cUSDUSDC.asset0,
         config.cUSDUSDC.asset1,
@@ -251,7 +224,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         ICeloGovernance.Transaction(
           0,
           contracts.deployed("BiPoolManagerProxy"),
-          //it's ok to hardcode the index here since the transaction would fail if the index and identifier don't match
+          //it's ok to hardcode the index here since the transaction would fail if index and identifier don't match
           abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, cUSDUSDCExchangeId, 3)
         )
       );
