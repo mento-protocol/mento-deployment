@@ -108,6 +108,7 @@ contract MU03Checks is Script, Test {
     setUp();
 
     verifyOwner();
+    //verifyExchangeLength();
     verifyEUROCSetUp();
     verifyBiPoolManager();
     verifySortedOracles();
@@ -134,6 +135,19 @@ contract MU03Checks is Script, Test {
     );
     require(Broker(broker).owner() == governance, "Broker ownership not transferred to governance");
     console2.log("Contract ownerships transferred to governance 🤝");
+  }
+
+  function verifyExchangeLength() internal view {
+    bytes32[] memory exchanges = BiPoolManager(biPoolManagerProxy).getExchangeIds();
+    if (exchanges.length != 4) {
+      console2.log(
+        "The number of expected exchanges: %s does not match the number of deployed exchanges: %s.",
+        4,
+        exchanges.length
+      );
+      revert("Number of expected exchanges does not match the number of deployed exchanges. See logs.");
+    }
+    console2.log("\tNumber of exchanges matches the expected number of exchanges 🤘🏼");
   }
 
   function verifyEUROCSetUp() internal view {
