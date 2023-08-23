@@ -133,6 +133,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     proposal_updateBiPoolManagerImplementation();
     proposal_updateBrokerImplementation();
     proposal_updateSortedOraclesImplementation();
+    proposal_updateBreakerBoxReferences();
     proposal_createExchanges(config);
     proposal_configureTradingLimits(config);
     proposal_scaleDownReserveFraction();
@@ -164,15 +165,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("BiPoolManager"))
       )
     );
-
-    // Set new BreakerBox address in BiPoolManager
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        biPoolManagerProxyAddress,
-        abi.encodeWithSelector(BiPoolManager(0).setBreakerBox.selector, breakerBox)
-      )
-    );
   }
 
   function proposal_updateBrokerImplementation() public {
@@ -191,6 +183,17 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         0,
         sortedOraclesProxy,
         abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("SortedOracles"))
+      )
+    );
+  }
+
+  function proposal_updateBreakerBoxReferences() public {
+    // Set new BreakerBox address in BiPoolManager
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        biPoolManagerProxyAddress,
+        abi.encodeWithSelector(BiPoolManager(0).setBreakerBox.selector, breakerBox)
       )
     );
 
