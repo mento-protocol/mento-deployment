@@ -107,7 +107,7 @@ library eXOFConfig {
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 656 * 1_000_000 * 1e18, // 656 * 1.0 million
-      referenceRateFeedID: contracts.dependency("EUROCXOFRateFeedAddr"),
+      referenceRateFeedID: contracts.dependency("EURXOFRateFeedAddr"),
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,

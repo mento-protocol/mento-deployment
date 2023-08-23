@@ -355,7 +355,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         breakerBox,
         abi.encodeWithSelector(
           BreakerBox(0).addRateFeeds.selector,
-          Arrays.addresses(eXOFProxy, contracts.dependency("EUROCXOFRateFeedAddr"))
+          Arrays.addresses(eXOFProxy, contracts.dependency("EURXOFRateFeedAddr"))
         )
       )
     );
