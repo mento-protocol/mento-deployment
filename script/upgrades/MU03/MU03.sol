@@ -53,6 +53,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   address payable private biPoolManagerProxyAddress;
   address private brokerProxyAddress;
   address private sortedOraclesProxy;
+  address private partialReserveProxy;
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
@@ -91,6 +92,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     biPoolManagerProxyAddress = address(uint160(contracts.deployed("BiPoolManagerProxy")));
     brokerProxyAddress = contracts.deployed("BrokerProxy");
     sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
+    partialReserveProxy = contracts.deployed("PartialReserveProxy");
   }
 
   /**
@@ -142,13 +144,16 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_addEUROCToPartialReserve() private {
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        contracts.deployed("PartialReserveProxy"),
-        abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, bridgedEUROC)
-      )
-    );
+    // addCollateralAsset will throw if it's already added
+    if (IReserve(partialReserveProxy).isCollateralAsset(bridgedEUROC) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          partialReserveProxy,
+          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, bridgedEUROC)
+        )
+      );
+    }
   }
 
   function proposal_updateBiPoolManagerImplementation() public {
@@ -157,6 +162,15 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         0,
         biPoolManagerProxyAddress,
         abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("BiPoolManager"))
+      )
+    );
+
+    // Set new BreakerBox address in BiPoolManager
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        biPoolManagerProxyAddress,
+        abi.encodeWithSelector(BiPoolManager(0).setBreakerBox.selector, breakerBox)
       )
     );
   }
@@ -177,6 +191,15 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         0,
         sortedOraclesProxy,
         abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("SortedOracles"))
+      )
+    );
+
+    // Set new BreakerBox address in SortedOracles
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        sortedOraclesProxy,
+        abi.encodeWithSelector(SortedOracles(0).setBreakerBox.selector, breakerBox)
       )
     );
   }
@@ -409,15 +432,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         );
       }
     }
-
-    // Set BreakerBox address in SortedOracles
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        sortedOraclesProxy,
-        abi.encodeWithSelector(SortedOracles(0).setBreakerBox.selector, breakerBox)
-      )
-    );
   }
 
   function proposal_configureMedianDeltaBreaker0(MU03Config.MU03 memory config) public {
