@@ -9,11 +9,11 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 import { FixidityLib } from "script/utils/FixidityLib.sol";
 
-library MU04Config {
+library eXOFConfig {
   using FixidityLib for FixidityLib.Fraction;
   using Contracts for Contracts.Cache;
 
-  struct MU04 {
+  struct eXOF {
     Config.Pool eXOFCelo;
     Config.Pool eXOFEUROC;
     Config.Pool[] pools;
@@ -23,7 +23,7 @@ library MU04Config {
     Config.StableToken stableTokenXOF;
   }
 
-  function get(Contracts.Cache storage contracts) internal returns (MU04 memory config) {
+  function get(Contracts.Cache storage contracts) internal returns (eXOF memory config) {
     config.pools = new Config.Pool[](2);
     config.pools[0] = config.eXOFCelo = eXOFCelo_PoolConfig(contracts);
     config.pools[1] = config.eXOFEUROC = eXOFEUROC_PoolConfig(contracts);

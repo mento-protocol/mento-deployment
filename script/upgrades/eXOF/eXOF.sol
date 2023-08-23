@@ -31,7 +31,7 @@ import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
 import { StableTokenXOF } from "mento-core-2.2.0/legacy/StableTokenXOF.sol";
 import { StableTokenXOFProxy } from "mento-core-2.2.0/legacy/proxies/StableTokenXOFProxy.sol";
 
-import { MU04Config, Config } from "./Config.sol";
+import { eXOFConfig, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
 /**
@@ -39,7 +39,7 @@ import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
-contract MU04 is IMentoUpgrade, GovernanceScript {
+contract eXOF is IMentoUpgrade, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
 
@@ -76,9 +76,9 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU03-02-Create-Implementations", "latest");
-    contracts.load("MU04-00-Create-Proxies", "latest");
-    contracts.load("MU04-01-Create-Implementations", "latest");
-    contracts.load("MU04-02-Create-Nonupgradeable-Contracts", "latest");
+    contracts.load("eXOF-00-Create-Proxies", "latest");
+    contracts.load("eXOF-01-Create-Implementations", "latest");
+    contracts.load("eXOF-02-Create-Nonupgradeable-Contracts", "latest");
   }
 
   /**
@@ -104,7 +104,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
    */
   function setUpConfigs() public {
     // Create pool configurations
-    MU04Config.MU04 memory config = MU04Config.get(contracts);
+    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     // Set the exchange ID for the reference rate feed
     for (uint i = 0; i < config.pools.length; i++) {
@@ -123,14 +123,14 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "MU04", governance);
+      createProposal(_transactions, "eXOF", governance);
     }
     vm.stopBroadcast();
   }
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
-    MU04Config.MU04 memory config = MU04Config.get(contracts);
+    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     proposal_initializeEXOFToken(config);
     proposal_addEXOFToReserves();
@@ -147,7 +147,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice Configures the eXOF token
    */
-  function proposal_initializeEXOFToken(MU04Config.MU04 memory config) private {
+  function proposal_initializeEXOFToken(eXOFConfig.eXOF memory config) private {
     StableTokenXOFProxy _eXOFProxy = StableTokenXOFProxy(eXOFProxy);
     if (_eXOFProxy._getImplementation() == address(0)) {
       transactions.push(
@@ -255,7 +255,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice Creates the exchanges for the new pools.
    */
-  function proposal_createExchanges(MU04Config.MU04 memory config) private {
+  function proposal_createExchanges(eXOFConfig.eXOF memory config) private {
     // Get the address of the pricing modules
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
@@ -291,7 +291,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the trading limits.
    */
-  function proposal_configureTradingLimits(MU04Config.MU04 memory config) private {
+  function proposal_configureTradingLimits(eXOFConfig.eXOF memory config) private {
     address brokerProxyAddress = contracts.deployed("BrokerProxy");
     for (uint256 i = 0; i < config.pools.length; i++) {
       Config.Pool memory poolConfig = config.pools[i];
@@ -347,7 +347,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the Breakerbox.
    */
-  function proposal_configureBreakerBox(MU04Config.MU04 memory config) private {
+  function proposal_configureBreakerBox(eXOFConfig.eXOF memory config) private {
     // Add the new rate feeds to breaker box
     transactions.push(
       ICeloGovernance.Transaction(
@@ -434,7 +434,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the Median Delta Breaker.
    */
-  function proposal_configureMedianDeltaBreakers(MU04Config.MU04 memory config) private {
+  function proposal_configureMedianDeltaBreakers(eXOFConfig.eXOF memory config) private {
     // Set the cooldown time
     transactions.push(
       ICeloGovernance.Transaction(
@@ -476,7 +476,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the recoverable Value Delta Breaker .
    */
-  function proposal_configureValueDeltaBreaker(MU04Config.MU04 memory config) private {
+  function proposal_configureValueDeltaBreaker(eXOFConfig.eXOF memory config) private {
     // Set the cooldown times
     transactions.push(
       ICeloGovernance.Transaction(
@@ -518,7 +518,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the second Value Delta Breaker .
    */
-  function proposal_configureNonrecoverableValueDeltaBreaker(MU04Config.MU04 memory config) private {
+  function proposal_configureNonrecoverableValueDeltaBreaker(eXOFConfig.eXOF memory config) private {
     // Set the cooldown times
     transactions.push(
       ICeloGovernance.Transaction(

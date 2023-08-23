@@ -8,9 +8,9 @@ import { console2 } from "forge-std/Script.sol";
 import { StableTokenXOFProxy } from "mento-core-2.2.0/legacy/proxies/StableTokenXOFProxy.sol";
 
 /*
- yarn deploy -n <network> -u MU04 -s MU04-00-Create-Proxies.sol
+ yarn deploy -n <network> -u eXOF -s eXOF-00-Create-Proxies.sol
 */
-contract MU04_CreateProxies is Script {
+contract eXOF_CreateProxies is Script {
   function run() public {
     address payable stableTokenXOFProxy;
     address governance = contracts.celoRegistry("Governance");

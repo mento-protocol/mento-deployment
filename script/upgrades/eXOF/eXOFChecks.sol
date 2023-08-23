@@ -34,7 +34,7 @@ import { Proxy } from "mento-core-2.2.0/common/Proxy.sol";
 
 import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
 
-import { MU04Config, Config } from "./Config.sol";
+import { eXOFConfig, Config } from "./Config.sol";
 
 /**
  * @title IBrokerWithCasts
@@ -46,7 +46,7 @@ interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
-contract MU04Checks is Script, Test {
+contract eXOFChecks is Script, Test {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
   using SafeMath for uint256;
@@ -79,9 +79,9 @@ contract MU04Checks is Script, Test {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU03-02-Create-Implementations", "latest");
-    contracts.load("MU04-00-Create-Proxies", "latest");
-    contracts.load("MU04-01-Create-Implementations", "latest");
-    contracts.load("MU04-02-Create-Nonupgradeable-Contracts", "latest");
+    contracts.load("eXOF-00-Create-Proxies", "latest");
+    contracts.load("eXOF-01-Create-Implementations", "latest");
+    contracts.load("eXOF-02-Create-Nonupgradeable-Contracts", "latest");
 
     // Get proxy addresses
     eXOF = address(uint160(contracts.celoRegistry("StableTokenXOF")));
@@ -150,7 +150,7 @@ contract MU04Checks is Script, Test {
   /* ================================================================ */
 
   function verifyExchanges() internal {
-    MU04Config.MU04 memory config = MU04Config.get(contracts);
+    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     console.log("== Verifying exchanges... ==");
 
@@ -159,7 +159,7 @@ contract MU04Checks is Script, Test {
     verifyTradingLimits(config);
   }
 
-  function verifyPoolExchange(MU04Config.MU04 memory config) internal view {
+  function verifyPoolExchange(eXOFConfig.eXOF memory config) internal view {
     bytes32[] memory exchanges = BiPoolManager(biPoolManagerProxy).getExchangeIds();
 
     // check configured pools against the config
@@ -227,7 +227,7 @@ contract MU04Checks is Script, Test {
     console.log("\tPoolExchange correctly configured 🤘🏼");
   }
 
-  function verifyPoolConfig(MU04Config.MU04 memory config) internal view {
+  function verifyPoolConfig(eXOFConfig.eXOF memory config) internal view {
     for (uint256 i = 0; i < config.pools.length; i++) {
       bytes32 exchangeId = getExchangeId(config.pools[i].asset0, config.pools[i].asset1, config.pools[i].isConstantSum);
       IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeId);
@@ -283,7 +283,7 @@ contract MU04Checks is Script, Test {
     console.log("\tPool config is correctly configured 🤘🏼");
   }
 
-  function verifyTradingLimits(MU04Config.MU04 memory config) internal view {
+  function verifyTradingLimits(eXOFConfig.eXOF memory config) internal view {
     IBrokerWithCasts _broker = IBrokerWithCasts(address(broker));
 
     for (uint256 i = 0; i < config.pools.length; i++) {
@@ -328,7 +328,7 @@ contract MU04Checks is Script, Test {
   /* ================================================================ */
 
   function verifyCircuitBreaker() internal {
-    MU04Config.MU04 memory config = MU04Config.get(contracts);
+    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     console.log("\n== Checking circuit breaker... ==");
 
@@ -338,7 +338,7 @@ contract MU04Checks is Script, Test {
     verifyValueDeltaBreaker(config);
   }
 
-  function verifyBreakerBox(MU04Config.MU04 memory config) internal view {
+  function verifyBreakerBox(eXOFConfig.eXOF memory config) internal view {
     // verify that breakers were set with trading mode 3
     if (BreakerBox(breakerBox).breakerTradingMode(nonrecoverableValueDeltaBreaker) != 3) {
       console.log("The Nonrecoverable ValueDeltaBreaker was not set with trading halted ❌");
@@ -355,7 +355,7 @@ contract MU04Checks is Script, Test {
     console.log("\tRate feed dependencies configured correctly 🗳️");
   }
 
-  function verifyBreakersAreEnabled(MU04Config.MU04 memory config) internal view {
+  function verifyBreakersAreEnabled(eXOFConfig.eXOF memory config) internal view {
     // verify that MedianDeltaBreaker && ValueDeltaBreakers were enabled for rateFeeds
     for (uint256 i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
@@ -390,7 +390,7 @@ contract MU04Checks is Script, Test {
     console.log("\tBreakers enabled for all rate feeds 🗳️");
   }
 
-  function verifyMedianDeltaBreaker(MU04Config.MU04 memory config) internal view {
+  function verifyMedianDeltaBreaker(eXOFConfig.eXOF memory config) internal view {
     // verify that cooldown period, rate change threshold and smoothing factor were set correctly
     for (uint256 i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
@@ -424,7 +424,7 @@ contract MU04Checks is Script, Test {
     console.log("\tMedianDeltaBreaker cooldown, rate change threshold and smoothing factor set correctly 🔒");
   }
 
-  function verifyValueDeltaBreaker(MU04Config.MU04 memory config) internal view {
+  function verifyValueDeltaBreaker(eXOFConfig.eXOF memory config) internal view {
     // verify that cooldown period, rate change threshold and reference value were set correctly
     for (uint256 i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
@@ -455,7 +455,7 @@ contract MU04Checks is Script, Test {
     console.log("\tValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒");
   }
 
-  function verifyNonrecoverableValueDeltaBreaker(MU04Config.MU04 memory config) internal view {
+  function verifyNonrecoverableValueDeltaBreaker(eXOFConfig.eXOF memory config) internal view {
     // verify that cooldown period, rate change threshold and reference value were set correctly
     for (uint256 i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
@@ -499,7 +499,7 @@ contract MU04Checks is Script, Test {
   // /* ============================= Swaps ============================ */
   // /* ================================================================ */
   function doSwaps() internal {
-    MU04Config.MU04 memory config = MU04Config.get(contracts);
+    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     console.log("\n== Doing some test swaps... ==");
 
@@ -509,7 +509,7 @@ contract MU04Checks is Script, Test {
     swapEXOFtoBridgedEUROC(config);
   }
 
-  function swapCeloToEXOF(MU04Config.MU04 memory config) internal {
+  function swapCeloToEXOF(eXOFConfig.eXOF memory config) internal {
     bytes32 exchangeID = getExchangeId(config.eXOFCelo.asset0, config.eXOFCelo.asset1, config.eXOFCelo.isConstantSum);
 
     address trader = vm.addr(5);
@@ -525,7 +525,7 @@ contract MU04Checks is Script, Test {
     console.log("\tCELO -> eXOF swap successful 🚀");
   }
 
-  function swapEXOFtoCelo(MU04Config.MU04 memory config) internal {
+  function swapEXOFtoCelo(eXOFConfig.eXOF memory config) internal {
     bytes32 exchangeID = getExchangeId(config.eXOFCelo.asset0, config.eXOFCelo.asset1, config.eXOFCelo.isConstantSum);
 
     address trader = vm.addr(5);
@@ -538,7 +538,7 @@ contract MU04Checks is Script, Test {
     console.log("\teXOF -> CELO swap successful 🚀");
   }
 
-  function swapBridgedEUROCtoEXOF(MU04Config.MU04 memory config) internal {
+  function swapBridgedEUROCtoEXOF(eXOFConfig.eXOF memory config) internal {
     bytes32 exchangeID = getExchangeId(
       config.eXOFEUROC.asset0,
       config.eXOFEUROC.asset1,
@@ -566,7 +566,7 @@ contract MU04Checks is Script, Test {
     console.log("\tbridgedEUROC -> eXOF swap successful 🚀");
   }
 
-  function swapEXOFtoBridgedEUROC(MU04Config.MU04 memory config) internal {
+  function swapEXOFtoBridgedEUROC(eXOFConfig.eXOF memory config) internal {
     bytes32 exchangeID = getExchangeId(
       config.eXOFEUROC.asset0,
       config.eXOFEUROC.asset1,

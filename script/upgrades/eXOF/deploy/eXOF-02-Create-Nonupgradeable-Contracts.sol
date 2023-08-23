@@ -9,9 +9,9 @@ import { ISortedOracles } from "mento-core-2.2.0/interfaces/ISortedOracles.sol";
 import { NonrecoverableValueDeltaBreaker } from "contracts/NonrecoverableValueDeltaBreaker.sol";
 
 /*
- yarn deploy -n <network> -u MU04 -s MU04-02-Create-Nonupgradeable-Contracts.sol
+ yarn deploy -n <network> -u eXOF -s eXOF-02-Create-Nonupgradeable-Contracts.sol
 */
-contract MU04_CreateNonupgradeableContracts is Script {
+contract eXOF_CreateNonupgradeableContracts is Script {
   NonrecoverableValueDeltaBreaker private nonrecoverableValueDeltaBreaker;
 
   function run() public {

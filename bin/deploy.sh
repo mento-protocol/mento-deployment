@@ -29,7 +29,7 @@ parse_upgrade "$UPGRADE"
 if ! [ -z "$SCRIPT" ]; then # Pick the script by name
     SCRIPT_FILE="script/upgrades/$UPGRADE/deploy/$SCRIPT"
     if test -f "$SCRIPT_FILE"; then
-        echo "🔎  $SCRIPT_FILE found"
+        echo "🔎 $SCRIPT_FILE found"
         forge_script "$SCRIPT" "$SCRIPT_FILE" "$(forge_skip $UPGRADE)"
         exit 0
     else
