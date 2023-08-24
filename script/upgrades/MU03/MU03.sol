@@ -499,47 +499,41 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_configureValueDeltaBreaker0(MU03Config.MU03 memory config) public {
-    // Set reference value for USDC/USD, EUROC/EUR rate Feed
+    // Set reference value for EUROC/EUR rate feed
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
-          Arrays.uints(
-            config.USDCUSD.valueDeltaBreaker0.referenceValue,
-            config.EUROCEUR.valueDeltaBreaker0.referenceValue
-          )
+          Arrays.addresses(config.EUROCEUR.rateFeedID),
+          Arrays.uints(config.EUROCEUR.valueDeltaBreaker0.referenceValue)
         )
       )
     );
 
-    // Set cooldown time for USDC/USD, EUROC/EUR rate Feeds
+    // Set cooldown time for EUROC/EUR rate feed
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
-          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.cooldown, config.EUROCEUR.valueDeltaBreaker0.cooldown)
+          Arrays.addresses(config.EUROCEUR.rateFeedID),
+          Arrays.uints(config.EUROCEUR.valueDeltaBreaker0.cooldown)
         )
       )
     );
 
-    /// Set rate change thresholds for USDC/USD, EUROC/EUR rate Feeds
+    /// Set rate change threshold for EUROC/EUR rate feed
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
-          Arrays.uints(
-            config.USDCUSD.valueDeltaBreaker0.threshold.unwrap(),
-            config.EUROCEUR.valueDeltaBreaker0.threshold.unwrap()
-          )
+          Arrays.addresses(config.EUROCEUR.rateFeedID),
+          Arrays.uints(config.EUROCEUR.valueDeltaBreaker0.threshold.unwrap())
         )
       )
     );
