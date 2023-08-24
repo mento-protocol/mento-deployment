@@ -347,9 +347,9 @@ contract eXOFChecks is Script, Test {
     console.log("\t Nonrecoverable ValueDeltaBreaker set with trading mode 3");
 
     // verify that rate feed dependencies were configured correctly
-    address EUROCXOFDependency = BreakerBox(breakerBox).rateFeedDependencies(config.EUROCXOF.rateFeedID, 0);
+    address EUROCXOFDependency = BreakerBox(breakerBox).rateFeedDependencies(config.EUROXOF.rateFeedID, 0);
     require(
-      EUROCXOFDependency == config.EUROCXOF.dependentRateFeeds[0],
+      EUROCXOFDependency == config.EUROXOF.dependentRateFeeds[0],
       "EUROC/XOF rate feed dependency not set correctly"
     );
     console.log("\tRate feed dependencies configured correctly 🗳️");
