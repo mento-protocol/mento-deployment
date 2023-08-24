@@ -159,6 +159,12 @@ contract MU03Checks is Script, Test {
       revert("Deployed BiPoolManager does not match what proxy points to. See logs.");
     }
     console2.log("\tBiPoolManagerProxy has a correct implementation address 🫡");
+
+    // verify that breakerBox address was updated in BiPoolManager
+    if (BreakerBox(breakerBox) != BiPoolManager(biPoolManagerProxy).breakerBox()) {
+      revert("BreakerBox address not updated in BiPoolManager");
+    }
+    console2.log("\tBreakerBox address updated in BiPoolManager 🗳️");
   }
 
   function verifySortedOracles() internal view {
@@ -173,6 +179,12 @@ contract MU03Checks is Script, Test {
       revert("Deployed SortedOracles does not match what proxy points to. See logs.");
     }
     console2.log("\tSortedOraclesProxy has a correct implementation address 🫡");
+
+    // verify that breakerBox address was updated in SortedOracles
+    if (BreakerBox(breakerBox) != SortedOracles(sortedOraclesProxy).breakerBox()) {
+      revert("BreakerBox address not updated in SortedOracles");
+    }
+    console2.log("\tBreakerBox address updated in SortedOracles 🗳️");
   }
 
   function verifyBroker() internal view {
@@ -443,12 +455,6 @@ contract MU03Checks is Script, Test {
       }
     }
     console2.log("\tBreakers enabled for all rate feeds 🗳️");
-
-    // verify that breakerBox address was updated in SortedOracles
-    if (BreakerBox(breakerBox) != SortedOracles(sortedOraclesProxy).breakerBox()) {
-      revert("BreakerBox address not updated in SortedOracles");
-    }
-    console2.log("\tBreakerBox address updated in SortedOracles 🗳️");
   }
 
   function verifyMedianDeltaBreaker(MU03Config.MU03 memory config) internal view {
