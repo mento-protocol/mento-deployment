@@ -30,6 +30,7 @@ import { ValueDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/ValueDeltaB
 import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
 import { StableTokenXOF } from "mento-core-2.2.0/legacy/StableTokenXOF.sol";
 import { StableTokenXOFProxy } from "mento-core-2.2.0/legacy/proxies/StableTokenXOFProxy.sol";
+import { Reserve } from "mento-core-2.2.0/swap/Reserve.sol";
 
 import { eXOFConfig, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
@@ -56,6 +57,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   address private brokerProxy;
   address private biPoolManagerProxy;
   address private sortedOraclesProxy;
+  address private partialReserveProxy;
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
@@ -85,17 +87,23 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
    * @dev Sets the addresses of the various contracts needed for the proposal.
    */
   function setAddresses() public {
+    // Tokens
     eXOF = contracts.deployed("StableTokenXOF");
     eXOFProxy = contracts.deployed("StableTokenXOFProxy");
     celo = contracts.celoRegistry("GoldToken");
-    bridgedEUROC = contracts.dependency("BridgedUSDC");
+    bridgedEUROC = contracts.dependency("BridgedEUROC");
+
+    // Oracles
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
     nonrecoverableValueDeltaBreaker = contracts.deployed("NonrecoverableValueDeltaBreaker");
+    sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
+
+    // Swaps
     brokerProxy = contracts.deployed("BrokerProxy");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
-    sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
+    partialReserveProxy = contracts.deployed("PartialReserveProxy");
   }
 
   /**
@@ -133,10 +141,12 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     proposal_initializeEXOFToken(config);
-    proposal_addEXOFToCeloRegistry(config);
+    proposal_addEXOFToCeloRegistry();
     proposal_configureEXOFConstitutionParameters();
     proposal_addEXOFToReserves();
     proposal_enableGasPaymentsWithEXOF();
+    proposal_setDailySpendingRatioForCollateralAssets();
+
     proposal_createExchanges(config);
     proposal_configureTradingLimits(config);
     proposal_configureBreakerBox(config);
@@ -181,11 +191,11 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   /**
    * @notice Add the transaction to create a new entry for StableTokenXOF in the CeloRegistry
    */
-  function proposal_addEXOFToCeloRegistry(eXOFConfig.eXOF memory config) private {
+  function proposal_addEXOFToCeloRegistry() private {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
-        config.stableTokenXOF.registryAddress,
+        REGISTRY_ADDRESS,
         abi.encodeWithSelector(IRegistry(0).setAddressFor.selector, "StableTokenXOF", eXOFProxy)
       )
     );
@@ -195,7 +205,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
    * @notice adds eXOF token to the partial and main reserve
    */
   function proposal_addEXOFToReserves() private {
-    address payable partialReserveProxy = contracts.deployed("PartialReserveProxy");
     if (IReserve(partialReserveProxy).isStableAsset(eXOFProxy) == false) {
       transactions.push(
         ICeloGovernance.Transaction(
@@ -237,7 +246,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   }
 
   /**
-   * @notice configure eXOF constitution parameters see cBRl GCP for reference
+   * @notice configure eXOF constitution parameters
+   * @dev see cBRl GCP(https://celo.stake.id/#/proposal/49) for reference
    */
   function proposal_configureEXOFConstitutionParameters() private {
     bytes4[] memory functionSelectors = Arrays.bytes4s(
@@ -248,6 +258,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
       getSelector("approve(address,uint256)")
     );
     uint256[] memory thresholds = Arrays.uints(0.9 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24);
+
     address governanceProxy = contracts.celoRegistry("Governance");
 
     for (uint256 i = 0; i < functionSelectors.length; i++) {
@@ -264,6 +275,29 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         )
       );
     }
+  }
+
+  /**
+   * @notice This function creates the transaction to set the daily spending ratio for all collateral assets
+   *         including the newly added EuroC.
+   */
+  function proposal_setDailySpendingRatioForCollateralAssets() private {
+    uint256 dailySpendingRatio = 1e24;
+
+    address[] memory collateralAssets = Arrays.addresses(celo, contracts.dependency("BridgedUSDC"), bridgedEUROC);
+    uint256[] memory dailySpendingRatios = Arrays.uints(dailySpendingRatio, dailySpendingRatio, dailySpendingRatio);
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        partialReserveProxy,
+        abi.encodeWithSelector(
+          Reserve(0).setDailySpendingRatioForCollateralAssets.selector,
+          collateralAssets,
+          dailySpendingRatios
+        )
+      )
+    );
   }
 
   /**
