@@ -133,6 +133,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     proposal_initializeEXOFToken(config);
+    proposal_addEXOFToCeloRegistry(config);
     proposal_configureEXOFConstitutionParameters();
     proposal_addEXOFToReserves();
     proposal_enableGasPaymentsWithEXOF();
@@ -175,6 +176,19 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     } else {
       console.log("Skipping StableTokenXOFProxy is already initialized");
     }
+  }
+
+  /**
+   * @notice Add the transaction to create a new entry for StableTokenXOF in the CeloRegistry
+   */
+  function proposal_addEXOFToCeloRegistry(eXOFConfig.eXOF memory config) private {
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        config.stableTokenXOF.registryAddress,
+        abi.encodeWithSelector(IRegistry(0).setAddressFor.selector, "StableTokenXOF", eXOFProxy)
+      )
+    );
   }
 
   /**
