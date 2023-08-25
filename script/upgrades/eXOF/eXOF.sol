@@ -46,7 +46,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  address private eXOFToken;
   address payable private eXOFProxy;
   address private celo;
   address private bridgedEUROC;
@@ -88,7 +87,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
    */
   function setAddresses() public {
     // Tokens
-    eXOFToken = contracts.deployed("StableTokenXOF");
     eXOFProxy = contracts.deployed("StableTokenXOFProxy");
     celo = contracts.celoRegistry("GoldToken");
     bridgedEUROC = contracts.dependency("BridgedEUROC");
@@ -140,7 +138,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     proposal_initializeEXOFToken(config);
-    proposal_addEXOFToCeloRegistry(); //TODO(Bayo): registry was already updated on testnet before this was added. How?
+    //TODO(Bayo): registry was already updated on testnet before this was added. How?
+    // proposal_addEXOFToCeloRegistry();
     proposal_configureEXOFConstitutionParameters();
     proposal_addEXOFToReserves();
     proposal_enableGasPaymentsWithEXOF();
@@ -152,6 +151,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     proposal_configureMedianDeltaBreakers(config);
     proposal_configureValueDeltaBreaker(config);
     proposal_configureNonrecoverableValueDeltaBreaker(config);
+
+    return transactions;
   }
 
   /**
@@ -166,7 +167,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
           eXOFProxy,
           abi.encodeWithSelector(
             _eXOFProxy._setAndInitializeImplementation.selector,
-            eXOFToken,
+            contracts.deployed("StableTokenXOF"),
             abi.encodeWithSelector(
               StableTokenXOF(0).initialize.selector,
               config.stableTokenXOF.name,
@@ -216,7 +217,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
       console.log("Token already added to the partial reserve, skipping: %s", eXOFProxy);
     }
 
-    address payable mainReserveProxy = contracts.deployed("ReserveProxy");
+    address mainReserveProxy = contracts.celoRegistry("Reserve");
     if (IReserve(mainReserveProxy).isStableAsset(eXOFProxy) == false) {
       transactions.push(
         ICeloGovernance.Transaction(
