@@ -49,6 +49,10 @@ contract GovernanceHelper is Script {
   }
 
   function simulateProposal(ICeloGovernance.Transaction[] memory transactions, address governance) internal {
+    require(
+      transactions.length > 0,
+      "Proposal has no transactions. Please check buildProposal() function returns transactions."
+    );
     vm.activeFork();
     vm.startPrank(governance);
     for (uint256 i = 0; i < transactions.length; i++) {
