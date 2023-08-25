@@ -46,7 +46,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  address private eXOF;
+  address private eXOFToken;
   address payable private eXOFProxy;
   address private celo;
   address private bridgedEUROC;
@@ -88,7 +88,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
    */
   function setAddresses() public {
     // Tokens
-    eXOF = contracts.deployed("StableTokenXOF");
+    eXOFToken = contracts.deployed("StableTokenXOF");
     eXOFProxy = contracts.deployed("StableTokenXOFProxy");
     celo = contracts.celoRegistry("GoldToken");
     bridgedEUROC = contracts.dependency("BridgedEUROC");
@@ -117,7 +117,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     // Set the exchange ID for the reference rate feed
     for (uint i = 0; i < config.pools.length; i++) {
       referenceRateFeedIDToExchangeId[config.pools[i].referenceRateFeedID] = getExchangeId(
-        config.pools[i].asset0,
         config.pools[i].asset1,
         config.pools[i].isConstantSum
       );
@@ -141,7 +140,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     proposal_initializeEXOFToken(config);
-    proposal_addEXOFToCeloRegistry();
+    proposal_addEXOFToCeloRegistry(); //TODO(Bayo): registry was already updated on testnet before this was added. How?
     proposal_configureEXOFConstitutionParameters();
     proposal_addEXOFToReserves();
     proposal_enableGasPaymentsWithEXOF();
@@ -167,7 +166,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
           eXOFProxy,
           abi.encodeWithSelector(
             _eXOFProxy._setAndInitializeImplementation.selector,
-            eXOF,
+            eXOFToken,
             abi.encodeWithSelector(
               StableTokenXOF(0).initialize.selector,
               config.stableTokenXOF.name,
@@ -610,14 +609,10 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   /**
    * @notice Helper function to get the exchange ID for a pool.
    */
-  function getExchangeId(address asset0, address asset1, bool isConstantSum) internal view returns (bytes32) {
+  function getExchangeId(address asset1, bool isConstantSum) internal view returns (bytes32) {
     return
       keccak256(
-        abi.encodePacked(
-          IERC20Metadata(asset0).symbol(),
-          IERC20Metadata(asset1).symbol(),
-          isConstantSum ? "ConstantSum" : "ConstantProduct"
-        )
+        abi.encodePacked("eXOF", IERC20Metadata(asset1).symbol(), isConstantSum ? "ConstantSum" : "ConstantProduct")
       );
   }
 

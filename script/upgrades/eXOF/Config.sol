@@ -39,7 +39,7 @@ library eXOFConfig {
     config.pools[0] = config.eXOFCelo = eXOFCelo_PoolConfig(contracts);
     config.pools[1] = config.eXOFEUROC = eXOFEUROC_PoolConfig(contracts);
 
-    config.rateFeeds = new Config.RateFeed[](3);
+    config.rateFeeds = new Config.RateFeed[](2);
     config.rateFeeds[0] = config.CELOXOF = CELOXOF_RateFeedConfig(contracts);
     config.rateFeeds[1] = config.EUROXOF = EUROXOF_RateFeedConfig(contracts);
 
@@ -54,7 +54,7 @@ library eXOFConfig {
   function CELOXOF_RateFeedConfig(
     Contracts.Cache storage contracts
   ) internal view returns (Config.RateFeed memory rateFeedConfig) {
-    rateFeedConfig.rateFeedID = contracts.celoRegistry("StableTokenXOF");
+    rateFeedConfig.rateFeedID = contracts.deployed("StableTokenXOFProxy");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
       threshold: FixidityLib.newFixedFraction(3, 100), // 0.03
@@ -95,14 +95,14 @@ library eXOFConfig {
     Contracts.Cache storage contracts
   ) internal view returns (Config.Pool memory poolConfig) {
     poolConfig = Config.Pool({
-      asset0: contracts.celoRegistry("StableTokenXOF"),
+      asset0: contracts.deployed("StableTokenXOFProxy"),
       asset1: contracts.celoRegistry("GoldToken"),
       isConstantSum: false,
       spread: FixidityLib.newFixedFraction(50, 10_000), // 0.0050
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 5,
       stablePoolResetSize: 656 * 250_000 * 1e18, // 164 million
-      referenceRateFeedID: contracts.celoRegistry("StableTokenXOF"),
+      referenceRateFeedID: contracts.deployed("StableTokenXOFProxy"),
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
@@ -135,7 +135,7 @@ library eXOFConfig {
    */
   function eXOFEUROC_PoolConfig(Contracts.Cache storage contracts) internal returns (Config.Pool memory poolConfig) {
     poolConfig = Config.Pool({
-      asset0: contracts.celoRegistry("StableTokenXOF"),
+      asset0: contracts.deployed("StableTokenXOFProxy"),
       asset1: contracts.dependency("BridgedEUROC"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025

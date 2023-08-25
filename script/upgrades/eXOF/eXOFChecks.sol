@@ -110,6 +110,7 @@ contract eXOFChecks is Script, Test {
 
   function run() public {
     setUp();
+    console.log("\nStarting eXOF checks: \n");
     verifyOwner();
     verifyEXOFStableToken();
     verifyExchanges();
@@ -126,7 +127,7 @@ contract eXOFChecks is Script, Test {
       ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).owner() == governance,
       "Nonrecoverable Value Delta Breaker ownership not transferred to governance"
     );
-    console.log("Contract ownerships transferred to governance 🤝");
+    console.log("🟢 Contract ownerships transferred to governance \n");
   }
 
   function verifyEXOFStableToken() internal view {
@@ -142,7 +143,7 @@ contract eXOFChecks is Script, Test {
       );
       revert("Deployed StableTokenXOF does not match what proxy points to. See logs.");
     }
-    console.log("\tStableTokenXOFProxy has the correct implementation address 🫡");
+    console.log("🟢 StableTokenXOFProxy has the correct implementation address \n");
   }
 
   /* ================================================================ */
