@@ -67,8 +67,9 @@ Check the script file for more details on usage but here's a quick overview:
 ==================================================================
 👇 Pick a script to run
 ------------------------------------------------------------------
-1) AddOtherReserveAddress  3) DrainPartialReserve
-2) CreateMockBridgedUSDC   4) FundPartialReserve
+1) AddOtherReserveAddress        4) CreateMockBridgedUSDC
+2) ChangeTestnetMockBridgedUSDC  5) DrainPartialReserve
+3) CreateMockBridgedEUROC        6) FundPartialReserve
 #?
 
 # Run a development script by index

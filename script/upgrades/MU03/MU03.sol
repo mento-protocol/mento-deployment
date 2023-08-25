@@ -12,6 +12,7 @@ import { Arrays } from "script/utils/Arrays.sol";
 import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
 import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";
 import { IPricingModule } from "mento-core-2.2.0/interfaces/IPricingModule.sol";
+import { IReserve } from "mento-core-2.2.0/interfaces/IReserve.sol";
 import { Proxy } from "mento-core-2.2.0/common/Proxy.sol";
 import { IERC20Metadata } from "mento-core-2.2.0/common/interfaces/IERC20Metadata.sol";
 
@@ -45,11 +46,14 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   address private cBRL;
   address private celo;
   address private bridgedUSDC;
+  address private bridgedEUROC;
   address private breakerBox;
   address private medianDeltaBreaker;
   address private valueDeltaBreaker;
-  address private biPoolManagerProxyAddress;
+  address payable private biPoolManagerProxyAddress;
+  address private brokerProxyAddress;
   address private sortedOraclesProxy;
+  address private partialReserveProxy;
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
@@ -81,11 +85,14 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     cBRL = contracts.celoRegistry("StableTokenBRL");
     celo = contracts.celoRegistry("GoldToken");
     bridgedUSDC = contracts.dependency("BridgedUSDC");
+    bridgedEUROC = contracts.dependency("BridgedEUROC");
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
-    biPoolManagerProxyAddress = contracts.deployed("BiPoolManagerProxy");
+    biPoolManagerProxyAddress = address(uint160(contracts.deployed("BiPoolManagerProxy")));
+    brokerProxyAddress = contracts.deployed("BrokerProxy");
     sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
+    partialReserveProxy = contracts.deployed("PartialReserveProxy");
   }
 
   /**
@@ -122,16 +129,82 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     require(transactions.length == 0, "buildProposal() should only be called once");
     MU03Config.MU03 memory config = MU03Config.get(contracts);
 
-    proposal_updateBiPoolManagerImplementation(config);
-    proposal_updateSortedOraclesImplementation(config);
+    proposal_addEUROCToPartialReserve();
+    proposal_updateBiPoolManagerImplementation();
+    proposal_updateBrokerImplementation();
+    proposal_updateSortedOraclesImplementation();
+    proposal_updateBreakerBoxReferences();
     proposal_createExchanges(config);
     proposal_configureTradingLimits(config);
-    proposal_scaleDownReserveFraction(config);
+    proposal_scaleDownReserveFraction();
     proposal_configureBreakerBox(config);
     proposal_configureMedianDeltaBreaker0(config);
     proposal_configureValueDeltaBreaker0(config);
 
     return transactions;
+  }
+
+  function proposal_addEUROCToPartialReserve() private {
+    // addCollateralAsset will throw if it's already added
+    if (IReserve(partialReserveProxy).isCollateralAsset(bridgedEUROC) == false) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          partialReserveProxy,
+          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, bridgedEUROC)
+        )
+      );
+    }
+  }
+
+  function proposal_updateBiPoolManagerImplementation() public {
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        biPoolManagerProxyAddress,
+        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("BiPoolManager"))
+      )
+    );
+  }
+
+  function proposal_updateBrokerImplementation() public {
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        brokerProxyAddress,
+        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("Broker"))
+      )
+    );
+  }
+
+  function proposal_updateSortedOraclesImplementation() public {
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        sortedOraclesProxy,
+        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("SortedOracles"))
+      )
+    );
+  }
+
+  function proposal_updateBreakerBoxReferences() public {
+    // Set new BreakerBox address in BiPoolManager
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        biPoolManagerProxyAddress,
+        abi.encodeWithSelector(BiPoolManager(0).setBreakerBox.selector, breakerBox)
+      )
+    );
+
+    // Set new BreakerBox address in SortedOracles
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        sortedOraclesProxy,
+        abi.encodeWithSelector(SortedOracles(0).setBreakerBox.selector, breakerBox)
+      )
+    );
   }
 
   /**
@@ -140,53 +213,74 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
    *         cEUR/bridgedUSDC, cBRL/bridgedUSDC)
    */
   function proposal_createExchanges(MU03Config.MU03 memory config) private {
-    address payable biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
-    bool biPoolManagerInitialized = BiPoolManagerProxy(biPoolManagerProxy)._getImplementation() != address(0);
-    if (biPoolManagerInitialized) {
-      bytes32[] memory existingExchangeIds = IBiPoolManager(contracts.deployed("BiPoolManagerProxy")).getExchangeIds();
-      if (existingExchangeIds.length > 0) {
-        console.log("Destroying existing exchanges: ", existingExchangeIds.length);
-        for (uint256 i = existingExchangeIds.length; i > 0; i--) {
-          transactions.push(
-            ICeloGovernance.Transaction(
-              0,
-              contracts.deployed("BiPoolManagerProxy"),
-              abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, existingExchangeIds[i - 1], i - 1)
-            )
-          );
-        }
-      }
-    }
-
     // Get the address of the pricing modules
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
-    for (uint256 i = 0; i < config.pools.length; i++) {
-      Config.Pool memory poolConfig = config.pools[i];
-      IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
-        asset0: poolConfig.asset0,
-        asset1: poolConfig.asset1,
-        pricingModule: poolConfig.isConstantSum ? constantSum : constantProduct,
-        bucket0: 0,
-        bucket1: 0,
-        lastBucketUpdate: 0,
-        config: IBiPoolManager.PoolConfig({
-          spread: FixidityLib.wrap(poolConfig.spread.unwrap()),
-          referenceRateFeedID: poolConfig.referenceRateFeedID,
-          referenceRateResetFrequency: poolConfig.referenceRateResetFrequency,
-          minimumReports: poolConfig.minimumReports,
-          stablePoolResetSize: poolConfig.stablePoolResetSize
-        })
-      });
+    // Set PricingModules
+    bytes32[] memory pricingModuleIdentifiers = Arrays.bytes32s(
+      keccak256(abi.encodePacked("ConstantSum")),
+      keccak256(abi.encodePacked("ConstantProduct"))
+    );
+    address[] memory pricingModules = Arrays.addresses(address(constantSum), address(constantProduct));
 
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        biPoolManagerProxyAddress,
+        abi.encodeWithSelector(BiPoolManager(0).setPricingModules.selector, pricingModuleIdentifiers, pricingModules)
+      )
+    );
+
+    Config.Pool[] memory poolsToCreate = new Config.Pool[](4);
+    poolsToCreate[0] = config.cUSDUSDC;
+    poolsToCreate[1] = config.cEURUSDC;
+    poolsToCreate[2] = config.cBRLUSDC;
+    poolsToCreate[3] = config.cEUREUROC;
+
+    bool biPoolManagerInitialized = BiPoolManagerProxy(biPoolManagerProxyAddress)._getImplementation() != address(0);
+    if (biPoolManagerInitialized) {
+      // Destroy cUSD/brdgedUSDC exchange -> since ConstantSum logic has changed
+      bytes32 cUSDUSDCExchangeId = getExchangeId(
+        config.cUSDUSDC.asset0,
+        config.cUSDUSDC.asset1,
+        config.cUSDUSDC.isConstantSum
+      );
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           contracts.deployed("BiPoolManagerProxy"),
-          abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, pool)
+          //it's ok to hardcode the index here since the transaction would fail if index and identifier don't match
+          abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, cUSDUSDCExchangeId, 3)
         )
       );
+
+      for (uint256 i = 0; i < poolsToCreate.length; i++) {
+        Config.Pool memory poolConfig = poolsToCreate[i];
+        IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
+          asset0: poolConfig.asset0,
+          asset1: poolConfig.asset1,
+          pricingModule: poolConfig.isConstantSum ? constantSum : constantProduct,
+          bucket0: 0,
+          bucket1: 0,
+          lastBucketUpdate: 0,
+          config: IBiPoolManager.PoolConfig({
+            spread: FixidityLib.wrap(poolConfig.spread.unwrap()),
+            referenceRateFeedID: poolConfig.referenceRateFeedID,
+            referenceRateResetFrequency: poolConfig.referenceRateResetFrequency,
+            minimumReports: poolConfig.minimumReports,
+            stablePoolResetSize: poolConfig.stablePoolResetSize
+          })
+        });
+
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            biPoolManagerProxyAddress,
+            abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, pool)
+          )
+        );
+      }
     }
   }
 
@@ -194,7 +288,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
    * @notice This function creates the transactions to configure the trading limits.
    */
   function proposal_configureTradingLimits(MU03Config.MU03 memory config) public {
-    address brokerProxyAddress = contracts.deployed("BrokerProxy");
     for (uint256 i = 0; i < config.pools.length; i++) {
       Config.Pool memory poolConfig = config.pools[i];
 
@@ -224,7 +317,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the Mento V1 Exchanges.
    */
-  function proposal_scaleDownReserveFraction(MU03Config.MU03 memory config) public {
+  function proposal_scaleDownReserveFraction() public {
     address[] memory exchangesV1 = Arrays.addresses(
       contracts.celoRegistry("Exchange"),
       contracts.celoRegistry("ExchangeBRL"),
@@ -247,26 +340,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     }
   }
 
-  function proposal_updateBiPoolManagerImplementation(MU03Config.MU03 memory config) public {
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        biPoolManagerProxyAddress,
-        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("BiPoolManager"))
-      )
-    );
-  }
-
-  function proposal_updateSortedOraclesImplementation(MU03Config.MU03 memory config) public {
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        sortedOraclesProxy,
-        abi.encodeWithSelector(Proxy(0)._setImplementation.selector, contracts.deployed("SortedOracles"))
-      )
-    );
-  }
-
   function proposal_configureBreakerBox(MU03Config.MU03 memory config) public {
     // Add the rate feeds to breaker box
     transactions.push(
@@ -281,7 +354,8 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
             contracts.celoRegistry("StableTokenBRL"),
             contracts.dependency("USDCUSDRateFeedAddr"),
             contracts.dependency("USDCEURRateFeedAddr"),
-            contracts.dependency("USDCBRLRateFeedAddr")
+            contracts.dependency("USDCBRLRateFeedAddr"),
+            contracts.dependency("EUROCEURRateFeedAddr")
           )
         )
       )
@@ -361,15 +435,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
         );
       }
     }
-
-    // Set BreakerBox address in SortedOracles
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        sortedOraclesProxy,
-        abi.encodeWithSelector(SortedOracles(0).setBreakerBox.selector, breakerBox)
-      )
-    );
   }
 
   function proposal_configureMedianDeltaBreaker0(MU03Config.MU03 memory config) public {
@@ -377,7 +442,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       config.CELOUSD.rateFeedID,
       config.CELOEUR.rateFeedID,
       config.CELOBRL.rateFeedID,
-      config.USDCUSD.rateFeedID,
       config.USDCEUR.rateFeedID,
       config.USDCBRL.rateFeedID
     );
@@ -386,7 +450,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       config.CELOUSD.medianDeltaBreaker0.cooldown,
       config.CELOEUR.medianDeltaBreaker0.cooldown,
       config.CELOBRL.medianDeltaBreaker0.cooldown,
-      config.USDCUSD.medianDeltaBreaker0.cooldown,
       config.USDCEUR.medianDeltaBreaker0.cooldown,
       config.USDCBRL.medianDeltaBreaker0.cooldown
     );
@@ -404,7 +467,6 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       config.CELOUSD.medianDeltaBreaker0.threshold.unwrap(),
       config.CELOEUR.medianDeltaBreaker0.threshold.unwrap(),
       config.CELOBRL.medianDeltaBreaker0.threshold.unwrap(),
-      config.USDCUSD.medianDeltaBreaker0.threshold.unwrap(),
       config.USDCEUR.medianDeltaBreaker0.threshold.unwrap(),
       config.USDCBRL.medianDeltaBreaker0.threshold.unwrap()
     );
@@ -437,41 +499,47 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_configureValueDeltaBreaker0(MU03Config.MU03 memory config) public {
-    // Set reference value for cUSD/USDC pool
+    // Set reference value for USDC/USD, EUROC/EUR rate Feed
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID),
-          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.referenceValue)
+          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
+          Arrays.uints(
+            config.USDCUSD.valueDeltaBreaker0.referenceValue,
+            config.EUROCEUR.valueDeltaBreaker0.referenceValue
+          )
         )
       )
     );
 
-    // Set the cooldown time for cUSD/USDC pool
+    // Set cooldown time for USDC/USD, EUROC/EUR rate Feeds
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID),
-          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.cooldown)
+          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
+          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.cooldown, config.EUROCEUR.valueDeltaBreaker0.cooldown)
         )
       )
     );
 
-    // Set the rate change threshold for cUSD/USDC pool
+    /// Set rate change thresholds for USDC/USD, EUROC/EUR rate Feeds
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID),
-          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.threshold.unwrap())
+          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
+          Arrays.uints(
+            config.USDCUSD.valueDeltaBreaker0.threshold.unwrap(),
+            config.EUROCEUR.valueDeltaBreaker0.threshold.unwrap()
+          )
         )
       )
     );
