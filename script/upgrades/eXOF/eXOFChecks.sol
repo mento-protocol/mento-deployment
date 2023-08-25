@@ -15,6 +15,9 @@ import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
 import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";
 import { IBroker } from "mento-core-2.2.0/interfaces/IBroker.sol";
 import { IERC20Metadata } from "mento-core-2.2.0/common/interfaces/IERC20Metadata.sol";
+import { IRegistry } from "mento-core-2.2.0/common/interfaces/IRegistry.sol";
+
+import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
 
 import { BiPoolManagerProxy } from "mento-core-2.2.0/proxies/BiPoolManagerProxy.sol";
 import { StableTokenXOFProxy } from "mento-core-2.2.0/legacy/proxies/StableTokenXOFProxy.sol";
@@ -68,6 +71,7 @@ contract eXOFChecks is Script, Test {
   address public constantSum;
   address public constantProduct;
   address payable biPoolManagerProxy;
+  address public partialReserve;
   address public reserve;
   address public broker;
   address public breakerBox;
@@ -84,11 +88,12 @@ contract eXOFChecks is Script, Test {
     contracts.load("eXOF-02-Create-Nonupgradeable-Contracts", "latest");
 
     // Get proxy addresses
-    eXOF = address(uint160(contracts.celoRegistry("StableTokenXOF")));
+    eXOF = contracts.deployed("StableTokenXOFProxy");
     cUSD = contracts.celoRegistry("StableToken");
     cEUR = contracts.celoRegistry("StableTokenEUR");
     cBRL = contracts.celoRegistry("StableTokenBRL");
-    reserve = contracts.deployed("PartialReserveProxy");
+    partialReserve = contracts.deployed("PartialReserveProxy");
+    reserve = contracts.celoRegistry("Reserve");
     celoToken = contracts.celoRegistry("GoldToken");
     broker = contracts.celoRegistry("Broker");
     governance = contracts.celoRegistry("Governance");
@@ -113,11 +118,16 @@ contract eXOFChecks is Script, Test {
     console.log("\nStarting eXOF checks: \n");
     verifyOwner();
     verifyEXOFStableToken();
+    verifyEXOFAddedToRegistry();
+    verifyEXOFAddedToReserves();
+    verifyEXOFAddedToFeeCurrencyWhitelist();
     verifyExchanges();
     verifyCircuitBreaker();
   }
 
   function verifyOwner() internal view {
+    console.log("== Verifying Token Stuff... ==");
+
     address eXOFImplementation = contracts.deployed("StableTokenXOF");
     require(
       StableTokenXOF(eXOFImplementation).owner() == governance,
@@ -127,7 +137,7 @@ contract eXOFChecks is Script, Test {
       ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).owner() == governance,
       "Nonrecoverable Value Delta Breaker ownership not transferred to governance"
     );
-    console.log("🟢 Contract ownerships transferred to governance \n");
+    console.log("🟢 Contract ownerships transferred to governance");
   }
 
   function verifyEXOFStableToken() internal view {
@@ -143,7 +153,46 @@ contract eXOFChecks is Script, Test {
       );
       revert("Deployed StableTokenXOF does not match what proxy points to. See logs.");
     }
-    console.log("🟢 StableTokenXOFProxy has the correct implementation address \n");
+    console.log("🟢 StableTokenXOFProxy has the correct implementation address");
+  }
+
+  function verifyEXOFAddedToRegistry() internal view {
+    address registryEXOFAddress = IRegistry(REGISTRY_ADDRESS).getAddressForStringOrDie("StableTokenXOF");
+    address deployedEXOFAddress = contracts.deployed("StableTokenXOFProxy");
+
+    if (registryEXOFAddress != deployedEXOFAddress) {
+      console.log(
+        "The eXOF address from the registry: %s does not match the deployed address: %s.",
+        registryEXOFAddress,
+        deployedEXOFAddress
+      );
+      revert("Deployed eXOF does not match what registry points to. See logs.");
+    }
+
+    console.log("🟢 eXOF has been added to the registry");
+  }
+
+  function verifyEXOFAddedToReserves() internal view {
+    if (!Reserve(address(uint160(partialReserve))).isStableAsset(eXOF)) {
+      revert("eXOF has not been added to the partial reserve.");
+    }
+
+    if (!Reserve(address(uint160(reserve))).isStableAsset(eXOF)) {
+      revert("eXOF has not been added to the reserve.");
+    }
+
+    console.log("🟢 eXOF has been added to the reserves");
+  }
+
+  function verifyEXOFAddedToFeeCurrencyWhitelist() internal view {
+    address[] memory feeCurrencyWhitelist = IFeeCurrencyWhitelist(contracts.celoRegistry("FeeCurrencyWhitelist"))
+      .getWhitelist();
+
+    if (!Arrays.contains(feeCurrencyWhitelist, eXOF)) {
+      revert("eXOF has not been added to the fee currency whitelist.");
+    }
+
+    console.log("🟢 eXOF has been added to the fee currency whitelist");
   }
 
   /* ================================================================ */
@@ -153,7 +202,7 @@ contract eXOFChecks is Script, Test {
   function verifyExchanges() internal {
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
-    console.log("== Verifying exchanges... ==");
+    console.log("\n== Verifying exchanges... ==");
 
     verifyPoolExchange(config);
     verifyPoolConfig(config);
@@ -225,7 +274,7 @@ contract eXOFChecks is Script, Test {
         "asset1 is not CELO or bridgedUSDC in the exchange"
       );
     }
-    console.log("\tPoolExchange correctly configured 🤘🏼");
+    console.log("🟢 PoolExchange correctly configured 🤘🏼");
   }
 
   function verifyPoolConfig(eXOFConfig.eXOF memory config) internal view {
@@ -281,7 +330,7 @@ contract eXOFChecks is Script, Test {
         revert("stablePoolResetSize of pool does not match the expected stablePoolResetSize. See logs.");
       }
     }
-    console.log("\tPool config is correctly configured 🤘🏼");
+    console.log("🟢 Pool config is correctly configured 🤘🏼");
   }
 
   function verifyTradingLimits(eXOFConfig.eXOF memory config) internal view {
@@ -321,7 +370,7 @@ contract eXOFChecks is Script, Test {
         revert("Not all trading limits were configured correctly.");
       }
     }
-    console.log("\tTrading limits set for all exchanges 🔒");
+    console.log("🟢 Trading limits set for all exchanges 🔒");
   }
 
   /* ================================================================ */
@@ -345,7 +394,7 @@ contract eXOFChecks is Script, Test {
       console.log("The Nonrecoverable ValueDeltaBreaker was not set with trading halted ❌");
       revert("Nonrecoverable ValueDeltaBreaker was not set with trading halted");
     }
-    console.log("\t Nonrecoverable ValueDeltaBreaker set with trading mode 3");
+    console.log("🟢 Nonrecoverable ValueDeltaBreaker set with trading mode 3");
 
     // verify that rate feed dependencies were configured correctly
     address EUROCXOFDependency = BreakerBox(breakerBox).rateFeedDependencies(config.EUROXOF.rateFeedID, 0);
@@ -353,7 +402,7 @@ contract eXOFChecks is Script, Test {
       EUROCXOFDependency == config.EUROXOF.dependentRateFeeds[0],
       "EUROC/XOF rate feed dependency not set correctly"
     );
-    console.log("\tRate feed dependencies configured correctly 🗳️");
+    console.log("🟢 Rate feed dependencies configured correctly 🗳️");
   }
 
   function verifyBreakersAreEnabled(eXOFConfig.eXOF memory config) internal view {
@@ -388,7 +437,7 @@ contract eXOFChecks is Script, Test {
         }
       }
     }
-    console.log("\tBreakers enabled for all rate feeds 🗳️");
+    console.log("🟢 Breakers enabled for all rate feeds 🗳️");
   }
 
   function verifyMedianDeltaBreaker(eXOFConfig.eXOF memory config) internal view {
@@ -422,7 +471,7 @@ contract eXOFChecks is Script, Test {
         }
       }
     }
-    console.log("\tMedianDeltaBreaker cooldown, rate change threshold and smoothing factor set correctly 🔒");
+    console.log("🟢 MedianDeltaBreaker cooldown, rate change threshold and smoothing factor set correctly 🔒");
   }
 
   function verifyValueDeltaBreaker(eXOFConfig.eXOF memory config) internal view {
@@ -453,7 +502,7 @@ contract eXOFChecks is Script, Test {
         }
       }
     }
-    console.log("\tValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒");
+    console.log("🟢 ValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒 \n");
   }
 
   function verifyNonrecoverableValueDeltaBreaker(eXOFConfig.eXOF memory config) internal view {

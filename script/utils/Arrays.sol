@@ -205,4 +205,13 @@ library Arrays {
     arr[4] = e4;
     return arr;
   }
+
+  function contains(address[] memory self, address value) internal pure returns (bool) {
+    for (uint i = 0; i < self.length; i++) {
+      if (self[i] == value) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
