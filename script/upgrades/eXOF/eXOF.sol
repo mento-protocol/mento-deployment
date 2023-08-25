@@ -138,12 +138,10 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     proposal_initializeEXOFToken(config);
-    //TODO(Bayo): registry was already updated on testnet before this was added. How?
-    // proposal_addEXOFToCeloRegistry();
+    proposal_addEXOFToCeloRegistry();
     proposal_configureEXOFConstitutionParameters();
     proposal_addEXOFToReserves();
     proposal_enableGasPaymentsWithEXOF();
-    proposal_setDailySpendingRatioForCollateralAssets();
 
     proposal_createExchanges(config);
     proposal_configureTradingLimits(config);
@@ -275,29 +273,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         )
       );
     }
-  }
-
-  /**
-   * @notice This function creates the transaction to set the daily spending ratio for all collateral assets
-   *         including the newly added EuroC.
-   */
-  function proposal_setDailySpendingRatioForCollateralAssets() private {
-    uint256 dailySpendingRatio = 1e24;
-
-    address[] memory collateralAssets = Arrays.addresses(celo, contracts.dependency("BridgedUSDC"), bridgedEUROC);
-    uint256[] memory dailySpendingRatios = Arrays.uints(dailySpendingRatio, dailySpendingRatio, dailySpendingRatio);
-
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        partialReserveProxy,
-        abi.encodeWithSelector(
-          Reserve(0).setDailySpendingRatioForCollateralAssets.selector,
-          collateralAssets,
-          dailySpendingRatios
-        )
-      )
-    );
   }
 
   /**
