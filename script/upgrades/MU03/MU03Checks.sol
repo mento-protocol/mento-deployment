@@ -144,6 +144,11 @@ contract MU03Checks is Script, Test {
       console2.log("EUROC is not a collateral asset 🏦");
       revert("EUROC is not a collateral asset");
     }
+    if (partialReserve.getDailySpendingRatioForCollateralAsset(bridgedEUROC) != FixidityLib.fixed1().unwrap()) {
+      revert("EUROC daily spending ratio not set correctly");
+    } else {
+      console2.log("EUROC daily spending ratio set correctly 🏦");
+    }
   }
 
   function verifyBiPoolManager() internal view {

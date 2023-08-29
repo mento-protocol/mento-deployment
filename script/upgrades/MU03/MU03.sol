@@ -26,6 +26,7 @@ import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/MedianDeltaBreaker.sol";
 import { ValueDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/ValueDeltaBreaker.sol";
 import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
+import { Reserve } from "mento-core-2.2.0/swap/Reserve.sol";
 
 import { MU03Config, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
@@ -53,7 +54,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   address payable private biPoolManagerProxyAddress;
   address private brokerProxyAddress;
   address private sortedOraclesProxy;
-  address private partialReserveProxy;
+  address payable private partialReserveProxy;
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
@@ -92,7 +93,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     biPoolManagerProxyAddress = address(uint160(contracts.deployed("BiPoolManagerProxy")));
     brokerProxyAddress = contracts.deployed("BrokerProxy");
     sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
-    partialReserveProxy = contracts.deployed("PartialReserveProxy");
+    partialReserveProxy = address(uint160(contracts.deployed("PartialReserveProxy")));
   }
 
   /**
@@ -146,12 +147,30 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
 
   function proposal_addEUROCToPartialReserve() private {
     // addCollateralAsset will throw if it's already added
-    if (IReserve(partialReserveProxy).isCollateralAsset(bridgedEUROC) == false) {
+    if (Reserve(partialReserveProxy).isCollateralAsset(bridgedEUROC) == false) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           partialReserveProxy,
-          abi.encodeWithSelector(IReserve(0).addCollateralAsset.selector, bridgedEUROC)
+          abi.encodeWithSelector(Reserve(0).addCollateralAsset.selector, bridgedEUROC)
+        )
+      );
+    }
+
+    // set EUROC daily spending ratio to 100%
+    if (
+      Reserve(partialReserveProxy).getDailySpendingRatioForCollateralAsset(bridgedEUROC) !=
+      FixidityLib.fixed1().unwrap()
+    ) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          partialReserveProxy,
+          abi.encodeWithSelector(
+            Reserve(0).setDailySpendingRatioForCollateralAssets.selector,
+            Arrays.addresses(bridgedEUROC),
+            Arrays.uints(FixidityLib.fixed1().unwrap())
+          )
         )
       );
     }
@@ -499,47 +518,41 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_configureValueDeltaBreaker0(MU03Config.MU03 memory config) public {
-    // Set reference value for USDC/USD, EUROC/EUR rate Feed
+    // Set reference value for EUROC/EUR rate feed
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
-          Arrays.uints(
-            config.USDCUSD.valueDeltaBreaker0.referenceValue,
-            config.EUROCEUR.valueDeltaBreaker0.referenceValue
-          )
+          Arrays.addresses(config.EUROCEUR.rateFeedID),
+          Arrays.uints(config.EUROCEUR.valueDeltaBreaker0.referenceValue)
         )
       )
     );
 
-    // Set cooldown time for USDC/USD, EUROC/EUR rate Feeds
+    // Set cooldown time for EUROC/EUR rate feed
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
-          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.cooldown, config.EUROCEUR.valueDeltaBreaker0.cooldown)
+          Arrays.addresses(config.EUROCEUR.rateFeedID),
+          Arrays.uints(config.EUROCEUR.valueDeltaBreaker0.cooldown)
         )
       )
     );
 
-    /// Set rate change thresholds for USDC/USD, EUROC/EUR rate Feeds
+    /// Set rate change threshold for EUROC/EUR rate feed
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(config.USDCUSD.rateFeedID, config.EUROCEUR.rateFeedID),
-          Arrays.uints(
-            config.USDCUSD.valueDeltaBreaker0.threshold.unwrap(),
-            config.EUROCEUR.valueDeltaBreaker0.threshold.unwrap()
-          )
+          Arrays.addresses(config.EUROCEUR.rateFeedID),
+          Arrays.uints(config.EUROCEUR.valueDeltaBreaker0.threshold.unwrap())
         )
       )
     );
