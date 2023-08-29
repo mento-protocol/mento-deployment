@@ -24,15 +24,6 @@ contract eXOFChecksSwap is eXOFChecksBase {
   using FixidityLib for FixidityLib.Fraction;
   using Contracts for Contracts.Cache;
 
-  struct DoSwapInArgs {
-    bytes32 exchangeID;
-    address trader;
-    address tokenIn;
-    address tokenOut;
-    uint256 amountIn;
-    uint256 amountOut;
-  }
-
   constructor() public {
     new PrecompileHandler();
     setUp();

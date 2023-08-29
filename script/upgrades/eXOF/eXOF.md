@@ -1,6 +1,6 @@
 ### eXOF
 
-Release v2.2.0 and change trading limits.
+eXOF deployment and governance proposal.
 
 Summary:
 
