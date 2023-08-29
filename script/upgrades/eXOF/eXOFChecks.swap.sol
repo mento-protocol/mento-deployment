@@ -104,9 +104,8 @@ contract eXOFChecksSwap is eXOFChecksBase {
     address tokenOut = eXOF;
     uint256 amountIn = 10e6;
 
-    // TODO: Mint some EUROC to trader
     // Mint some EUROC to trader
-    deal(bridgedUSDC, trader, amountIn, true);
+    deal(tokenIn, trader, amountIn);
 
     testAndPerformConstantSumSwap(
       exchangeID,
@@ -143,7 +142,7 @@ contract eXOFChecksSwap is eXOFChecksBase {
       false
     );
 
-    console.log("\teXOF -> bridgedEUROC swap successful 🚀");
+    console.log("🟢 eXOF -> bridgedEUROC swap successful 🚀");
   }
 
   // *** Helper Functions *** //

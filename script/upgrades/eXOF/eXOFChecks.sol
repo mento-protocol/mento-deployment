@@ -16,7 +16,7 @@ contract eXOFChecks is eXOFChecksBase {
   function run() public {
     setUp();
 
-    // new eXOFChecksVerify().run();
+    new eXOFChecksVerify().run();
     new eXOFChecksSwap().run();
   }
 }
