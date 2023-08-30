@@ -177,13 +177,13 @@ contract eXOFChecksSwap is eXOFChecksBase {
     address tokenOut,
     uint256 amountIn,
     address rateFeedID,
-    bool isBridgedUsdcToStable
+    bool isBridgedStable
   ) internal {
     uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
     (uint256 numerator, uint256 denominator) = SortedOracles(sortedOraclesProxy).medianRate(rateFeedID);
     uint256 estimatedAmountOut;
 
-    if (isBridgedUsdcToStable) {
+    if (isBridgedStable) {
       estimatedAmountOut = FixidityLib
         .newFixed(amountIn.mul(1e12))
         .multiply(FixidityLib.wrap(numerator).divide(FixidityLib.wrap(denominator)))
