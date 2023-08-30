@@ -249,23 +249,24 @@ library Config {
      */
     address registryAddress;
     /**
-     * @dev the inflation rate ... TODO.
+     * @dev The inflation rate in the StableToken contract used to simulate the effect of economic inflation.
      */
     uint256 inflationRate;
     /**
-     * @dev TODO
+     * @dev The frequency at which the inflation factor in the StableToken contract is updated.
      */
     uint256 inflationFactorUpdatePeriod;
     /**
-     * @dev
+     * @dev The addresses of the initial balance holders for the stable token.
      */
     address[] initialBalanceAddresses;
     /**
-     * @dev
+     * @dev The initial balance values for the addresses in the initialBalanceAddresses array.
      */
     uint256[] initialBalanceValues;
     /**
-     * @dev
+     * @dev The identifer of the exchange in the regristry to be used to swap the token.
+     *      This is deprecated but should be set to the Broker for tokens created post Mc Mento.
      */
     string exchangeIdentifier;
   }
