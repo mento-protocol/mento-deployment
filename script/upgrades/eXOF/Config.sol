@@ -13,7 +13,8 @@ import { FixidityLib } from "script/utils/FixidityLib.sol";
  * @dev This library contains the configuration required for the eXOF governance proposal.
  *      The following configuration is used:
  *     - 2 pools: eXOFCelo and eXOFEUROC
- *     - 2 rate feeds: CELOXOF and EUROXOF
+ *     - 2 rate feeds: CELOXOF and EURXOF
+ *     - Configuration params needed to initialize the eXOF stable token
  */
 library eXOFConfig {
   using FixidityLib for FixidityLib.Fraction;
@@ -26,7 +27,7 @@ library eXOFConfig {
     Config.Pool[] pools;
     // Rate Feeds
     Config.RateFeed CELOXOF;
-    Config.RateFeed EUROXOF;
+    Config.RateFeed EURXOF;
     Config.RateFeed[] rateFeeds;
     Config.StableToken stableTokenXOF;
   }
@@ -41,7 +42,7 @@ library eXOFConfig {
 
     config.rateFeeds = new Config.RateFeed[](2);
     config.rateFeeds[0] = config.CELOXOF = CELOXOF_RateFeedConfig(contracts);
-    config.rateFeeds[1] = config.EUROXOF = EUROXOF_RateFeedConfig(contracts);
+    config.rateFeeds[1] = config.EURXOF = EUROXOF_RateFeedConfig(contracts);
 
     config.stableTokenXOF = stableTokenXOFConfig();
   }
@@ -64,7 +65,7 @@ library eXOFConfig {
   }
 
   /**
-   * @dev Returns the configuration for the EUROXOF rate feed.
+   * @dev Returns the configuration for the EURXOF rate feed.
    */
   function EUROXOF_RateFeedConfig(
     Contracts.Cache storage contracts

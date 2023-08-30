@@ -507,8 +507,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(config.EUROXOF.rateFeedID),
-          Arrays.uints(config.EUROXOF.valueDeltaBreaker0.cooldown)
+          Arrays.addresses(config.EURXOF.rateFeedID),
+          Arrays.uints(config.EURXOF.valueDeltaBreaker0.cooldown)
         )
       )
     );
@@ -519,8 +519,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(config.EUROXOF.rateFeedID),
-          Arrays.uints(config.EUROXOF.valueDeltaBreaker0.threshold.unwrap())
+          Arrays.addresses(config.EURXOF.rateFeedID),
+          Arrays.uints(config.EURXOF.valueDeltaBreaker0.threshold.unwrap())
         )
       )
     );
@@ -531,8 +531,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(config.EUROXOF.rateFeedID),
-          Arrays.uints(config.EUROXOF.valueDeltaBreaker0.referenceValue)
+          Arrays.addresses(config.EURXOF.rateFeedID),
+          Arrays.uints(config.EURXOF.valueDeltaBreaker0.referenceValue)
         )
       )
     );
@@ -549,8 +549,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         nonrecoverableValueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(config.EUROXOF.rateFeedID),
-          Arrays.uints(config.EUROXOF.valueDeltaBreaker1.cooldown)
+          Arrays.addresses(config.EURXOF.rateFeedID),
+          Arrays.uints(config.EURXOF.valueDeltaBreaker1.cooldown)
         )
       )
     );
@@ -562,8 +562,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         nonrecoverableValueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(config.EUROXOF.rateFeedID),
-          Arrays.uints(config.EUROXOF.valueDeltaBreaker1.threshold.unwrap())
+          Arrays.addresses(config.EURXOF.rateFeedID),
+          Arrays.uints(config.EURXOF.valueDeltaBreaker1.threshold.unwrap())
         )
       )
     );
@@ -575,8 +575,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         nonrecoverableValueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(config.EUROXOF.rateFeedID),
-          Arrays.uints(config.EUROXOF.valueDeltaBreaker1.referenceValue)
+          Arrays.addresses(config.EURXOF.rateFeedID),
+          Arrays.uints(config.EURXOF.valueDeltaBreaker1.referenceValue)
         )
       )
     );
