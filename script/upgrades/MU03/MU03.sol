@@ -12,7 +12,6 @@ import { Arrays } from "script/utils/Arrays.sol";
 import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
 import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";
 import { IPricingModule } from "mento-core-2.2.0/interfaces/IPricingModule.sol";
-import { IReserve } from "mento-core-2.2.0/interfaces/IReserve.sol";
 import { Proxy } from "mento-core-2.2.0/common/Proxy.sol";
 import { IERC20Metadata } from "mento-core-2.2.0/common/interfaces/IERC20Metadata.sol";
 
