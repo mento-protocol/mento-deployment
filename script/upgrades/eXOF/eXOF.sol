@@ -21,7 +21,6 @@ import { IERC20Metadata } from "mento-core-2.2.0/common/interfaces/IERC20Metadat
 import { BiPoolManagerProxy } from "mento-core-2.2.0/proxies/BiPoolManagerProxy.sol";
 import { BrokerProxy } from "mento-core-2.2.0/proxies/BrokerProxy.sol";
 import { Broker } from "mento-core-2.2.0/swap/Broker.sol";
-import { BiPoolManager } from "mento-core-2.2.0/swap/BiPoolManager.sol";
 import { Exchange } from "mento-core-2.2.0/legacy/Exchange.sol";
 import { TradingLimits } from "mento-core-2.2.0/libraries/TradingLimits.sol";
 import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
@@ -30,7 +29,6 @@ import { ValueDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/ValueDeltaB
 import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
 import { StableTokenXOF } from "mento-core-2.2.0/legacy/StableTokenXOF.sol";
 import { StableTokenXOFProxy } from "mento-core-2.2.0/legacy/proxies/StableTokenXOFProxy.sol";
-import { Reserve } from "mento-core-2.2.0/swap/Reserve.sol";
 
 import { eXOFConfig, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
