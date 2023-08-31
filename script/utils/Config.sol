@@ -265,7 +265,7 @@ library Config {
      */
     uint256[] initialBalanceValues;
     /**
-     * @dev The identifer of the exchange in the regristry to be used to swap the token.
+     * @dev The identifer of the exchange in the registry to be used to swap the token.
      *      This is deprecated but should be set to the Broker for tokens created post Mc Mento.
      */
     string exchangeIdentifier;
