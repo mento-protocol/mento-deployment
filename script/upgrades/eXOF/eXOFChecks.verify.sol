@@ -209,52 +209,52 @@ contract eXOFChecksVerify is eXOFChecksBase {
   function verifyPoolConfig(eXOFConfig.eXOF memory config) internal view {
     for (uint256 i = 0; i < config.pools.length; i++) {
       bytes32 exchangeId = getExchangeId(config.pools[i].asset0, config.pools[i].asset1, config.pools[i].isConstantSum);
-      IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeId);
-      Config.Pool memory poolConfig = config.pools[i];
+      IBiPoolManager.PoolExchange memory deployedPool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeId);
+      Config.Pool memory expectedPoolConfig = config.pools[i];
 
-      if (pool.config.spread.unwrap() != poolConfig.spread.unwrap()) {
+      if (deployedPool.config.spread.unwrap() != expectedPoolConfig.spread.unwrap()) {
         console.log(
           "The spread of deployed pool: %s does not match the expected spread: %s.",
-          pool.config.spread.unwrap(),
-          poolConfig.spread.unwrap()
+          deployedPool.config.spread.unwrap(),
+          expectedPoolConfig.spread.unwrap()
         );
         revert("spread of pool does not match the expected spread. See logs.");
       }
 
-      if (pool.config.referenceRateFeedID != poolConfig.referenceRateFeedID) {
+      if (deployedPool.config.referenceRateFeedID != expectedPoolConfig.referenceRateFeedID) {
         console.log(
           "The referenceRateFeedID of deployed pool: %s does not match the expected referenceRateFeedID: %s.",
-          pool.config.referenceRateFeedID,
-          poolConfig.referenceRateFeedID
+          deployedPool.config.referenceRateFeedID,
+          expectedPoolConfig.referenceRateFeedID
         );
         revert("referenceRateFeedID of pool does not match the expected referenceRateFeedID. See logs.");
       }
 
-      if (pool.config.minimumReports != poolConfig.minimumReports) {
+      if (deployedPool.config.minimumReports != expectedPoolConfig.minimumReports) {
         console.log(
           "The minimumReports of deployed pool: %s does not match the expected minimumReports: %s.",
-          pool.config.minimumReports,
-          poolConfig.minimumReports
+          deployedPool.config.minimumReports,
+          expectedPoolConfig.minimumReports
         );
         revert("minimumReports of pool does not match the expected minimumReports. See logs.");
       }
 
-      if (pool.config.referenceRateResetFrequency != poolConfig.referenceRateResetFrequency) {
+      if (deployedPool.config.referenceRateResetFrequency != expectedPoolConfig.referenceRateResetFrequency) {
         console.log(
           "The referenceRateResetFrequency of deployed pool: %s does not match the expected: %s.",
-          pool.config.referenceRateResetFrequency,
-          poolConfig.referenceRateResetFrequency
+          deployedPool.config.referenceRateResetFrequency,
+          expectedPoolConfig.referenceRateResetFrequency
         );
         revert(
           "referenceRateResetFrequency of pool does not match the expected referenceRateResetFrequency. See logs."
         );
       }
 
-      if (pool.config.stablePoolResetSize != poolConfig.stablePoolResetSize) {
+      if (deployedPool.config.stablePoolResetSize != expectedPoolConfig.stablePoolResetSize) {
         console.log(
           "The stablePoolResetSize of deployed pool: %s does not match the expected stablePoolResetSize: %s.",
-          pool.config.stablePoolResetSize,
-          poolConfig.stablePoolResetSize
+          deployedPool.config.stablePoolResetSize,
+          expectedPoolConfig.stablePoolResetSize
         );
         revert("stablePoolResetSize of pool does not match the expected stablePoolResetSize. See logs.");
       }
