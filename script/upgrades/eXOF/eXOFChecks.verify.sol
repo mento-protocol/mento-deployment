@@ -473,7 +473,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
           true
         );
 
-        // verify refernece value
+        // verify reference value
         if (referenceValue != rateFeed.valueDeltaBreaker1.referenceValue) {
           console.log(
             "Nonrecoverable ValueDeltaBreaker reference value not set correctly for the rate feed: %s",
