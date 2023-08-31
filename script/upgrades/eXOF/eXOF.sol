@@ -112,7 +112,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
 
     // Set the exchange ID for the reference rate feed
     for (uint i = 0; i < config.pools.length; i++) {
-      referenceRateFeedIDToExchangeId[config.pools[i].referenceRateFeedID] = getExchangeId(
+      referenceRateFeedIDToExchangeId[config.pools[i].referenceRateFeedID] = getXOFExchangeId(
         config.pools[i].asset1,
         config.pools[i].isConstantSum
       );
@@ -578,7 +578,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   /**
    * @notice Helper function to get the exchange ID for a pool.
    */
-  function getExchangeId(address asset1, bool isConstantSum) internal view returns (bytes32) {
+  function getXOFExchangeId(address asset1, bool isConstantSum) internal view returns (bytes32) {
     return
       keccak256(
         abi.encodePacked("eXOF", IERC20Metadata(asset1).symbol(), isConstantSum ? "ConstantSum" : "ConstantProduct")

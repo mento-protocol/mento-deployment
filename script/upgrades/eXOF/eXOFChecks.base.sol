@@ -7,7 +7,7 @@ import { Test } from "forge-std/Test.sol";
 import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
 import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
-import { Script } from "script/utils/Script.sol";
+import { GovernanceScript } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
@@ -39,7 +39,7 @@ import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
 
 import { eXOFConfig, Config } from "./Config.sol";
 
-contract eXOFChecksBase is Script, Test {
+contract eXOFChecksBase is GovernanceScript, Test {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
   using SafeMath for uint256;
@@ -101,19 +101,5 @@ contract eXOFChecksBase is Script, Test {
     constantProduct = contracts.deployed("ConstantProductPricingModule");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
     sortedOracles = contracts.deployed("SortedOracles");
-  }
-
-  /**
-   * @notice Helper function to get the exchange ID for a pool.
-   */
-  function getExchangeId(address asset0, address asset1, bool isConstantSum) internal view returns (bytes32) {
-    return
-      keccak256(
-        abi.encodePacked(
-          IERC20Metadata(asset0).symbol(),
-          IERC20Metadata(asset1).symbol(),
-          isConstantSum ? "ConstantSum" : "ConstantProduct"
-        )
-      );
   }
 }
