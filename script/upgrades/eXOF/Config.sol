@@ -42,7 +42,7 @@ library eXOFConfig {
 
     config.rateFeeds = new Config.RateFeed[](2);
     config.rateFeeds[0] = config.CELOXOF = CELOXOF_RateFeedConfig(contracts);
-    config.rateFeeds[1] = config.EURXOF = EUROXOF_RateFeedConfig(contracts);
+    config.rateFeeds[1] = config.EURXOF = EURXOF_RateFeedConfig(contracts);
 
     config.stableTokenXOF = stableTokenXOFConfig();
   }
@@ -67,7 +67,7 @@ library eXOFConfig {
   /**
    * @dev Returns the configuration for the EURXOF rate feed.
    */
-  function EUROXOF_RateFeedConfig(
+  function EURXOF_RateFeedConfig(
     Contracts.Cache storage contracts
   ) internal returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = contracts.dependency("EURXOFRateFeedAddr");
