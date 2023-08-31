@@ -200,7 +200,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
       // verify asset1 is always a collateral asset
       require(
         pool.asset1 == celoToken || pool.asset1 == bridgedUSDC || pool.asset1 == bridgedEUROC,
-        "asset1 is not CELO or bridgedUSDC in the exchange"
+        "asset1 is not CELO or bridgedUSDC or bridgedEUROC in the exchange"
       );
     }
     console.log("🟢 PoolExchange correctly configured 🤘🏼");
