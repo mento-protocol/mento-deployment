@@ -44,6 +44,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
   function run() public {
     console.log("\nStarting eXOF checks:");
 
+    console.log("\n== Verifying Token Transactions ==");
     verifyOwner();
     verifyEXOFStableToken();
     verifyEXOFAddedToRegistry();
@@ -54,8 +55,6 @@ contract eXOFChecksVerify is eXOFChecksBase {
   }
 
   function verifyOwner() internal view {
-    console.log("\n== Verifying Token Stuff ==");
-
     address eXOFImplementation = contracts.deployed("StableTokenXOF");
     require(
       StableTokenXOF(eXOFImplementation).owner() == governance,
