@@ -496,8 +496,8 @@ contract eXOFChecksVerify is eXOFChecksBase {
   ) internal view {
     if (currentThreshold != expectedThreshold) {
       if (isValueDeltaBreaker) {
-        console.log("ValueDeltaBreaker rate change threshold not set correctly for USDC/USD rate feed %s", rateFeedID);
-        revert("ValueDeltaBreaker rate change threshold not set correctly for USDC/USD rate feed");
+        console.log("ValueDeltaBreaker rate change threshold not set correctly for rate feed with id %s", rateFeedID);
+        revert("ValueDeltaBreaker rate change threshold not set correctly for rate feed");
       }
       console.log("MedianDeltaBreaker rate change threshold not set correctly for rate feed %s", rateFeedID);
       revert("MedianDeltaBreaker rate change threshold not set correctly for all rate feeds");
@@ -512,8 +512,8 @@ contract eXOFChecksVerify is eXOFChecksBase {
   ) internal view {
     if (currentCoolDown != expectedCoolDown) {
       if (isValueDeltaBreaker) {
-        console.log("ValueDeltaBreaker cooldown not set correctly for USDC/USD rate feed %s", rateFeedID);
-        revert("ValueDeltaBreaker cooldown not set correctly for USDC/USD rate feed");
+        console.log("ValueDeltaBreaker cooldown not set correctly for rate feed with id %s", rateFeedID);
+        revert("ValueDeltaBreaker cooldown not set correctly for rate feed");
       }
       console.log("MedianDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);
       revert("MedianDeltaBreaker cooldown not set correctly for all rate feeds");
