@@ -38,6 +38,8 @@ interface IBrokerWithCasts {
 contract eXOFChecksVerify is eXOFChecksBase {
   using TradingLimits for TradingLimits.Config;
 
+  uint256 constant PRE_EXISTING_POOLS = 7;
+
   constructor() public {
     setUp();
   }
@@ -141,7 +143,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
 
     // check configured pools against the config
     require(
-      exchanges.length == config.pools.length + 7,
+      exchanges.length == config.pools.length + PRE_EXISTING_POOLS,
       "Number of expected pools does not match the number of deployed pools."
     );
 
