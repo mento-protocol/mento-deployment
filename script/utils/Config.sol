@@ -258,10 +258,12 @@ library Config {
     uint256 inflationFactorUpdatePeriod;
     /**
      * @dev The addresses of the initial balance holders for the stable token.
+     *      This is deprecated but is being set for consistency.
      */
     address[] initialBalanceAddresses;
     /**
      * @dev The initial balance values for the addresses in the initialBalanceAddresses array.
+     *      This is deprecated but is being set for consistency.
      */
     uint256[] initialBalanceValues;
     /**
