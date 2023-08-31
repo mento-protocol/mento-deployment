@@ -265,36 +265,49 @@ contract eXOFChecksVerify is eXOFChecksBase {
       IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeId);
       Config.Pool memory poolConfig = config.pools[i];
 
-      bytes32 limitId = exchangeId ^ bytes32(uint256(uint160(pool.asset0)));
-      TradingLimits.Config memory limits = _broker.tradingLimitsConfig(limitId);
+      bytes32 asset0LimitId = exchangeId ^ bytes32(uint256(uint160(pool.asset0)));
+      TradingLimits.Config memory asset0ActualLimit = _broker.tradingLimitsConfig(asset0LimitId);
 
-      // verify configured trading limits for all pools
-      if (poolConfig.asset0limits.limit0 != limits.limit0) {
-        console.log("limit0 for %s, %s was not set ❌", pool.asset0, pool.asset1);
-        revert("Not all trading limits were configured correctly.");
-      }
-      if (poolConfig.asset0limits.limit1 != limits.limit1) {
-        console.log("limit1 for %s, %s was not set ❌", pool.asset0, pool.asset1);
-        revert("Not all trading limits were configured correctly.");
-      }
-      if (poolConfig.asset0limits.limitGlobal != limits.limitGlobal) {
-        console.log("limitGlobal for %s, %s was not set ❌", pool.asset0, pool.asset1);
-        revert("Not all trading limits were configured correctly.");
-      }
-      if (poolConfig.asset0limits.timeStep0 != limits.timestep0) {
-        console.log("timestep0 for %s, %s was not set ❌", pool.asset0, pool.asset1);
-        revert("Not all trading limits were configured correctly.");
-      }
-      if (poolConfig.asset0limits.timeStep1 != limits.timestep1) {
-        console.log("timestep1 for %s, %s was not set ❌", pool.asset0, pool.asset1);
-        revert("Not all trading limits were configured correctly.");
-      }
-      if (Config.tradingLimitConfigToFlag(poolConfig.asset0limits) != limits.flags) {
-        console.log("flags for %s, %s was not set ❌", pool.asset0, pool.asset1);
-        revert("Not all trading limits were configured correctly.");
-      }
+      bytes32 asset1LimitId = exchangeId ^ bytes32(uint256(uint160(pool.asset1)));
+      TradingLimits.Config memory asset1ActualLimit = _broker.tradingLimitsConfig(asset1LimitId);
+
+      checkTradingLimt(poolConfig.asset0limits, asset0ActualLimit);
+      checkTradingLimt(poolConfig.asset1limits, asset1ActualLimit);
     }
+
     console.log("🟢 Trading limits set for all exchanges 🔒");
+  }
+
+  function checkTradingLimt(
+    Config.TradingLimit memory expectedTradingLimit,
+    TradingLimits.Config memory actualTradingLimit
+  ) internal view {
+    if (expectedTradingLimit.limit0 != actualTradingLimit.limit0) {
+      console.log("limit0 was not set as expected ❌");
+      revert("Not all trading limits were configured correctly.");
+    }
+    if (expectedTradingLimit.limit1 != actualTradingLimit.limit1) {
+      console.log("limit1 was not set as expected ❌");
+      revert("Not all trading limits were configured correctly.");
+    }
+    if (expectedTradingLimit.limitGlobal != actualTradingLimit.limitGlobal) {
+      console.log("limitGlobal was not set as expected ❌");
+      revert("Not all trading limits were configured correctly.");
+    }
+    if (expectedTradingLimit.timeStep0 != actualTradingLimit.timestep0) {
+      console.log("timestep0 was not set as expected ❌");
+      revert("Not all trading limits were configured correctly.");
+    }
+    if (expectedTradingLimit.timeStep1 != actualTradingLimit.timestep1) {
+      console.log("timestep1 was not set as expected ❌");
+      revert("Not all trading limits were configured correctly.");
+    }
+
+    uint8 tradingLimitFlags = Config.tradingLimitConfigToFlag(expectedTradingLimit);
+    if (tradingLimitFlags != actualTradingLimit.flags) {
+      console.log("flags were not set as expected ❌");
+      revert("Not all trading limits were configured correctly.");
+    }
   }
 
   /* ================================================================ */
