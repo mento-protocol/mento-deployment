@@ -20,6 +20,7 @@ import { Reserve } from "mento-core-2.2.0/swap/Reserve.sol";
 import { BiPoolManager } from "mento-core-2.2.0/swap/BiPoolManager.sol";
 import { TradingLimits } from "mento-core-2.2.0/libraries/TradingLimits.sol";
 import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
+import { Proxy } from "mento-core-2.2.0/common/Proxy.sol";
 
 import { eXOFChecksBase } from "./eXOFChecks.base.sol";
 import { eXOFConfig, Config } from "./Config.sol";
@@ -60,6 +61,9 @@ contract eXOFChecksVerify is eXOFChecksBase {
       StableTokenXOF(eXOFImplementation).owner() == governance,
       "StableTokenXOF ownership not transferred to governance"
     );
+
+    require(Proxy(eXOF)._getOwner() == governance, "StableTokenXOF Proxy ownership not transferred to governance");
+
     require(
       ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).owner() == governance,
       "Nonrecoverable Value Delta Breaker ownership not transferred to governance"
