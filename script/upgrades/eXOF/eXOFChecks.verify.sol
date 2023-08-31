@@ -438,7 +438,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
           true
         );
 
-        // verify refernece value
+        // verify reference value
         if (referenceValue != rateFeed.valueDeltaBreaker0.referenceValue) {
           console.log("ValueDeltaBreaker reference value not set correctly for the rate feed: %s", rateFeed.rateFeedID);
           revert("ValueDeltaBreaker reference values not set correctly for all rate feeds");
