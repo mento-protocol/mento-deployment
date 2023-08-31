@@ -316,51 +316,47 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     for (uint256 i = 0; i < config.pools.length; i++) {
       Config.Pool memory poolConfig = config.pools[i];
 
-      if (Config.tradingLimitConfigToFlag(poolConfig.asset0limits) > 0) {
-        // Set the trading limit for asset0 of the pool
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            brokerProxy,
-            abi.encodeWithSelector(
-              Broker(0).configureTradingLimit.selector,
-              referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
-              poolConfig.asset0,
-              TradingLimits.Config({
-                timestep0: poolConfig.asset0limits.timeStep0,
-                timestep1: poolConfig.asset0limits.timeStep1,
-                limit0: poolConfig.asset0limits.limit0,
-                limit1: poolConfig.asset0limits.limit1,
-                limitGlobal: poolConfig.asset0limits.limitGlobal,
-                flags: Config.tradingLimitConfigToFlag(poolConfig.asset0limits)
-              })
-            )
+      // Set the trading limit for asset0 of the pool
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          brokerProxy,
+          abi.encodeWithSelector(
+            Broker(0).configureTradingLimit.selector,
+            referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
+            poolConfig.asset0,
+            TradingLimits.Config({
+              timestep0: poolConfig.asset0limits.timeStep0,
+              timestep1: poolConfig.asset0limits.timeStep1,
+              limit0: poolConfig.asset0limits.limit0,
+              limit1: poolConfig.asset0limits.limit1,
+              limitGlobal: poolConfig.asset0limits.limitGlobal,
+              flags: Config.tradingLimitConfigToFlag(poolConfig.asset0limits)
+            })
           )
-        );
-      }
+        )
+      );
 
-      if (Config.tradingLimitConfigToFlag(poolConfig.asset1limits) > 0) {
-        // Set the trading limit for asset1 of the pool
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            brokerProxy,
-            abi.encodeWithSelector(
-              Broker(0).configureTradingLimit.selector,
-              referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
-              poolConfig.asset1,
-              TradingLimits.Config({
-                timestep0: poolConfig.asset1limits.timeStep0,
-                timestep1: poolConfig.asset1limits.timeStep1,
-                limit0: poolConfig.asset1limits.limit0,
-                limit1: poolConfig.asset1limits.limit1,
-                limitGlobal: poolConfig.asset1limits.limitGlobal,
-                flags: Config.tradingLimitConfigToFlag(poolConfig.asset1limits)
-              })
-            )
+      // Set the trading limit for asset1 of the pool
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          brokerProxy,
+          abi.encodeWithSelector(
+            Broker(0).configureTradingLimit.selector,
+            referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
+            poolConfig.asset1,
+            TradingLimits.Config({
+              timestep0: poolConfig.asset1limits.timeStep0,
+              timestep1: poolConfig.asset1limits.timeStep1,
+              limit0: poolConfig.asset1limits.limit0,
+              limit1: poolConfig.asset1limits.limit1,
+              limitGlobal: poolConfig.asset1limits.limitGlobal,
+              flags: Config.tradingLimitConfigToFlag(poolConfig.asset1limits)
+            })
           )
-        );
-      }
+        )
+      );
     }
   }
 
