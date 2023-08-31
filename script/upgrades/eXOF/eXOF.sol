@@ -302,7 +302,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
-          contracts.deployed("BiPoolManagerProxy"),
+          biPoolManagerProxy,
           abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, pool)
         )
       );
@@ -313,7 +313,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
    * @notice This function creates the transactions to configure the trading limits.
    */
   function proposal_configureTradingLimits(eXOFConfig.eXOF memory config) private {
-    address brokerProxyAddress = contracts.deployed("BrokerProxy");
     for (uint256 i = 0; i < config.pools.length; i++) {
       Config.Pool memory poolConfig = config.pools[i];
 
@@ -322,7 +321,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         transactions.push(
           ICeloGovernance.Transaction(
             0,
-            brokerProxyAddress,
+            brokerProxy,
             abi.encodeWithSelector(
               Broker(0).configureTradingLimit.selector,
               referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
@@ -345,7 +344,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         transactions.push(
           ICeloGovernance.Transaction(
             0,
-            brokerProxyAddress,
+            brokerProxy,
             abi.encodeWithSelector(
               Broker(0).configureTradingLimit.selector,
               referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
