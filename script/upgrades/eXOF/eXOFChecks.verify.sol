@@ -7,6 +7,7 @@ import { console2 as console } from "forge-std/Script.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
 import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
+import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
 
 import { IRegistry } from "mento-core-2.2.0/common/interfaces/IRegistry.sol";
 import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";
@@ -40,8 +41,11 @@ contract eXOFChecksVerify is eXOFChecksBase {
 
   uint256 constant PRE_EXISTING_POOLS = 7;
 
+  ICeloGovernance celoGovernance;
+
   constructor() public {
     setUp();
+    celoGovernance = ICeloGovernance(governance);
   }
 
   function run() public {
@@ -50,6 +54,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
     console.log("\n== Verifying Token Transactions ==");
     verifyOwner();
     verifyEXOFStableToken();
+    verifyConstitution();
     verifyEXOFAddedToRegistry();
     verifyEXOFAddedToReserves();
     verifyEXOFAddedToFeeCurrencyWhitelist();
@@ -128,10 +133,39 @@ contract eXOFChecksVerify is eXOFChecksBase {
     console.log("🟢 eXOF has been added to the fee currency whitelist");
   }
 
-  function verifyExchanges() internal {
+  function verifyConstitution() internal {
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
+    bytes4[] memory functionSelectors = config.stableTokenXOF.constitutionFunctionSelectors;
+    uint256[] memory expectedThresholdValues = config.stableTokenXOF.constitutionThresholds;
+
+    for (uint256 i = 0; i < functionSelectors.length; i++) {
+      bytes4 selector = functionSelectors[i];
+      uint256 expectedValue = expectedThresholdValues[i];
+
+      checkConstitutionParam(selector, expectedValue);
+    }
+
+    console.log("🟢 Constitution params configured correctly");
+  }
+
+  function checkConstitutionParam(bytes4 functionSelector, uint256 expectedValue) internal view {
+    uint256 actualConstitutionValue = celoGovernance.getConstitution(eXOF, functionSelector);
+
+    if (actualConstitutionValue != expectedValue) {
+      console.log(
+        "The constitution value for function selector: %s is not set correctly. Expected: %s, Actual: %s",
+        bytes4ToStr(functionSelector),
+        expectedValue,
+        actualConstitutionValue
+      );
+      revert("Constitution value not set correctly. See logs.");
+    }
+  }
+
+  function verifyExchanges() internal {
     console.log("\n== Verifying exchanges ==");
+    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     verifyPoolExchange(config);
     verifyPoolConfig(config);
@@ -320,9 +354,8 @@ contract eXOFChecksVerify is eXOFChecksBase {
   /* ================================================================ */
 
   function verifyCircuitBreaker() internal {
-    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
-
     console.log("\n== Checking circuit breaker ==");
+    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     verifyBreakerBox(config);
     verifyBreakersAreEnabled(config);
@@ -518,5 +551,13 @@ contract eXOFChecksVerify is eXOFChecksBase {
       console.log("MedianDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);
       revert("MedianDeltaBreaker cooldown not set correctly for all rate feeds");
     }
+  }
+
+  function bytes4ToStr(bytes4 _bytes) public pure returns (string memory) {
+    bytes memory bytesArray = new bytes(4);
+    for (uint256 i; i < 4; i++) {
+      bytesArray[i] = _bytes[i];
+    }
+    return string(bytesArray);
   }
 }

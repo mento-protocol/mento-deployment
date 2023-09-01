@@ -176,6 +176,16 @@ library eXOFConfig {
    * @dev Returns the configuration for the eXOF stable token.
    */
   function stableTokenXOFConfig() internal pure returns (Config.StableToken memory config) {
+    bytes4[] memory functionSelectors = Arrays.bytes4s(
+      Config.getSelector("setRegistry(address)"),
+      Config.getSelector("setInflationParameters(uint256,uint256)"),
+      Config.getSelector("transfer(address,uint256)"),
+      Config.getSelector("transferWithComment(address,uint256,string)"),
+      Config.getSelector("approve(address,uint256)")
+    );
+
+    uint256[] memory thresholds = Arrays.uints(0.9 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24);
+
     config = Config.StableToken({
       name: "ECO CFA",
       symbol: "eXOF",
@@ -185,7 +195,9 @@ library eXOFConfig {
       inflationFactorUpdatePeriod: 47304000,
       initialBalanceAddresses: new address[](0),
       initialBalanceValues: new uint256[](0),
-      exchangeIdentifier: "Broker"
+      exchangeIdentifier: "Broker",
+      constitutionFunctionSelectors: functionSelectors,
+      constitutionThresholds: thresholds
     });
   }
 }

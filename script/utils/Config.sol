@@ -271,6 +271,14 @@ library Config {
      *      This is deprecated but should be set to the Broker for tokens created post Mc Mento.
      */
     string exchangeIdentifier;
+    /**
+     * @dev An array of function selectors for the constitution functions.
+     */
+    bytes4[] constitutionFunctionSelectors;
+    /**
+     * @dev An array of thresholds for the corresponding constitution functions.
+     */
+    uint256[] constitutionThresholds;
   }
 
   /**
@@ -298,5 +306,12 @@ library Config {
       flag = flag | 4; // LG
     }
     return flag;
+  }
+
+  /**
+   * @notice Helper function to get the function selector for a function.
+   */
+  function getSelector(string memory _func) internal pure returns (bytes4) {
+    return bytes4(keccak256(bytes(_func)));
   }
 }

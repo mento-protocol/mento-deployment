@@ -137,7 +137,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
 
     proposal_initializeEXOFToken(config);
     proposal_addEXOFToCeloRegistry();
-    proposal_configureEXOFConstitutionParameters();
+    proposal_configureEXOFConstitutionParameters(config.stableTokenXOF);
     proposal_addEXOFToReserves();
     proposal_enableGasPaymentsWithEXOF();
 
@@ -245,19 +245,10 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
    * @notice configure eXOF constitution parameters
    * @dev see cBRl GCP(https://celo.stake.id/#/proposal/49) for reference
    */
-  function proposal_configureEXOFConstitutionParameters() private {
-    bytes4[] memory functionSelectors = Arrays.bytes4s(
-      getSelector("setRegistry(address)"),
-      getSelector("setInflationParameters(uint256,uint256)"),
-      getSelector("transfer(address,uint256)"),
-      getSelector("transferWithComment(address,uint256,string)"),
-      getSelector("approve(address,uint256)")
-    );
-    uint256[] memory thresholds = Arrays.uints(0.9 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24);
-
+  function proposal_configureEXOFConstitutionParameters(Config.StableToken memory stableTokenConfig) private {
     address governanceProxy = contracts.celoRegistry("Governance");
 
-    for (uint256 i = 0; i < functionSelectors.length; i++) {
+    for (uint256 i = 0; i < stableTokenConfig.constitutionFunctionSelectors.length; i++) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -265,8 +256,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
           abi.encodeWithSelector(
             ICeloGovernance(0).setConstitution.selector,
             eXOFProxy,
-            functionSelectors[i],
-            thresholds[i]
+            stableTokenConfig.constitutionFunctionSelectors[i],
+            stableTokenConfig.constitutionThresholds[i]
           )
         )
       );
@@ -583,12 +574,5 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
       keccak256(
         abi.encodePacked("eXOF", IERC20Metadata(asset1).symbol(), isConstantSum ? "ConstantSum" : "ConstantProduct")
       );
-  }
-
-  /**
-   * @notice Helper function to get the function selector for a function.
-   */
-  function getSelector(string memory _func) internal pure returns (bytes4) {
-    return bytes4(keccak256(bytes(_func)));
   }
 }

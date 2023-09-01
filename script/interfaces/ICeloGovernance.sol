@@ -19,4 +19,13 @@ interface ICeloGovernance {
   ) external payable returns (uint256);
 
   function setConstitution(address destination, bytes4 functionId, uint256 threshold) external;
+
+  /**
+   * @notice Returns the constitution for a particular destination and function ID.
+   * @param destination The destination address to get the constitution for.
+   * @param functionId The function ID to get the constitution for, zero for the destination
+   *   default.
+   * @return The ratio of yes:no votes needed to exceed in order to pass the proposal.
+   */
+  function getConstitution(address destination, bytes4 functionId) external view returns (uint256);
 }
