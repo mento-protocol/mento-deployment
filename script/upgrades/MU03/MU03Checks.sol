@@ -116,6 +116,7 @@ contract MU03Checks is Script, Test {
     verifyCircuitBreaker();
 
     doSwaps();
+    verifyNewWhitelistedOracle();
   }
 
   function verifyOwner() internal view {
@@ -530,6 +531,27 @@ contract MU03Checks is Script, Test {
       }
     }
     console2.log("\tValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒");
+  }
+
+  function verifyNewWhitelistedOracle() internal {
+    console2.log("\n== Verifying new whitelisted oracle... ==");
+
+    MU03Config.MU03 memory config = MU03Config.get(contracts);
+    address diwuOracleAddress = 0xBD136a625299A0ac5Ca7Ce9220aCA6e08a624e37;
+    address[] memory whitelistedAddresses = SortedOracles(sortedOraclesProxy).getOracles(
+      config.cEUREUROC.referenceRateFeedID
+    );
+    require(whitelistedAddresses.length == 10, "Full set of oracles not yet whitelisted for EUROC/EUR");
+
+    uint256 found = 0;
+    for (uint256 i = 0; i < whitelistedAddresses.length; i++) {
+      if (whitelistedAddresses[i] == diwuOracleAddress) {
+        found = found + 1;
+      }
+    }
+
+    require(found == 1, "Diwu's oracle address not found or found more than once? 🤔");
+    console2.log("\tDiwu's oracle address whitelisted for EUROC/EUR 🗳️");
   }
 
   // /* ================================================================ */

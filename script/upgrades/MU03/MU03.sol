@@ -560,15 +560,12 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
 
   function proposal_whitelistMissingOracleProvider(MU03Config.MU03 memory config) public {
     // Add DiWu as oracle provider for the EUROC/EUR rate feed
+    address diwuOracleAddress = 0xBD136a625299A0ac5Ca7Ce9220aCA6e08a624e37;
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         sortedOraclesProxy,
-        abi.encodeWithSelector(
-          SortedOracles(0).addOracle.selector,
-          config.EUROCEUR.rateFeedID,
-          0xBD136a625299A0ac5Ca7Ce9220aCA6e08a624e37
-        )
+        abi.encodeWithSelector(SortedOracles(0).addOracle.selector, config.EUROCEUR.rateFeedID, diwuOracleAddress)
       )
     );
   }
