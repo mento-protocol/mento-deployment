@@ -38,6 +38,7 @@ if ! [ -z "$SCRIPT" ]; then # Pick the script by name
     fi
 fi
 
+export FOUNDRY_PROFILE=$NETWORK-deployment
 for DEPLOY_SCRIPT in $UPGRADE_DIR/deploy/*; do
     DEPLOY_FILE=$(basename $DEPLOY_SCRIPT)
     forge_script "$DEPLOY_FILE" "$DEPLOY_SCRIPT" "$(forge_skip $UPGRADE)"

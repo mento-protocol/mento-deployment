@@ -166,6 +166,9 @@ async function main() {
     const onChainBytecode = await getOnChainBytecode(contractAddress, network);
     const bytecodeFromArtifacts = getBytecodeFromArtifacts(contractName);
 
+    fs.writeFileSync(`out/${contractName}.onchain`, onChainBytecode);
+    fs.writeFileSync(`out/${contractName}.artifact`, bytecodeFromArtifacts);
+
     if (onChainBytecode === bytecodeFromArtifacts) {
       tableOutput.push({ contract: contractName, address: contractAddress, match: "✅" });
     } else {
