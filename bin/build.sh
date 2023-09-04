@@ -10,7 +10,7 @@
 source "$(dirname "$0")/setup.sh"
 
 UPGRADE=""
-while getopts n:u:d flag
+while getopts u: flag
 do
     case "${flag}" in
         u) UPGRADE=${OPTARG};;
