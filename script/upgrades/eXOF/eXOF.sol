@@ -138,7 +138,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     proposal_initializeEXOFToken(config);
     proposal_addEXOFToCeloRegistry();
     proposal_configureEXOFConstitutionParameters(config.stableTokenXOF);
-    proposal_addEXOFToReserves();
+    proposal_addEXOFToReserve();
     proposal_enableGasPaymentsWithEXOF();
 
     proposal_createExchanges(config);
@@ -200,7 +200,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   /**
    * @notice adds eXOF token to the partial and main reserve
    */
-  function proposal_addEXOFToReserves() private {
+  function proposal_addEXOFToReserve() private {
     if (IReserve(partialReserveProxy).isStableAsset(eXOFProxy) == false) {
       transactions.push(
         ICeloGovernance.Transaction(
@@ -211,19 +211,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
       );
     } else {
       console.log("Token already added to the partial reserve, skipping: %s", eXOFProxy);
-    }
-
-    address mainReserveProxy = contracts.celoRegistry("Reserve");
-    if (IReserve(mainReserveProxy).isStableAsset(eXOFProxy) == false) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          mainReserveProxy,
-          abi.encodeWithSelector(IReserve(0).addToken.selector, eXOFProxy)
-        )
-      );
-    } else {
-      console.log("Token already added to the main reserve, skipping: %s", eXOFProxy);
     }
   }
 

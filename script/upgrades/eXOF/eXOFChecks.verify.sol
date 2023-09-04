@@ -56,7 +56,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
     verifyEXOFStableToken();
     verifyConstitution();
     verifyEXOFAddedToRegistry();
-    verifyEXOFAddedToReserves();
+    verifyEXOFAddedToReserve();
     verifyEXOFAddedToFeeCurrencyWhitelist();
     verifyExchanges();
     verifyCircuitBreaker();
@@ -110,16 +110,12 @@ contract eXOFChecksVerify is eXOFChecksBase {
     console.log("🟢 eXOF has been added to the registry");
   }
 
-  function verifyEXOFAddedToReserves() internal view {
+  function verifyEXOFAddedToReserve() internal view {
     if (!Reserve(address(uint160(partialReserve))).isStableAsset(eXOF)) {
       revert("eXOF has not been added to the partial reserve.");
     }
 
-    if (!Reserve(address(uint160(reserve))).isStableAsset(eXOF)) {
-      revert("eXOF has not been added to the reserve.");
-    }
-
-    console.log("🟢 eXOF has been added to the reserves");
+    console.log("🟢 eXOF has been added to the reserve");
   }
 
   function verifyEXOFAddedToFeeCurrencyWhitelist() internal view {
