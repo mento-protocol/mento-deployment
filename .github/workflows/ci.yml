@@ -52,4 +52,4 @@ jobs:
       - name: "Build the contracts"
         run: |
           forge --version
-          forge build
+          forge build --sizes
