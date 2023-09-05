@@ -453,18 +453,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         )
       )
     );
-    // Set ema smoothing factor
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        medianDeltaBreaker,
-        abi.encodeWithSelector(
-          MedianDeltaBreaker(0).setSmoothingFactor.selector,
-          config.CELOXOF.rateFeedID,
-          config.CELOXOF.medianDeltaBreaker0.smoothingFactor
-        )
-      )
-    );
   }
 
   /**
