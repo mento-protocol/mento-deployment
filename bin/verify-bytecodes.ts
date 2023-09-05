@@ -7,17 +7,25 @@ import { providers } from "ethers";
 enum Network {
   Baklava = "baklava",
   Alfajores = "alfajores",
-  Celo = "celo"
+  Celo = "celo",
 }
 
 enum Upgrade {
-  MU01 = "MU01"
+  MU01 = "MU01",
+  MU02 = "MU02",
+  MU03 = "MU03",
 }
+
+const REPO_FOR_UPGRADE: Record<Upgrade, string> = {
+  [Upgrade.MU01]: "lib/mento-core-2.0.0",
+  [Upgrade.MU02]: "lib/mento-core-2.1.0",
+  [Upgrade.MU03]: "lib/mento-core-2.2.0",
+};
 
 type NetworkInfo = {
   id: number;
   rpcUrl: string;
-}
+};
 
 const networkInfoByName: Record<Network, NetworkInfo> = {
   [Network.Baklava]: {
@@ -35,20 +43,20 @@ const networkInfoByName: Record<Network, NetworkInfo> = {
 };
 
 const parseNetwork = (network: string | undefined): Network => {
-  if (network && Object.values(Network).find((n) => n === network)) {
-    return network as Network
+  if (network && Object.values(Network).find(n => n === network)) {
+    return network as Network;
   }
   console.error(`🚨 Invalid network ${network}`);
-  process.exit(1)
-}
+  process.exit(1);
+};
 
 const parseUpgrade = (upgrade: string | undefined): Upgrade => {
   if (upgrade && upgrade in Upgrade) {
-    return upgrade as Upgrade
+    return upgrade as Upgrade;
   }
   console.error(`🚨 Invalid upgrade ${upgrade}`);
-  process.exit(1)
-}
+  process.exit(1);
+};
 
 function getContractsForUpgrade(network: Network, upgrade: Upgrade): Map<string, string> {
   const broadcastFolders = fs
@@ -65,8 +73,13 @@ function getContractsForUpgrade(network: Network, upgrade: Upgrade): Map<string,
   for (const folder of broadcastFolders) {
     const runFile = `broadcast/${folder.name}/${networkId}/run-latest.json`;
     if (fs.existsSync(runFile) === false) {
-      console.log("ℹ️ Skipping broadcast folder", folder.name, "as it does not contain a run file for network", network);
-      continue
+      console.log(
+        "ℹ️ Skipping broadcast folder",
+        folder.name,
+        "as it does not contain a run file for network",
+        network,
+      );
+      continue;
     }
     const data = JSON.parse(fs.readFileSync(runFile, "utf8"));
 
@@ -128,11 +141,12 @@ async function main() {
   const upgrade = parseUpgrade(values.upgrade);
   const commit = values.commit!;
 
-  console.log(`🎣 Checking out lib/mento-core submodule @ ${commit}...`);
-  executeAndFailOnError(`git -C lib/mento-core checkout ${commit} -q`);
+  const repo = REPO_FOR_UPGRADE[upgrade];
+  console.log(`🎣 Checking out ${repo} submodule @ ${commit}...`);
+  executeAndFailOnError(`git -C ${repo} checkout ${commit} -q`);
 
   console.log("🧹 Cleaning old artifacts and building new ones...");
-  executeAndFailOnError(`forge clean && env FOUNDRY_PROFILE=${network}-deployment forge build`);
+  executeAndFailOnError(`FOUNDRY_PROFILE=${network}-deployment yarn build -u ${upgrade}`);
 
   console.log("\n========================================");
   console.log("🕵️  Verifying contract addresses...");
@@ -151,6 +165,9 @@ async function main() {
 
     const onChainBytecode = await getOnChainBytecode(contractAddress, network);
     const bytecodeFromArtifacts = getBytecodeFromArtifacts(contractName);
+
+    fs.writeFileSync(`out/${contractName}.onchain`, onChainBytecode);
+    fs.writeFileSync(`out/${contractName}.artifact`, bytecodeFromArtifacts);
 
     if (onChainBytecode === bytecodeFromArtifacts) {
       tableOutput.push({ contract: contractName, address: contractAddress, match: "✅" });

@@ -120,7 +120,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "MU03", governance);
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0097.md", governance);
     }
     vm.stopBroadcast();
   }
@@ -140,6 +140,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
     proposal_configureBreakerBox(config);
     proposal_configureMedianDeltaBreaker0(config);
     proposal_configureValueDeltaBreaker0(config);
+    proposal_whitelistMissingOracleProvider(config);
 
     return transactions;
   }
@@ -543,7 +544,7 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
       )
     );
 
-    /// Set rate change threshold for EUROC/EUR rate feed
+    // Set rate change threshold for EUROC/EUR rate feed
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -553,6 +554,18 @@ contract MU03 is IMentoUpgrade, GovernanceScript {
           Arrays.addresses(config.EUROCEUR.rateFeedID),
           Arrays.uints(config.EUROCEUR.valueDeltaBreaker0.threshold.unwrap())
         )
+      )
+    );
+  }
+
+  function proposal_whitelistMissingOracleProvider(MU03Config.MU03 memory config) public {
+    // Add DiWu as oracle provider for the EUROC/EUR rate feed
+    address diwuOracleAddress = 0xBD136a625299A0ac5Ca7Ce9220aCA6e08a624e37;
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        sortedOraclesProxy,
+        abi.encodeWithSelector(SortedOracles(0).addOracle.selector, config.EUROCEUR.rateFeedID, diwuOracleAddress)
       )
     );
   }
