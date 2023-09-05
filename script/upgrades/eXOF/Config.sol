@@ -62,7 +62,7 @@ library eXOFConfig {
       cooldown: 30 minutes,
       smoothingFactor: 0
     });
-    rateFeedConfig.dependentRateFeeds = Arrays.addresses(contracts.dependency("EUROCEURRateFeedAddr"));
+    rateFeedConfig.dependentRateFeeds = Arrays.addresses(contracts.dependency("EURXOFRateFeedAddr"));
   }
 
   /**
