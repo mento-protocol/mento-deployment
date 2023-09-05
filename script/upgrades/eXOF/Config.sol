@@ -54,7 +54,7 @@ library eXOFConfig {
    */
   function CELOXOF_RateFeedConfig(
     Contracts.Cache storage contracts
-  ) internal view returns (Config.RateFeed memory rateFeedConfig) {
+  ) internal returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = contracts.deployed("StableTokenXOFProxy");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
@@ -62,6 +62,7 @@ library eXOFConfig {
       cooldown: 30 minutes,
       smoothingFactor: 0
     });
+    rateFeedConfig.dependentRateFeeds = Arrays.addresses(contracts.dependency("EUROCEURRateFeedAddr"));
   }
 
   /**

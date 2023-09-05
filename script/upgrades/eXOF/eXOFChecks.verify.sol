@@ -376,6 +376,13 @@ contract eXOFChecksVerify is eXOFChecksBase {
       EUROCXOFDependency == config.EURXOF.dependentRateFeeds[0],
       "EUROC/XOF rate feed dependency not set correctly"
     );
+
+    address CELOXOFDependency = BreakerBox(breakerBox).rateFeedDependencies(config.CELOXOF.rateFeedID, 0);
+    require(
+      CELOXOFDependency == config.CELOXOF.dependentRateFeeds[0],
+      "CELO/XOF rate feed dependency not set correctly"
+    );
+
     console.log("🟢 Rate feed dependencies configured correctly 🗳️");
   }
 
