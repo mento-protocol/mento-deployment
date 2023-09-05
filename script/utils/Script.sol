@@ -9,6 +9,8 @@ import { Contracts } from "./Contracts.sol";
 import { GovernanceHelper } from "./GovernanceHelper.sol";
 import { Factory } from "./Factory.sol";
 
+import { IERC20Lite } from "../interfaces/IERC20Lite.sol";
+
 contract Script is BaseScript {
   using Contracts for Contracts.Cache;
   using FixidityLib for FixidityLib.Fraction;
@@ -32,4 +34,18 @@ contract Script is BaseScript {
   }
 }
 
-contract GovernanceScript is Script, GovernanceHelper {}
+contract GovernanceScript is Script, GovernanceHelper {
+  /**
+   * @notice Helper function to get the exchange ID for a pool.
+   */
+  function getExchangeId(address asset0, address asset1, bool isConstantSum) internal view returns (bytes32) {
+    return
+      keccak256(
+        abi.encodePacked(
+          IERC20Lite(asset0).symbol(),
+          IERC20Lite(asset1).symbol(),
+          isConstantSum ? "ConstantSum" : "ConstantProduct"
+        )
+      );
+  }
+}

@@ -88,6 +88,10 @@ library Config {
      */
     ValueDeltaBreaker valueDeltaBreaker0;
     /**
+     * @dev List of Value Delta RateFeed Configurations for the rate feed.
+     */
+    ValueDeltaBreaker valueDeltaBreaker1;
+    /**
      * @dev List of dependent rate feeds.
      */
     address[] dependentRateFeeds;
@@ -227,6 +231,56 @@ library Config {
     uint256[] collateralAssetDailySpendingRatios;
   }
 
+  struct StableToken {
+    /**
+     * @dev The name of the stable token.
+     */
+    string name;
+    /**
+     * @dev The symbol of the stable token.
+     */
+    string symbol;
+    /**
+     * @dev The number of decimal places for the stable token.
+     */
+    uint8 decimals;
+    /**
+     * @dev The address of the celo registry
+     */
+    address registryAddress;
+    /**
+     * @dev The inflation rate in the StableToken contract used to simulate the effect of economic inflation.
+     */
+    uint256 inflationRate;
+    /**
+     * @dev The frequency at which the inflation factor in the StableToken contract is updated.
+     */
+    uint256 inflationFactorUpdatePeriod;
+    /**
+     * @dev The addresses of the initial balance holders for the stable token.
+     *      This is deprecated but is being set for consistency.
+     */
+    address[] initialBalanceAddresses;
+    /**
+     * @dev The initial balance values for the addresses in the initialBalanceAddresses array.
+     *      This is deprecated but is being set for consistency.
+     */
+    uint256[] initialBalanceValues;
+    /**
+     * @dev The identifer of the exchange in the registry to be used to swap the token.
+     *      This is deprecated but should be set to the Broker for tokens created post Mc Mento.
+     */
+    string exchangeIdentifier;
+    /**
+     * @dev An array of function selectors for the constitution functions.
+     */
+    bytes4[] constitutionFunctionSelectors;
+    /**
+     * @dev An array of thresholds for the corresponding constitution functions.
+     */
+    uint256[] constitutionThresholds;
+  }
+
   /**
    * @dev Helper to create an empty trading limit config.
    */
@@ -252,5 +306,12 @@ library Config {
       flag = flag | 4; // LG
     }
     return flag;
+  }
+
+  /**
+   * @notice Helper function to get the function selector for a function.
+   */
+  function getSelector(string memory _func) internal pure returns (bytes4) {
+    return bytes4(keccak256(bytes(_func)));
   }
 }

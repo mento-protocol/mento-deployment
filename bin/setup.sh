@@ -54,10 +54,11 @@ parse_upgrade () { # $1: upgrade
 forge_skip () { # $1: target
     if [ "dev" = $1 ]; then
         # If target is dev script, skip all upgrades
-        echo "--skip MU"
+        upgrades=$(ls script/upgrades | tr '\n' ' ')
+        echo "--skip $upgrades"
     else
         # if target is a un upgrade, skip dev and other upgrades
-        other_upgrades=$(ls script/upgrades | grep MU | grep -v $1 | tr '\n' ' ')
+        other_upgrades=$(ls script/upgrades | grep -v $1 | tr '\n' ' ')
         echo "--skip dev- $other_upgrades"
     fi
 }

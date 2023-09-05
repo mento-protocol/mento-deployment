@@ -35,6 +35,14 @@ library Contracts {
   }
 
   function load(Cache storage self, string memory script, string memory timestamp) internal {
+    _load(self, script, timestamp, false);
+  }
+
+  function loadSilent(Cache storage self, string memory script, string memory timestamp) internal {
+    _load(self, script, timestamp, true);
+  }
+
+  function _load(Cache storage self, string memory script, string memory timestamp, bool silent) internal {
     string memory chainId = Chain.idString();
     string memory root = vm.projectRoot();
     string memory path = string(
@@ -75,7 +83,10 @@ library Contracts {
 
         // todo(bogdan): think about best way to handle overrides
         self.contractAddress[keccak256(bytes(contractName))] = contractAddresses[i];
-        console.log("Loaded contract %s at %s", contractName, contractAddresses[i]);
+
+        if (!silent) {
+          console.log("Loaded contract %s at %s", contractName, contractAddresses[i]);
+        }
       }
     }
   }

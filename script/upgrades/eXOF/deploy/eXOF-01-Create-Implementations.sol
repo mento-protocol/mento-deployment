@@ -8,9 +8,9 @@ import { console2 } from "forge-std/Script.sol";
 import { StableTokenXOF } from "mento-core-2.2.0/legacy/StableTokenXOF.sol";
 
 /*
- yarn deploy -n <network> -u MU04 -s MU04-01-Create-Implementations.sol
+ yarn deploy -n <network> -u eXOF -s eXOF-01-Create-Implementations.sol
 */
-contract MU01_CreateImplementations is Script {
+contract eXOF_CreateImplementations is Script {
   function run() public {
     address stableTokenXOF;
     address governance = contracts.celoRegistry("Governance");
