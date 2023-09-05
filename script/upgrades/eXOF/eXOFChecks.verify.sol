@@ -58,7 +58,9 @@ contract eXOFChecksVerify is eXOFChecksBase {
     verifyEXOFAddedToRegistry();
     verifyEXOFAddedToReserve();
     verifyEXOFAddedToFeeCurrencyWhitelist();
+
     verifyExchanges();
+
     verifyCircuitBreaker();
   }
 
