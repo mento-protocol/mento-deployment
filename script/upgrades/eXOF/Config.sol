@@ -74,7 +74,7 @@ library eXOFConfig {
     rateFeedConfig.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
       enabled: true,
       threshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
-      referenceValue: 655.957 * 10 ** 24, 
+      referenceValue: 655.957 * 10 ** 24,
       cooldown: 15 minutes
     });
 
