@@ -81,7 +81,7 @@ library eXOFConfig {
     rateFeedConfig.valueDeltaBreaker1 = Config.ValueDeltaBreaker({
       enabled: true,
       threshold: FixidityLib.newFixedFraction(10, 100), // 0.10
-      referenceValue: 656.55 * 10 ** 24, // TODO: verify
+      referenceValue: 655.957 * 10 ** 24,
       cooldown: 0 seconds
     });
     rateFeedConfig.dependentRateFeeds = Arrays.addresses(contracts.dependency("EUROCEURRateFeedAddr"));
