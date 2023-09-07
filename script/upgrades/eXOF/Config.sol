@@ -40,9 +40,11 @@ library eXOFConfig {
     config.pools[0] = config.eXOFCelo = eXOFCelo_PoolConfig(contracts);
     config.pools[1] = config.eXOFEUROC = eXOFEUROC_PoolConfig(contracts);
 
-    config.rateFeeds = new Config.RateFeed[](2);
+    config.rateFeeds = new Config.RateFeed[](3);
     config.rateFeeds[0] = config.CELOXOF = CELOXOF_RateFeedConfig(contracts);
     config.rateFeeds[1] = config.EURXOF = EURXOF_RateFeedConfig(contracts);
+    config.rateFeeds[2] = config.EUROCXOF = EUROCXOF_RateFeedConfig(contracts);
+
 
     config.stableTokenXOF = stableTokenXOFConfig();
   }
@@ -85,7 +87,22 @@ library eXOFConfig {
       referenceValue: 655.957 * 10 ** 24,
       cooldown: 0 seconds
     });
-    rateFeedConfig.dependentRateFeeds = Arrays.addresses(contracts.dependency("EUROCEURRateFeedAddr"));
+  }
+  /**
+   * @dev Returns the configuration for the EUROCXOF rate feed.
+   */
+  function EUROCXOF_RateFeedConfig(
+    Contracts.Cache storage contracts
+  ) internal returns (Config.RateFeed memory rateFeedConfig) {
+    rateFeedConfig.rateFeedID = contracts.dependency("EUROCXOFRateFeedAddr");
+    rateFeedConfig.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
+      enabled: true,
+      threshold: FixidityLib.newFixedFraction(1, 100), // 0.01 ~ 1 - 0.995 * 0.995 
+      referenceValue: 655.957 * 10 ** 24,
+      cooldown: 15 minutes
+    });
+    rateFeedConfig.dependentRateFeeds = [ Arrays.addresses(contracts.dependency("EUROCEURRateFeedAddr")),
+                                             Arrays.addresses(contracts.dependency("EURXOFRateFeedAddr"))];
   }
 
   /* ==================== Pool Configurations ==================== */
@@ -144,7 +161,7 @@ library eXOFConfig {
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 656 * 1_000_000 * 1e18, // 656 * 1.0 million
-      referenceRateFeedID: contracts.dependency("EURXOFRateFeedAddr"),
+      referenceRateFeedID: contracts.dependency("EUROCXOFRateFeedAddr"),
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
