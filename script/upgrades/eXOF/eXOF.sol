@@ -371,10 +371,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
             ICeloGovernance.Transaction(
               0,
               medianDeltaBreaker,
-              abi.encodeWithSelector(
-                MedianDeltaBreaker(0).resetMedianRateEMA.selector,
-                rateFeed.rateFeedID
-              )
+              abi.encodeWithSelector(MedianDeltaBreaker(0).resetMedianRateEMA.selector, rateFeed.rateFeedID)
             )
           );
         }

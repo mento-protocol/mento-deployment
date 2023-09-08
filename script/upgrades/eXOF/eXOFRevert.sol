@@ -301,10 +301,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         medianDeltaBreaker,
-        abi.encodeWithSelector(
-          MedianDeltaBreaker(0).resetMedianRateEMA.selector,
-          config.CELOXOF.rateFeedID
-        )
+        abi.encodeWithSelector(MedianDeltaBreaker(0).resetMedianRateEMA.selector, config.CELOXOF.rateFeedID)
       )
     );
   }
@@ -320,10 +317,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(
-            config.EURXOF.rateFeedID,
-            config.EUROCXOF.rateFeedID
-          ),
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID),
           Arrays.uints(0, 0)
         )
       )
@@ -335,10 +329,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(
-            config.EURXOF.rateFeedID,
-            config.EUROCXOF.rateFeedID
-          ),
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID),
           Arrays.uints(0, 0)
         )
       )
@@ -350,10 +341,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(
-            config.EURXOF.rateFeedID,
-            config.EUROCXOF.rateFeedID
-          ),
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID),
           Arrays.uints(0, 0)
         )
       )
