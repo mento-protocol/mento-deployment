@@ -49,19 +49,26 @@ contract eXOFChecksVerify is eXOFChecksBase {
   }
 
   function run() public {
+    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
     console.log("\nStarting eXOF checks:");
 
+    console.log("\n==  Information");
+    console.log("   EUROCXOF: %s", config.EUROCXOF.rateFeedID);
+    console.log("   EURXOF: %s", config.EURXOF.rateFeedID);
+    console.log("   CELOXOF: %s", config.CELOXOF.rateFeedID);
+
+    verifyToken(config);
+    verifyExchanges(config);
+    verifyCircuitBreaker(config);
+  }
+
+  function verifyToken(eXOFConfig.eXOF memory config) internal {
     console.log("\n== Verifying Token Transactions ==");
     verifyOwner();
     verifyEXOFStableToken();
-    verifyConstitution();
-    verifyEXOFAddedToRegistry();
+    verifyConstitution(config);
     verifyEXOFAddedToReserve();
     verifyEXOFAddedToFeeCurrencyWhitelist();
-
-    verifyExchanges();
-
-    verifyCircuitBreaker();
   }
 
   function verifyOwner() internal view {
@@ -73,10 +80,6 @@ contract eXOFChecksVerify is eXOFChecksBase {
 
     require(Proxy(eXOF)._getOwner() == governance, "StableTokenXOF Proxy ownership not transferred to governance");
 
-    require(
-      ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).owner() == governance,
-      "Nonrecoverable Value Delta Breaker ownership not transferred to governance"
-    );
     console.log("🟢 Contract ownerships transferred to governance");
   }
 
@@ -94,22 +97,6 @@ contract eXOFChecksVerify is eXOFChecksBase {
       revert("Deployed StableTokenXOF does not match what proxy points to. See logs.");
     }
     console.log("🟢 StableTokenXOFProxy has the correct implementation address");
-  }
-
-  function verifyEXOFAddedToRegistry() internal view {
-    address registryEXOFAddress = IRegistry(REGISTRY_ADDRESS).getAddressForStringOrDie("StableTokenXOF");
-    address deployedEXOFAddress = contracts.deployed("StableTokenXOFProxy");
-
-    if (registryEXOFAddress != deployedEXOFAddress) {
-      console.log(
-        "The eXOF address from the registry: %s does not match the deployed address: %s.",
-        registryEXOFAddress,
-        deployedEXOFAddress
-      );
-      revert("Deployed eXOF does not match what registry points to. See logs.");
-    }
-
-    console.log("🟢 eXOF has been added to the registry");
   }
 
   function verifyEXOFAddedToReserve() internal view {
@@ -131,9 +118,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
     console.log("🟢 eXOF has been added to the fee currency whitelist");
   }
 
-  function verifyConstitution() internal {
-    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
-
+  function verifyConstitution(eXOFConfig.eXOF memory config) internal {
     bytes4[] memory functionSelectors = config.stableTokenXOF.constitutionFunctionSelectors;
     uint256[] memory expectedThresholdValues = config.stableTokenXOF.constitutionThresholds;
 
@@ -161,9 +146,8 @@ contract eXOFChecksVerify is eXOFChecksBase {
     }
   }
 
-  function verifyExchanges() internal {
+  function verifyExchanges(eXOFConfig.eXOF memory config) internal {
     console.log("\n== Verifying exchanges ==");
-    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     verifyPoolExchange(config);
     verifyPoolConfig(config);
@@ -351,9 +335,8 @@ contract eXOFChecksVerify is eXOFChecksBase {
   /* ======================== Circuit Breaker ======================= */
   /* ================================================================ */
 
-  function verifyCircuitBreaker() internal {
+  function verifyCircuitBreaker(eXOFConfig.eXOF memory config) internal {
     console.log("\n== Checking circuit breaker ==");
-    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     verifyBreakerBox(config);
     verifyBreakersAreEnabled(config);
@@ -363,17 +346,24 @@ contract eXOFChecksVerify is eXOFChecksBase {
 
   function verifyBreakerBox(eXOFConfig.eXOF memory config) internal view {
     // verify that rate feed dependencies were configured correctly
-    address EUROCXOFDependency = BreakerBox(breakerBox).rateFeedDependencies(config.EURXOF.rateFeedID, 0);
     require(
-      EUROCXOFDependency == config.EURXOF.dependentRateFeeds[0],
+      BreakerBox(breakerBox).rateFeedDependencies(config.EUROCXOF.rateFeedID, 0) ==
+      Config.rateFeedID("EURXOF"),
       "EUROC/XOF rate feed dependency not set correctly"
     );
 
-    address CELOXOFDependency = BreakerBox(breakerBox).rateFeedDependencies(config.CELOXOF.rateFeedID, 0);
     require(
-      CELOXOFDependency == config.CELOXOF.dependentRateFeeds[0],
-      "CELO/XOF rate feed dependency not set correctly"
+      BreakerBox(breakerBox).rateFeedDependencies(config.EUROCXOF.rateFeedID, 1) ==
+      Config.rateFeedID("EUROCEUR"),
+      "EUROC/XOF rate feed dependency not set correctly"
     );
+
+    require(
+      BreakerBox(breakerBox).rateFeedDependencies(config.CELOXOF.rateFeedID, 0) ==
+      Config.rateFeedID("EURXOF"),
+      "EUROC/CELO rate feed dependency not set correctly"
+    );
+
 
     console.log("🟢 Rate feed dependencies configured correctly 🗳️");
   }
@@ -490,6 +480,8 @@ contract eXOFChecksVerify is eXOFChecksBase {
     bool isValueDeltaBreaker
   ) internal view {
     if (currentCoolDown != expectedCoolDown) {
+      console.log("currentCoolDown: %s", currentCoolDown);
+      console.log("expectedCoolDown: %s", expectedCoolDown);
       if (isValueDeltaBreaker) {
         console.log("ValueDeltaBreaker cooldown not set correctly for rate feed with id %s", rateFeedID);
         revert("ValueDeltaBreaker cooldown not set correctly for rate feed");

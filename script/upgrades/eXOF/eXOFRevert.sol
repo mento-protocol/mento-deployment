@@ -135,7 +135,6 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
     require(transactions.length == 0, "buildProposal() should only be called once");
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
-    proposal_removeEXOFFromCeloRegistry();
     proposal_removeEXOFFromReserve();
 
     proposal_destroyExchanges(config);
@@ -146,19 +145,6 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
     proposal_revertNonrecoverableValueDeltaBreaker(config);
 
     return transactions;
-  }
-
-  /**
-   * @notice Add the transaction to create a new entry for StableTokenXOF in the CeloRegistry
-   */
-  function proposal_removeEXOFFromCeloRegistry() private {
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        REGISTRY_ADDRESS,
-        abi.encodeWithSelector(IRegistry(0).setAddressFor.selector, "StableTokenXOF", address(0))
-      )
-    );
   }
 
   /**

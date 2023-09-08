@@ -75,7 +75,6 @@ contract eXOFChecksBase is GovernanceScript, Test {
     contracts.loadSilent("MU03-02-Create-Implementations", "latest");
     contracts.loadSilent("eXOF-00-Create-Proxies", "latest");
     contracts.loadSilent("eXOF-01-Create-Implementations", "latest");
-    contracts.loadSilent("eXOF-02-Create-Nonupgradeable-Contracts", "latest");
 
     // Get proxy addresses
     eXOF = contracts.deployed("StableTokenXOFProxy");
@@ -95,7 +94,6 @@ contract eXOFChecksBase is GovernanceScript, Test {
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
-    nonrecoverableValueDeltaBreaker = contracts.deployed("NonrecoverableValueDeltaBreaker");
     biPoolManager = contracts.deployed("BiPoolManager");
     constantSum = contracts.deployed("ConstantSumPricingModule");
     constantProduct = contracts.deployed("ConstantProductPricingModule");
