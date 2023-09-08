@@ -8,7 +8,7 @@ import { eXOFChecksVerify } from "./eXOFChecks.verify.sol";
 
 contract eXOFChecks is Test {
   function run() public {
-    // new eXOFChecksVerify().run();
+    new eXOFChecksVerify().run();
     new eXOFChecksSwap().run();
   }
 }

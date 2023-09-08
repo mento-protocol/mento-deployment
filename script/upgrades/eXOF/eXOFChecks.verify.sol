@@ -394,9 +394,9 @@ contract eXOFChecksVerify is eXOFChecksBase {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
 
       if (rateFeed.medianDeltaBreaker0.enabled) {
-        uint256 cooldown = MedianDeltaBreaker(medianDeltaBreaker).rateFeedCooldownTime(rateFeed.rateFeedID);
+        uint256 cooldown = MedianDeltaBreaker(medianDeltaBreaker).getCooldown(rateFeed.rateFeedID);
         uint256 rateChangeThreshold = MedianDeltaBreaker(medianDeltaBreaker).rateChangeThreshold(rateFeed.rateFeedID);
-        uint256 smoothingFactor = MedianDeltaBreaker(medianDeltaBreaker).smoothingFactors(rateFeed.rateFeedID);
+        uint256 smoothingFactor = MedianDeltaBreaker(medianDeltaBreaker).getSmoothingFactor(rateFeed.rateFeedID);
 
         // verify cooldown period
         verifyCooldownTime(cooldown, rateFeed.medianDeltaBreaker0.cooldown, rateFeed.rateFeedID, false);
@@ -411,6 +411,8 @@ contract eXOFChecksVerify is eXOFChecksBase {
 
         // verify smoothing factor
         if (smoothingFactor != rateFeed.medianDeltaBreaker0.smoothingFactor) {
+          console.log("expected: %s", rateFeed.medianDeltaBreaker0.smoothingFactor);
+          console.log("got:      %s", smoothingFactor);
           console.log(
             "MedianDeltaBreaker smoothing factor not set correctly for the rate feed: %s",
             rateFeed.rateFeedID
@@ -428,7 +430,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
 
       if (rateFeed.valueDeltaBreaker0.enabled) {
-        uint256 cooldown = ValueDeltaBreaker(valueDeltaBreaker).rateFeedCooldownTime(rateFeed.rateFeedID);
+        uint256 cooldown = ValueDeltaBreaker(valueDeltaBreaker).getCooldown(rateFeed.rateFeedID);
         uint256 rateChangeThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(rateFeed.rateFeedID);
         uint256 referenceValue = ValueDeltaBreaker(valueDeltaBreaker).referenceValues(rateFeed.rateFeedID);
 

@@ -46,6 +46,7 @@
     "cgp": "./bin/cgp.sh",
     "cgp:pass": "./bin/cgp-pass.sh",
     "cgp:diff": "./bin/cgp-diff.sh",
+    "cgp:check": "./bin/cgp-check.sh",
     "cgp:yaml-to-json": "./bin/cgp-yaml-to-json.sh",
     "show": "./bin/show.sh",
     "clean": "./bin/clean.sh",
