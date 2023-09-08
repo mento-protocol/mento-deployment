@@ -363,8 +363,22 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
 
     for (uint i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
+
       // Enable Median Delta Breaker for rate feed
       if (rateFeed.medianDeltaBreaker0.enabled) {
+        if (MedianDeltaBreaker(medianDeltaBreaker).medianRatesEMA(rateFeed.rateFeedID) != 0) {
+          transactions.push(
+            ICeloGovernance.Transaction(
+              0,
+              medianDeltaBreaker,
+              abi.encodeWithSelector(
+                MedianDeltaBreaker(0).resetMedianRateEMA.selector,
+                rateFeed.rateFeedID
+              )
+            )
+          );
+        }
+
         transactions.push(
           ICeloGovernance.Transaction(
             0,

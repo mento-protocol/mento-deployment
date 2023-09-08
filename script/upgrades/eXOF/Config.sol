@@ -62,7 +62,7 @@ library eXOFConfig {
       enabled: true,
       threshold: FixidityLib.newFixedFraction(3, 100), // 0.03
       cooldown: 30 minutes,
-      smoothingFactor: 0
+      smoothingFactor: 1e24 // 1
     });
     rateFeedConfig.dependentRateFeeds = Arrays.addresses(Config.rateFeedID("EURXOF"));
   }

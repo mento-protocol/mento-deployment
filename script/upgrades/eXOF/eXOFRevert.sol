@@ -77,7 +77,6 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
     contracts.load("MU03-02-Create-Implementations", "latest");
     contracts.load("eXOF-00-Create-Proxies", "latest");
     contracts.load("eXOF-01-Create-Implementations", "latest");
-    contracts.load("eXOF-02-Create-Nonupgradeable-Contracts", "latest");
   }
 
   /**
@@ -93,7 +92,6 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
-    nonrecoverableValueDeltaBreaker = contracts.deployed("NonrecoverableValueDeltaBreaker");
     sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
 
     // Swaps
@@ -142,7 +140,6 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
     proposal_revertBreakerBox(config);
     proposal_revertMedianDeltaBreakers(config);
     proposal_revertValueDeltaBreaker(config);
-    proposal_revertNonrecoverableValueDeltaBreaker(config);
 
     return transactions;
   }
@@ -161,15 +158,14 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
         )
       );
     } else {
-      console.log("Token note added to the reserve, skipping: %s", eXOFProxy);
+      console.log("Token not in the reserve, skipping: %s", eXOFProxy);
     }
   }
 
   /**
-   * @notice Creates the exchanges for the new pools.
+   * @notice Destroy the exchanges for the new pools.
    */
   function proposal_destroyExchanges(eXOFConfig.eXOF memory config) private {
-    // Get the address of the pricing modules
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
     IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
@@ -194,13 +190,13 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
   }
 
   /**
-   * @notice This function creates the transactions to configure the trading limits.
+   * @notice This function creates the transactions to reset the trading limits.
    */
   function proposal_revertTradingLimits(eXOFConfig.eXOF memory config) private {
     for (uint256 i = 0; i < config.pools.length; i++) {
       Config.Pool memory poolConfig = config.pools[i];
 
-      // Set the trading limit for asset0 of the pool
+      // Unset the trading limit for asset0 of the pool
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -214,7 +210,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
         )
       );
 
-      // Set the trading limit for asset1 of the pool
+      // Unset the trading limit for asset1 of the pool
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -231,12 +227,12 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
   }
 
   /**
-   * @notice This function creates the transactions to configure the Breakerbox.
+   * @notice This function creates the transactions to reset the BreakerBox.
    */
   function proposal_revertBreakerBox(eXOFConfig.eXOF memory config) private {
     for (uint i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
-      // Enable Median Delta Breaker for rate feed
+      // Disable Median Delta Breaker for rate feed
       if (rateFeed.medianDeltaBreaker0.enabled) {
         transactions.push(
           ICeloGovernance.Transaction(
@@ -247,7 +243,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
         );
       }
 
-      // Enable Value Delta Breaker for rate feeds
+      // Disable Value Delta Breaker for rate feeds
       if (rateFeed.valueDeltaBreaker0.enabled) {
         transactions.push(
           ICeloGovernance.Transaction(
@@ -259,7 +255,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
       }
     }
 
-    // Remove rate feeds to breaker box
+    // Remove rate feeds from breaker box
     for (uint256 i = 0; i < config.rateFeeds.length; i++) {
       transactions.push(
         ICeloGovernance.Transaction(
@@ -269,24 +265,13 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
         )
       );
     }
-
-    // Add the Nonrecoverable Value Delta Breaker 2 to the breaker box with the trading mode '3' -> trading halted
-    if (BreakerBox(breakerBox).isBreaker(nonrecoverableValueDeltaBreaker)) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          breakerBox,
-          abi.encodeWithSelector(BreakerBox(0).removeBreaker.selector, nonrecoverableValueDeltaBreaker)
-        )
-      );
-    }
   }
 
   /**
    * @notice This function creates the transactions to configure the Median Delta Breaker.
    */
   function proposal_revertMedianDeltaBreakers(eXOFConfig.eXOF memory config) private {
-    // Set the cooldown time
+    // Reset the cooldown time
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -298,7 +283,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
         )
       )
     );
-    // Set the rate change threshold
+    // Reset the rate change threshold
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -310,89 +295,66 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
         )
       )
     );
+
+    // Reset the Median Rate EMA
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        medianDeltaBreaker,
+        abi.encodeWithSelector(
+          MedianDeltaBreaker(0).resetMedianRateEMA.selector,
+          config.CELOXOF.rateFeedID
+        )
+      )
+    );
   }
 
   /**
-   * @notice This function creates the transactions to configure the recoverable Value Delta Breaker .
+   * @notice This function creates the transactions to revert the Value Delta Breaker configuration.
    */
   function proposal_revertValueDeltaBreaker(eXOFConfig.eXOF memory config) private {
-    // Set the cooldown times
+    // Reset the cooldown times
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(0)
+          Arrays.addresses(
+            config.EURXOF.rateFeedID,
+            config.EUROCXOF.rateFeedID
+          ),
+          Arrays.uints(0, 0)
         )
       )
     );
-    // Set the rate change thresholds
+    // Reset the rate change thresholds
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(0)
+          Arrays.addresses(
+            config.EURXOF.rateFeedID,
+            config.EUROCXOF.rateFeedID
+          ),
+          Arrays.uints(0, 0)
         )
       )
     );
-    // Set the reference values
+    // Reset the reference values
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(0)
-        )
-      )
-    );
-  }
-
-  /**
-   * @notice This function creates the transactions to configure the second Value Delta Breaker .
-   */
-  function proposal_revertNonrecoverableValueDeltaBreaker(eXOFConfig.eXOF memory config) private {
-    // Set the cooldown times
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        nonrecoverableValueDeltaBreaker,
-        abi.encodeWithSelector(
-          ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(0)
-        )
-      )
-    );
-
-    // Set the rate change thresholds
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        nonrecoverableValueDeltaBreaker,
-        abi.encodeWithSelector(
-          ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(0)
-        )
-      )
-    );
-
-    // Set the reference values
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        nonrecoverableValueDeltaBreaker,
-        abi.encodeWithSelector(
-          ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(0)
+          Arrays.addresses(
+            config.EURXOF.rateFeedID,
+            config.EUROCXOF.rateFeedID
+          ),
+          Arrays.uints(0, 0)
         )
       )
     );
