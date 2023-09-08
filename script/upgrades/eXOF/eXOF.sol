@@ -338,11 +338,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         breakerBox,
         abi.encodeWithSelector(
           BreakerBox(0).addRateFeeds.selector,
-          Arrays.addresses(
-            config.EURXOF.rateFeedID,
-            config.EUROCXOF.rateFeedID,
-            config.CELOXOF.rateFeedID
-          )
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID, config.CELOXOF.rateFeedID)
         )
       )
     );
@@ -432,14 +428,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(
-            config.EURXOF.rateFeedID,
-            config.EUROCXOF.rateFeedID
-          ),
-          Arrays.uints(
-            config.EURXOF.valueDeltaBreaker0.cooldown,
-            config.EUROCXOF.valueDeltaBreaker0.cooldown
-          )
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID),
+          Arrays.uints(config.EURXOF.valueDeltaBreaker0.cooldown, config.EUROCXOF.valueDeltaBreaker0.cooldown)
         )
       )
     );
@@ -450,10 +440,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(
-            config.EURXOF.rateFeedID,
-            config.EUROCXOF.rateFeedID
-          ),
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID),
           Arrays.uints(
             config.EURXOF.valueDeltaBreaker0.threshold.unwrap(),
             config.EUROCXOF.valueDeltaBreaker0.threshold.unwrap()
@@ -468,10 +455,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(
-            config.EURXOF.rateFeedID,
-            config.EUROCXOF.rateFeedID
-          ),
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID),
           Arrays.uints(
             config.EURXOF.valueDeltaBreaker0.referenceValue,
             config.EUROCXOF.valueDeltaBreaker0.referenceValue

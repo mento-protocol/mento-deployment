@@ -347,23 +347,19 @@ contract eXOFChecksVerify is eXOFChecksBase {
   function verifyBreakerBox(eXOFConfig.eXOF memory config) internal view {
     // verify that rate feed dependencies were configured correctly
     require(
-      BreakerBox(breakerBox).rateFeedDependencies(config.EUROCXOF.rateFeedID, 0) ==
-      Config.rateFeedID("EURXOF"),
+      BreakerBox(breakerBox).rateFeedDependencies(config.EUROCXOF.rateFeedID, 0) == Config.rateFeedID("EURXOF"),
       "EUROC/XOF rate feed dependency not set correctly"
     );
 
     require(
-      BreakerBox(breakerBox).rateFeedDependencies(config.EUROCXOF.rateFeedID, 1) ==
-      Config.rateFeedID("EUROCEUR"),
+      BreakerBox(breakerBox).rateFeedDependencies(config.EUROCXOF.rateFeedID, 1) == Config.rateFeedID("EUROCEUR"),
       "EUROC/XOF rate feed dependency not set correctly"
     );
 
     require(
-      BreakerBox(breakerBox).rateFeedDependencies(config.CELOXOF.rateFeedID, 0) ==
-      Config.rateFeedID("EURXOF"),
+      BreakerBox(breakerBox).rateFeedDependencies(config.CELOXOF.rateFeedID, 0) == Config.rateFeedID("EURXOF"),
       "EUROC/CELO rate feed dependency not set correctly"
     );
-
 
     console.log("🟢 Rate feed dependencies configured correctly 🗳️");
   }
