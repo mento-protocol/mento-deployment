@@ -76,7 +76,7 @@ library eXOFConfig {
     rateFeedConfig.rateFeedID = Config.rateFeedID("EUROCXOF");
     rateFeedConfig.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
       enabled: true,
-      threshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
+      threshold: FixidityLib.newFixedFraction(10, 1000), // 0.010
       referenceValue: 655.957 * 10 ** 24,
       cooldown: 15 minutes
     });
