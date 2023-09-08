@@ -64,9 +64,7 @@ library eXOFConfig {
       cooldown: 30 minutes,
       smoothingFactor: 0
     });
-    rateFeedConfig.dependentRateFeeds = Arrays.addresses(
-      Config.rateFeedID("EURXOF")
-    );
+    rateFeedConfig.dependentRateFeeds = Arrays.addresses(Config.rateFeedID("EURXOF"));
   }
 
   /**
@@ -82,10 +80,7 @@ library eXOFConfig {
       referenceValue: 655.957 * 10 ** 24,
       cooldown: 15 minutes
     });
-    rateFeedConfig.dependentRateFeeds = Arrays.addresses(
-      Config.rateFeedID("EURXOF"),
-      Config.rateFeedID("EUROCEUR")
-    );
+    rateFeedConfig.dependentRateFeeds = Arrays.addresses(Config.rateFeedID("EURXOF"), Config.rateFeedID("EUROCEUR"));
   }
 
   function EURXOF_RateFeedConfig(

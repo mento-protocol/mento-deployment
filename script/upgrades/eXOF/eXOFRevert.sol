@@ -186,7 +186,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
     // Get the address of the pricing modules
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
-    IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy); 
+    IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
     bytes32[] memory exchangeIds = biPoolManager.getExchangeIds();
 
     for (uint256 i = exchangeIds.length - 1; i >= 0; i--) {
@@ -223,14 +223,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
             Broker(0).configureTradingLimit.selector,
             referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
             poolConfig.asset0,
-            TradingLimits.Config({
-              timestep0: 0,
-              timestep1: 0,
-              limit0: 0,
-              limit1: 0,
-              limitGlobal: 0,
-              flags: 0
-            })
+            TradingLimits.Config({ timestep0: 0, timestep1: 0, limit0: 0, limit1: 0, limitGlobal: 0, flags: 0 })
           )
         )
       );
@@ -244,14 +237,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
             Broker(0).configureTradingLimit.selector,
             referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
             poolConfig.asset1,
-            TradingLimits.Config({
-              timestep0: 0,
-              timestep1: 0,
-              limit0: 0,
-              limit1: 0,
-              limitGlobal: 0,
-              flags: 0
-            })
+            TradingLimits.Config({ timestep0: 0, timestep1: 0, limit0: 0, limit1: 0, limitGlobal: 0, flags: 0 })
           )
         )
       );
@@ -293,10 +279,7 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
         ICeloGovernance.Transaction(
           0,
           breakerBox,
-          abi.encodeWithSelector(
-            BreakerBox(0).removeRateFeed.selector,
-            config.rateFeeds[i].rateFeedID
-          )
+          abi.encodeWithSelector(BreakerBox(0).removeRateFeed.selector, config.rateFeeds[i].rateFeedID)
         )
       );
     }
@@ -445,7 +428,11 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
   function getExchangeId(address asset0, address asset1, bool isConstantSum) internal view returns (bytes32) {
     return
       keccak256(
-        abi.encodePacked(IERC20Metadata(asset0).symbol(), IERC20Metadata(asset1).symbol(), isConstantSum ? "ConstantSum" : "ConstantProduct")
+        abi.encodePacked(
+          IERC20Metadata(asset0).symbol(),
+          IERC20Metadata(asset1).symbol(),
+          isConstantSum ? "ConstantSum" : "ConstantProduct"
+        )
       );
   }
 }
