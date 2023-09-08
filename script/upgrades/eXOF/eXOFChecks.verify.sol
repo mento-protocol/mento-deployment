@@ -359,17 +359,9 @@ contract eXOFChecksVerify is eXOFChecksBase {
     verifyBreakersAreEnabled(config);
     verifyMedianDeltaBreaker(config);
     verifyValueDeltaBreaker(config);
-    verifyNonrecoverableValueDeltaBreaker(config);
   }
 
   function verifyBreakerBox(eXOFConfig.eXOF memory config) internal view {
-    // verify that breakers were set with trading mode 3
-    if (BreakerBox(breakerBox).breakerTradingMode(nonrecoverableValueDeltaBreaker) != 3) {
-      console.log("The Nonrecoverable ValueDeltaBreaker was not set with trading halted ❌");
-      revert("Nonrecoverable ValueDeltaBreaker was not set with trading halted");
-    }
-    console.log("🟢 Nonrecoverable ValueDeltaBreaker set with trading mode 3");
-
     // verify that rate feed dependencies were configured correctly
     address EUROCXOFDependency = BreakerBox(breakerBox).rateFeedDependencies(config.EURXOF.rateFeedID, 0);
     require(
@@ -403,17 +395,6 @@ contract eXOFChecksVerify is eXOFChecksBase {
           if (!valueDeltaEnabled) {
             console.log("ValueDeltaBreaker not enabled for rate feed %s", rateFeed.rateFeedID);
             revert("ValueDeltaBreaker not enabled for all rate feeds");
-          }
-        }
-
-        if (rateFeed.valueDeltaBreaker1.enabled) {
-          bool nonrecoverableValueDeltaEnabled = BreakerBox(breakerBox).isBreakerEnabled(
-            nonrecoverableValueDeltaBreaker,
-            rateFeed.rateFeedID
-          );
-          if (!nonrecoverableValueDeltaEnabled) {
-            console.log("Nonrecoverable ValueDeltaBreaker not enabled for rate feed %s", rateFeed.rateFeedID);
-            revert("Nonrecoverable ValueDeltaBreaker not enabled for all rate feeds");
           }
         }
       }
@@ -484,46 +465,6 @@ contract eXOFChecksVerify is eXOFChecksBase {
       }
     }
     console.log("🟢 ValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒");
-  }
-
-  function verifyNonrecoverableValueDeltaBreaker(eXOFConfig.eXOF memory config) internal view {
-    // verify that cooldown period, rate change threshold and reference value were set correctly
-    for (uint256 i = 0; i < config.rateFeeds.length; i++) {
-      Config.RateFeed memory rateFeed = config.rateFeeds[i];
-
-      if (rateFeed.valueDeltaBreaker1.enabled) {
-        uint256 cooldown = ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).rateFeedCooldownTime(rateFeed.rateFeedID);
-        uint256 rateChangeThreshold = ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).rateChangeThreshold(
-          rateFeed.rateFeedID
-        );
-        uint256 referenceValue = ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).referenceValues(
-          rateFeed.rateFeedID
-        );
-
-        // verify cooldown period
-        verifyCooldownTime(cooldown, rateFeed.valueDeltaBreaker1.cooldown, rateFeed.rateFeedID, true);
-
-        // verify rate change threshold
-        verifyRateChangeTheshold(
-          rateChangeThreshold,
-          rateFeed.valueDeltaBreaker1.threshold.unwrap(),
-          rateFeed.rateFeedID,
-          true
-        );
-
-        // verify reference value
-        if (referenceValue != rateFeed.valueDeltaBreaker1.referenceValue) {
-          console.log(
-            "Nonrecoverable ValueDeltaBreaker reference value not set correctly for the rate feed: %s",
-            rateFeed.rateFeedID
-          );
-          revert("Nonrecoverable ValueDeltaBreaker reference values not set correctly for all rate feeds");
-        }
-      }
-    }
-    console.log(
-      "🟢 Nonrecoverable ValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒"
-    );
   }
 
   function verifyRateChangeTheshold(

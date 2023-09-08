@@ -28,6 +28,7 @@ library eXOFConfig {
     // Rate Feeds
     Config.RateFeed CELOXOF;
     Config.RateFeed EURXOF;
+    Config.RateFeed EUROCXOF;
     Config.RateFeed[] rateFeeds;
     Config.StableToken stableTokenXOF;
   }
@@ -40,9 +41,10 @@ library eXOFConfig {
     config.pools[0] = config.eXOFCelo = eXOFCelo_PoolConfig(contracts);
     config.pools[1] = config.eXOFEUROC = eXOFEUROC_PoolConfig(contracts);
 
-    config.rateFeeds = new Config.RateFeed[](2);
+    config.rateFeeds = new Config.RateFeed[](3);
     config.rateFeeds[0] = config.CELOXOF = CELOXOF_RateFeedConfig(contracts);
     config.rateFeeds[1] = config.EURXOF = EURXOF_RateFeedConfig(contracts);
+    config.rateFeeds[2] = config.EUROCXOF = EUROCXOF_RateFeedConfig(contracts);
 
     config.stableTokenXOF = stableTokenXOFConfig();
   }
@@ -62,30 +64,40 @@ library eXOFConfig {
       cooldown: 30 minutes,
       smoothingFactor: 0
     });
-    rateFeedConfig.dependentRateFeeds = Arrays.addresses(contracts.dependency("EURXOFRateFeedAddr"));
+    rateFeedConfig.dependentRateFeeds = Arrays.addresses(
+      Config.rateFeedID("EURXOF")
+    );
   }
 
   /**
    * @dev Returns the configuration for the EURXOF rate feed.
    */
-  function EURXOF_RateFeedConfig(
+  function EUROCXOF_RateFeedConfig(
     Contracts.Cache storage contracts
   ) internal returns (Config.RateFeed memory rateFeedConfig) {
-    rateFeedConfig.rateFeedID = contracts.dependency("EURXOFRateFeedAddr");
+    rateFeedConfig.rateFeedID = Config.rateFeedID("EUROCXOF");
     rateFeedConfig.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
       enabled: true,
       threshold: FixidityLib.newFixedFraction(5, 1000), // 0.005
       referenceValue: 655.957 * 10 ** 24,
       cooldown: 15 minutes
     });
+    rateFeedConfig.dependentRateFeeds = Arrays.addresses(
+      Config.rateFeedID("EURXOF"),
+      Config.rateFeedID("EUROCEUR")
+    );
+  }
 
-    rateFeedConfig.valueDeltaBreaker1 = Config.ValueDeltaBreaker({
+  function EURXOF_RateFeedConfig(
+    Contracts.Cache storage contracts
+  ) internal returns (Config.RateFeed memory rateFeedConfig) {
+    rateFeedConfig.rateFeedID = Config.rateFeedID("EURXOF");
+    rateFeedConfig.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
       enabled: true,
       threshold: FixidityLib.newFixedFraction(10, 100), // 0.10
       referenceValue: 655.957 * 10 ** 24,
       cooldown: 0 seconds
     });
-    rateFeedConfig.dependentRateFeeds = Arrays.addresses(contracts.dependency("EUROCEURRateFeedAddr"));
   }
 
   /* ==================== Pool Configurations ==================== */
@@ -144,7 +156,7 @@ library eXOFConfig {
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 656 * 1_000_000 * 1e18, // 656 * 1.0 million
-      referenceRateFeedID: contracts.dependency("EURXOFRateFeedAddr"),
+      referenceRateFeedID: Config.rateFeedID("EUROCXOF"),
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,

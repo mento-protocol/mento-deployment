@@ -6,6 +6,7 @@
 #               -n <baklava|alfajores|celo>  -- network to submit the proposal to
 #               -u <upgrade_name>            -- name of the upgrade (MU01)
 #               -s                           -- simulate the proposal (optional)
+#               -r                           -- revert
 #               -f                           -- use forked network (optional)
 # Example: yarn cgp -n baklava -u MU01 -p 1
 ##############################################################################
@@ -16,13 +17,15 @@ NETWORK=""
 UPGRADE=""
 SIMULATE=false
 USE_FORK=false
-while getopts n:u:p:sf flag
+REVERT=false
+while getopts n:u:p:sfr flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         u) UPGRADE=${OPTARG};;
         s) SIMULATE=true;;
         f) USE_FORK=true;;
+        r) REVERT=true;;
     esac
 done
 
@@ -36,13 +39,22 @@ if [ "$USE_FORK" = true ] ; then
     echo "🍴 Submitting to forked network"
 fi
 
+
+if [ "$REVERT" = true ] ; then
+    CONTRACT=$UPGRADE'Revert'
+    echo "🔄 Reverting $UPGRADE via $CONTRACT"
+else
+    CONTRACT=$UPGRADE
+    echo "🔥 Submitting $UPGRADE via $CONTRACT"
+fi
+
 if [ "$SIMULATE" = true ] ; then
-    echo "🥸 Simulating $UPGRADE"
-    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --skip .dev.sol --sig "run(string)" script/utils/SimulateUpgrade.sol:SimulateUpgrade $UPGRADE
+    echo "🥸 Simulating $CONTRACT"
+    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --skip .dev.sol --sig "run(string)" script/utils/SimulateUpgrade.sol:SimulateUpgrade $CONTRACT
 else 
-    echo "🔥 Submitting $UPGRADE"
+    echo "🔥 Submitting $CONTRACT"
     confirm_if_celo "$NETWORK"
-    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast ${UPGRADE}
+    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast ${CONTRACT}
 fi
 
 

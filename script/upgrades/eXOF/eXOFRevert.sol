@@ -38,7 +38,7 @@ import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
-contract eXOF is IMentoUpgrade, GovernanceScript {
+contract eXOFRevert is IMentoUpgrade, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
 
@@ -50,6 +50,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   address private breakerBox;
   address private medianDeltaBreaker;
   address private valueDeltaBreaker;
+  address private nonrecoverableValueDeltaBreaker;
   address private brokerProxy;
   address private biPoolManagerProxy;
   address private sortedOraclesProxy;
@@ -58,7 +59,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) private referenceRateFeedIDToExchangeId;
 
-  bool public hasChecks = true;
+  bool public hasChecks = false;
 
   function prepare() public {
     loadDeployedContracts();
@@ -76,6 +77,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     contracts.load("MU03-02-Create-Implementations", "latest");
     contracts.load("eXOF-00-Create-Proxies", "latest");
     contracts.load("eXOF-01-Create-Implementations", "latest");
+    contracts.load("eXOF-02-Create-Nonupgradeable-Contracts", "latest");
   }
 
   /**
@@ -91,6 +93,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
+    nonrecoverableValueDeltaBreaker = contracts.deployed("NonrecoverableValueDeltaBreaker");
     sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
 
     // Swaps
@@ -132,63 +135,28 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     require(transactions.length == 0, "buildProposal() should only be called once");
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
-    proposal_initializeEXOFToken(config);
-    proposal_addEXOFToCeloRegistry();
-    proposal_configureEXOFConstitutionParameters(config.stableTokenXOF);
-    proposal_addEXOFToReserve();
-    proposal_enableGasPaymentsWithEXOF();
+    proposal_removeEXOFFromCeloRegistry();
+    proposal_removeEXOFFromReserve();
 
-    proposal_createExchanges(config);
-    proposal_configureTradingLimits(config);
-    proposal_configureBreakerBox(config);
-    proposal_configureMedianDeltaBreakers(config);
-    proposal_configureValueDeltaBreaker(config);
+    proposal_destroyExchanges(config);
+    proposal_revertTradingLimits(config);
+    proposal_revertBreakerBox(config);
+    proposal_revertMedianDeltaBreakers(config);
+    proposal_revertValueDeltaBreaker(config);
+    proposal_revertNonrecoverableValueDeltaBreaker(config);
 
     return transactions;
   }
 
   /**
-   * @notice Configures the eXOF token
-   */
-  function proposal_initializeEXOFToken(eXOFConfig.eXOF memory config) private {
-    StableTokenXOFProxy _eXOFProxy = StableTokenXOFProxy(eXOFProxy);
-    if (_eXOFProxy._getImplementation() == address(0)) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          eXOFProxy,
-          abi.encodeWithSelector(
-            _eXOFProxy._setAndInitializeImplementation.selector,
-            contracts.deployed("StableTokenXOF"),
-            abi.encodeWithSelector(
-              StableTokenXOF(0).initialize.selector,
-              config.stableTokenXOF.name,
-              config.stableTokenXOF.symbol,
-              config.stableTokenXOF.decimals,
-              config.stableTokenXOF.registryAddress,
-              config.stableTokenXOF.inflationRate,
-              config.stableTokenXOF.inflationFactorUpdatePeriod,
-              config.stableTokenXOF.initialBalanceAddresses,
-              config.stableTokenXOF.initialBalanceValues,
-              config.stableTokenXOF.exchangeIdentifier
-            )
-          )
-        )
-      );
-    } else {
-      console.log("Skipping StableTokenXOFProxy is already initialized");
-    }
-  }
-
-  /**
    * @notice Add the transaction to create a new entry for StableTokenXOF in the CeloRegistry
    */
-  function proposal_addEXOFToCeloRegistry() private {
+  function proposal_removeEXOFFromCeloRegistry() private {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         REGISTRY_ADDRESS,
-        abi.encodeWithSelector(IRegistry(0).setAddressFor.selector, "StableTokenXOF", eXOFProxy)
+        abi.encodeWithSelector(IRegistry(0).setAddressFor.selector, "StableTokenXOF", address(0))
       )
     );
   }
@@ -196,104 +164,53 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   /**
    * @notice adds eXOF token to the partial and main reserve
    */
-  function proposal_addEXOFToReserve() private {
-    if (IReserve(partialReserveProxy).isStableAsset(eXOFProxy) == false) {
+  function proposal_removeEXOFFromReserve() private {
+    address[] memory tokens = IReserve(partialReserveProxy).getTokens();
+    if (IReserve(partialReserveProxy).isStableAsset(eXOFProxy) == true) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           partialReserveProxy,
-          abi.encodeWithSelector(IReserve(0).addToken.selector, eXOFProxy)
+          abi.encodeWithSelector(IReserve(0).removeToken.selector, eXOFProxy, tokens.length - 1)
         )
       );
     } else {
-      console.log("Token already added to the partial reserve, skipping: %s", eXOFProxy);
-    }
-  }
-
-  /**
-   * @notice enable gas payments with XOF
-   */
-  function proposal_enableGasPaymentsWithEXOF() private {
-    address feeCurrencyWhitelistProxy = contracts.celoRegistry("FeeCurrencyWhitelist");
-    address[] memory whitelist = IFeeCurrencyWhitelist(feeCurrencyWhitelistProxy).getWhitelist();
-    for (uint256 i = 0; i < whitelist.length; i++) {
-      if (whitelist[i] == eXOFProxy) {
-        console.log("Gas payments with XOF already enabled, skipping");
-        return;
-      }
-    }
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        feeCurrencyWhitelistProxy,
-        abi.encodeWithSelector(IFeeCurrencyWhitelist(0).addToken.selector, eXOFProxy)
-      )
-    );
-  }
-
-  /**
-   * @notice configure eXOF constitution parameters
-   * @dev see cBRl GCP(https://celo.stake.id/#/proposal/49) for reference
-   */
-  function proposal_configureEXOFConstitutionParameters(Config.StableToken memory stableTokenConfig) private {
-    address governanceProxy = contracts.celoRegistry("Governance");
-
-    for (uint256 i = 0; i < stableTokenConfig.constitutionFunctionSelectors.length; i++) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          governanceProxy,
-          abi.encodeWithSelector(
-            ICeloGovernance(0).setConstitution.selector,
-            eXOFProxy,
-            stableTokenConfig.constitutionFunctionSelectors[i],
-            stableTokenConfig.constitutionThresholds[i]
-          )
-        )
-      );
+      console.log("Token note added to the reserve, skipping: %s", eXOFProxy);
     }
   }
 
   /**
    * @notice Creates the exchanges for the new pools.
    */
-  function proposal_createExchanges(eXOFConfig.eXOF memory config) private {
+  function proposal_destroyExchanges(eXOFConfig.eXOF memory config) private {
     // Get the address of the pricing modules
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
+    IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy); 
+    bytes32[] memory exchangeIds = biPoolManager.getExchangeIds();
 
-    for (uint256 i = 0; i < config.pools.length; i++) {
-      Config.Pool memory poolConfig = config.pools[i];
-      IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
-        asset0: poolConfig.asset0,
-        asset1: poolConfig.asset1,
-        pricingModule: poolConfig.isConstantSum ? constantSum : constantProduct,
-        bucket0: 0,
-        bucket1: 0,
-        lastBucketUpdate: 0,
-        config: IBiPoolManager.PoolConfig({
-          spread: FixidityLib.wrap(poolConfig.spread.unwrap()),
-          referenceRateFeedID: poolConfig.referenceRateFeedID,
-          referenceRateResetFrequency: poolConfig.referenceRateResetFrequency,
-          minimumReports: poolConfig.minimumReports,
-          stablePoolResetSize: poolConfig.stablePoolResetSize
-        })
-      });
-
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          biPoolManagerProxy,
-          abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, pool)
-        )
-      );
+    for (uint256 i = exchangeIds.length - 1; i >= 0; i--) {
+      bytes32 exchangeId = exchangeIds[i];
+      for (uint256 j = 0; j < config.pools.length; j++) {
+        Config.Pool memory poolConfig = config.pools[j];
+        if (exchangeId == getExchangeId(poolConfig.asset0, poolConfig.asset1, poolConfig.isConstantSum)) {
+          transactions.push(
+            ICeloGovernance.Transaction(
+              0,
+              biPoolManagerProxy,
+              abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, exchangeId, i)
+            )
+          );
+        }
+      }
+      if (i == 0) break;
     }
   }
 
   /**
    * @notice This function creates the transactions to configure the trading limits.
    */
-  function proposal_configureTradingLimits(eXOFConfig.eXOF memory config) private {
+  function proposal_revertTradingLimits(eXOFConfig.eXOF memory config) private {
     for (uint256 i = 0; i < config.pools.length; i++) {
       Config.Pool memory poolConfig = config.pools[i];
 
@@ -307,12 +224,12 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
             referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
             poolConfig.asset0,
             TradingLimits.Config({
-              timestep0: poolConfig.asset0limits.timeStep0,
-              timestep1: poolConfig.asset0limits.timeStep1,
-              limit0: poolConfig.asset0limits.limit0,
-              limit1: poolConfig.asset0limits.limit1,
-              limitGlobal: poolConfig.asset0limits.limitGlobal,
-              flags: Config.tradingLimitConfigToFlag(poolConfig.asset0limits)
+              timestep0: 0,
+              timestep1: 0,
+              limit0: 0,
+              limit1: 0,
+              limitGlobal: 0,
+              flags: 0
             })
           )
         )
@@ -328,12 +245,12 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
             referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
             poolConfig.asset1,
             TradingLimits.Config({
-              timestep0: poolConfig.asset1limits.timeStep0,
-              timestep1: poolConfig.asset1limits.timeStep1,
-              limit0: poolConfig.asset1limits.limit0,
-              limit1: poolConfig.asset1limits.limit1,
-              limitGlobal: poolConfig.asset1limits.limitGlobal,
-              flags: Config.tradingLimitConfigToFlag(poolConfig.asset1limits)
+              timestep0: 0,
+              timestep1: 0,
+              limit0: 0,
+              limit1: 0,
+              limitGlobal: 0,
+              flags: 0
             })
           )
         )
@@ -344,37 +261,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the Breakerbox.
    */
-  function proposal_configureBreakerBox(eXOFConfig.eXOF memory config) private {
-    // Add the new rate feeds to breaker box
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        breakerBox,
-        abi.encodeWithSelector(
-          BreakerBox(0).addRateFeeds.selector,
-          Arrays.addresses(eXOFProxy, contracts.dependency("EURXOFRateFeedAddr"))
-        )
-      )
-    );
-
-    // Set rate feed dependencies
-    for (uint i = 0; i < config.rateFeeds.length; i++) {
-      Config.RateFeed memory rateFeed = config.rateFeeds[i];
-      if (rateFeed.dependentRateFeeds.length > 0) {
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            breakerBox,
-            abi.encodeWithSelector(
-              BreakerBox(0).setRateFeedDependencies.selector,
-              rateFeed.rateFeedID,
-              rateFeed.dependentRateFeeds
-            )
-          )
-        );
-      }
-    }
-
+  function proposal_revertBreakerBox(eXOFConfig.eXOF memory config) private {
     for (uint i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
       // Enable Median Delta Breaker for rate feed
@@ -383,7 +270,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
           ICeloGovernance.Transaction(
             0,
             breakerBox,
-            abi.encodeWithSelector(BreakerBox(0).toggleBreaker.selector, medianDeltaBreaker, rateFeed.rateFeedID, true)
+            abi.encodeWithSelector(BreakerBox(0).toggleBreaker.selector, medianDeltaBreaker, rateFeed.rateFeedID, false)
           )
         );
       }
@@ -394,17 +281,42 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
           ICeloGovernance.Transaction(
             0,
             breakerBox,
-            abi.encodeWithSelector(BreakerBox(0).toggleBreaker.selector, valueDeltaBreaker, rateFeed.rateFeedID, true)
+            abi.encodeWithSelector(BreakerBox(0).toggleBreaker.selector, valueDeltaBreaker, rateFeed.rateFeedID, false)
           )
         );
       }
+    }
+
+    // Remove rate feeds to breaker box
+    for (uint256 i = 0; i < config.rateFeeds.length; i++) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          breakerBox,
+          abi.encodeWithSelector(
+            BreakerBox(0).removeRateFeed.selector,
+            config.rateFeeds[i].rateFeedID
+          )
+        )
+      );
+    }
+
+    // Add the Nonrecoverable Value Delta Breaker 2 to the breaker box with the trading mode '3' -> trading halted
+    if (BreakerBox(breakerBox).isBreaker(nonrecoverableValueDeltaBreaker)) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          breakerBox,
+          abi.encodeWithSelector(BreakerBox(0).removeBreaker.selector, nonrecoverableValueDeltaBreaker)
+        )
+      );
     }
   }
 
   /**
    * @notice This function creates the transactions to configure the Median Delta Breaker.
    */
-  function proposal_configureMedianDeltaBreakers(eXOFConfig.eXOF memory config) private {
+  function proposal_revertMedianDeltaBreakers(eXOFConfig.eXOF memory config) private {
     // Set the cooldown time
     transactions.push(
       ICeloGovernance.Transaction(
@@ -413,7 +325,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setCooldownTime.selector,
           Arrays.addresses(config.CELOXOF.rateFeedID),
-          Arrays.uints(config.CELOXOF.medianDeltaBreaker0.cooldown)
+          Arrays.uints(0)
         )
       )
     );
@@ -425,7 +337,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           MedianDeltaBreaker(0).setRateChangeThresholds.selector,
           Arrays.addresses(config.CELOXOF.rateFeedID),
-          Arrays.uints(config.CELOXOF.medianDeltaBreaker0.threshold.unwrap())
+          Arrays.uints(0)
         )
       )
     );
@@ -434,7 +346,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the recoverable Value Delta Breaker .
    */
-  function proposal_configureValueDeltaBreaker(eXOFConfig.eXOF memory config) private {
+  function proposal_revertValueDeltaBreaker(eXOFConfig.eXOF memory config) private {
     // Set the cooldown times
     transactions.push(
       ICeloGovernance.Transaction(
@@ -443,7 +355,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
           Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(config.EURXOF.valueDeltaBreaker0.cooldown)
+          Arrays.uints(0)
         )
       )
     );
@@ -455,7 +367,7 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
           Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(config.EURXOF.valueDeltaBreaker0.threshold.unwrap())
+          Arrays.uints(0)
         )
       )
     );
@@ -467,7 +379,51 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
           Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(config.EURXOF.valueDeltaBreaker0.referenceValue)
+          Arrays.uints(0)
+        )
+      )
+    );
+  }
+
+  /**
+   * @notice This function creates the transactions to configure the second Value Delta Breaker .
+   */
+  function proposal_revertNonrecoverableValueDeltaBreaker(eXOFConfig.eXOF memory config) private {
+    // Set the cooldown times
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        nonrecoverableValueDeltaBreaker,
+        abi.encodeWithSelector(
+          ValueDeltaBreaker(0).setCooldownTimes.selector,
+          Arrays.addresses(config.EURXOF.rateFeedID),
+          Arrays.uints(0)
+        )
+      )
+    );
+
+    // Set the rate change thresholds
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        nonrecoverableValueDeltaBreaker,
+        abi.encodeWithSelector(
+          ValueDeltaBreaker(0).setRateChangeThresholds.selector,
+          Arrays.addresses(config.EURXOF.rateFeedID),
+          Arrays.uints(0)
+        )
+      )
+    );
+
+    // Set the reference values
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        nonrecoverableValueDeltaBreaker,
+        abi.encodeWithSelector(
+          ValueDeltaBreaker(0).setReferenceValues.selector,
+          Arrays.addresses(config.EURXOF.rateFeedID),
+          Arrays.uints(0)
         )
       )
     );
@@ -480,6 +436,16 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     return
       keccak256(
         abi.encodePacked("eXOF", IERC20Metadata(asset1).symbol(), isConstantSum ? "ConstantSum" : "ConstantProduct")
+      );
+  }
+
+  /**
+   * @notice Helper function to get the exchange ID for a pool
+   */
+  function getExchangeId(address asset0, address asset1, bool isConstantSum) internal view returns (bytes32) {
+    return
+      keccak256(
+        abi.encodePacked(IERC20Metadata(asset0).symbol(), IERC20Metadata(asset1).symbol(), isConstantSum ? "ConstantSum" : "ConstantProduct")
       );
   }
 }
