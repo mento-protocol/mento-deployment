@@ -23,5 +23,5 @@ done
 parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
 
-echo "  Checking $UPGRADE"
+echo "👀  Checking $UPGRADE"
 forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --skip .dev.sol --sig "check(string)" script/utils/SimulateUpgrade.sol:SimulateUpgrade $UPGRADE
