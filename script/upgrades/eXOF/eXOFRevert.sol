@@ -132,8 +132,6 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
     require(transactions.length == 0, "buildProposal() should only be called once");
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
-    proposal_removeEXOFFromReserve();
-
     proposal_destroyExchanges(config);
     proposal_revertTradingLimits(config);
     proposal_revertBreakerBox(config);
@@ -141,24 +139,6 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
     proposal_revertValueDeltaBreaker(config);
 
     return transactions;
-  }
-
-  /**
-   * @notice adds eXOF token to the partial and main reserve
-   */
-  function proposal_removeEXOFFromReserve() private {
-    address[] memory tokens = IReserve(partialReserveProxy).getTokens();
-    if (IReserve(partialReserveProxy).isStableAsset(eXOFProxy) == true) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          partialReserveProxy,
-          abi.encodeWithSelector(IReserve(0).removeToken.selector, eXOFProxy, tokens.length - 1)
-        )
-      );
-    } else {
-      console.log("Token not in the reserve, skipping: %s", eXOFProxy);
-    }
   }
 
   /**
