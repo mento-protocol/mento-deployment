@@ -52,7 +52,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
     console.log("\nStarting eXOF checks:");
 
-    console.log("\n==  Information");
+    console.log("\n==  Rate feeds ==");
     console.log("   EUROCXOF: %s", config.EUROCXOF.rateFeedID);
     console.log("   EURXOF: %s", config.EURXOF.rateFeedID);
     console.log("   CELOXOF: %s", config.CELOXOF.rateFeedID);
