@@ -118,7 +118,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
     console.log("🟢 eXOF has been added to the fee currency whitelist");
   }
 
-  function verifyConstitution(eXOFConfig.eXOF memory config) internal {
+  function verifyConstitution(eXOFConfig.eXOF memory config) internal view {
     bytes4[] memory functionSelectors = config.stableTokenXOF.constitutionFunctionSelectors;
     uint256[] memory expectedThresholdValues = config.stableTokenXOF.constitutionThresholds;
 
@@ -146,7 +146,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
     }
   }
 
-  function verifyExchanges(eXOFConfig.eXOF memory config) internal {
+  function verifyExchanges(eXOFConfig.eXOF memory config) internal view {
     console.log("\n== Verifying exchanges ==");
 
     verifyPoolExchange(config);
@@ -335,7 +335,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
   /* ======================== Circuit Breaker ======================= */
   /* ================================================================ */
 
-  function verifyCircuitBreaker(eXOFConfig.eXOF memory config) internal {
+  function verifyCircuitBreaker(eXOFConfig.eXOF memory config) internal view {
     console.log("\n== Checking circuit breaker ==");
 
     verifyBreakerBox(config);

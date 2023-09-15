@@ -43,8 +43,8 @@ library eXOFConfig {
 
     config.rateFeeds = new Config.RateFeed[](3);
     config.rateFeeds[0] = config.CELOXOF = CELOXOF_RateFeedConfig(contracts);
-    config.rateFeeds[1] = config.EURXOF = EURXOF_RateFeedConfig(contracts);
-    config.rateFeeds[2] = config.EUROCXOF = EUROCXOF_RateFeedConfig(contracts);
+    config.rateFeeds[1] = config.EURXOF = EURXOF_RateFeedConfig();
+    config.rateFeeds[2] = config.EUROCXOF = EUROCXOF_RateFeedConfig();
 
     config.stableTokenXOF = stableTokenXOFConfig();
   }
@@ -56,7 +56,7 @@ library eXOFConfig {
    */
   function CELOXOF_RateFeedConfig(
     Contracts.Cache storage contracts
-  ) internal returns (Config.RateFeed memory rateFeedConfig) {
+  ) internal view returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = contracts.deployed("StableTokenXOFProxy");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
@@ -70,9 +70,7 @@ library eXOFConfig {
   /**
    * @dev Returns the configuration for the EURXOF rate feed.
    */
-  function EUROCXOF_RateFeedConfig(
-    Contracts.Cache storage contracts
-  ) internal returns (Config.RateFeed memory rateFeedConfig) {
+  function EUROCXOF_RateFeedConfig() internal view returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = Config.rateFeedID("EUROCXOF");
     rateFeedConfig.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
       enabled: true,
@@ -83,9 +81,7 @@ library eXOFConfig {
     rateFeedConfig.dependentRateFeeds = Arrays.addresses(Config.rateFeedID("EURXOF"), Config.rateFeedID("EUROCEUR"));
   }
 
-  function EURXOF_RateFeedConfig(
-    Contracts.Cache storage contracts
-  ) internal returns (Config.RateFeed memory rateFeedConfig) {
+  function EURXOF_RateFeedConfig() internal view returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = Config.rateFeedID("EURXOF");
     rateFeedConfig.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
       enabled: true,
