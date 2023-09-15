@@ -145,8 +145,6 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
    * @notice Destroy the exchanges for the new pools.
    */
   function proposal_destroyExchanges(eXOFConfig.eXOF memory config) private {
-    IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
-    IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
     IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
     bytes32[] memory exchangeIds = biPoolManager.getExchangeIds();
 
