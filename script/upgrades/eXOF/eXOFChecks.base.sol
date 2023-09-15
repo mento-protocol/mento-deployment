@@ -54,7 +54,6 @@ contract eXOFChecksBase is GovernanceScript, Test {
   address public governance;
   address public medianDeltaBreaker;
   address public valueDeltaBreaker;
-  address public nonrecoverableValueDeltaBreaker;
   address public biPoolManager;
   address payable sortedOraclesProxy;
   address public sortedOracles;

@@ -50,7 +50,6 @@ contract eXOFRevert is IMentoUpgrade, GovernanceScript {
   address private breakerBox;
   address private medianDeltaBreaker;
   address private valueDeltaBreaker;
-  address private nonrecoverableValueDeltaBreaker;
   address private brokerProxy;
   address private biPoolManagerProxy;
   address private sortedOraclesProxy;
