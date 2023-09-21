@@ -50,7 +50,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   address private breakerBox;
   address private medianDeltaBreaker;
   address private valueDeltaBreaker;
-  address private nonrecoverableValueDeltaBreaker;
   address private brokerProxy;
   address private biPoolManagerProxy;
   address private sortedOraclesProxy;
@@ -77,7 +76,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     contracts.load("MU03-02-Create-Implementations", "latest");
     contracts.load("eXOF-00-Create-Proxies", "latest");
     contracts.load("eXOF-01-Create-Implementations", "latest");
-    contracts.load("eXOF-02-Create-Nonupgradeable-Contracts", "latest");
   }
 
   /**
@@ -93,7 +91,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
-    nonrecoverableValueDeltaBreaker = contracts.deployed("NonrecoverableValueDeltaBreaker");
     sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
 
     // Swaps
@@ -136,7 +133,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     proposal_initializeEXOFToken(config);
-    proposal_addEXOFToCeloRegistry();
     proposal_configureEXOFConstitutionParameters(config.stableTokenXOF);
     proposal_addEXOFToReserve();
     proposal_enableGasPaymentsWithEXOF();
@@ -146,7 +142,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
     proposal_configureBreakerBox(config);
     proposal_configureMedianDeltaBreakers(config);
     proposal_configureValueDeltaBreaker(config);
-    proposal_configureNonrecoverableValueDeltaBreaker(config);
 
     return transactions;
   }
@@ -185,19 +180,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
   }
 
   /**
-   * @notice Add the transaction to create a new entry for StableTokenXOF in the CeloRegistry
-   */
-  function proposal_addEXOFToCeloRegistry() private {
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        REGISTRY_ADDRESS,
-        abi.encodeWithSelector(IRegistry(0).setAddressFor.selector, "StableTokenXOF", eXOFProxy)
-      )
-    );
-  }
-
-  /**
    * @notice adds eXOF token to the partial and main reserve
    */
   function proposal_addEXOFToReserve() private {
@@ -219,6 +201,13 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
    */
   function proposal_enableGasPaymentsWithEXOF() private {
     address feeCurrencyWhitelistProxy = contracts.celoRegistry("FeeCurrencyWhitelist");
+    address[] memory whitelist = IFeeCurrencyWhitelist(feeCurrencyWhitelistProxy).getWhitelist();
+    for (uint256 i = 0; i < whitelist.length; i++) {
+      if (whitelist[i] == eXOFProxy) {
+        console.log("Gas payments with XOF already enabled, skipping");
+        return;
+      }
+    }
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -349,21 +338,10 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         breakerBox,
         abi.encodeWithSelector(
           BreakerBox(0).addRateFeeds.selector,
-          Arrays.addresses(eXOFProxy, contracts.dependency("EURXOFRateFeedAddr"))
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID, config.CELOXOF.rateFeedID)
         )
       )
     );
-
-    // Add the Nonrecoverable Value Delta Breaker 2 to the breaker box with the trading mode '3' -> trading halted
-    if (!BreakerBox(breakerBox).isBreaker(nonrecoverableValueDeltaBreaker)) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          breakerBox,
-          abi.encodeWithSelector(BreakerBox(0).addBreaker.selector, nonrecoverableValueDeltaBreaker, 3)
-        )
-      );
-    }
 
     // Set rate feed dependencies
     for (uint i = 0; i < config.rateFeeds.length; i++) {
@@ -385,8 +363,19 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
 
     for (uint i = 0; i < config.rateFeeds.length; i++) {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
+
       // Enable Median Delta Breaker for rate feed
       if (rateFeed.medianDeltaBreaker0.enabled) {
+        if (MedianDeltaBreaker(medianDeltaBreaker).medianRatesEMA(rateFeed.rateFeedID) != 0) {
+          transactions.push(
+            ICeloGovernance.Transaction(
+              0,
+              medianDeltaBreaker,
+              abi.encodeWithSelector(MedianDeltaBreaker(0).resetMedianRateEMA.selector, rateFeed.rateFeedID)
+            )
+          );
+        }
+
         transactions.push(
           ICeloGovernance.Transaction(
             0,
@@ -403,22 +392,6 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
             0,
             breakerBox,
             abi.encodeWithSelector(BreakerBox(0).toggleBreaker.selector, valueDeltaBreaker, rateFeed.rateFeedID, true)
-          )
-        );
-      }
-
-      // Enable Nonrecoverable Value Delta Breaker for rate feeds
-      if (rateFeed.valueDeltaBreaker1.enabled) {
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            breakerBox,
-            abi.encodeWithSelector(
-              BreakerBox(0).toggleBreaker.selector,
-              nonrecoverableValueDeltaBreaker,
-              rateFeed.rateFeedID,
-              true
-            )
           )
         );
       }
@@ -466,8 +439,8 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(config.EURXOF.valueDeltaBreaker0.cooldown)
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID),
+          Arrays.uints(config.EURXOF.valueDeltaBreaker0.cooldown, config.EUROCXOF.valueDeltaBreaker0.cooldown)
         )
       )
     );
@@ -478,8 +451,11 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(config.EURXOF.valueDeltaBreaker0.threshold.unwrap())
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID),
+          Arrays.uints(
+            config.EURXOF.valueDeltaBreaker0.threshold.unwrap(),
+            config.EUROCXOF.valueDeltaBreaker0.threshold.unwrap()
+          )
         )
       )
     );
@@ -490,52 +466,11 @@ contract eXOF is IMentoUpgrade, GovernanceScript {
         valueDeltaBreaker,
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(config.EURXOF.valueDeltaBreaker0.referenceValue)
-        )
-      )
-    );
-  }
-
-  /**
-   * @notice This function creates the transactions to configure the second Value Delta Breaker .
-   */
-  function proposal_configureNonrecoverableValueDeltaBreaker(eXOFConfig.eXOF memory config) private {
-    // Set the cooldown times
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        nonrecoverableValueDeltaBreaker,
-        abi.encodeWithSelector(
-          ValueDeltaBreaker(0).setCooldownTimes.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(config.EURXOF.valueDeltaBreaker1.cooldown)
-        )
-      )
-    );
-
-    // Set the rate change thresholds
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        nonrecoverableValueDeltaBreaker,
-        abi.encodeWithSelector(
-          ValueDeltaBreaker(0).setRateChangeThresholds.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(config.EURXOF.valueDeltaBreaker1.threshold.unwrap())
-        )
-      )
-    );
-
-    // Set the reference values
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        nonrecoverableValueDeltaBreaker,
-        abi.encodeWithSelector(
-          ValueDeltaBreaker(0).setReferenceValues.selector,
-          Arrays.addresses(config.EURXOF.rateFeedID),
-          Arrays.uints(config.EURXOF.valueDeltaBreaker1.referenceValue)
+          Arrays.addresses(config.EURXOF.rateFeedID, config.EUROCXOF.rateFeedID),
+          Arrays.uints(
+            config.EURXOF.valueDeltaBreaker0.referenceValue,
+            config.EUROCXOF.valueDeltaBreaker0.referenceValue
+          )
         )
       )
     );

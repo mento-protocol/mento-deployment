@@ -16,6 +16,7 @@ import { Broker } from "mento-core-2.2.0/swap/Broker.sol";
 import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";
 import { BiPoolManager } from "mento-core-2.2.0/swap/BiPoolManager.sol";
 import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
+import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
 
 import { eXOFChecksBase } from "./eXOFChecks.base.sol";
 import { eXOFConfig, Config } from "./Config.sol";
@@ -33,6 +34,10 @@ contract eXOFChecksSwap is eXOFChecksBase {
     eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     console.log("\n== Starting eXOF test swaps: ==");
+
+    console.log("EUROCXOF tradingMode: ", BreakerBox(breakerBox).getRateFeedTradingMode(config.EUROCXOF.rateFeedID));
+    console.log("CELOXOF tradingMode: ", BreakerBox(breakerBox).getRateFeedTradingMode(config.CELOXOF.rateFeedID));
+    console.log("EURXOF tradingMode: ", BreakerBox(breakerBox).getRateFeedTradingMode(config.EURXOF.rateFeedID));
 
     swapCeloToEXOF(config);
     swapEXOFtoCelo(config);

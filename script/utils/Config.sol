@@ -88,10 +88,6 @@ library Config {
      */
     ValueDeltaBreaker valueDeltaBreaker0;
     /**
-     * @dev List of Value Delta RateFeed Configurations for the rate feed.
-     */
-    ValueDeltaBreaker valueDeltaBreaker1;
-    /**
      * @dev List of dependent rate feeds.
      */
     address[] dependentRateFeeds;
@@ -313,5 +309,12 @@ library Config {
    */
   function getSelector(string memory _func) internal pure returns (bytes4) {
     return bytes4(keccak256(bytes(_func)));
+  }
+
+  /**
+   * @notice Helper function to compute the rate feed ID for a pair
+   */
+  function rateFeedID(string memory pair) internal pure returns (address) {
+    return address(uint160(uint256(keccak256(abi.encodePacked(pair)))));
   }
 }

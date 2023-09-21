@@ -27,4 +27,14 @@ contract SimulateUpgrade is GovernanceScript {
       checks.run();
     }
   }
+
+  function check(string memory _upgrade) public {
+    IMentoUpgrade upgrade = IMentoUpgrade(factory.create(_upgrade));
+    if (upgrade.hasChecks()) {
+      IScript checks = IScript(factory.create(string(abi.encodePacked(_upgrade, "Checks"))));
+      checks.run();
+    } else {
+      console.log("No checks for %s", _upgrade);
+    }
+  }
 }

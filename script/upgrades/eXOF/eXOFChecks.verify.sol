@@ -49,19 +49,26 @@ contract eXOFChecksVerify is eXOFChecksBase {
   }
 
   function run() public {
+    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
     console.log("\nStarting eXOF checks:");
 
+    console.log("\n==  Rate feeds ==");
+    console.log("   EUROCXOF: %s", config.EUROCXOF.rateFeedID);
+    console.log("   EURXOF: %s", config.EURXOF.rateFeedID);
+    console.log("   CELOXOF: %s", config.CELOXOF.rateFeedID);
+
+    verifyToken(config);
+    verifyExchanges(config);
+    verifyCircuitBreaker(config);
+  }
+
+  function verifyToken(eXOFConfig.eXOF memory config) internal {
     console.log("\n== Verifying Token Transactions ==");
     verifyOwner();
     verifyEXOFStableToken();
-    verifyConstitution();
-    verifyEXOFAddedToRegistry();
+    verifyConstitution(config);
     verifyEXOFAddedToReserve();
     verifyEXOFAddedToFeeCurrencyWhitelist();
-
-    verifyExchanges();
-
-    verifyCircuitBreaker();
   }
 
   function verifyOwner() internal view {
@@ -73,10 +80,6 @@ contract eXOFChecksVerify is eXOFChecksBase {
 
     require(Proxy(eXOF)._getOwner() == governance, "StableTokenXOF Proxy ownership not transferred to governance");
 
-    require(
-      ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).owner() == governance,
-      "Nonrecoverable Value Delta Breaker ownership not transferred to governance"
-    );
     console.log("🟢 Contract ownerships transferred to governance");
   }
 
@@ -94,22 +97,6 @@ contract eXOFChecksVerify is eXOFChecksBase {
       revert("Deployed StableTokenXOF does not match what proxy points to. See logs.");
     }
     console.log("🟢 StableTokenXOFProxy has the correct implementation address");
-  }
-
-  function verifyEXOFAddedToRegistry() internal view {
-    address registryEXOFAddress = IRegistry(REGISTRY_ADDRESS).getAddressForStringOrDie("StableTokenXOF");
-    address deployedEXOFAddress = contracts.deployed("StableTokenXOFProxy");
-
-    if (registryEXOFAddress != deployedEXOFAddress) {
-      console.log(
-        "The eXOF address from the registry: %s does not match the deployed address: %s.",
-        registryEXOFAddress,
-        deployedEXOFAddress
-      );
-      revert("Deployed eXOF does not match what registry points to. See logs.");
-    }
-
-    console.log("🟢 eXOF has been added to the registry");
   }
 
   function verifyEXOFAddedToReserve() internal view {
@@ -131,9 +118,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
     console.log("🟢 eXOF has been added to the fee currency whitelist");
   }
 
-  function verifyConstitution() internal {
-    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
-
+  function verifyConstitution(eXOFConfig.eXOF memory config) internal view {
     bytes4[] memory functionSelectors = config.stableTokenXOF.constitutionFunctionSelectors;
     uint256[] memory expectedThresholdValues = config.stableTokenXOF.constitutionThresholds;
 
@@ -161,9 +146,8 @@ contract eXOFChecksVerify is eXOFChecksBase {
     }
   }
 
-  function verifyExchanges() internal {
+  function verifyExchanges(eXOFConfig.eXOF memory config) internal view {
     console.log("\n== Verifying exchanges ==");
-    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     verifyPoolExchange(config);
     verifyPoolConfig(config);
@@ -351,35 +335,29 @@ contract eXOFChecksVerify is eXOFChecksBase {
   /* ======================== Circuit Breaker ======================= */
   /* ================================================================ */
 
-  function verifyCircuitBreaker() internal {
+  function verifyCircuitBreaker(eXOFConfig.eXOF memory config) internal view {
     console.log("\n== Checking circuit breaker ==");
-    eXOFConfig.eXOF memory config = eXOFConfig.get(contracts);
 
     verifyBreakerBox(config);
     verifyBreakersAreEnabled(config);
     verifyMedianDeltaBreaker(config);
     verifyValueDeltaBreaker(config);
-    verifyNonrecoverableValueDeltaBreaker(config);
   }
 
   function verifyBreakerBox(eXOFConfig.eXOF memory config) internal view {
-    // verify that breakers were set with trading mode 3
-    if (BreakerBox(breakerBox).breakerTradingMode(nonrecoverableValueDeltaBreaker) != 3) {
-      console.log("The Nonrecoverable ValueDeltaBreaker was not set with trading halted ❌");
-      revert("Nonrecoverable ValueDeltaBreaker was not set with trading halted");
-    }
-    console.log("🟢 Nonrecoverable ValueDeltaBreaker set with trading mode 3");
-
     // verify that rate feed dependencies were configured correctly
-    address EUROCXOFDependency = BreakerBox(breakerBox).rateFeedDependencies(config.EURXOF.rateFeedID, 0);
     require(
-      EUROCXOFDependency == config.EURXOF.dependentRateFeeds[0],
+      BreakerBox(breakerBox).rateFeedDependencies(config.EUROCXOF.rateFeedID, 0) == Config.rateFeedID("EURXOF"),
       "EUROC/XOF rate feed dependency not set correctly"
     );
 
-    address CELOXOFDependency = BreakerBox(breakerBox).rateFeedDependencies(config.CELOXOF.rateFeedID, 0);
     require(
-      CELOXOFDependency == config.CELOXOF.dependentRateFeeds[0],
+      BreakerBox(breakerBox).rateFeedDependencies(config.EUROCXOF.rateFeedID, 1) == Config.rateFeedID("EUROCEUR"),
+      "EUROC/XOF rate feed dependency not set correctly"
+    );
+
+    require(
+      BreakerBox(breakerBox).rateFeedDependencies(config.CELOXOF.rateFeedID, 0) == Config.rateFeedID("EURXOF"),
       "CELO/XOF rate feed dependency not set correctly"
     );
 
@@ -405,17 +383,6 @@ contract eXOFChecksVerify is eXOFChecksBase {
             revert("ValueDeltaBreaker not enabled for all rate feeds");
           }
         }
-
-        if (rateFeed.valueDeltaBreaker1.enabled) {
-          bool nonrecoverableValueDeltaEnabled = BreakerBox(breakerBox).isBreakerEnabled(
-            nonrecoverableValueDeltaBreaker,
-            rateFeed.rateFeedID
-          );
-          if (!nonrecoverableValueDeltaEnabled) {
-            console.log("Nonrecoverable ValueDeltaBreaker not enabled for rate feed %s", rateFeed.rateFeedID);
-            revert("Nonrecoverable ValueDeltaBreaker not enabled for all rate feeds");
-          }
-        }
       }
     }
     console.log("🟢 Breakers enabled for all rate feeds 🗳️");
@@ -427,9 +394,9 @@ contract eXOFChecksVerify is eXOFChecksBase {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
 
       if (rateFeed.medianDeltaBreaker0.enabled) {
-        uint256 cooldown = MedianDeltaBreaker(medianDeltaBreaker).rateFeedCooldownTime(rateFeed.rateFeedID);
+        uint256 cooldown = MedianDeltaBreaker(medianDeltaBreaker).getCooldown(rateFeed.rateFeedID);
         uint256 rateChangeThreshold = MedianDeltaBreaker(medianDeltaBreaker).rateChangeThreshold(rateFeed.rateFeedID);
-        uint256 smoothingFactor = MedianDeltaBreaker(medianDeltaBreaker).smoothingFactors(rateFeed.rateFeedID);
+        uint256 smoothingFactor = MedianDeltaBreaker(medianDeltaBreaker).getSmoothingFactor(rateFeed.rateFeedID);
 
         // verify cooldown period
         verifyCooldownTime(cooldown, rateFeed.medianDeltaBreaker0.cooldown, rateFeed.rateFeedID, false);
@@ -444,6 +411,8 @@ contract eXOFChecksVerify is eXOFChecksBase {
 
         // verify smoothing factor
         if (smoothingFactor != rateFeed.medianDeltaBreaker0.smoothingFactor) {
+          console.log("expected: %s", rateFeed.medianDeltaBreaker0.smoothingFactor);
+          console.log("got:      %s", smoothingFactor);
           console.log(
             "MedianDeltaBreaker smoothing factor not set correctly for the rate feed: %s",
             rateFeed.rateFeedID
@@ -461,7 +430,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
       Config.RateFeed memory rateFeed = config.rateFeeds[i];
 
       if (rateFeed.valueDeltaBreaker0.enabled) {
-        uint256 cooldown = ValueDeltaBreaker(valueDeltaBreaker).rateFeedCooldownTime(rateFeed.rateFeedID);
+        uint256 cooldown = ValueDeltaBreaker(valueDeltaBreaker).getCooldown(rateFeed.rateFeedID);
         uint256 rateChangeThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(rateFeed.rateFeedID);
         uint256 referenceValue = ValueDeltaBreaker(valueDeltaBreaker).referenceValues(rateFeed.rateFeedID);
 
@@ -484,46 +453,6 @@ contract eXOFChecksVerify is eXOFChecksBase {
       }
     }
     console.log("🟢 ValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒");
-  }
-
-  function verifyNonrecoverableValueDeltaBreaker(eXOFConfig.eXOF memory config) internal view {
-    // verify that cooldown period, rate change threshold and reference value were set correctly
-    for (uint256 i = 0; i < config.rateFeeds.length; i++) {
-      Config.RateFeed memory rateFeed = config.rateFeeds[i];
-
-      if (rateFeed.valueDeltaBreaker1.enabled) {
-        uint256 cooldown = ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).rateFeedCooldownTime(rateFeed.rateFeedID);
-        uint256 rateChangeThreshold = ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).rateChangeThreshold(
-          rateFeed.rateFeedID
-        );
-        uint256 referenceValue = ValueDeltaBreaker(nonrecoverableValueDeltaBreaker).referenceValues(
-          rateFeed.rateFeedID
-        );
-
-        // verify cooldown period
-        verifyCooldownTime(cooldown, rateFeed.valueDeltaBreaker1.cooldown, rateFeed.rateFeedID, true);
-
-        // verify rate change threshold
-        verifyRateChangeTheshold(
-          rateChangeThreshold,
-          rateFeed.valueDeltaBreaker1.threshold.unwrap(),
-          rateFeed.rateFeedID,
-          true
-        );
-
-        // verify reference value
-        if (referenceValue != rateFeed.valueDeltaBreaker1.referenceValue) {
-          console.log(
-            "Nonrecoverable ValueDeltaBreaker reference value not set correctly for the rate feed: %s",
-            rateFeed.rateFeedID
-          );
-          revert("Nonrecoverable ValueDeltaBreaker reference values not set correctly for all rate feeds");
-        }
-      }
-    }
-    console.log(
-      "🟢 Nonrecoverable ValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒"
-    );
   }
 
   function verifyRateChangeTheshold(
@@ -549,6 +478,8 @@ contract eXOFChecksVerify is eXOFChecksBase {
     bool isValueDeltaBreaker
   ) internal view {
     if (currentCoolDown != expectedCoolDown) {
+      console.log("currentCoolDown: %s", currentCoolDown);
+      console.log("expectedCoolDown: %s", expectedCoolDown);
       if (isValueDeltaBreaker) {
         console.log("ValueDeltaBreaker cooldown not set correctly for rate feed with id %s", rateFeedID);
         revert("ValueDeltaBreaker cooldown not set correctly for rate feed");
