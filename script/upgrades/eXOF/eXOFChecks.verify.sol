@@ -65,7 +65,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
   function verifyToken(eXOFConfig.eXOF memory config) internal {
     console.log("\n== Verifying Token Transactions ==");
     verifyOwner();
-    verifyEXOFStableToken();
+    verifyEXOFStableToken(config);
     verifyConstitution(config);
     verifyEXOFAddedToReserve();
     verifyEXOFAddedToFeeCurrencyWhitelist();
@@ -83,7 +83,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
     console.log("🟢 Contract ownerships transferred to governance");
   }
 
-  function verifyEXOFStableToken() internal view {
+  function verifyEXOFStableToken(eXOFConfig.eXOF memory config) internal {
     StableTokenXOFProxy stableTokenXOFProxy = StableTokenXOFProxy(eXOF);
     address eXOFDeployedImplementation = contracts.deployed("StableTokenXOF");
 
@@ -97,6 +97,34 @@ contract eXOFChecksVerify is eXOFChecksBase {
       revert("Deployed StableTokenXOF does not match what proxy points to. See logs.");
     }
     console.log("🟢 StableTokenXOFProxy has the correct implementation address");
+
+    // ----- verify initialization parameters -----
+    StableTokenXOF eXOFToken = StableTokenXOF(eXOF);
+
+    assertEq(eXOFToken.name(), config.stableTokenXOF.name, "❗️❌ eXOF name not set correctly!");
+    assertEq(eXOFToken.symbol(), config.stableTokenXOF.symbol, "❗️❌ eXOF symbol not set correctly!");
+    assertEq(
+      uint(eXOFToken.decimals()),
+      uint(config.stableTokenXOF.decimals),
+      "❗️❌ eXOF decimals not set correctly!"
+    );
+    assertEq(
+      eXOFToken.getExchangeRegistryId(),
+      keccak256(abi.encodePacked(config.stableTokenXOF.exchangeIdentifier)),
+      "❗️❌ eXOF exchange registry id not set correctly!"
+    );
+
+    // inflation parameters
+    (uint256 actualInflationRate, , uint256 actualInflationPeriod, ) = eXOFToken.getInflationParameters();
+    assertEq(actualInflationRate, config.stableTokenXOF.inflationRate, "❗️❌ eXOF inflation rate not set correctly!");
+    assertEq(
+      actualInflationPeriod,
+      config.stableTokenXOF.inflationFactorUpdatePeriod,
+      "❗️❌ eXOF inflation period not set correctly!"
+    );
+
+    // no pre-mint
+    assertEq(eXOFToken.totalSupply(), 0, "❗️❌ eXOF pre-minted tokens!");
   }
 
   function verifyEXOFAddedToReserve() internal view {
