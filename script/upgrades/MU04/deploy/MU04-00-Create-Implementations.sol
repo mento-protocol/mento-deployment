@@ -8,7 +8,7 @@ import { console2 } from "forge-std/Script.sol";
 import { IStableTokenV2 } from "mento-core-2.2.0/interfaces/IStableTokenV2.sol";
 
 /*
- yarn deploy -n <network> -u MU04 -s MU04-00-Create- Implementations.sol
+ yarn deploy -n <network> -u MU04 -s MU04-00-Create-Implementations.sol
 */
 
 interface IOwnableLite {
