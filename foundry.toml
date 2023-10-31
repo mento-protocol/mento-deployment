@@ -4,19 +4,19 @@ out = "out"
 test = "test"
 script = "script"
 libs = ["lib"]
-auto_detect_solc = false
+auto_detect_solc = true
 bytecode_hash = "none"
 fuzz_runs = 256
 gas_reports = ["*"]
 optimizer = true
 optimizer_runs = 10_000
-solc = "0.5.17"
 legacy = true
 fs_permissions = [
     { access = "read", path = "./broadcast"}, 
     { access = "read", path = "./out"}, 
     { access = "read", path = "./script/upgrades/dependencies.json"}
 ]
+via_ir = true
 
 
 # There's a bug that occurs when trying to verify libraries in sourcify, on testnets.
