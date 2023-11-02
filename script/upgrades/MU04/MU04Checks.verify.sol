@@ -127,7 +127,7 @@ contract MU04ChecksVerify is MU04ChecksBase {
 
   function verifyRegistryChanges() internal {
     console.log("\n== Verifying Registry Changes ==");
-    bytes32[] memory exchangesV1 = Arrays.bytes32s("Exchange", "ExchangeEUR", "ExchangeBRL");
+    bytes32[] memory exchangesV1 = Arrays.bytes32s("Exchange", "ExchangeEUR", "ExchangeBRL", "GrandaMento");
     for (uint i = 0; i < exchangesV1.length; i++) {
       require(
         IRegistry(REGISTRY_ADDRESS).getAddressForString(bytes32ToStr(exchangesV1[i])) == address(0),
@@ -146,17 +146,14 @@ contract MU04ChecksVerify is MU04ChecksBase {
     );
     console.log("🟢 Main Reserve Implementation set correctly");
 
-    address[] memory pastExchangeSpender = Arrays.addresses(exchangeEURProxy, exchangeBRLProxy);
-    for (uint i = 0; i < pastExchangeSpender.length; i++) {
-      require(
-        !Reserve(reserveProxy).isExchangeSpender(pastExchangeSpender[i]),
-        "❗️❌ Reserve Exchange Spender not updated correctly"
-      );
-      console.log("🟢 Exchange: %s successfully removed from spender list", pastExchangeSpender[i]);
-    }
-
     require(Reserve(reserveProxy).isExchangeSpender(brokerProxy), "❗️❌ Broker wasn't added to exchange spender list");
     console.log("🟢 Broker successfully added to exchange spender list");
+
+    require(
+      Reserve(reserveProxy).getExchangeSpenders().length == 1,
+      "❗️❌ Reserve Exchange Spender not updated correctly"
+    );
+    console.log("🟢 Exchange spender list correctly updated");
 
     address[] memory collateralAssets = Arrays.addresses(celoToken, bridgedUSDC, bridgedEUROC);
     // TODO: update this when spending ratios are set
@@ -168,7 +165,8 @@ contract MU04ChecksVerify is MU04ChecksBase {
       );
       console.log("🟢 Asset: %s successfully added to collateral asset list", collateralAssets[i]);
 
-      // verifiying spending ratios by trying moving more than the allowed amount variable holding the ratios is private
+      // @notice verifiying spending ratios by trying moving more than the allowed amount
+      // the variable holding the ratios is private
       address[] memory otherReserveAddresses = Reserve(reserveProxy).getOtherReserveAddresses();
       if (otherReserveAddresses.length > 0) {
         uint256 reserveBalance = Reserve(reserveProxy).getReserveAddressesCollateralAssetBalance(collateralAssets[i]);
@@ -275,9 +273,14 @@ contract MU04ChecksVerify is MU04ChecksBase {
     }
   }
 
-  function bytes32ToStr(bytes32 _bytes32) public pure returns (string memory) {
-    bytes memory bytesArray = new bytes(32);
-    for (uint256 i; i < 32; i++) {
+  function bytes32ToStr(bytes32 _bytes32) public view returns (string memory) {
+    uint256 length = 0;
+    while (bytes1(_bytes32[length]) != 0) {
+      length++;
+    }
+
+    bytes memory bytesArray = new bytes(length);
+    for (uint256 i; i < length; i++) {
       bytesArray[i] = _bytes32[i];
     }
     return string(bytesArray);

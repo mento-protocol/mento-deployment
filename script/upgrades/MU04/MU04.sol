@@ -47,6 +47,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   address payable public reserveProxy;
   address payable public partialReserveProxy;
 
+  address public grandaMentoProxy;
   address public exchangeProxy;
   address public exchangeEURProxy;
   address public exchangeBRLProxy;
@@ -105,6 +106,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
     exchangeProxy = contracts.celoRegistry("Exchange");
     exchangeEURProxy = contracts.celoRegistry("ExchangeEUR");
     exchangeBRLProxy = contracts.celoRegistry("ExchangeBRL");
+    grandaMentoProxy = contracts.celoRegistry("GrandaMento");
 
     oldMainReserveMultisig = 0x554Fca0f7c465cd2F8C305a10bF907A2034d2a19;
     partialReserveMultisig = contracts.dependency("PartialReserveMultisig");
@@ -230,15 +232,14 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
    * @dev Removes MentoV1 exchanges from the registry
    */
   function proposal_updateRegistry() private {
-    bytes32[] memory exchangesV1 = Arrays.bytes32s("Exchange", "ExchangeEUR", "ExchangeBRL");
-
+    bytes32[] memory exchangesV1 = Arrays.bytes32s("Exchange", "ExchangeEUR", "ExchangeBRL", "GrandaMento");
     for (uint i = 0; i < exchangesV1.length; i++) {
-      if (IRegistry(REGISTRY_ADDRESS).getAddressFor(exchangesV1[i]) != address(0)) {
+      if (IRegistry(REGISTRY_ADDRESS).getAddressForString(bytes32ToStr(exchangesV1[i])) != address(0)) {
         transactions.push(
           ICeloGovernance.Transaction(
             0,
             REGISTRY_ADDRESS,
-            abi.encodeWithSelector(IRegistry(0).setAddressFor.selector, exchangesV1[i], address(0))
+            abi.encodeWithSelector(IRegistry(0).setAddressFor.selector, bytes32ToStr(exchangesV1[i]), address(0))
           )
         );
       }
@@ -264,16 +265,14 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
    * @dev Removes legacy exchanges from reserve spender list and adds broker
    */
   function proposal_updateReserveExchangeSpender() private {
-    address[] memory exchangesV1 = Arrays.addresses(exchangeEURProxy, exchangeBRLProxy);
-    uint[] memory exchangeIds = Arrays.uints(0, 2);
-
-    for (uint i = 0; i < exchangesV1.length; i++) {
-      if (Reserve(reserveProxy).isExchangeSpender(exchangesV1[i])) {
+    address[] memory exchangeSpenders = Reserve(reserveProxy).getExchangeSpenders();
+    for (int i = int(exchangeSpenders.length) - 1; i >= 0; i--) {
+      if (Reserve(reserveProxy).isExchangeSpender(exchangeSpenders[uint256(i)])) {
         transactions.push(
           ICeloGovernance.Transaction(
             0,
             reserveProxy,
-            abi.encodeWithSelector(Reserve(0).removeExchangeSpender.selector, exchangesV1[i], exchangeIds[i])
+            abi.encodeWithSelector(Reserve(0).removeExchangeSpender.selector, exchangeSpenders[uint256(i)], uint256(i))
           )
         );
       }
@@ -478,5 +477,18 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
     if (limit1 != newConfig.limit1) return false;
     if (limitGlobal != newConfig.limitGlobal) return false;
     return true;
+  }
+
+  function bytes32ToStr(bytes32 _bytes32) public view returns (string memory) {
+    uint256 length = 0;
+    while (bytes1(_bytes32[length]) != 0) {
+      length++;
+    }
+
+    bytes memory bytesArray = new bytes(length);
+    for (uint256 i; i < length; i++) {
+      bytesArray[i] = _bytes32[i];
+    }
+    return string(bytesArray);
   }
 }

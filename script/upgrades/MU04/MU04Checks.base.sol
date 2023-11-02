@@ -35,6 +35,7 @@ contract MU04ChecksBase is GovernanceScript, Test {
   address public breakerBox;
   address public sortedOraclesProxy;
 
+  address public grandaMentoProxy;
   address public exchangeProxy;
   address public exchangeEURProxy;
   address public exchangeBRLProxy;
@@ -77,9 +78,10 @@ contract MU04ChecksBase is GovernanceScript, Test {
     breakerBox = contracts.deployed("BreakerBox");
     sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
 
-    exchangeProxy = contracts.celoRegistry("Exchange");
-    exchangeEURProxy = contracts.celoRegistry("ExchangeEUR");
-    exchangeBRLProxy = contracts.celoRegistry("ExchangeBRL");
+    grandaMentoProxy = contracts.dependency("GrandaMento");
+    exchangeProxy = contracts.dependency("Exchange");
+    exchangeEURProxy = contracts.dependency("ExchangeEUR");
+    exchangeBRLProxy = contracts.dependency("ExchangeBRL");
 
     oldMainReserveMultisig = 0x554Fca0f7c465cd2F8C305a10bF907A2034d2a19;
     partialReserveMultisig = contracts.dependency("PartialReserveMultisig");
