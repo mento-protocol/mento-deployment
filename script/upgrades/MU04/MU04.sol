@@ -290,7 +290,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
    */
   function proposal_configureReserveCollateralAssets() private {
     address[] memory collateralAssets = Arrays.addresses(celo, bridgedUSDC, bridgedEUROC);
-    uint[] memory spendingRatios = Arrays.uints(1e24 * 0.5, 1e24 * 0.5, 1e24 * 0.5); // TODO check spending ratios
+    uint[] memory spendingRatios = Arrays.uints(1e24 * 0.2, 1e24, 1e24);
 
     for (uint i = 0; i < collateralAssets.length; i++) {
       if (!Reserve(reserveProxy).isCollateralAsset(collateralAssets[i])) {

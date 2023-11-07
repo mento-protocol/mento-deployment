@@ -173,8 +173,8 @@ contract MU04ChecksVerify is MU04ChecksBase {
     // mint some EUROC/USDC to the main reserve in order to verify spending ratios
     deal(bridgedUSDC, reserveProxy, 100e6);
     deal(bridgedEUROC, reserveProxy, 100e6);
-    // TODO: update this when spending ratios are set
-    uint256[] memory spendingRatios = Arrays.uints(1e24 * 0.5, 1e24 * 0.5, 1e24 * 0.5);
+
+    uint256[] memory spendingRatios = Arrays.uints(1e24 * 0.2, 1e24, 1e24);
     for (uint i = 0; i < collateralAssets.length; i++) {
       require(
         Reserve(reserveProxy).isCollateralAsset(collateralAssets[i]),
