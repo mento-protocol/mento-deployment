@@ -52,12 +52,20 @@ contract MU04ChecksVerify is MU04ChecksBase {
     console.log("\nStarting MU04 checks:");
     MU04Config.MU04 memory config = MU04Config.get(contracts);
     verifyStableTokens();
+
     verifyExchangesAreFrozen();
     verifyExchangeSwapsRevert();
+
     verifyRegistryChanges();
-    verifyMainReserve();
+
+    verifyReserveImplementation();
+    verifyReserveExchangeSpender();
+    verifyReserveCollateralAssets();
+    verifyReserveTokens();
+    verifyReserveSpenders();
     verifyReserveReferenceInBroker();
     verifyReserveReferenceInBiPoolManager();
+
     verifyTradingLimits(config);
   }
 
@@ -137,15 +145,17 @@ contract MU04ChecksVerify is MU04ChecksBase {
     console.log("🟢 Exchanges removed from registry");
   }
 
-  function verifyMainReserve() internal {
-    console.log("\n== Verifying Main Reserve changes ==");
-
+  function verifyReserveImplementation() internal {
+    console.log("\n== Verifying Main Reserve Implementation ==");
     require(
       IProxy(reserveProxy)._getImplementation() == newReserveImplementation,
       "❗️❌ Main Reserve Implementation is not set correctly"
     );
     console.log("🟢 Main Reserve Implementation set correctly");
+  }
 
+  function verifyReserveExchangeSpender() internal {
+    console.log("\n== Verifying Main Reserve Exchange Spender ==");
     require(Reserve(reserveProxy).isExchangeSpender(brokerProxy), "❗️❌ Broker wasn't added to exchange spender list");
     console.log("🟢 Broker successfully added to exchange spender list");
 
@@ -154,8 +164,15 @@ contract MU04ChecksVerify is MU04ChecksBase {
       "❗️❌ Reserve Exchange Spender not updated correctly"
     );
     console.log("🟢 Exchange spender list correctly updated");
+  }
+
+  function verifyReserveCollateralAssets() internal {
+    console.log("\n== Verifying Main Reserve Collateral Assets ==");
 
     address[] memory collateralAssets = Arrays.addresses(celoToken, bridgedUSDC, bridgedEUROC);
+    // mint some EUROC/USDC to the main reserve in order to verify spending ratios
+    deal(bridgedUSDC, reserveProxy, 100e6);
+    deal(bridgedEUROC, reserveProxy, 100e6);
     // TODO: update this when spending ratios are set
     uint256[] memory spendingRatios = Arrays.uints(1e24 * 0.5, 1e24 * 0.5, 1e24 * 0.5);
     for (uint i = 0; i < collateralAssets.length; i++) {
@@ -163,32 +180,19 @@ contract MU04ChecksVerify is MU04ChecksBase {
         Reserve(reserveProxy).isCollateralAsset(collateralAssets[i]),
         "❗️❌ Reserve collateral asset not set correctly"
       );
+      verifyCollateralSpendingRatio(collateralAssets[i], spendingRatios[i]);
       console.log("🟢 Asset: %s successfully added to collateral asset list", collateralAssets[i]);
-
-      // @notice verifiying spending ratios by trying moving more than the allowed amount
-      // the variable holding the ratios is private
-      address[] memory otherReserveAddresses = Reserve(reserveProxy).getOtherReserveAddresses();
-      if (otherReserveAddresses.length > 0) {
-        uint256 reserveBalance = Reserve(reserveProxy).getReserveAddressesCollateralAssetBalance(collateralAssets[i]);
-        uint256 exceedingAmount = FixidityLib
-          .wrap(spendingRatios[i])
-          .multiply(FixidityLib.newFixed(reserveBalance))
-          .fromFixed() + 1;
-        address payable otherReserve = address(uint160(otherReserveAddresses[0]));
-
-        vm.expectRevert("Exceeding spending limit");
-        vm.prank(contracts.dependency("PartialReserveMultisig"));
-        Reserve(reserveProxy).transferCollateralAsset(collateralAssets[i], otherReserve, exceedingAmount);
-
-        console.log("🟢 Spending ratio for Asset: %s successfully set to ", collateralAssets[i], spendingRatios[i]);
-      } else {
-        console.log("❗️ Couldn't verify spending ratio");
-      }
     }
+  }
 
+  function verifyReserveTokens() internal {
+    console.log("\n== Verifying Main Reserve Tokens ==");
     require(Reserve(reserveProxy).isToken(eXOFProxy), "❗️❌ eXOF not added to Reserve StableToken list ");
     console.log("🟢 eXOF successfully added to Reserve StableToken list");
+  }
 
+  function verifyReserveSpenders() internal {
+    console.log("\n== Verifying Main Reserve Spenders ==");
     require(
       Reserve(reserveProxy).isSpender(contracts.dependency("PartialReserveMultisig")),
       "❗️❌ Partial reserve multisig not added to Reserve spender list"
@@ -284,5 +288,36 @@ contract MU04ChecksVerify is MU04ChecksBase {
       bytesArray[i] = _bytes32[i];
     }
     return string(bytesArray);
+  }
+
+  function verifyCollateralSpendingRatio(address collateralAsset, uint256 expectedRatio) internal {
+    console.log("\n== Verifying Collateral Spending Ratio for %s ==", collateralAsset);
+    // @notice verifiying spending ratios by trying moving the allowed and more than the allowed amount
+    // the variable holding the ratios is private
+
+    address[] memory otherReserveAddresses = Reserve(reserveProxy).getOtherReserveAddresses();
+    if (otherReserveAddresses.length > 0) {
+      address payable otherReserve = address(uint160(otherReserveAddresses[0]));
+      uint256 reserveBalance = Reserve(reserveProxy).getReserveAddressesCollateralAssetBalance(collateralAsset);
+
+      uint256 spendingLimit = FixidityLib
+        .wrap(expectedRatio)
+        .multiply(FixidityLib.newFixed(reserveBalance))
+        .fromFixed();
+      uint256 exceedingAmount = spendingLimit + 1;
+
+      vm.prank(partialReserveMultisig);
+      vm.expectRevert("Exceeding spending limit");
+      Reserve(reserveProxy).transferCollateralAsset(collateralAsset, otherReserve, exceedingAmount);
+      console.log("🟢 Couldn't transfer more than the allowed amount");
+
+      vm.prank(partialReserveMultisig);
+      Reserve(reserveProxy).transferCollateralAsset(collateralAsset, otherReserve, spendingLimit);
+      console.log("🟢 Successfully transferred the max allowed amount");
+
+      console.log("🟢 Spending ratio for Asset: %s successfully set to ", collateralAsset, expectedRatio);
+    } else {
+      console.log("❗️ Couldn't verify spending ratio");
+    }
   }
 }

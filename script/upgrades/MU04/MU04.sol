@@ -265,6 +265,8 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
    * @dev Removes legacy exchanges from reserve spender list and adds broker
    */
   function proposal_updateReserveExchangeSpender() private {
+    // removing all configured exchanges here since after MU04 the Broker should be the only active exchange
+    // currently we have different configurations across different chains.
     address[] memory exchangeSpenders = Reserve(reserveProxy).getExchangeSpenders();
     for (int i = int(exchangeSpenders.length) - 1; i >= 0; i--) {
       if (Reserve(reserveProxy).isExchangeSpender(exchangeSpenders[uint256(i)])) {
