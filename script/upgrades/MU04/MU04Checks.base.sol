@@ -53,11 +53,8 @@ contract MU04ChecksBase is GovernanceScript, Test {
 
     // Load addresses from deployments
     contracts.loadSilent("MU01-00-Create-Proxies", "latest");
-    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.loadSilent("MU03-02-Create-Implementations", "latest");
     contracts.loadSilent("eXOF-00-Create-Proxies", "latest");
-    contracts.loadSilent("eXOF-01-Create-Implementations", "latest");
     contracts.loadSilent("MU04-00-Create-Implementations", "latest");
 
     // tokens

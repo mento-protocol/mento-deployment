@@ -75,11 +75,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
    */
   function loadDeployedContracts() public {
     contracts.load("MU01-00-Create-Proxies", "latest");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.load("MU03-02-Create-Implementations", "latest");
     contracts.load("eXOF-00-Create-Proxies", "latest");
-    contracts.load("eXOF-01-Create-Implementations", "latest");
     contracts.load("MU04-00-Create-Implementations", "latest");
   }
 
@@ -157,7 +153,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
     proposal_updateReserveImplementation();
     proposal_updateReserveExchangeSpender();
     proposal_configureReserveCollateralAssets();
-    proposal_updateReserveTokens();
+    proposal_addEXOFToMainReserve();
     proposal_updateReserveSpenders();
     proposal_updateReserveInBroker();
     proposal_updateReserveInBiPoolManager();
@@ -202,7 +198,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
             IStableTokenV2(0).initializeV2.selector,
             brokerProxy,
             validators,
-            address(0) // exchange contracts are depricated
+            address(0) // exchange contracts are deprecated
           )
         )
       );
@@ -210,7 +206,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   }
 
   /**
-   * @dev Freezes all exchanges in order to depricate Mento V1
+   * @dev Freezes all exchanges in order to deprecate Mento V1
    */
   function proposal_freezeExchanges() private {
     address[] memory exchangesV1 = Arrays.addresses(exchangeProxy, exchangeEURProxy, exchangeBRLProxy);
@@ -269,15 +265,13 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
     // currently we have different configurations across different chains.
     address[] memory exchangeSpenders = Reserve(reserveProxy).getExchangeSpenders();
     for (int i = int(exchangeSpenders.length) - 1; i >= 0; i--) {
-      if (Reserve(reserveProxy).isExchangeSpender(exchangeSpenders[uint256(i)])) {
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            reserveProxy,
-            abi.encodeWithSelector(Reserve(0).removeExchangeSpender.selector, exchangeSpenders[uint256(i)], uint256(i))
-          )
-        );
-      }
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          reserveProxy,
+          abi.encodeWithSelector(Reserve(0).removeExchangeSpender.selector, exchangeSpenders[uint256(i)], uint256(i))
+        )
+      );
     }
 
     if (!Reserve(reserveProxy).isExchangeSpender(brokerProxy)) {
@@ -326,7 +320,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
   /**
    * @dev Updates reserve tokens to include eXOF
    */
-  function proposal_updateReserveTokens() private {
+  function proposal_addEXOFToMainReserve() private {
     if (!Reserve(reserveProxy).isToken(eXOFProxy)) {
       transactions.push(
         ICeloGovernance.Transaction(0, reserveProxy, abi.encodeWithSelector(Reserve(0).addToken.selector, eXOFProxy))
@@ -381,7 +375,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
         ICeloGovernance.Transaction(
           0,
           biPoolManagerProxy,
-          abi.encodeWithSelector(Broker(0).setReserve.selector, reserveProxy)
+          abi.encodeWithSelector(BiPoolManager(0).setReserve.selector, reserveProxy)
         )
       );
     }

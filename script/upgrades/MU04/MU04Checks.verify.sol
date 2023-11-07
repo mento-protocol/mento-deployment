@@ -296,28 +296,21 @@ contract MU04ChecksVerify is MU04ChecksBase {
     // the variable holding the ratios is private
 
     address[] memory otherReserveAddresses = Reserve(reserveProxy).getOtherReserveAddresses();
-    if (otherReserveAddresses.length > 0) {
-      address payable otherReserve = address(uint160(otherReserveAddresses[0]));
-      uint256 reserveBalance = Reserve(reserveProxy).getReserveAddressesCollateralAssetBalance(collateralAsset);
+    address payable otherReserve = address(uint160(otherReserveAddresses[0]));
+    uint256 reserveBalance = Reserve(reserveProxy).getReserveAddressesCollateralAssetBalance(collateralAsset);
 
-      uint256 spendingLimit = FixidityLib
-        .wrap(expectedRatio)
-        .multiply(FixidityLib.newFixed(reserveBalance))
-        .fromFixed();
-      uint256 exceedingAmount = spendingLimit + 1;
+    uint256 spendingLimit = FixidityLib.wrap(expectedRatio).multiply(FixidityLib.newFixed(reserveBalance)).fromFixed();
+    uint256 exceedingAmount = spendingLimit + 1;
 
-      vm.prank(partialReserveMultisig);
-      vm.expectRevert("Exceeding spending limit");
-      Reserve(reserveProxy).transferCollateralAsset(collateralAsset, otherReserve, exceedingAmount);
-      console.log("🟢 Couldn't transfer more than the allowed amount");
+    vm.prank(partialReserveMultisig);
+    vm.expectRevert("Exceeding spending limit");
+    Reserve(reserveProxy).transferCollateralAsset(collateralAsset, otherReserve, exceedingAmount);
+    console.log("🟢 Couldn't transfer more than the allowed amount");
 
-      vm.prank(partialReserveMultisig);
-      Reserve(reserveProxy).transferCollateralAsset(collateralAsset, otherReserve, spendingLimit);
-      console.log("🟢 Successfully transferred the max allowed amount");
+    vm.prank(partialReserveMultisig);
+    Reserve(reserveProxy).transferCollateralAsset(collateralAsset, otherReserve, spendingLimit);
+    console.log("🟢 Successfully transferred the max allowed amount");
 
-      console.log("🟢 Spending ratio for Asset: %s successfully set to ", collateralAsset, expectedRatio);
-    } else {
-      console.log("❗️ Couldn't verify spending ratio");
-    }
+    console.log("🟢 Spending ratio for Asset: %s successfully set to ", collateralAsset, expectedRatio);
   }
 }

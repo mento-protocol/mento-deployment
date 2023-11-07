@@ -48,7 +48,7 @@ contract MU04ChecksSwap is MU04ChecksBase {
     swapcEURtoCELO(config);
 
     swapCeloTocBRL(config);
-    swapcBrlToCELO(config);
+    swapcBRLToCELO(config);
 
     swapBridgedUSDCTocUSD(config);
     swapcUSDtoBridgedUSDC(config);
@@ -183,7 +183,7 @@ contract MU04ChecksSwap is MU04ChecksBase {
     console.log("\t🟢 CELO -> cBRL swap successful 🚀");
   }
 
-  function swapcBrlToCELO(MU04Config.MU04 memory config) internal {
+  function swapcBRLToCELO(MU04Config.MU04 memory config) internal {
     bytes32 exchangeID = getExchangeId(config.cBRLCelo.asset0, config.cBRLCelo.asset1, config.cBRLCelo.isConstantSum);
 
     address trader = vm.addr(5);
