@@ -293,15 +293,13 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
     uint[] memory spendingRatios = Arrays.uints(1e24 * 0.2, 1e24, 1e24);
 
     for (uint i = 0; i < collateralAssets.length; i++) {
-      if (!Reserve(reserveProxy).isCollateralAsset(collateralAssets[i])) {
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            reserveProxy,
-            abi.encodeWithSelector(Reserve(0).addCollateralAsset.selector, collateralAssets[i])
-          )
-        );
-      }
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          reserveProxy,
+          abi.encodeWithSelector(Reserve(0).addCollateralAsset.selector, collateralAssets[i])
+        )
+      );
     }
 
     transactions.push(
