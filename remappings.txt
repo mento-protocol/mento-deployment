@@ -7,3 +7,4 @@ contracts/=contracts/
 mento-core-2.0.0/=lib/mento-core-2.0.0/contracts/
 mento-core-2.1.0/=lib/mento-core-2.1.0/contracts/
 mento-core-2.2.0/=lib/mento-core-2.2.0/contracts/
+mento-core-gov/=lib/mento-core-gov/contracts/
