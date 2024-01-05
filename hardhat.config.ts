@@ -3,7 +3,6 @@ import "hardhat-deploy";
 import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
 
-
 import { HardhatUserConfig } from "hardhat/config";
 
 const accounts = [process.env.MENTO_DEPLOYER_PK || "0x00"];
@@ -46,7 +45,7 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
     },
     baklava: {
-      url: "https://alfajores-forno.celo-testnet.org",
+      url: "https://baklava-forno.celo-testnet.org",
       chainId: 62320,
       accounts,
       live: true,

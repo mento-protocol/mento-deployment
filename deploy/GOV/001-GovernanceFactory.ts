@@ -4,10 +4,13 @@ import { DeployFunction, DeployResult } from "hardhat-deploy/types";
 // Usage: `yarn deploy:<NETWORK> --tags GOV`
 //          e.g. `yarn deploy:localhost --tags GOV`
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { deployments, getNamedAccounts } = hre;
+  const { ethers, deployments, getNamedAccounts } = hre;
   const { deploy } = deployments;
 
   const { deployer } = await getNamedAccounts();
+
+  const celoRegistiry = await ethers.getContractAt("IRegistry", "0x000000000000000000000000000000000000ce10");
+  const celoGovernance = await celoRegistiry.getAddressForStringOrDie("Governance");
 
   const AirgrabDeployerLib = await deployments.get("AirgrabDeployerLib");
   const EmissionDeployerLib = await deployments.get("EmissionDeployerLib");
@@ -25,7 +28,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const GovernanceFactory: DeployResult = await deploy("GovernanceFactory", {
     from: deployer,
-    args: ["0x000000000000000000000000000000000000ce10"],
+    args: [celoGovernance],
     log: true,
     autoMine: true,
     libraries: {
@@ -52,4 +55,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 
 export default func;
-func.tags = ["GOV"];
+func.tags = ["GOV_DEPLOY"];
