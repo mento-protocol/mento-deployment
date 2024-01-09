@@ -9,7 +9,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const { deployer } = await getNamedAccounts();
 
-  const celoRegistiry = await ethers.getContractAt("IRegistry", "0x000000000000000000000000000000000000ce10");
+  const CELO_REGISTRY = process.env.CELO_REGISTIRY_ADDRESS;
+  if (!CELO_REGISTRY) {
+    throw new Error("CELO_REGISTRY_ADDRESS is not set");
+  }
+  const celoRegistiry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
   const celoGovernance = await celoRegistiry.getAddressForStringOrDie("Governance");
 
   const AirgrabDeployerLib = await deployments.get("AirgrabDeployerLib");
@@ -55,4 +59,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 
 export default func;
-func.tags = ["GOV_DEPLOY"];
+func.tags = ["GOV", "GOV_DEPLOY"];
