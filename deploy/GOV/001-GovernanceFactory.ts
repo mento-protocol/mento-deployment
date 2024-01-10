@@ -32,7 +32,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const GovernanceFactory: DeployResult = await deploy("GovernanceFactory", {
     from: deployer,
-    args: [celoGovernance],
+    args: [deployer],
     log: true,
     autoMine: true,
     libraries: {

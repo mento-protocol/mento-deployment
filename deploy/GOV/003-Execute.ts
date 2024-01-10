@@ -4,7 +4,7 @@ import { DeployFunction, DeployResult } from "hardhat-deploy/types";
 // Usage: `yarn deploy:<NETWORK> --tags EXE`
 //          e.g. `yarn deploy:localhost --tags EXE`
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { ethers, deployments, getNamedAccounts } = hre;
+  const { ethers, deployments, getNamedAccounts, getUnnamedAccounts } = hre;
 
   const CELO_REGISTRY = process.env.CELO_REGISTIRY_ADDRESS;
   if (!CELO_REGISTRY) {

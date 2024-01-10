@@ -7,7 +7,9 @@ import { ICeloGovernance } from "../../artifacts/types";
 //          e.g. `yarn deploy:localhost --tags GOV`
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { ethers, deployments, getNamedAccounts } = hre;
+  const { ethers, deployments, getNamedAccounts, getUnnamedAccounts } = hre;
+
+  const accs = await getUnnamedAccounts();
 
   const CELO_REGISTRY = process.env.CELO_REGISTIRY_ADDRESS;
   if (!CELO_REGISTRY) {
@@ -20,11 +22,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const governanceFactoryDep = await deployments.get("GovernanceFactory");
   const governanceFactory = await ethers.getContractAt("GovernanceFactory", governanceFactoryDep.address);
 
-  const mentoLabsMultisig = "0xfCf982bb4015852e706100B14E21f947a5Bb718E";
-  const watchdogMultisig = "0xfCf982bb4015852e706100B14E21f947a5Bb718E";
-  const celoCommunityFund = "0xfCf982bb4015852e706100B14E21f947a5Bb718E";
+  const mentoLabsMultisig = accs[4];
+  const watchdogMultisig = accs[5];
+  const celoCommunityFund = accs[6];
   const merkleRoot = "0x945d83ced94efc822fed712b4c4694b4e1129607ec5bbd2ab971bb08dca4d809";
-  const fraktalSigner = "0xfCf982bb4015852e706100B14E21f947a5Bb718E";
+  const fraktalSigner = accs[7];
 
   console.log("=================================================");
   console.log("*****************************");
@@ -32,29 +34,26 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("*****************************");
   console.log("\n");
 
-  // try {
-  //   const own = await governanceFactory.owner();
+  try {
+    await governanceFactory.createGovernance(
+      mentoLabsMultisig,
+      watchdogMultisig,
+      celoCommunityFund,
+      merkleRoot,
+      fraktalSigner,
+      { gasLimit: 20_000_000 },
+    );
+  } catch (error) {
+    console.log("Error: ", error);
+  }
 
-  //   console.log({ own });
-  //   await governanceFactory.createGovernance(
-  //     mentoLabsMultisig,
-  //     watchdogMultisig,
-  //     celoCommunityFund,
-  //     merkleRoot,
-  //     fraktalSigner,
-  //     { gasLimit: 25_000_000 },
-  //   );
-  // } catch (error) {
-  //   console.log("Error: ", error);
-  // }
-
-  const data = governanceFactory.interface.encodeFunctionData("createGovernance", [
-    mentoLabsMultisig,
-    watchdogMultisig,
-    celoCommunityFund,
-    merkleRoot,
-    fraktalSigner,
-  ]);
+  // const data = governanceFactory.interface.encodeFunctionData("createGovernance", [
+  //   mentoLabsMultisig,
+  //   watchdogMultisig,
+  //   celoCommunityFund,
+  //   merkleRoot,
+  //   fraktalSigner,
+  // ]);
 
   // const gas = await ethers.provider.estimateGas({
   //   // Wrapped ETH address
@@ -68,13 +67,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // });
   // console.log({ gas });
 
-  const createGovernanceTX: Transaction = {
-    value: 0n,
-    destination: governanceFactoryDep.address,
-    data,
-  };
+  // const createGovernanceTX: Transaction = {
+  //   value: 0n,
+  //   destination: governanceFactoryDep.address,
+  //   data,
+  // };
 
-  await createProposal([createGovernanceTX], "https://www.google.com", celoGovernance);
+  // await createProposal([createGovernanceTX], "https://www.google.com", celoGovernance);
 
   console.log("\n");
   console.log(" --- ");
