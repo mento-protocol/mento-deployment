@@ -10,6 +10,3 @@
 [submodule "lib/mento-core-2.0.0"]
 	path = lib/mento-core-2.0.0
 	url = https://github.com/mento-protocol/mento-core
-[submodule "lib/mento-core-gov"]
-	path = lib/mento-core-gov
-	url = https://github.com/mento-protocol/mento-core
