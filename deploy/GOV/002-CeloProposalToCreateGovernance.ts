@@ -1,13 +1,13 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeployFunction, DeployResult } from "hardhat-deploy/types";
-import { BigNumberish, toBigInt, Signer, Contract, arrayify } from "ethers";
+import { DeployFunction } from "hardhat-deploy/types";
+import { BigNumberish } from "ethers";
 import { ICeloGovernance } from "../../artifacts/types";
-// Usage: `yarn deploy:<NETWORK> --tags GOV_CREATE`
-//          e.g. `yarn deploy:localhost --tags GOV_CREATE`
+
+// Usage: `yarn deploy:<NETWORK> --tags GOV`
+//          e.g. `yarn deploy:localhost --tags GOV`
+
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { ethers, deployments, getNamedAccounts } = hre;
-  const { deployer } = await getNamedAccounts();
-  const signer = await ethers.getSigner(deployer);
 
   const CELO_REGISTRY = process.env.CELO_REGISTIRY_ADDRESS;
   if (!CELO_REGISTRY) {
@@ -15,12 +15,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
   const celoRegistiry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
   const celoGovernanceAddress = await celoRegistiry.getAddressForStringOrDie("Governance");
-  // let xyzContract = await ethers.getContractFactory("ICeloGovernance");
-  // let xyzContractInstance = xyzContract.attach('Address of the contract');
   const celoGovernance = await ethers.getContractAt("ICeloGovernance", celoGovernanceAddress);
 
   const governanceFactoryDep = await deployments.get("GovernanceFactory");
   const governanceFactory = await ethers.getContractAt("GovernanceFactory", governanceFactoryDep.address);
+
   const mentoLabsMultisig = "0xfCf982bb4015852e706100B14E21f947a5Bb718E";
   const watchdogMultisig = "0xfCf982bb4015852e706100B14E21f947a5Bb718E";
   const celoCommunityFund = "0xfCf982bb4015852e706100B14E21f947a5Bb718E";
@@ -33,6 +32,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("*****************************");
   console.log("\n");
 
+  // try {
+  //   const own = await governanceFactory.owner();
+
+  //   console.log({ own });
+  //   await governanceFactory.createGovernance(
+  //     mentoLabsMultisig,
+  //     watchdogMultisig,
+  //     celoCommunityFund,
+  //     merkleRoot,
+  //     fraktalSigner,
+  //     { gasLimit: 25_000_000 },
+  //   );
+  // } catch (error) {
+  //   console.log("Error: ", error);
+  // }
+
   const data = governanceFactory.interface.encodeFunctionData("createGovernance", [
     mentoLabsMultisig,
     watchdogMultisig,
@@ -41,15 +56,25 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     fraktalSigner,
   ]);
 
+  // const gas = await ethers.provider.estimateGas({
+  //   // Wrapped ETH address
+  //   to: governanceFactory.getAddress(),
+
+  //   // `function deposit() payable`
+  //   data: data,
+
+  //   // 1 ether
+  //   value: 0,
+  // });
+  // console.log({ gas });
+
   const createGovernanceTX: Transaction = {
     value: 0n,
     destination: governanceFactoryDep.address,
     data,
   };
 
-  await createProposal([createGovernanceTX], "https://www.google.com", celoGovernance, signer);
-
-  console.log({ data });
+  await createProposal([createGovernanceTX], "https://www.google.com", celoGovernance);
 
   console.log("\n");
   console.log(" --- ");
@@ -75,7 +100,6 @@ async function createProposal(
   transactions: Transaction[],
   descriptionURL: string,
   celoGovernance: ICeloGovernance,
-  signer: Signer,
 ): Promise<void> {
   const serTxs = serializeTransactions(transactions);
 
@@ -127,8 +151,6 @@ function getByteLength(hexString: string): number {
   // Remove the '0x' prefix and divide by 2 (since 2 hex characters represent 1 byte)
   return (hexString.startsWith("0x") ? hexString.slice(2) : hexString).length / 2;
 }
-
-// Usage in your context
 
 function verifyDescription(descriptionURL: string): void {
   const requiredPrefix = "https://";
