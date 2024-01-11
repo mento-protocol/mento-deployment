@@ -22,16 +22,6 @@ done
 
 parse_network "$NETWORK"
 
-if [ "$NETWORK" = "alfajores" ]; then
-    # For alfajores we don't have access to the private key
-    # of the account with enough funds to vote, so we rely 
-    # on port-forwarding to validator-0 and using the
-    # unlocked account there.
-    # > celotooljs.sh port-forward -e alfajores
-    RPC_URL="http://127.0.0.1:8545"
-    echo "🔗 Using local RPC URL $RPC_URL"
-fi
-
 if [ -z "$PROPOSAL_ID" ]; then
     echo "🚨 No proposal ID provided"
     exit 1

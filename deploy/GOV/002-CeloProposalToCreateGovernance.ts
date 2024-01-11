@@ -2,18 +2,33 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { BigNumberish } from "ethers";
 import { ICeloGovernance } from "../../artifacts/types";
+import * as fs from "fs";
 
 // Usage: `yarn deploy:<NETWORK> --tags GOV`
 //          e.g. `yarn deploy:localhost --tags GOV`
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { ethers, deployments, getNamedAccounts, getUnnamedAccounts } = hre;
-
-  const accs = await getUnnamedAccounts();
+  const { ethers, deployments, getChainId } = hre;
 
   const CELO_REGISTRY = process.env.CELO_REGISTIRY_ADDRESS;
   if (!CELO_REGISTRY) {
     throw new Error("CELO_REGISTRY_ADDRESS is not set");
+  }
+  const MENTO_LABS_MULTISIG = process.env.MENTO_LABS_MULTISIG;
+  if (!MENTO_LABS_MULTISIG) {
+    throw new Error("MENTO_LABS_MULTISIG is not set");
+  }
+  const WATCHDOG_MULTISIG = process.env.WATCHDOG_MULTISIG;
+  if (!WATCHDOG_MULTISIG) {
+    throw new Error("WATCHDOG_MULTISIG is not set");
+  }
+  const CELO_COMMUNITY_FUND = process.env.CELO_COMMUNITY_FUND;
+  if (!CELO_COMMUNITY_FUND) {
+    throw new Error("CELO_COMMUNITY_FUND is not set");
+  }
+  const FRAKTAL_SIGNER = process.env.FRAKTAL_SIGNER;
+  if (!FRAKTAL_SIGNER) {
+    throw new Error("FRAKTAL_SIGNER is not set");
   }
   const celoRegistiry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
   const celoGovernanceAddress = await celoRegistiry.getAddressForStringOrDie("Governance");
@@ -22,11 +37,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const governanceFactoryDep = await deployments.get("GovernanceFactory");
   const governanceFactory = await ethers.getContractAt("GovernanceFactory", governanceFactoryDep.address);
 
-  const mentoLabsMultisig = accs[4];
-  const watchdogMultisig = accs[5];
-  const celoCommunityFund = accs[6];
-  const merkleRoot = "0x945d83ced94efc822fed712b4c4694b4e1129607ec5bbd2ab971bb08dca4d809";
-  const fraktalSigner = accs[7];
+  const chainId = await getChainId();
+  let merkleRoot;
+
+  try {
+    const treeData = JSON.parse(fs.readFileSync("scripts/data/out/tree.json", "utf8"));
+    merkleRoot = treeData.root;
+  } catch (error) {
+    console.log("Error during json parsing");
+    console.log("Error: ", error);
+  }
 
   console.log("=================================================");
   console.log("*****************************");
@@ -34,46 +54,38 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("*****************************");
   console.log("\n");
 
-  try {
-    await governanceFactory.createGovernance(
-      mentoLabsMultisig,
-      watchdogMultisig,
-      celoCommunityFund,
-      merkleRoot,
-      fraktalSigner,
-      { gasLimit: 20_000_000 },
-    );
-  } catch (error) {
-    console.log("Error: ", error);
+  const data = governanceFactory.interface.encodeFunctionData("createGovernance", [
+    MENTO_LABS_MULTISIG,
+    WATCHDOG_MULTISIG,
+    CELO_COMMUNITY_FUND,
+    merkleRoot,
+    FRAKTAL_SIGNER,
+  ]);
+
+  if (chainId === "31337") {
+    console.log("Skipping proposal creation on localhost");
+    try {
+      await governanceFactory.createGovernance(
+        MENTO_LABS_MULTISIG,
+        WATCHDOG_MULTISIG,
+        CELO_COMMUNITY_FUND,
+        merkleRoot,
+        FRAKTAL_SIGNER,
+        { gasLimit: 25_000_000 },
+      );
+      console.log(`Governance is sucessfully created for factory at: ${governanceFactoryDep.address}`);
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  } else {
+    const createGovernanceTX: Transaction = {
+      value: 0n,
+      destination: governanceFactoryDep.address,
+      data,
+    };
+
+    await createProposal([createGovernanceTX], "https://www.google.com", celoGovernance);
   }
-
-  // const data = governanceFactory.interface.encodeFunctionData("createGovernance", [
-  //   mentoLabsMultisig,
-  //   watchdogMultisig,
-  //   celoCommunityFund,
-  //   merkleRoot,
-  //   fraktalSigner,
-  // ]);
-
-  // const gas = await ethers.provider.estimateGas({
-  //   // Wrapped ETH address
-  //   to: governanceFactory.getAddress(),
-
-  //   // `function deposit() payable`
-  //   data: data,
-
-  //   // 1 ether
-  //   value: 0,
-  // });
-  // console.log({ gas });
-
-  // const createGovernanceTX: Transaction = {
-  //   value: 0n,
-  //   destination: governanceFactoryDep.address,
-  //   data,
-  // };
-
-  // await createProposal([createGovernanceTX], "https://www.google.com", celoGovernance);
 
   console.log("\n");
   console.log(" --- ");
@@ -119,8 +131,8 @@ async function createProposal(
     console.log("Transaction failed:", receipt);
     throw new Error("Failed to create proposal");
   }
-
-  console.log("Proposal was successfully created. ID: ", receipt!.logs[0].topics[1]);
+  const hexId = receipt!.logs[0].topics[1];
+  console.log("Proposal was successfully created. ID: ", parseInt(hexId, 16));
 }
 
 function serializeTransactions(transactions: Transaction[]): SerializedTransactions {
@@ -160,4 +172,4 @@ function verifyDescription(descriptionURL: string): void {
 }
 
 export default func;
-func.tags = ["GOV", "GOV_CREATE"];
+func.tags = ["GOV"];

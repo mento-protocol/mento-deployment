@@ -2,10 +2,15 @@ import "dotenv/config";
 import "hardhat-deploy";
 import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-verify";
 
 import { HardhatUserConfig } from "hardhat/config";
 
 const accounts = [process.env.MENTO_DEPLOYER_PK || "0x00"];
+const CELOSCAN_API_KEY = process.env.CELOSCAN_API_KEY;
+if (!CELOSCAN_API_KEY) {
+  throw new Error("CELOSCAN_API_KEY is not set");
+}
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -92,6 +97,33 @@ const config: HardhatUserConfig = {
         },
       },
     ],
+  },
+  etherscan: {
+    apiKey: {
+      alfajores: CELOSCAN_API_KEY,
+      celo: CELOSCAN_API_KEY,
+    },
+    customChains: [
+      {
+        network: "alfajores",
+        chainId: 44787,
+        urls: {
+          apiURL: "https://api-alfajores.celoscan.io/api",
+          browserURL: "https://alfajores.celoscan.io",
+        },
+      },
+      {
+        network: "celo",
+        chainId: 42220,
+        urls: {
+          apiURL: "https://api.celoscan.io/api",
+          browserURL: "https://celoscan.io/",
+        },
+      },
+    ],
+  },
+  sourcify: {
+    enabled: true,
   },
   paths: {
     // This value cannot be an array, so we can only compile one folder.

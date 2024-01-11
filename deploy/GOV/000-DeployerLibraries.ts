@@ -27,6 +27,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     console.log("AirgrabDeployerLib already deployed at:", AirgrabDeployerLib.address);
   }
+  console.log("Verifiying AirgrabDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: AirgrabDeployerLib.address,
+    constructorArguments: [],
+  });
   console.log("\n");
   console.log(" --- ");
   console.log("\n");
@@ -43,6 +48,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     console.log("EmissionDeployerLib already deployed at:", EmissionDeployerLib.address);
   }
+
+  console.log("Verifiying EmissionDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: EmissionDeployerLib.address,
+    constructorArguments: [],
+  });
 
   console.log("\n");
   console.log(" --- ");
@@ -61,6 +72,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log("LockingDeployerLib already deployed at:", LockingDeployerLib.address);
   }
 
+  console.log("Verifiying LockingDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: LockingDeployerLib.address,
+    constructorArguments: [],
+  });
+
   console.log("\n");
   console.log(" --- ");
   console.log("\n");
@@ -77,6 +94,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     console.log("MentoGovernorDeployerLib already deployed at:", MentoGovernorDeployerLib.address);
   }
+
+  console.log("Verifiying MentoGovernorDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: MentoGovernorDeployerLib.address,
+    constructorArguments: [],
+  });
 
   console.log("\n");
   console.log(" --- ");
@@ -95,6 +118,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log("MentoTokenDeployerLib already deployed at:", MentoTokenDeployerLib.address);
   }
 
+  console.log("Verifiying MentoTokenDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: MentoTokenDeployerLib.address,
+    constructorArguments: [],
+  });
+
   console.log("\n");
   console.log(" --- ");
   console.log("\n");
@@ -111,7 +140,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     console.log("TimelockControllerDeployerLib already deployed at:", TimelockControllerDeployerLib.address);
   }
-
+  console.log("Verifiying TimelockControllerDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: TimelockControllerDeployerLib.address,
+    constructorArguments: [],
+  });
   console.log("\n");
   console.log(" --- ");
   console.log("\n");
@@ -128,6 +161,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     console.log("ProxyDeployerLib already deployed at:", ProxyDeployerLib.address);
   }
+  console.log("Verifiying ProxyDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: ProxyDeployerLib.address,
+    constructorArguments: [],
+  });
 };
 
 export default func;

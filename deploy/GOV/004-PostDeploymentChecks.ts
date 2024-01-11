@@ -1,23 +1,49 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction, DeployResult } from "hardhat-deploy/types";
-import { CodedEthersError, assert } from "ethers";
-
-// Usage: `yarn deploy:<NETWORK> --tags GOV`
-//          e.g. `yarn deploy:localhost --tags GOV`
+import * as fs from "fs";
+// Usage: `yarn deploy:<NETWORK> --tags CHECK`
+//          e.g. `yarn deploy:localhost --tags CHECK`
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { ethers, deployments, getNamedAccounts, getUnnamedAccounts } = hre;
-  const { deploy } = deployments;
+  const { ethers, deployments, getNamedAccounts, getChainId } = hre;
   const { deployer } = await getNamedAccounts();
-
-  const accs = await getUnnamedAccounts();
 
   const CELO_REGISTRY = process.env.CELO_REGISTIRY_ADDRESS;
   if (!CELO_REGISTRY) {
     throw new Error("CELO_REGISTRY_ADDRESS is not set");
   }
 
+  const MENTO_LABS_MULTISIG = process.env.MENTO_LABS_MULTISIG;
+  if (!MENTO_LABS_MULTISIG) {
+    throw new Error("MENTO_LABS_MULTISIG is not set");
+  }
+  const WATCHDOG_MULTISIG = process.env.WATCHDOG_MULTISIG;
+  if (!WATCHDOG_MULTISIG) {
+    throw new Error("WATCHDOG_MULTISIG is not set");
+  }
+  const CELO_COMMUNITY_FUND = process.env.CELO_COMMUNITY_FUND;
+  if (!CELO_COMMUNITY_FUND) {
+    throw new Error("CELO_COMMUNITY_FUND is not set");
+  }
+  const FRAKTAL_SIGNER = process.env.FRAKTAL_SIGNER;
+  if (!FRAKTAL_SIGNER) {
+    throw new Error("FRAKTAL_SIGNER is not set");
+  }
+
+  let merkleRoot;
+
+  try {
+    const treeData = JSON.parse(fs.readFileSync("scripts/data/out/tree.json", "utf8"));
+    merkleRoot = treeData.root;
+  } catch (error) {
+    console.log("Error during json parsing");
+    console.log("Error: ", error);
+  }
+
   const celoRegistiry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
   const celoGovernanceAddress = await celoRegistiry.getAddressForStringOrDie("Governance");
+
+  const chainId = await getChainId();
+
   console.log("=================================================");
   console.log("*****************************");
   console.log("Performing Post Deployment Checks");
@@ -28,9 +54,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const factory = await ethers.getContractAt("GovernanceFactory", GovernanceFactoryDep.address);
   // TODO: Update to celo governance address
   const owner = await factory.owner();
-  if (owner !== deployer) {
-    throw new Error("Owner of GovernanceFactory is not Celo Governance");
-  }
+
+  assert(
+    owner === (chainId === "31337" ? deployer : celoGovernanceAddress),
+    "Owner of GovernanceFactory is not Celo Governance",
+  );
 
   const mentoTokenAddress = await factory.mentoToken();
   const mentoToken = await ethers.getContractAt("MentoToken", mentoTokenAddress);
@@ -53,7 +81,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const mentoLabsTreasuryAddress = await factory.mentoLabsTreasuryTimelock();
   const mentoLabsTreasury = await ethers.getContractAt("TimelockController", mentoLabsTreasuryAddress);
 
-  const mentoLabsMultisigBalance = await mentoToken.balanceOf(accs[4]);
+  const mentoLabsMultisigBalance = await mentoToken.balanceOf(MENTO_LABS_MULTISIG);
   assert(
     mentoLabsMultisigBalance.toString() === ethers.parseEther("80000000").toString(),
     "MentoLabs multisig balance is incorrect",
@@ -80,12 +108,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const name = await mentoToken.name();
   assert(name === "Mento Token", "Name of mentoToken is incorrect");
 
-  const emissionStartTime = await emission.emissionStartTime();
-  assert(
-    emissionStartTime.toString() === (await ethers.provider.getBlock("latest"))!.timestamp.toString(),
-    "Emission start time is incorrect",
-  );
-
   const emissionMentoTokenAddress = await emission.mentoToken();
   assert(emissionMentoTokenAddress === mentoTokenAddress, "MentoToken address in emission is incorrect");
 
@@ -97,20 +119,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // TODO: Update the airgrab
   const airgrabRoot = await airgrab.root();
-  assert(
-    airgrabRoot === "0x945d83ced94efc822fed712b4c4694b4e1129607ec5bbd2ab971bb08dca4d809",
-    "Airgrab Merkle root is incorrect",
-  );
+  assert(airgrabRoot === merkleRoot, "Airgrab Merkle root is incorrect");
 
   const airgrabFractalSigner = await airgrab.fractalSigner();
-  assert(airgrabFractalSigner === accs[7], "Airgrab fractal signer is incorrect");
+  assert(airgrabFractalSigner === FRAKTAL_SIGNER, "Airgrab fractal signer is incorrect");
 
   const airgrabFractalMaxAge = await airgrab.fractalMaxAge();
   assert(airgrabFractalMaxAge.toString() === "15552000", "Airgrab fractal max age is incorrect"); // 180 days in seconds
-
-  const airgrabEndTimestamp = await airgrab.endTimestamp();
-  const expectedEndTimestamp = (await ethers.provider.getBlock("latest"))!.timestamp + 365 * 24 * 60 * 60; // 365 days in seconds
-  assert(airgrabEndTimestamp.toString() === expectedEndTimestamp.toString(), "Airgrab end timestamp is incorrect");
 
   const airgrabSlopePeriod = await airgrab.slopePeriod();
   assert(airgrabSlopePeriod.toString() === "104", "Airgrab slope period is incorrect");
@@ -125,7 +140,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   assert(airgrabLockingAddress === lockingAddress, "Locking address in airgrab is incorrect");
 
   const airgrabCeloCommunityFundAddress = await airgrab.celoCommunityFund();
-  assert(airgrabCeloCommunityFundAddress === accs[6], "Celo Community Fund address in airgrab is incorrect");
+  assert(
+    airgrabCeloCommunityFundAddress === CELO_COMMUNITY_FUND,
+    "Celo Community Fund address in airgrab is incorrect",
+  );
 
   // governanceTimelock checks
   const proposerRole = await governanceTimelock.PROPOSER_ROLE();
@@ -149,7 +167,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     "governanceTimelock canceller role for mentoGovernor is incorrect",
   );
   assert(
-    await governanceTimelock.hasRole(cancellerRole, accs[5]),
+    await governanceTimelock.hasRole(cancellerRole, WATCHDOG_MULTISIG),
     "governanceTimelock canceller role for watchdogMultisig is incorrect",
   );
 
@@ -159,7 +177,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     "MinDelay of mentoLabsTreasury is incorrect",
   );
   assert(
-    await mentoLabsTreasury.hasRole(proposerRole, accs[4]),
+    await mentoLabsTreasury.hasRole(proposerRole, MENTO_LABS_MULTISIG),
     "mentoLabsTreasury proposer role for mentoLabsMultisig is incorrect",
   );
   assert(
@@ -208,4 +226,4 @@ function assert(condition: boolean, message: string): asserts condition {
 }
 
 export default func;
-func.tags = ["GOV"];
+func.tags = ["CHECK"];

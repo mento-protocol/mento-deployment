@@ -4,7 +4,7 @@ import { DeployFunction, DeployResult } from "hardhat-deploy/types";
 // Usage: `yarn deploy:<NETWORK> --tags GOV`
 //          e.g. `yarn deploy:localhost --tags GOV`
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { ethers, deployments, getNamedAccounts } = hre;
+  const { ethers, deployments, getNamedAccounts, getChainId } = hre;
   const { deploy } = deployments;
 
   const { deployer } = await getNamedAccounts();
@@ -24,15 +24,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const TimelockControllerDeployerLib = await deployments.get("TimelockControllerDeployerLib");
   const ProxyDeployerLib = await deployments.get("ProxyDeployerLib");
 
+  const chainId = await getChainId();
+
   console.log("=================================================");
   console.log("*****************************");
   console.log("Deploying Governance Factory");
   console.log("*****************************");
   console.log("\n");
 
+  const owner = chainId === "31337" ? deployer : celoGovernance;
+
   const GovernanceFactory: DeployResult = await deploy("GovernanceFactory", {
     from: deployer,
-    args: [deployer],
+    args: [owner],
     log: true,
     autoMine: true,
     libraries: {
@@ -51,6 +55,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     console.log("GovernanceFactory already deployed at:", GovernanceFactory.address);
   }
+
+  console.log("Verifiying GovernanceFactory on Explorer");
+  await hre.run("verify:verify", {
+    address: GovernanceFactory.address,
+    constructorArguments: [owner],
+    libraries: {
+      AirgrabDeployerLib: AirgrabDeployerLib.address,
+      EmissionDeployerLib: EmissionDeployerLib.address,
+      LockingDeployerLib: LockingDeployerLib.address,
+      MentoGovernorDeployerLib: MentoGovernorDeployerLib.address,
+      MentoTokenDeployerLib: MentoTokenDeployerLib.address,
+      TimelockControllerDeployerLib: TimelockControllerDeployerLib.address,
+      ProxyDeployerLib: ProxyDeployerLib.address,
+    },
+  });
   console.log("\n");
   console.log(" --- ");
   console.log("\n");
