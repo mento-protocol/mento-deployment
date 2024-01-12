@@ -71,7 +71,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         CELO_COMMUNITY_FUND,
         merkleRoot,
         FRAKTAL_SIGNER,
-        { gasLimit: 25_000_000 },
+        { gasLimit: 20_000_000 },
       );
       console.log(`Governance is sucessfully created for factory at: ${governanceFactoryDep.address}`);
     } catch (error) {

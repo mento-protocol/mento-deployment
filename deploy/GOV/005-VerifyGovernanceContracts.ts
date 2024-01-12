@@ -41,17 +41,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const celoRegistiry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
   const celoGovernanceAddress = await celoRegistiry.getAddressForStringOrDie("Governance");
 
-  const chainId = await getChainId();
+  const EmissionDeployerLib = await deployments.get("EmissionDeployerLib");
+  const AirgrabDeployerLib = await deployments.get("AirgrabDeployerLib");
+  const LockingDeployerLib = await deployments.get("LockingDeployerLib");
+  const MentoGovernorDeployerLib = await deployments.get("MentoGovernorDeployerLib");
+  const MentoTokenDeployerLib = await deployments.get("MentoTokenDeployerLib");
+  const TimelockControllerDeployerLib = await deployments.get("TimelockControllerDeployerLib");
+  const ProxyDeployerLib = await deployments.get("ProxyDeployerLib");
+  const GovernanceFactory = await deployments.get("GovernanceFactory");
 
-  console.log("=================================================");
-  console.log("*****************************");
-  console.log("Verifying Governance Contracts");
-  console.log("*****************************");
-  console.log("\n");
-
-  const GovernanceFactoryDep = await deployments.get("GovernanceFactory");
-  const factory = await ethers.getContractAt("GovernanceFactory", GovernanceFactoryDep.address);
-
+  const factory = await ethers.getContractAt("GovernanceFactory", GovernanceFactory.address);
   const proxyAdminAddress = await factory.proxyAdmin();
   const proxyAdmin = await ethers.getContractAt("ProxyAdmin", proxyAdminAddress);
   const mentoToken = await factory.mentoToken();
@@ -68,24 +67,88 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const lockCliff = await factory.AIRGRAB_LOCK_CLIFF();
   const lockSlope = await factory.AIRGRAB_LOCK_SLOPE();
 
+  console.log("=================================================");
+  console.log("*****************************");
+  console.log("Verifying Governance Contracts");
+  console.log("*****************************");
+  console.log("\n");
+
+  console.log("Verifiying EmissionDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: EmissionDeployerLib.address,
+    constructorArguments: [],
+  });
+  console.log("\n");
+  console.log("Verifiying AirgrabDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: AirgrabDeployerLib.address,
+    constructorArguments: [],
+  });
+  console.log("\n");
+  console.log("Verifiying LockingDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: LockingDeployerLib.address,
+    constructorArguments: [],
+  });
+  console.log("\n");
+  console.log("Verifiying MentoGovernorDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: MentoGovernorDeployerLib.address,
+    constructorArguments: [],
+  });
+  console.log("\n");
+  console.log("Verifiying MentoTokenDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: MentoTokenDeployerLib.address,
+    constructorArguments: [],
+  });
+  console.log("\n");
+  console.log("Verifiying TimelockControllerDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: TimelockControllerDeployerLib.address,
+    constructorArguments: [],
+  });
+  console.log("\n");
+  console.log("Verifiying ProxyDeployerLib on Explorer");
+  await hre.run("verify:verify", {
+    address: ProxyDeployerLib.address,
+    constructorArguments: [],
+  });
+
+  console.log("\n");
+  console.log("Verifiying Governance Factory on Explorer");
+  await hre.run("verify:verify", {
+    address: GovernanceFactory.address,
+    constructorArguments: [celoGovernanceAddress],
+    libraries: {
+      AirgrabDeployerLib: AirgrabDeployerLib.address,
+      EmissionDeployerLib: EmissionDeployerLib.address,
+      LockingDeployerLib: LockingDeployerLib.address,
+      MentoGovernorDeployerLib: MentoGovernorDeployerLib.address,
+      MentoTokenDeployerLib: MentoTokenDeployerLib.address,
+      TimelockControllerDeployerLib: TimelockControllerDeployerLib.address,
+      ProxyDeployerLib: ProxyDeployerLib.address,
+    },
+  });
+  console.log("\n");
   console.log("Verifiying Proxy Admin on Explorer");
   await hre.run("verify:verify", {
     address: proxyAdminAddress,
     constructorArguments: [],
   });
-
+  console.log("\n");
   console.log("Verifiying Mento Token on Explorer");
   await hre.run("verify:verify", {
     address: mentoToken,
     constructorArguments: [mentoLabsMultiSig, mentoLabsTreasuryTimelock, airgrab, governanceTimelock, emission],
   });
-
+  console.log("\n");
   console.log("Verifiying Emission on Explorer");
   await hre.run("verify:verify", {
     address: emission,
     constructorArguments: [mentoToken, governanceTimelock],
   });
-
+  console.log("\n");
   console.log("Verifiying Airgrab on Explorer");
   await hre.run("verify:verify", {
     address: airgrab,
@@ -103,7 +166,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   const mentoLabsTreasuryTimelockImp = await proxyAdmin.getProxyImplementation(mentoLabsTreasuryTimelock);
-
+  console.log("\n");
   console.log("Verifiying MentoLabs Treasury Timelock  on Explorer");
   await hre.run("verify:verify", {
     address: mentoLabsTreasuryTimelockImp,
@@ -111,7 +174,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   const mentoGovernorImp = await proxyAdmin.getProxyImplementation(mentoGovernor);
-
+  console.log("\n");
   console.log("Verifiying Mento Governor on Explorer");
   await hre.run("verify:verify", {
     address: mentoGovernorImp,
@@ -119,7 +182,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   const governanceTimelockImp = await proxyAdmin.getProxyImplementation(governanceTimelock);
-
+  console.log("\n");
   console.log("Verifiying Governance Timelock  on Explorer");
   await hre.run("verify:verify", {
     address: governanceTimelockImp,
@@ -127,7 +190,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   const lockingImp = await proxyAdmin.getProxyImplementation(locking);
-
+  console.log("\n");
   console.log("Verifiying Locking on Explorer");
   await hre.run("verify:verify", {
     address: lockingImp,
@@ -135,7 +198,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   console.log("Contract Verification completed");
-
   console.log("=================================================");
 };
 

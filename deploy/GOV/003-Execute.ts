@@ -21,8 +21,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("*****************************");
   console.log("\n");
 
-  const proposalId = 197;
-  const index = 99;
+  const proposalId = 201;
+  const index = 104;
 
   // for (let i = 90; i < 110; i++) {
   //   try {
@@ -36,17 +36,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // }
 
   try {
-    // const data = celoGovernance.interface.encodeFunctionData("execute", [proposalId, index]);
-    // const gas = await ethers.provider.estimateGas({
-    //   // Wrapped ETH address
-    //   to: celoGovernance.getAddress(),
-    //   // `function deposit() payable`
-    //   data: data,
-    //   // 1 ether
-    //   value: 0,
-    // });
-    // console.log({ gas });
-    await celoGovernance.execute(proposalId, index, { gasLimit: 25_000_000 });
+    await celoGovernance.execute(proposalId, index, { gasLimit: 20_000_000 });
   } catch (error) {
     console.log(error);
   }

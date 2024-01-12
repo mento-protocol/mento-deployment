@@ -64,7 +64,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 999999,
+            runs: 200,
           },
         },
       },
@@ -73,7 +73,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 999999,
+            runs: 200,
           },
         },
       },
@@ -82,7 +82,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 999999,
+            runs: 200,
           },
         },
       },
@@ -92,7 +92,7 @@ const config: HardhatUserConfig = {
           viaIR: true,
           optimizer: {
             enabled: true,
-            runs: 999999,
+            runs: 200,
           },
         },
       },
@@ -101,6 +101,7 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       alfajores: CELOSCAN_API_KEY,
+      baklava: CELOSCAN_API_KEY,
       celo: CELOSCAN_API_KEY,
     },
     customChains: [
@@ -110,6 +111,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-alfajores.celoscan.io/api",
           browserURL: "https://alfajores.celoscan.io",
+        },
+      },
+      {
+        network: "baklava",
+        chainId: 62320,
+        urls: {
+          apiURL: "https://explorer.celo.org/baklava/api",
+          browserURL: "https://explorer.celo.org/baklava",
         },
       },
       {

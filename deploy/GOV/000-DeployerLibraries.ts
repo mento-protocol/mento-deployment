@@ -132,53 +132,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   console.log("\n");
   console.log("Deployer Libraries deployed successfully! ");
-
-  const chainId = await getChainId();
-
-  if (chainId === "31337") {
-    console.log("Skipping verification of deployer libraries on local network...");
-  } else {
-    console.log("Verifiying EmissionDeployerLib on Explorer");
-    await hre.run("verify:verify", {
-      address: EmissionDeployerLib.address,
-      constructorArguments: [],
-    });
-
-    console.log("Verifiying AirgrabDeployerLib on Explorer");
-    await hre.run("verify:verify", {
-      address: AirgrabDeployerLib.address,
-      constructorArguments: [],
-    });
-
-    console.log("Verifiying LockingDeployerLib on Explorer");
-    await hre.run("verify:verify", {
-      address: LockingDeployerLib.address,
-      constructorArguments: [],
-    });
-
-    console.log("Verifiying MentoGovernorDeployerLib on Explorer");
-    await hre.run("verify:verify", {
-      address: MentoGovernorDeployerLib.address,
-      constructorArguments: [],
-    });
-
-    console.log("Verifiying MentoTokenDeployerLib on Explorer");
-    await hre.run("verify:verify", {
-      address: MentoTokenDeployerLib.address,
-      constructorArguments: [],
-    });
-
-    console.log("Verifiying TimelockControllerDeployerLib on Explorer");
-    await hre.run("verify:verify", {
-      address: TimelockControllerDeployerLib.address,
-      constructorArguments: [],
-    });
-    console.log("Verifiying ProxyDeployerLib on Explorer");
-    await hre.run("verify:verify", {
-      address: ProxyDeployerLib.address,
-      constructorArguments: [],
-    });
-  }
 };
 
 export default func;
