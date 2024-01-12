@@ -52,6 +52,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const GovernanceFactoryDep = await deployments.get("GovernanceFactory");
   const factory = await ethers.getContractAt("GovernanceFactory", GovernanceFactoryDep.address);
 
+  const proxyAdminAddress = await factory.proxyAdmin();
+  const proxyAdmin = await ethers.getContractAt("ProxyAdmin", proxyAdminAddress);
   const mentoToken = await factory.mentoToken();
   const mentoLabsTreasuryTimelock = await factory.mentoLabsTreasuryTimelock();
   const mentoLabsMultiSig = await factory.mentoLabsMultiSig();
@@ -60,6 +62,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const locking = await factory.locking();
   const airgrab = await factory.airgrab();
   const emission = await factory.emission();
+
+  const airgrabEnds = await factory.airgrabEnds();
+  const fractalMaxAge = await factory.FRACTAL_MAX_AGE();
+  const lockCliff = await factory.AIRGRAB_LOCK_CLIFF();
+  const lockSlope = await factory.AIRGRAB_LOCK_SLOPE();
+
+  console.log("Verifiying Proxy Admin on Explorer");
+  await hre.run("verify:verify", {
+    address: proxyAdminAddress,
+    constructorArguments: [],
+  });
 
   console.log("Verifiying Mento Token on Explorer");
   await hre.run("verify:verify", {
@@ -73,17 +86,53 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     constructorArguments: [mentoToken, governanceTimelock],
   });
 
-  // TODO: update airgrab ends
-  // const airgrabEnds =
-  // const fractalMaxAge = await factory.FRACTAL_MAX_AGE();
-  // const lockCliff = await factory.AIRGRAB_LOCK_CLIFF();
-  // const lockSlope = await factory.AIRGRAB_LOCK_SLOPE();
+  console.log("Verifiying Airgrab on Explorer");
+  await hre.run("verify:verify", {
+    address: airgrab,
+    constructorArguments: [
+      merkleRoot,
+      FRAKTAL_SIGNER,
+      fractalMaxAge,
+      airgrabEnds,
+      lockCliff,
+      lockSlope,
+      mentoToken,
+      locking,
+      CELO_COMMUNITY_FUND,
+    ],
+  });
 
-  // console.log("Verifiying Airgrab on Explorer");
-  // await hre.run("verify:verify", {
-  //   address: airgrab,
-  //   constructorArguments: [merkleRoot, FRAKTAL_SIGNER, fractalMaxAge, airgrabEnds, lockCliff, lockSlope, mentoToken],
-  // });
+  const mentoLabsTreasuryTimelockImp = await proxyAdmin.getProxyImplementation(mentoLabsTreasuryTimelock);
+
+  console.log("Verifiying MentoLabs Treasury Timelock  on Explorer");
+  await hre.run("verify:verify", {
+    address: mentoLabsTreasuryTimelockImp,
+    constructorArguments: [],
+  });
+
+  const mentoGovernorImp = await proxyAdmin.getProxyImplementation(mentoGovernor);
+
+  console.log("Verifiying Mento Governor on Explorer");
+  await hre.run("verify:verify", {
+    address: mentoGovernorImp,
+    constructorArguments: [],
+  });
+
+  const governanceTimelockImp = await proxyAdmin.getProxyImplementation(governanceTimelock);
+
+  console.log("Verifiying Governance Timelock  on Explorer");
+  await hre.run("verify:verify", {
+    address: governanceTimelockImp,
+    constructorArguments: [],
+  });
+
+  const lockingImp = await proxyAdmin.getProxyImplementation(locking);
+
+  console.log("Verifiying Locking on Explorer");
+  await hre.run("verify:verify", {
+    address: lockingImp,
+    constructorArguments: [],
+  });
 
   console.log("Contract Verification completed");
 
@@ -97,4 +146,4 @@ function assert(condition: boolean, message: string): asserts condition {
 }
 
 export default func;
-func.tags = ["CHECKA"];
+func.tags = ["GOV_VERIFY"];

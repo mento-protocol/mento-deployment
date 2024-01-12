@@ -55,21 +55,25 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     console.log("GovernanceFactory already deployed at:", GovernanceFactory.address);
   }
+  if (chainId === "31337") {
+    console.log("Skipping verification of Governance Factory on local network...");
+  } else {
+    console.log("Verifiying Governance Factory on Explorer");
+    await hre.run("verify:verify", {
+      address: GovernanceFactory.address,
+      constructorArguments: [owner],
+      libraries: {
+        AirgrabDeployerLib: AirgrabDeployerLib.address,
+        EmissionDeployerLib: EmissionDeployerLib.address,
+        LockingDeployerLib: LockingDeployerLib.address,
+        MentoGovernorDeployerLib: MentoGovernorDeployerLib.address,
+        MentoTokenDeployerLib: MentoTokenDeployerLib.address,
+        TimelockControllerDeployerLib: TimelockControllerDeployerLib.address,
+        ProxyDeployerLib: ProxyDeployerLib.address,
+      },
+    });
+  }
 
-  console.log("Verifiying GovernanceFactory on Explorer");
-  await hre.run("verify:verify", {
-    address: GovernanceFactory.address,
-    constructorArguments: [owner],
-    libraries: {
-      AirgrabDeployerLib: AirgrabDeployerLib.address,
-      EmissionDeployerLib: EmissionDeployerLib.address,
-      LockingDeployerLib: LockingDeployerLib.address,
-      MentoGovernorDeployerLib: MentoGovernorDeployerLib.address,
-      MentoTokenDeployerLib: MentoTokenDeployerLib.address,
-      TimelockControllerDeployerLib: TimelockControllerDeployerLib.address,
-      ProxyDeployerLib: ProxyDeployerLib.address,
-    },
-  });
   console.log("\n");
   console.log(" --- ");
   console.log("\n");
@@ -78,4 +82,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 
 export default func;
-func.tags = ["GOV"];
+func.tags = ["GOV_DEPLOY", "GOV_LOCAL"];

@@ -226,4 +226,4 @@ function assert(condition: boolean, message: string): asserts condition {
 }
 
 export default func;
-func.tags = ["CHECK"];
+func.tags = ["GOV_CHECK", "GOV_LOCAL"];

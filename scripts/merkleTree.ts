@@ -13,7 +13,9 @@ export const generateTree = async (): Promise<MerkleTree> => {
 
   const leaves = records.map((row: any) => {
     const encoded = abicoder.encode(["address", "uint256"], [row[0], row[1]]);
-    return keccak256(encoded);
+    const leafHash = keccak256(encoded);
+    const leaf = keccak256(Buffer.concat([Buffer.from(leafHash.slice(2), "hex")])); // Remove '0x' and convert to Buffer
+    return leaf;
   });
 
   const merkleTree = new MerkleTree(leaves, keccak256, { sortPairs: true });

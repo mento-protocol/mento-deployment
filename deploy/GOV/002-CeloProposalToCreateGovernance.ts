@@ -172,4 +172,4 @@ function verifyDescription(descriptionURL: string): void {
 }
 
 export default func;
-func.tags = ["GOV"];
+func.tags = ["GOV_DEPLOY", "GOV_LOCAL"];

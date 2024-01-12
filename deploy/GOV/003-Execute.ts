@@ -21,13 +21,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("*****************************");
   console.log("\n");
 
-  const proposalId = 192;
+  const proposalId = 197;
   const index = 99;
 
-  // for (let i = 95; i < 110; i++) {
+  // for (let i = 90; i < 110; i++) {
   //   try {
   //     const a = await celoGovernance.dequeued(i);
-  //     console.log(a, i);
+  //     if (parseInt(a) === proposalId) {
+  //       console.log(a, i);
+  //     }
   //   } catch (error) {
   //     // console.log(error);
   //   }
@@ -57,4 +59,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 
 export default func;
-func.tags = ["EXE"];
+func.tags = ["GOV_EXE"];
