@@ -3,10 +3,14 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { BigNumberish } from "ethers";
 import { ICeloGovernance } from "../../artifacts/types";
 import * as fs from "fs";
+import { Transaction, createProposal } from "../utils";
 
-// Usage: `yarn deploy:<NETWORK> --tags GOV`
-//          e.g. `yarn deploy:localhost --tags GOV`
-
+/**
+ * @title Celo Proposal Creation
+ * @dev Creates a proposal on Celo governance to call createGovernance() on the governance factory.
+ * @dev On localhost, the deployment is executed directly.
+ * Usage: `npx hardhat deploy --network <NETWORK> --tags GOV_DEPLOY`
+ */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { ethers, deployments, getChainId } = hre;
 
@@ -44,8 +48,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const treeData = JSON.parse(fs.readFileSync("scripts/data/out/tree.json", "utf8"));
     merkleRoot = treeData.root;
   } catch (error) {
-    console.log("Error during json parsing");
-    console.log("Error: ", error);
+    console.log({ error });
+    throw new Error("Error during json parsing");
   }
 
   console.log("=================================================");
@@ -64,6 +68,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   if (chainId === "31337") {
     console.log("Skipping proposal creation on localhost");
+    console.log("createGovernance() will be called directly");
     try {
       await governanceFactory.createGovernance(
         MENTO_LABS_MULTISIG,
@@ -84,92 +89,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       data,
     };
 
-    await createProposal([createGovernanceTX], "https://www.google.com", celoGovernance);
+    await createProposal([createGovernanceTX], "www.google.com", celoGovernance);
   }
 
   console.log("\n");
-  console.log(" --- ");
-  console.log("\n");
-
+  console.log("*****************************");
+  console.log("Celo Proposal is created successfully!");
+  console.log("*****************************");
   console.log("=================================================");
 };
 
-type Transaction = {
-  value: BigNumberish;
-  destination: string;
-  data: string;
-};
-
-type SerializedTransactions = {
-  values: BigNumberish[];
-  destinations: string[];
-  data: string;
-  dataLengths: number[];
-};
-
-async function createProposal(
-  transactions: Transaction[],
-  descriptionURL: string,
-  celoGovernance: ICeloGovernance,
-): Promise<void> {
-  const serTxs = serializeTransactions(transactions);
-
-  const depositAmount = await celoGovernance.minDeposit();
-  console.log("Celo governance proposal required deposit amount: ", depositAmount.toString());
-
-  const tx = await celoGovernance.propose(
-    serTxs.values,
-    serTxs.destinations,
-    serTxs.data,
-    serTxs.dataLengths,
-    descriptionURL,
-    { value: depositAmount },
-  );
-
-  const receipt = await tx.wait();
-  if (!receipt || !receipt.status) {
-    console.log("Transaction failed:", receipt);
-    throw new Error("Failed to create proposal");
-  }
-  const hexId = receipt!.logs[0].topics[1];
-  console.log("Proposal was successfully created. ID: ", parseInt(hexId, 16));
-}
-
-function serializeTransactions(transactions: Transaction[]): SerializedTransactions {
-  const values: BigNumberish[] = [];
-  const destinations: string[] = [];
-  let dataConcatenated: string = "0x";
-  const dataLengths: number[] = [];
-
-  for (const transaction of transactions) {
-    values.push(transaction.value);
-    destinations.push(transaction.destination);
-
-    // Append the encoded data to the dataConcatenated string
-    dataConcatenated += transaction.data.slice(2); // Remove the '0x' prefix
-    dataLengths.push(getByteLength(transaction.data));
-  }
-
-  return {
-    values,
-    destinations,
-    data: dataConcatenated,
-    dataLengths,
-  };
-}
-
-function getByteLength(hexString: string): number {
-  // Remove the '0x' prefix and divide by 2 (since 2 hex characters represent 1 byte)
-  return (hexString.startsWith("0x") ? hexString.slice(2) : hexString).length / 2;
-}
-
-function verifyDescription(descriptionURL: string): void {
-  const requiredPrefix = "https://";
-
-  if (!descriptionURL.startsWith(requiredPrefix)) {
-    throw new Error("Description URL must start with https://");
-  }
-}
-
 export default func;
-func.tags = ["GOV_DEPLOY", "GOV_LOCAL"];
+func.tags = ["GOV_DEPLOY", "GOV_FORK"];

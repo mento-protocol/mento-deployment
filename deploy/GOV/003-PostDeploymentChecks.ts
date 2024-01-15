@@ -1,8 +1,13 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeployFunction, DeployResult } from "hardhat-deploy/types";
+import { DeployFunction } from "hardhat-deploy/types";
 import * as fs from "fs";
-// Usage: `yarn deploy:<NETWORK> --tags CHECK`
-//          e.g. `yarn deploy:localhost --tags CHECK`
+import { assert } from "../utils";
+
+/**
+ * @title Post Deployment Checks
+ * @dev Makes calls to deployed contracts to verify if the contracts are deployed with a correct state
+ * Usage: `npx hardhat deploy --network <NETWORK> --tags GOV_CHECK`
+ */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { ethers, deployments, getNamedAccounts, getChainId } = hre;
   const { deployer } = await getNamedAccounts();
@@ -35,13 +40,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const treeData = JSON.parse(fs.readFileSync("scripts/data/out/tree.json", "utf8"));
     merkleRoot = treeData.root;
   } catch (error) {
-    console.log("Error during json parsing");
-    console.log("Error: ", error);
+    console.log({ error });
+    throw new Error("Error during json parsing");
   }
 
   const celoRegistiry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
   const celoGovernanceAddress = await celoRegistiry.getAddressForStringOrDie("Governance");
-
+  const GovernanceFactoryDep = await deployments.get("GovernanceFactory");
+  const factory = await ethers.getContractAt("GovernanceFactory", GovernanceFactoryDep.address);
   const chainId = await getChainId();
 
   console.log("=================================================");
@@ -50,11 +56,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("*****************************");
   console.log("\n");
 
-  const GovernanceFactoryDep = await deployments.get("GovernanceFactory");
-  const factory = await ethers.getContractAt("GovernanceFactory", GovernanceFactoryDep.address);
-  // TODO: Update to celo governance address
   const owner = await factory.owner();
-
   assert(
     owner === (chainId === "31337" ? deployer : celoGovernanceAddress),
     "Owner of GovernanceFactory is not Celo Governance",
@@ -81,6 +83,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const mentoLabsTreasuryAddress = await factory.mentoLabsTreasuryTimelock();
   const mentoLabsTreasury = await ethers.getContractAt("TimelockController", mentoLabsTreasuryAddress);
 
+  // factory config checks
   const mentoLabsMultisigBalance = await mentoToken.balanceOf(MENTO_LABS_MULTISIG);
   assert(
     mentoLabsMultisigBalance.toString() === ethers.parseEther("80000000").toString(),
@@ -117,7 +120,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const emissionOwner = await emission.owner();
   assert(emissionOwner === governanceTimelockAddress, "Owner of emission is incorrect");
 
-  // TODO: Update the airgrab
   const airgrabRoot = await airgrab.root();
   assert(airgrabRoot === merkleRoot, "Airgrab Merkle root is incorrect");
 
@@ -213,17 +215,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   assert((await locking.symbol()) === "veMENTO", "Symbol of locking is incorrect");
   assert((await locking.name()) === "Mento Vote-Escrow", "Name of locking is incorrect");
 
-  console.log("Post deployment checks passed");
-  console.log("Everything looks good!");
-
+  console.log("\n");
+  console.log("*****************************");
+  console.log("Post deployment checks passed!");
+  console.log("*****************************");
   console.log("=================================================");
 };
 
-function assert(condition: boolean, message: string): asserts condition {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
-
 export default func;
-func.tags = ["GOV_CHECK", "GOV_LOCAL"];
+func.tags = ["GOV_CHECK", "GOV_FORK"];

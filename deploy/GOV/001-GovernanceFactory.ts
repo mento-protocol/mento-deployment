@@ -1,8 +1,11 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction, DeployResult } from "hardhat-deploy/types";
 
-// Usage: `yarn deploy:<NETWORK> --tags GOV`
-//          e.g. `yarn deploy:localhost --tags GOV`
+/**
+ * @title Governance Factory Deployment Script
+ * @dev Deploys the governance factory contract and links the required libraries.
+ * Usage: `npx hardhat deploy --network <NETWORK> --tags GOV_DEPLOY`
+ */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { ethers, deployments, getNamedAccounts, getChainId } = hre;
   const { deploy } = deployments;
@@ -25,14 +28,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const ProxyDeployerLib = await deployments.get("ProxyDeployerLib");
 
   const chainId = await getChainId();
+  const owner = chainId === "31337" ? deployer : celoGovernance;
 
   console.log("=================================================");
   console.log("*****************************");
   console.log("Deploying Governance Factory");
   console.log("*****************************");
   console.log("\n");
-
-  const owner = chainId === "31337" ? deployer : celoGovernance;
 
   const GovernanceFactory: DeployResult = await deploy("GovernanceFactory", {
     from: deployer,
@@ -57,11 +59,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   console.log("\n");
-  console.log(" --- ");
-  console.log("\n");
-
+  console.log("*****************************");
+  console.log("Governance Factory deployed successfully!");
+  console.log("*****************************");
   console.log("=================================================");
 };
 
 export default func;
-func.tags = ["GOV_DEPLOY", "GOV_LOCAL"];
+func.tags = ["GOV_DEPLOY", "GOV_FORK"];

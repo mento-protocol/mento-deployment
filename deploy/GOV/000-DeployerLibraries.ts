@@ -1,10 +1,13 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction, DeployResult } from "hardhat-deploy/types";
 
-// Usage: `yarn deploy:<NETWORK> --tags GOV`
-//          e.g. `yarn deploy:localhost --tags GOV`
+/**
+ * @title Governance Libraries Deployment Script
+ * @dev Deploys several libraries related to governance features in a specified network.
+ * Usage: `npx hardhat deploy --network <NETWORK> --tags GOV_DEPLOY`
+ */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { deployments, getNamedAccounts, getChainId } = hre;
+  const { deployments, getNamedAccounts } = hre;
   const { deploy } = deployments;
 
   const { deployer } = await getNamedAccounts();
@@ -131,8 +134,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   console.log("\n");
+  console.log("*****************************");
   console.log("Deployer Libraries deployed successfully! ");
+  console.log("*****************************");
+  console.log("=================================================");
 };
 
 export default func;
-func.tags = ["GOV_DEPLOY", "GOV_LOCAL"];
+func.tags = ["GOV_DEPLOY", "GOV_FORK"];

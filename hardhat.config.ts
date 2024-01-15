@@ -5,9 +5,11 @@ import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-verify";
 
 import { HardhatUserConfig } from "hardhat/config";
+import "./tasks/executeProposal";
 
 const accounts = [process.env.MENTO_DEPLOYER_PK || "0x00"];
 const CELOSCAN_API_KEY = process.env.CELOSCAN_API_KEY;
+
 if (!CELOSCAN_API_KEY) {
   throw new Error("CELOSCAN_API_KEY is not set");
 }
@@ -101,7 +103,6 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       alfajores: CELOSCAN_API_KEY,
-      baklava: CELOSCAN_API_KEY,
       celo: CELOSCAN_API_KEY,
     },
     customChains: [
@@ -111,14 +112,6 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-alfajores.celoscan.io/api",
           browserURL: "https://alfajores.celoscan.io",
-        },
-      },
-      {
-        network: "baklava",
-        chainId: 62320,
-        urls: {
-          apiURL: "https://explorer.celo.org/baklava/api",
-          browserURL: "https://explorer.celo.org/baklava",
         },
       },
       {
@@ -135,9 +128,6 @@ const config: HardhatUserConfig = {
     enabled: true,
   },
   paths: {
-    // This value cannot be an array, so we can only compile one folder.
-    // This means that contracts, such as the PartialReserveProxy, must be moved to mento-core
-    // if we want to include them in the deployment.
     sources: "./lib/mento-core-gov/contracts",
   },
 };

@@ -1,10 +1,14 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction, DeployResult } from "hardhat-deploy/types";
 import * as fs from "fs";
-// Usage: `yarn deploy:<NETWORK> --tags CHECK`
-//          e.g. `yarn deploy:localhost --tags CHECK`
+/**
+ * @title Governance Contract Verification
+ * @dev This script verifies the source code of governance related contracts.
+ * @dev Currently, only works for Celo Scanner.
+ * Usage: Usage: `npx hardhat deploy --network <NETWORK> --tags GOV_VERIFY`
+ */
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { ethers, deployments, getChainId } = hre;
+  const { ethers, deployments } = hre;
 
   const CELO_REGISTRY = process.env.CELO_REGISTIRY_ADDRESS;
   if (!CELO_REGISTRY) {
@@ -197,15 +201,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     constructorArguments: [],
   });
 
-  console.log("Contract Verification completed");
+  console.log("\n");
+  console.log("*****************************");
+  console.log("Contract Verification completed!");
+  console.log("*****************************");
   console.log("=================================================");
 };
-
-function assert(condition: boolean, message: string): asserts condition {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
 
 export default func;
 func.tags = ["GOV_VERIFY"];
