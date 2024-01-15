@@ -10,11 +10,7 @@ import * as fs from "fs";
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { ethers, deployments } = hre;
 
-  const CELO_REGISTRY = process.env.CELO_REGISTIRY_ADDRESS;
-  if (!CELO_REGISTRY) {
-    throw new Error("CELO_REGISTRY_ADDRESS is not set");
-  }
-
+  const CELO_REGISTRY = "0x000000000000000000000000000000000000ce10";
   const MENTO_LABS_MULTISIG = process.env.MENTO_LABS_MULTISIG;
   if (!MENTO_LABS_MULTISIG) {
     throw new Error("MENTO_LABS_MULTISIG is not set");
