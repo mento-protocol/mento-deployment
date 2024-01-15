@@ -4,7 +4,7 @@ import { task } from "hardhat/config";
  * @title Execute Celo Proposal Task
  * @dev Celo proposal to create governance is a big one and default gas limit on cli is not enough.
  * @dev This task is used to execute any proposal with a higher gas limit.
- * Usage: npx hardhat executeProposal --pid 90 --index 50
+ * Usage: npx hardhat executeProposal --pid 90 --index 50 --network <NETWORK>
  */
 
 task("executeProposal", "Executes the Celo Proposal using higher gas limit")

@@ -89,7 +89,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       data,
     };
 
-    await createProposal([createGovernanceTX], "www.google.com", celoGovernance);
+    await createProposal([createGovernanceTX], "https://www.google.com", celoGovernance);
   }
 
   console.log("\n");
