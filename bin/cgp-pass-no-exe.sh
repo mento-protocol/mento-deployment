@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 ##############################################################################
-# Script for passing a Celo Governance Proposal on a tesnet.
-# Usage: yarn cgp:pass 
+# Script for passing a Celo Governance Proposal on a tesnet but does not execute it.
+# Usage: yarn cgp:pass:no-exe 
 #               -n <baklava|alfajores>  -- network to pass the proposal on
 #               -p <proposal_id>        -- proposal ID
-# Example: yarn cgp:pass -n baklava -p 79
+# Example: yarn cgp:pass:no-exe -n baklava -p 79
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"
@@ -47,8 +47,7 @@ echo "=========================================="
 celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
 echo "😴 301s"
 echo -e "\a" && sleep 301
-echo "💃 Executing proposal $PROPOSAL_ID"
-celocli governance:execute --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
+echo "💃 CGP is ready for execute. Run execute proposal task"
 
 # Proposal passed, make some noise
 echo -e "\a"

@@ -1,5 +1,5 @@
 [profile.default]
-src = "script"
+src = "./lib/mento-core-gov/contracts"
 out = "out"
 test = "test"
 script = "script"
