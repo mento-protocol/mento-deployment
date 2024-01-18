@@ -24,16 +24,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (!WATCHDOG_MULTISIG) {
     throw new Error("WATCHDOG_MULTISIG is not set");
   }
-  const CELO_COMMUNITY_FUND = process.env.CELO_COMMUNITY_FUND;
-  if (!CELO_COMMUNITY_FUND) {
-    throw new Error("CELO_COMMUNITY_FUND is not set");
-  }
+
   const FRAKTAL_SIGNER = process.env.FRAKTAL_SIGNER;
   if (!FRAKTAL_SIGNER) {
     throw new Error("FRAKTAL_SIGNER is not set");
   }
-  const celoRegistiry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
-  const celoGovernanceAddress = await celoRegistiry.getAddressForStringOrDie("Governance");
+  const celoRegistry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
+  const celoGovernanceAddress = await celoRegistry.getAddressForStringOrDie("Governance");
   const celoGovernance = await ethers.getContractAt("ICeloGovernance", celoGovernanceAddress);
 
   const governanceFactoryDep = await deployments.get("GovernanceFactory");
@@ -59,7 +56,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const data = governanceFactory.interface.encodeFunctionData("createGovernance", [
     MENTO_LABS_MULTISIG,
     WATCHDOG_MULTISIG,
-    CELO_COMMUNITY_FUND,
+    celoGovernanceAddress,
     merkleRoot,
     FRAKTAL_SIGNER,
   ]);
@@ -71,7 +68,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       await governanceFactory.createGovernance(
         MENTO_LABS_MULTISIG,
         WATCHDOG_MULTISIG,
-        CELO_COMMUNITY_FUND,
+        celoGovernanceAddress,
         merkleRoot,
         FRAKTAL_SIGNER,
         { gasLimit: 20_000_000 },
@@ -87,7 +84,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       data,
     };
 
-    await createProposal([createGovernanceTX], "https://www.google.com", celoGovernance);
+    await createProposal([createGovernanceTX], "https://www.mento.org/", celoGovernance);
   }
 
   console.log("\n");

@@ -16,8 +16,8 @@ task("executeProposal", "Executes the Celo Proposal using higher gas limit")
 
     const CELO_REGISTRY = "0x000000000000000000000000000000000000ce10";
 
-    const celoRegistiry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
-    const celoGovernanceAddress = await celoRegistiry.getAddressForStringOrDie("Governance");
+    const celoRegistry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
+    const celoGovernanceAddress = await celoRegistry.getAddressForStringOrDie("Governance");
     const celoGovernance = await ethers.getContractAt("ICeloGovernance", celoGovernanceAddress);
 
     console.log("=================================================");

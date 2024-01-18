@@ -19,10 +19,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (!WATCHDOG_MULTISIG) {
     throw new Error("WATCHDOG_MULTISIG is not set");
   }
-  const CELO_COMMUNITY_FUND = process.env.CELO_COMMUNITY_FUND;
-  if (!CELO_COMMUNITY_FUND) {
-    throw new Error("CELO_COMMUNITY_FUND is not set");
-  }
+
   const FRAKTAL_SIGNER = process.env.FRAKTAL_SIGNER;
   if (!FRAKTAL_SIGNER) {
     throw new Error("FRAKTAL_SIGNER is not set");
@@ -38,8 +35,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log("Error: ", error);
   }
 
-  const celoRegistiry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
-  const celoGovernanceAddress = await celoRegistiry.getAddressForStringOrDie("Governance");
+  const celoRegistry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
+  const celoGovernanceAddress = await celoRegistry.getAddressForStringOrDie("Governance");
 
   const EmissionDeployerLib = await deployments.get("EmissionDeployerLib");
   const AirgrabDeployerLib = await deployments.get("AirgrabDeployerLib");
@@ -161,7 +158,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       lockSlope,
       mentoToken,
       locking,
-      CELO_COMMUNITY_FUND,
+      celoGovernanceAddress,
     ],
   });
 

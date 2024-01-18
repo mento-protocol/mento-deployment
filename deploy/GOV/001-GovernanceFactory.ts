@@ -14,8 +14,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const CELO_REGISTRY = "0x000000000000000000000000000000000000ce10";
 
-  const celoRegistiry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
-  const celoGovernance = await celoRegistiry.getAddressForStringOrDie("Governance");
+  const celoRegistry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
+  const celoGovernance = await celoRegistry.getAddressForStringOrDie("Governance");
 
   const AirgrabDeployerLib = await deployments.get("AirgrabDeployerLib");
   const EmissionDeployerLib = await deployments.get("EmissionDeployerLib");

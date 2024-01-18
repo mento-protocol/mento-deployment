@@ -78,17 +78,5 @@ function verifyDescription(descriptionURL: string): void {
     throw new Error("Description URL must start with https://");
   }
 }
-function assert(condition: boolean, message: string): asserts condition {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
-export {
-  Transaction,
-  SerializedTransactions,
-  createProposal,
-  serializeTransactions,
-  getByteLength,
-  verifyDescription,
-  assert,
-};
+
+export { Transaction, SerializedTransactions, createProposal, serializeTransactions, getByteLength, verifyDescription };
