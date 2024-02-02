@@ -16,14 +16,25 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const CELO_REGISTRY = "0x000000000000000000000000000000000000ce10";
 
-  const MENTO_LABS_MULTISIG = process.env.MENTO_LABS_MULTISIG;
-  if (!MENTO_LABS_MULTISIG) {
-    throw new Error("MENTO_LABS_MULTISIG is not set");
-  }
   const WATCHDOG_MULTISIG = process.env.WATCHDOG_MULTISIG;
   if (!WATCHDOG_MULTISIG) {
     throw new Error("WATCHDOG_MULTISIG is not set");
   }
+
+  const ALLOCATION_ADDRESSES = process.env.ALLOCATION_ADDRESSES;
+  if (!ALLOCATION_ADDRESSES) {
+    throw new Error("ALLOCATION_ADDRESSES is not set");
+  }
+  let allocationAddressesList: string[]
+  if (ALLOCATION_ADDRESSES) {
+    allocationAddressesList = ALLOCATION_ADDRESSES.split(",");
+  }
+
+  const ALLOCATION_AMOUNTS = process.env.ALLOCATION_AMOUNTS;
+  if (!ALLOCATION_AMOUNTS) {
+    throw new Error("ALLOCATION_AMOUNTS is not set");
+  }
+  const allocationAmountsList = ALLOCATION_AMOUNTS.split(",");
 
   const FRAKTAL_SIGNER = process.env.FRAKTAL_SIGNER;
   if (!FRAKTAL_SIGNER) {
@@ -54,11 +65,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("\n");
 
   const data = governanceFactory.interface.encodeFunctionData("createGovernance", [
-    MENTO_LABS_MULTISIG,
     WATCHDOG_MULTISIG,
     celoGovernanceAddress,
     merkleRoot,
     FRAKTAL_SIGNER,
+    allocationAddressesList,
+    allocationAmountsList,
   ]);
 
   if (chainId === "31337") {
@@ -66,11 +78,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log("createGovernance() will be called directly");
     try {
       await governanceFactory.createGovernance(
-        MENTO_LABS_MULTISIG,
         WATCHDOG_MULTISIG,
         celoGovernanceAddress,
         merkleRoot,
         FRAKTAL_SIGNER,
+        allocationAddressesList,
+        allocationAmountsList,
         { gasLimit: 20_000_000 },
       );
       console.log(`Governance is sucessfully created for factory at: ${governanceFactoryDep.address}`);
