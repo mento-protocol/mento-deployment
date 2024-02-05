@@ -1,7 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { BigNumberish } from "ethers";
-import { ICeloGovernance } from "../../artifacts/types";
 import * as fs from "fs";
 import { Transaction, createProposal } from "../utils";
 
@@ -25,7 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (!ALLOCATION_ADDRESSES) {
     throw new Error("ALLOCATION_ADDRESSES is not set");
   }
-  let allocationAddressesList: string[]
+  let allocationAddressesList;
   if (ALLOCATION_ADDRESSES) {
     allocationAddressesList = ALLOCATION_ADDRESSES.split(",");
   }

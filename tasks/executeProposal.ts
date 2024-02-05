@@ -27,6 +27,10 @@ task("executeProposal", "Executes the Celo Proposal using higher gas limit")
     console.log("\n");
 
     try {
+      // for (let i = 120; i < 130; i++) {
+      //   const pid = await celoGovernance.dequeued(i);
+      //   console.log({ pid, i });
+      // }
       await celoGovernance.execute(pid, index, { gasLimit: 20_000_000 });
     } catch (error) {
       console.log(error);
