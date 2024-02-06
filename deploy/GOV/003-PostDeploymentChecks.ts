@@ -74,20 +74,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const lockingAddress = await factory.locking();
   const locking = await ethers.getContractAt("Locking", lockingAddress);
 
-  const mentoLabsTreasuryAddress = await factory.mentoLabsTreasuryTimelock();
-  const mentoLabsTreasury = await ethers.getContractAt("TimelockController", mentoLabsTreasuryAddress);
 
   // mentoToken checks
   const mentoLabsMultisigBalance = await mentoToken.balanceOf(MENTO_LABS_MULTISIG);
   ok(
-    mentoLabsMultisigBalance.toString() === ethers.parseEther("80000000").toString(),
+    mentoLabsMultisigBalance.toString() === ethers.parseEther("200000000").toString(),
     "MentoLabs multisig balance is incorrect",
   );
-  const mentoLabsTreasuryBalance = await mentoToken.balanceOf(mentoLabsTreasuryAddress);
-  ok(
-    mentoLabsTreasuryBalance.toString() === ethers.parseEther("120000000").toString(),
-    "MentoLabs treasury balance is incorrect",
-  );
+
   const airgrabBalance = await mentoToken.balanceOf(airgrabAddress);
   ok(airgrabBalance.toString() === ethers.parseEther("50000000").toString(), "Airgrab balance is incorrect");
   const governanceTimelockBalance = await mentoToken.balanceOf(governanceTimelockAddress);
@@ -168,24 +162,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   ok(
     await governanceTimelock.hasRole(cancellerRole, WATCHDOG_MULTISIG),
     "governanceTimelock canceller role for watchdogMultisig is incorrect",
-  );
-
-  // mentoLabsTreasury checks
-  ok(
-    (await mentoLabsTreasury.getMinDelay()).toString() === (13 * 24 * 60 * 60).toString(),
-    "MinDelay of mentoLabsTreasury is incorrect",
-  );
-  ok(
-    await mentoLabsTreasury.hasRole(proposerRole, MENTO_LABS_MULTISIG),
-    "mentoLabsTreasury proposer role for mentoLabsMultisig is incorrect",
-  );
-  ok(
-    await mentoLabsTreasury.hasRole(executorRole, ethers.ZeroAddress),
-    "mentoLabsTreasury executor role for address(0) is incorrect",
-  );
-  ok(
-    await mentoLabsTreasury.hasRole(cancellerRole, governanceTimelockAddress),
-    "mentoLabsTreasury canceller role for governanceTimelockAddress is incorrect",
   );
 
   // mentoGovernor checks

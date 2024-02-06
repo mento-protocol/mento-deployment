@@ -1,5 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeployFunction, DeployResult } from "hardhat-deploy/types";
+import { DeployFunction } from "hardhat-deploy/types";
 import * as fs from "fs";
 /**
  * @title Governance Contract Verification
@@ -35,6 +35,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log("Error: ", error);
   }
 
+  const ALLOCATION_ADDRESSES = process.env.ALLOCATION_ADDRESSES;
+  if (!ALLOCATION_ADDRESSES) {
+    throw new Error("ALLOCATION_ADDRESSES is not set");
+  }
+  let allocationAddressesList;
+  if (ALLOCATION_ADDRESSES) {
+    allocationAddressesList = ALLOCATION_ADDRESSES.split(",");
+  }
+  const ALLOCATION_AMOUNTS = process.env.ALLOCATION_AMOUNTS;
+  if (!ALLOCATION_AMOUNTS) {
+    throw new Error("ALLOCATION_AMOUNTS is not set");
+  }
+  const allocationAmountsList = ALLOCATION_AMOUNTS.split(",");
+
   const celoRegistry = await ethers.getContractAt("IRegistry", CELO_REGISTRY);
   const celoGovernanceAddress = await celoRegistry.getAddressForStringOrDie("Governance");
 
@@ -51,8 +65,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const proxyAdminAddress = await factory.proxyAdmin();
   const proxyAdmin = await ethers.getContractAt("ProxyAdmin", proxyAdminAddress);
   const mentoToken = await factory.mentoToken();
-  const mentoLabsTreasuryTimelock = await factory.mentoLabsTreasuryTimelock();
-  const mentoLabsMultiSig = await factory.mentoLabsMultiSig();
   const governanceTimelock = await factory.governanceTimelock();
   const mentoGovernor = await factory.mentoGovernor();
   const locking = await factory.locking();
@@ -63,6 +75,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const fractalMaxAge = await factory.FRACTAL_MAX_AGE();
   const lockCliff = await factory.AIRGRAB_LOCK_CLIFF();
   const lockSlope = await factory.AIRGRAB_LOCK_SLOPE();
+
+  allocationAddressesList.push(airgrab, governanceTimelock);
 
   console.log("=================================================");
   console.log("*****************************");
@@ -137,7 +151,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("Verifiying Mento Token on Explorer");
   await hre.run("verify:verify", {
     address: mentoToken,
-    constructorArguments: [mentoLabsMultiSig, mentoLabsTreasuryTimelock, airgrab, governanceTimelock, emission],
+    constructorArguments: [allocationAddressesList, allocationAmountsList, emission],
   });
   console.log("\n");
   console.log("Verifiying Emission on Explorer");
@@ -160,14 +174,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       locking,
       celoGovernanceAddress,
     ],
-  });
-
-  const mentoLabsTreasuryTimelockImp = await proxyAdmin.getProxyImplementation(mentoLabsTreasuryTimelock);
-  console.log("\n");
-  console.log("Verifiying MentoLabs Treasury Timelock  on Explorer");
-  await hre.run("verify:verify", {
-    address: mentoLabsTreasuryTimelockImp,
-    constructorArguments: [],
   });
 
   const mentoGovernorImp = await proxyAdmin.getProxyImplementation(mentoGovernor);
