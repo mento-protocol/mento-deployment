@@ -1,5 +1,4 @@
 [profile.default]
-src = "./lib/mento-core-3.0.0/contracts"
 out = "out"
 test = "test"
 script = "script"
