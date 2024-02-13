@@ -66,6 +66,48 @@ library Arrays {
     return arr;
   }
 
+  function uints(
+    uint256 e0,
+    uint256 e1,
+    uint256 e2,
+    uint256 e3,
+    uint256 e4,
+    uint256 e5,
+    uint256 e6
+  ) internal pure returns (uint256[] memory arr) {
+    arr = new uint256[](7);
+    arr[0] = e0;
+    arr[1] = e1;
+    arr[2] = e2;
+    arr[3] = e3;
+    arr[4] = e4;
+    arr[5] = e5;
+    arr[6] = e6;
+    return arr;
+  }
+
+  function uints(
+    uint256 e0,
+    uint256 e1,
+    uint256 e2,
+    uint256 e3,
+    uint256 e4,
+    uint256 e5,
+    uint256 e6,
+    uint256 e7
+  ) internal pure returns (uint256[] memory arr) {
+    arr = new uint256[](8);
+    arr[0] = e0;
+    arr[1] = e1;
+    arr[2] = e2;
+    arr[3] = e3;
+    arr[4] = e4;
+    arr[5] = e5;
+    arr[6] = e6;
+    arr[7] = e7;
+    return arr;
+  }
+
   function addresses(address e0) internal pure returns (address[] memory arr) {
     arr = new address[](1);
     arr[0] = e0;
@@ -147,6 +189,28 @@ library Arrays {
     arr[4] = e4;
     arr[5] = e5;
     arr[6] = e6;
+    return arr;
+  }
+
+  function addresses(
+    address e0,
+    address e1,
+    address e2,
+    address e3,
+    address e4,
+    address e5,
+    address e6,
+    address e7
+  ) internal pure returns (address[] memory arr) {
+    arr = new address[](8);
+    arr[0] = e0;
+    arr[1] = e1;
+    arr[2] = e2;
+    arr[3] = e3;
+    arr[4] = e4;
+    arr[5] = e5;
+    arr[6] = e6;
+    arr[7] = e7;
     return arr;
   }
 

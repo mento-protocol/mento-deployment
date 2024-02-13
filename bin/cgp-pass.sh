@@ -36,8 +36,6 @@ if [ -z "$SIGNER_PK" ]; then
     SIGNER_PK_PARAM=""
 fi
 
-echo "😴 31s"
-echo -e "\a" && sleep 31
 echo "✅ Approving proposal $PROPOSAL_ID"
 echo "=========================================="
 celocli governance:approve --proposalID $PROPOSAL_ID --from $APPROVER --useMultiSig --privateKey $APPROVER_PK
@@ -48,7 +46,8 @@ celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID $SI
 echo "😴 301s"
 echo -e "\a" && sleep 301
 echo "💃 Executing proposal $PROPOSAL_ID"
-celocli governance:execute --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
+yarn cgp:execute -n $NETWORK -p $PROPOSAL_ID
+# celocli governance:execute --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
 
 # Proposal passed, make some noise
 echo -e "\a"
