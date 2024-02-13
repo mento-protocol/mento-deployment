@@ -2,7 +2,7 @@
 pragma solidity ^0.8.18;
 
 import { Script, console2 } from "forge-std-next/Script.sol";
-import { GovernanceFactory } from "mento-core-3.0.0/governance/GovernanceFactory.sol";
+import { GovernanceFactory } from "mento-core-2.3.0/governance/GovernanceFactory.sol";
 import { IRegistry } from "../../../interfaces/IRegistry.sol";
 
 contract MUGOV_CreateImplementations is Script {
