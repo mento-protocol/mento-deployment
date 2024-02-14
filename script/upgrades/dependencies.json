@@ -29,9 +29,9 @@
     "ExchangeEUR": "0xC200CD8ac71A63e38646C34b51ee3cBA159dB544",
     "ExchangeBRL": "0x28e257d1E73018A116A7C68E9d07eba736D9Ec05",
     "GrandaMento": "0xdfd641aB188Add84B317fB0b241F6b879E5EF906",
-    "MentoLabsMultisig": "0x",
-    "WatchdogMultisig": "0x",
-    "FractalSigner": "0x"
+    "MentoLabsMultisig": "0x56fD3F2bEE130e9867942D0F463a16fBE49B8d81",
+    "WatchdogMultisig": "0x56fD3F2bEE130e9867942D0F463a16fBE49B8d81",
+    "FractalSigner": "0x56fD3F2bEE130e9867942D0F463a16fBE49B8d81"
   },
   "44787": {
     "BridgedUSDC": "0x87D61dA3d668797786D73BC674F053f87111570d",
