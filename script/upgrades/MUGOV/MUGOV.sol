@@ -27,7 +27,7 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
    * @dev Loads the deployed contracts from the previous deployment step
    */
   function loadDeployedContracts() public {
-    contracts.load("MUGOV-04-Create-Factory", "latest");
+    contracts.load("MUGOV-00-Create-Factory", "latest");
   }
 
   function run() public {

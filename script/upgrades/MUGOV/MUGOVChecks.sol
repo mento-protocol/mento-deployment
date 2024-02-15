@@ -61,10 +61,14 @@ contract MUGOVChecks is GovernanceScript, Test {
     console.log("🟢 Mento Token initial allocation minted correctly");
 
     // Mento Token:
-    assertEq(mentoToken.symbol(), "MENTO", "Token symbol is incorrect");
-    assertEq(mentoToken.name(), "Mento Token", "Token name is incorrect");
-    assertEq(uint256(mentoToken.decimals()), 18, "Token decimals is incorrect");
-    assertEq(mentoToken.emission(), address(emission), "Emission address is incorrect");
+    assertEq(mentoToken.symbol(), "MENTO", "MentoToken: symbol is incorrect");
+    assertEq(mentoToken.name(), "Mento Token", "MentoToken: name is incorrect");
+    assertEq(uint256(mentoToken.decimals()), 18, "MentoToken: decimals is incorrect");
+    assertEq(mentoToken.emission(), address(emission), "MentoToken: Emission address is incorrect");
+    assertEq(mentoToken.locking(), address(locking), "MentoToken: Locking address is incorrect");
+    assertEq(mentoToken.owner(), address(governanceTimelock), "MentoToken: Owner address is incorrect");
+    assertEq(mentoToken.paused(), true, "MentoToken: should be paused");
+
     console.log("🟢 Mento Token setup correctly");
 
     // Emission checks:
