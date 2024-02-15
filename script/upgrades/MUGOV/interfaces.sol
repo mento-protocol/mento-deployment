@@ -6,6 +6,12 @@ interface IMentoToken {
 
   function emission() external view returns (address);
 
+  function locking() external view returns (address);
+
+  function owner() external view returns (address);
+
+  function paused() external view returns (bool);
+
   function balanceOf(address account) external view returns (uint256);
 
   function symbol() external view returns (string memory);
