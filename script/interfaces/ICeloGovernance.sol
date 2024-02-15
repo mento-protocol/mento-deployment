@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.5.13;
+pragma solidity >0.5.13 <0.9;
 
 interface ICeloGovernance {
   struct Transaction {
@@ -19,6 +19,10 @@ interface ICeloGovernance {
   ) external payable returns (uint256);
 
   function setConstitution(address destination, bytes4 functionId, uint256 threshold) external;
+
+  function execute(uint256 proposalId, uint256 index) external;
+
+  function getDequeue() external returns (uint256[] memory);
 
   /**
    * @notice Returns the constitution for a particular destination and function ID.

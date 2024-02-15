@@ -1,5 +1,4 @@
 [profile.default]
-src = "./lib/mento-core-gov/contracts"
 out = "out"
 test = "test"
 script = "script"
@@ -12,9 +11,10 @@ optimizer = true
 optimizer_runs = 10_000
 legacy = true
 fs_permissions = [
-    { access = "read", path = "./broadcast"}, 
-    { access = "read", path = "./out"}, 
-    { access = "read", path = "./script/upgrades/dependencies.json"}
+    { access = "read", path = "./broadcast" },
+    { access = "read", path = "./out" },
+    { access = "read", path = "./data" },
+    { access = "read", path = "./script/upgrades/dependencies.json" },
 ]
 via_ir = true
 
@@ -37,19 +37,19 @@ via_ir = true
 [profile.baklava-deployment]
 libraries = [
     "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x3e2cc57f83093Ce1Ee03482c1590E3B5f4225bd7",
-    "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0x99EDce8143FF8AeFA1fBB6C2103B349Add2B9519"
+    "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0x99EDce8143FF8AeFA1fBB6C2103B349Add2B9519",
 ]
 
 [profile.alfajores-deployment]
 libraries = [
     "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x2F0F7686fFFEfc3C266403Ad600035581deaedff",
-    "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0x29B1B5e05217c751038861aF2C77494EAB10A257"
+    "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0x29B1B5e05217c751038861aF2C77494EAB10A257",
 ]
 
 [profile.celo-deployment]
 libraries = [
     "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressLinkedList.sol:AddressLinkedList:0x6200F54D73491d56b8d7A975C9ee18EFb4D518Df",
-    "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0xED477A99035d0c1e11369F1D7A4e587893cc002B"
+    "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0xED477A99035d0c1e11369F1D7A4e587893cc002B",
 ]
 
 [profile.ci]
@@ -61,6 +61,6 @@ no_match_contract = "RandomTest"
 match_contract = "Integration"
 
 [rpc_endpoints]
-celo="${CELO_RPC_URL}"
-baklava="${BAKLAVA_RPC_URL}"
-alfajores="${ALFAJORES_RPC_URL}"
+celo = "${CELO_RPC_URL}"
+baklava = "${BAKLAVA_RPC_URL}"
+alfajores = "${ALFAJORES_RPC_URL}"
