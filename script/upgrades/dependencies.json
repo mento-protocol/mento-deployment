@@ -11,7 +11,10 @@
     "Exchange": "0x67316300f17f063085ca8bca4bd3f7a5a3c66275",
     "ExchangeEUR": "0xe383394b913d7302c49f794c7d3243c429d53d1d",
     "ExchangeBRL": "0x8f2cf9855c919afac8bd2e7acec0205ed568a4ea",
-    "GrandaMento": "0x03f6842b82dd2c9276931a17dd23d73c16454a49"
+    "GrandaMento": "0x03f6842b82dd2c9276931a17dd23d73c16454a49",
+    "MentoLabsMultisig": "0x",
+    "WatchdogMultisig": "0x",
+    "FractalSigner": "0x"
   },
   "62320": {
     "BridgedUSDC": "0xD4079B322c392D6b196f90AA4c439fC2C16d6770",
@@ -25,7 +28,10 @@
     "Exchange": "0x190480908c11Efca37EDEA4405f4cE1703b68b23",
     "ExchangeEUR": "0xC200CD8ac71A63e38646C34b51ee3cBA159dB544",
     "ExchangeBRL": "0x28e257d1E73018A116A7C68E9d07eba736D9Ec05",
-    "GrandaMento": "0xdfd641aB188Add84B317fB0b241F6b879E5EF906"
+    "GrandaMento": "0xdfd641aB188Add84B317fB0b241F6b879E5EF906",
+    "MentoLabsMultisig": "0x56fD3F2bEE130e9867942D0F463a16fBE49B8d81",
+    "WatchdogMultisig": "0x56fD3F2bEE130e9867942D0F463a16fBE49B8d81",
+    "FractalSigner": "0x56fD3F2bEE130e9867942D0F463a16fBE49B8d81"
   },
   "44787": {
     "BridgedUSDC": "0x87D61dA3d668797786D73BC674F053f87111570d",
@@ -39,6 +45,9 @@
     "Exchange": "0x17bc3304f94c85618c46d0888aa937148007bd3c",
     "ExchangeEUR": "0x997b494f17d3c49e66fafb50f37a972d8db9325b",
     "ExchangeBRL": "0xf391dcaf77360d39e566b93c8c0ceb7128fa1a08",
-    "GrandaMento": "0xecf09fcd57b0c8b1fd3de92d59e234b88938485b"
+    "GrandaMento": "0xecf09fcd57b0c8b1fd3de92d59e234b88938485b",
+    "MentoLabsMultisig": "0x56fD3F2bEE130e9867942D0F463a16fBE49B8d81",
+    "WatchdogMultisig": "0x56fD3F2bEE130e9867942D0F463a16fBE49B8d81",
+    "FractalSigner": "0x56fD3F2bEE130e9867942D0F463a16fBE49B8d81"
   }
 }
