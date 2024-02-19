@@ -52,25 +52,21 @@ if (broadcastFile === undefined) {
 const fileContent = fs.readFileSync(broadcastFile, "utf8");
 const broadcast = JSON.parse(fileContent) as BroadcastFile;
 
+if (!process.env.CELOSCAN_API_KEY) {
+  console.error("🚨 Missing CELOSCAN_API_KEY environment variable");
+  process.exit(1);
+}
+
+const celoscanApiKey = process.env.CELOSCAN_API_KEY;
+
 let chain: "alfajores" | "celo" | null = null;
 let celoscanApiUrl: string;
-let celoscanApiKey: string;
 if (broadcast.chain == 44787) {
   chain = "alfajores";
   celoscanApiUrl = "https://api-alfajores.celoscan.io/api";
-  if (!process.env.CELOSCAN_ALFAJORES_API_KEY) {
-    console.error("🚨 Missing CELOSCAN_ALFAJORES_API_KEY environment variable");
-    process.exit(1);
-  }
-  celoscanApiKey = process.env.CELOSCAN_ALFAJORES_API_KEY;
 } else if (broadcast.chain == 42220) {
   chain = "celo";
   celoscanApiUrl = "https://api.celoscan.io/api";
-  if (!process.env.CELOSCAN_API_KEY) {
-    console.error("🚨 Missing CELOSCAN_API_KEY environment variable");
-    process.exit(1);
-  }
-  celoscanApiKey = process.env.CELOSCAN_API_KEY;
 } else {
   console.error("🚨 Unsupported chain");
   process.exit(1);
