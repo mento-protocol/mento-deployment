@@ -197,7 +197,7 @@ contract MU05 is IMentoUpgrade, GovernanceScript {
           brokerProxy,
           abi.encodeWithSelector(
             Broker(0).configureTradingLimit.selector,
-            referenceRateFeedIDToExchangeId[poolConfig.referenceRateFeedID],
+            getExchangeId(poolConfig.asset0, poolConfig.asset1, poolConfig.isConstantSum),
             poolConfig.asset0,
             TradingLimits.Config({
               timestep0: poolConfig.asset0limits.timeStep0,
