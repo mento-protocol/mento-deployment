@@ -71,7 +71,7 @@ contract MU05ChecksVerify is MU05ChecksBase {
 
   function verifyCollateralSpendingRatio(address collateralAsset, uint256 expectedRatio) internal {
     console.log("\n== Verifying Collateral Spending Ratio for %s ==", collateralAsset);
-    // @notice verifiying spending ratios by trying moving the allowed and more than the allowed amount
+    // @notice verifying spending ratios by trying to move the allowed, and more than the allowed amount
     // the variable holding the ratios is private
 
     address[] memory otherReserveAddresses = Reserve(reserveProxy).getOtherReserveAddresses();
