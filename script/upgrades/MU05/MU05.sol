@@ -126,7 +126,7 @@ contract MU05 is IMentoUpgrade, GovernanceScript {
       );
     }
 
-    // Set native USDC daily spending ratio to 100% sames as axlUSDC
+    // Set native USDC daily spending ratio to 100%, same as axlUSDC
     if (Reserve(reserveProxy).getDailySpendingRatioForCollateralAsset(nativeUSDC) != FixidityLib.fixed1().unwrap()) {
       transactions.push(
         ICeloGovernance.Transaction(
