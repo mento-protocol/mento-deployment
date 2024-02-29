@@ -81,12 +81,12 @@ contract MU05ChecksVerify is MU05ChecksBase {
     uint256 spendingLimit = FixidityLib.wrap(expectedRatio).multiply(FixidityLib.newFixed(reserveBalance)).fromFixed();
     uint256 exceedingAmount = spendingLimit + 1;
 
-    vm.prank(partialReserveMultisig);
+    vm.prank(reserveSpender);
     vm.expectRevert("Exceeding spending limit");
     Reserve(reserveProxy).transferCollateralAsset(collateralAsset, otherReserve, exceedingAmount);
     console.log("🟢 Couldn't transfer more than the allowed amount");
 
-    vm.prank(partialReserveMultisig);
+    vm.prank(reserveSpender);
     Reserve(reserveProxy).transferCollateralAsset(collateralAsset, otherReserve, spendingLimit);
     console.log("🟢 Successfully transferred the max allowed amount");
 

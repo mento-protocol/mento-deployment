@@ -146,7 +146,6 @@ contract MU05 is IMentoUpgrade, GovernanceScript {
    * @notice This function creates the transactions to create the new pairs with native USDC.
    */
   function proposal_createExchanges(MU05Config.MU05 memory config) private {
-    // Get the address of the pricing modules
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
@@ -190,7 +189,6 @@ contract MU05 is IMentoUpgrade, GovernanceScript {
     for (uint256 i = 0; i < config.pools.length; i++) {
       Config.Pool memory poolConfig = config.pools[i];
 
-      // Set the trading limits for the pool
       transactions.push(
         ICeloGovernance.Transaction(
           0,

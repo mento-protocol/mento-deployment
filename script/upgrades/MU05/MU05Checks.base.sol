@@ -26,7 +26,7 @@ contract MU05ChecksBase is GovernanceScript, Test {
   address public breakerBox;
   address public sortedOraclesProxy;
 
-  address public partialReserveMultisig;
+  address public reserveSpender;
 
   function setUp() public {
     new PrecompileHandler();
@@ -49,6 +49,6 @@ contract MU05ChecksBase is GovernanceScript, Test {
     breakerBox = address(uint160(contracts.deployed("BreakerBox")));
     sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
 
-    partialReserveMultisig = contracts.dependency("PartialReserveMultisig");
+    reserveSpender = contracts.dependency("PartialReserveMultisig");
   }
 }
