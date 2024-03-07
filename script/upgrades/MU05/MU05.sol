@@ -94,7 +94,11 @@ contract MU05 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "MU05", governance);
+      createProposal(
+        _transactions,
+        "https://github.com/celo-org/governance/blob/15b26c2bc8e0c812a610ac5954d854950034a926/CGPs/cgp-0123/cgp-0123.md",
+        governance
+      );
     }
     vm.stopBroadcast();
   }
