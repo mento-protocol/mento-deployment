@@ -85,11 +85,7 @@ contract MUGOVChecks is GovernanceScript, Test {
     assertEq(uint256(airgrab.cliffPeriod()), 0, "Airgrab cliff period is incorrect");
     assertEq(airgrab.token(), address(mentoToken), "Airgrab token is incorrect");
     assertEq(airgrab.locking(), address(locking), "Airgrab locking is incorrect");
-    assertEq(
-      airgrab.celoCommunityFund(),
-      contracts.celoRegistry("Governance"),
-      "Airgrab celo community fund is incorrect"
-    );
+    assertEq(airgrab.mentoTreasury(), address(governanceTimelock), "Airgrab Mento Treasury is incorrect");
     console.log("🟢 Airgrab setup correctly");
 
     // Timelock Checks

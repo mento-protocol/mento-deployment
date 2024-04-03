@@ -77,7 +77,6 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           IGovernanceFactory(0).createGovernance.selector,
           contracts.dependency("WatchdogMultisig"),
-          contracts.celoRegistry("Governance"),
           readAirgrabMerkleRoot(),
           contracts.dependency("FractalSigner"),
           allocationParams
