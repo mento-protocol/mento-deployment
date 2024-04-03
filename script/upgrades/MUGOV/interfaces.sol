@@ -44,7 +44,7 @@ interface IAirgrab {
 
   function locking() external view returns (address);
 
-  function celoCommunityFund() external view returns (address);
+  function mentoTreasury() external view returns (address);
 }
 
 interface ITimelock {
