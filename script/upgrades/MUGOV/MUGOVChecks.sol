@@ -32,7 +32,7 @@ contract MUGOVChecks is GovernanceScript, Test {
   ILocking locking;
 
   function setUp() public {
-    contracts.load("MUGOV-04-Create-Factory", "latest");
+    contracts.load("MUGOV-00-Create-Factory", "latest");
     airgrabMerkleRoot = readAirgrabMerkleRoot();
     governanceFactory = IGovernanceFactory(contracts.deployed("GovernanceFactory"));
 
