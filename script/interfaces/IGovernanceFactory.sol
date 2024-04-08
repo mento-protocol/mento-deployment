@@ -13,7 +13,6 @@ interface IGovernanceFactory {
 
   function createGovernance(
     address watchdogMultiSig_,
-    address celoCommunityFund_,
     bytes32 airgrabRoot,
     address fractalSigner,
     MentoTokenAllocationParams calldata allocationParams
