@@ -72,7 +72,7 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
     // 3. Mento Liquidity Support                                                         (10%)
     // 4. Airdrop to Celo and Mento stable assets users                                   (5%)
     // 5. Airdrop to Celo Community Treasury                                              (5%)
-    // 6. Mento Reserve Safety Fund                                                       (5%)  
+    // 6. Mento Reserve Safety Fund                                                       (5%)
 
     IGovernanceFactory.MentoTokenAllocationParams memory params;
 
@@ -87,7 +87,7 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
     // #4, Community Airdrop
     params.airgrabAllocation = 50;
 
-    // #1, Mento Community Treasury. 
+    // #1, Mento Community Treasury.
     // Note that below we only allocate the 5% part for immediate use that goes to governanceTimeLock.
     // The reimaining part of the allocation (40%) is automatically allocated to the Emission contract
     // by MentoToken.sol during initialization.

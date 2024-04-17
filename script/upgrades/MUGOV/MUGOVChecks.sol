@@ -59,22 +59,18 @@ contract MUGOVChecks is GovernanceScript, Test {
 
     // ============== Token allocation ==============
     assertEq(mentoToken.balanceOf(mentoLabsMultisig), 300_000_000 * 1e18, "❌ mentoLabsMultisig allocation");
-    assertEq(
-      mentoToken.balanceOf(mentoLiquiditySupport),
-      100_000_000 * 1e18,
-      "❌ mentoLiquiditySupport allocation"
-    );
+    assertEq(mentoToken.balanceOf(mentoLiquiditySupport), 100_000_000 * 1e18, "❌ mentoLiquiditySupport allocation");
     assertEq(mentoToken.balanceOf(celoCommunityTreasury), 50_000_000 * 1e18, "❌ celoCommunityTreasury allocation");
     assertEq(mentoToken.balanceOf(reserve), 50_000_000 * 1e18, "❌ reserve allocation");
     assertEq(mentoToken.balanceOf(address(airgrab)), 50_000_000 * 1e18, "❌ airgrab allocation");
-    assertEq(
-      mentoToken.balanceOf(address(governanceTimelock)),
-      50_000_000 * 1e18,
-      "❌ governanceTimelock allocation"
-    );
+    assertEq(mentoToken.balanceOf(address(governanceTimelock)), 50_000_000 * 1e18, "❌ governanceTimelock allocation");
     assertEq(mentoToken.emissionSupply(), 400_000_000 * 1e18, "❌ emission allocation");
 
-    assertEq(mentoToken.totalSupply() + mentoToken.emissionSupply(), 1_000_000_000 * 1e18, "❌ allocation exceeds 1billion");
+    assertEq(
+      mentoToken.totalSupply() + mentoToken.emissionSupply(),
+      1_000_000_000 * 1e18,
+      "❌ allocation exceeds 1billion"
+    );
     console.log("🟢 Mento Token initial allocation minted correctly");
 
     // ============== Mento Token ==============:
