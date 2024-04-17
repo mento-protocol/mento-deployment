@@ -38,6 +38,8 @@ interface IAirgrab {
 
   function fractalMaxAge() external view returns (uint256);
 
+  function endTimestamp() external view returns (uint256);
+
   function slopePeriod() external view returns (uint32);
 
   function cliffPeriod() external view returns (uint32);
