@@ -55,7 +55,7 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           IGovernanceFactory(0).createGovernance.selector,
           contracts.dependency("WatchdogMultisig"), // @TODO: Update final address in deps.json
-          readAirgrabMerkleRoot(),
+          readAirgrabMerkleRoot(), // @TODO: Update merkle tree after final snapshot
           contracts.dependency("FractalSigner"),
           allocationParams
         )
