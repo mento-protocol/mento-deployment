@@ -98,9 +98,7 @@ contract MUGOVChecks is GovernanceScript, Test {
     assertEq(airgrab.token(), address(mentoToken), "Airgrab token is incorrect");
     assertEq(airgrab.locking(), address(locking), "Airgrab locking is incorrect");
     assertEq(airgrab.mentoTreasury(), address(governanceTimelock), "Airgrab Mento Treasury is incorrect");
-
-    // @TODO: Replace below check with 2 weeks after updating mento-core
-    assertEq(airgrab.endTimestamp() - block.timestamp, 365 days, "Airgrab end timestamp is incorrect");
+    assertEq(airgrab.endTimestamp() - block.timestamp, 8 weeks, "Airgrab duration is incorrect");
     console.log("🟢 Airgrab setup correctly");
 
     // ============== Timelock Checks ==============
