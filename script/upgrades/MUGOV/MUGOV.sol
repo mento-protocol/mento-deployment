@@ -44,30 +44,8 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
-    IGovernanceFactory.MentoTokenAllocationParams memory allocationParams;
-    allocationParams.airgrabAllocation = 100;
-    allocationParams.mentoTreasuryAllocation = 100;
-    if (Chain.isCelo()) {
-      // TODO: Add final allocation amounts
-      allocationParams.additionalAllocationRecipients = Arrays.addresses(contracts.dependency("MentoLabsMultisig"));
-      allocationParams.additionalAllocationAmounts = Arrays.uints(100);
-    } else {
-      allocationParams.additionalAllocationRecipients = Arrays.addresses(
-        contracts.dependency("MentoLabsMultisig"),
-        /// @dev This is a tesetnet only allocation.
-        /// Whenever we deploy to testnets we seed these addresses with $MENTO.
-        /// The arguments to vm.addr are the private keys, and the addresses are in the comment.
-        /// You can import one of these private keys into metamask to use for testing.
-        vm.addr(0xb228ca748093e781f324701f53cfa26b26bc55919e0fe361d704b9c2a3d9817c), // 0x99995570bc88340d726D15D172e668271FBC9e20
-        vm.addr(0x6deca5973d3a26e5ee93e60ade2e7568072471711909a87e26afcec346dbf9da), // 0x9999f469Fa49bB921eA385F1de49dcBccfbC9A82
-        vm.addr(0x648f06647a69623eb01ce413890fc7c907bf2d36e3a4e7dbc9fd3adc8162f542), // 0x9999700347b57a3152E8B63123649949A9aBE20d
-        vm.addr(0x2a5e23ad202f6dcc13847c68a85b26ee7b26a5e89a89cc9a19f15d46932fc5da), // 0x9999db67bF5151668AAff29eD4BAca3926747ED7
-        vm.addr(0x50a5d71e8994f5f4bb44e8431f695ed1520cf1999b6d01c4a6fd199f14a6c747), // 0x9999C6De88eBdf0aff022D127C36541D53F8789A
-        vm.addr(0x6ccf3ccc08dabc44678a688815e2d2e8603416c886eb550c2be2319423be518c), // 0x99994874b3B90E690287C85df1ba26E886FF87f0
-        vm.addr(0xef7301ce9a7e88105c539f96c53e5cf70cff0c21ffae34c088febe6cf00696b1) //  0x99990eA09DD56949DbaFe97fc34DBC69BDA81027
-      );
-      allocationParams.additionalAllocationAmounts = Arrays.uints(100, 1, 1, 1, 1, 1, 1, 1);
-    }
+
+    IGovernanceFactory.MentoTokenAllocationParams memory allocationParams = getTokenAllocationParams();
 
     address mentoGovernanceFactory = contracts.deployed("GovernanceFactory");
     transactions.push(
@@ -76,8 +54,8 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
         mentoGovernanceFactory,
         abi.encodeWithSelector(
           IGovernanceFactory(0).createGovernance.selector,
-          contracts.dependency("WatchdogMultisig"),
-          readAirgrabMerkleRoot(),
+          contracts.dependency("WatchdogMultisig"), // @TODO: Update final address in deps.json
+          readAirgrabMerkleRoot(), // @TODO: Update merkle tree after final snapshot
           contracts.dependency("FractalSigner"),
           allocationParams
         )
@@ -85,6 +63,37 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
     );
 
     return transactions;
+  }
+
+  function getTokenAllocationParams() internal returns (IGovernanceFactory.MentoTokenAllocationParams memory) {
+    // ================================ MENTO TOKEN ALLOCATION ================================
+    // 1. Mento community Treasury (40% 10year emission, 5% immediately available)        (45%)
+    // 2. Mento Labs Team, Investors, Future Hires, Advisors                              (30%)
+    // 3. Mento Liquidity Support                                                         (10%)
+    // 4. Airdrop to Celo and Mento stable assets users                                   (5%)
+    // 5. Airdrop to Celo Community Treasury                                              (5%)
+    // 6. Mento Reserve Safety Fund                                                       (5%)
+
+    IGovernanceFactory.MentoTokenAllocationParams memory params;
+
+    params.additionalAllocationRecipients = Arrays.addresses(
+      contracts.dependency("MentoLabsMultisig"), // #2, Mento Labs Team. @TODO: Update final recipient in deps.json
+      contracts.dependency("MentoLiquiditySupport"), // #3, Liquidity Support. @TODO: Update final recipient in deps.json
+      contracts.dependency("CeloCommunityTreasury"), // #5, Celo Community Treasury. @TODO: Update final recipient in deps.json
+      contracts.celoRegistry("Reserve") // #6, Reserve Safety Fund.
+    );
+    params.additionalAllocationAmounts = Arrays.uints(300, 100, 50, 50);
+
+    // #4, Community Airdrop
+    params.airgrabAllocation = 50;
+
+    // #1, Mento Community Treasury.
+    // Note that below we only allocate the 5% part for immediate use that goes to governanceTimeLock.
+    // The reimaining part of the allocation (40%) is automatically allocated to the Emission contract
+    // by MentoToken.sol during initialization.
+    params.mentoTreasuryAllocation = 50;
+
+    return params;
   }
 
   function readAirgrabMerkleRoot() internal view returns (bytes32) {

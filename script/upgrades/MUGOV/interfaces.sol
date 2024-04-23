@@ -4,6 +4,8 @@ pragma solidity ^0.5.13;
 interface IMentoToken {
   function emissionSupply() external view returns (uint256);
 
+  function totalSupply() external view returns (uint256);
+
   function emission() external view returns (address);
 
   function locking() external view returns (address);
@@ -35,6 +37,8 @@ interface IAirgrab {
   function fractalSigner() external view returns (address);
 
   function fractalMaxAge() external view returns (uint256);
+
+  function endTimestamp() external view returns (uint256);
 
   function slopePeriod() external view returns (uint32);
 

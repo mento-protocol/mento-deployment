@@ -7,9 +7,18 @@
 
 import { parseArgs } from "node:util";
 import { MerkleTree } from "merkletreejs";
-import { keccak256, AbiCoder } from "ethers";
+import { keccak256, AbiCoder, parseEther } from "ethers";
 import * as fs from "fs";
 import { parse } from "csv-parse/sync";
+import assert from "assert";
+
+interface DistributionRecord {
+  Address: string;
+  "MENTO based on locked CELO": string;
+  "MENTO based on cStables balances": string;
+  "MENTO based on cStables volumes": string;
+  total_distributed: string;
+}
 
 const {
   values: { network },
@@ -27,14 +36,23 @@ export const generateTree = async (): Promise<MerkleTree> => {
   const abicoder = new AbiCoder();
   const fileContent = fs.readFileSync(`data/airgrab.${network}.csv`, "utf8");
   const records = parse(fileContent, {
-    columns: false,
+    columns: true,
     skipEmptyLines: true,
   });
 
-  console.log("Records: ", records.length);
+  const leaves = records.map((row: DistributionRecord) => {
+    const address = row.Address;
+    const totalDistributed = row.total_distributed;
 
-  const leaves = records.map((row: any) => {
-    const encoded = abicoder.encode(["address", "uint256"], [row[0], row[1]]);
+    const fromLockedCelo = parseFloat(row["MENTO based on locked CELO"] || "0");
+    const fromStablesBalances = parseFloat(row["MENTO based on cStables balances"] || "0");
+    const fromStablesVolumes = parseFloat(row["MENTO based on cStables volumes"] || "0");
+    assert(
+      fromLockedCelo + fromStablesBalances + fromStablesVolumes === parseFloat(totalDistributed),
+      "Invalid distribution",
+    );
+
+    const encoded = abicoder.encode(["address", "uint256"], [address, parseEther(totalDistributed)]);
     const leafHash = keccak256(encoded);
     const leaf = keccak256(Buffer.concat([Buffer.from(leafHash.slice(2), "hex")])); // Remove '0x' and convert to Buffer
     return leaf;
