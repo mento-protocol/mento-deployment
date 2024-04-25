@@ -6,7 +6,7 @@ import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
 // TODO: Update ref to latest mento-core and import StableTokenCOP
-import { StableTokenXOFProxy as StableTokenCOPProxy } from "mento-core-2.2.0/legacy/proxies/StableTokenXOFProxy.sol";
+import { StableTokenCOPProxy } from "mento-core-copkes/legacy/proxies/StableTokenCOPProxy.sol";
 
 /*
  yarn deploy -n <network> -u cCOP -s cCOP-00-Create-Proxies.sol

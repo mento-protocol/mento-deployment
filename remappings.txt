@@ -8,3 +8,4 @@ mento-core-2.0.0/=lib/mento-core-2.0.0/contracts/
 mento-core-2.1.0/=lib/mento-core-2.1.0/contracts/
 mento-core-2.2.0/=lib/mento-core-2.2.0/contracts/
 mento-core-2.3.0/=lib/mento-core-2.3.0/contracts/
+mento-core-copkes/=lib/mento-core-copkes/contracts/
