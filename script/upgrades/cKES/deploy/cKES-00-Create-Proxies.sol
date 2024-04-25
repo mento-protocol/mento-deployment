@@ -11,7 +11,7 @@ import { StableTokenKESProxy } from "mento-core-copkes/legacy/proxies/StableToke
 /*
  yarn deploy -n <network> -u cKES -s cKES-00-Create-Proxies.sol
 */
-contract eXOF_CreateProxies is Script {
+contract cKES_CreateProxies is Script {
   function run() public {
     address payable stableTokenKESProxy;
     address governance = contracts.celoRegistry("Governance");
