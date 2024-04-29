@@ -6,8 +6,7 @@
  */
 
 import { parseArgs } from "node:util";
-import { MerkleTree } from "merkletreejs";
-import { keccak256, AbiCoder } from "ethers";
+import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 import * as fs from "fs";
 import { parse } from "csv-parse/sync";
 
@@ -23,33 +22,18 @@ if (network !== "baklava" && network !== "alfajores" && network !== "celo") {
   throw new Error("Invalid network");
 }
 
-export const generateTree = async (): Promise<MerkleTree> => {
-  const abicoder = new AbiCoder();
-  const fileContent = fs.readFileSync(`data/airgrab.${network}.csv`, "utf8");
-  const records = parse(fileContent, {
+export const generateTree = async (): Promise<any> => {
+  const snapshot = parse(fs.readFileSync(`data/airgrab.${network}.csv`, "utf8"), {
     columns: false,
-    skipEmptyLines: true,
   });
 
-  const leaves = records.map((row: any) => {
-    const encoded = abicoder.encode(["address", "uint256"], [row[0], row[1]]);
-    const leafHash = keccak256(encoded);
-    const leaf = keccak256(Buffer.concat([Buffer.from(leafHash.slice(2), "hex")])); // Remove '0x' and convert to Buffer
-    return leaf;
-  });
+  const tree = StandardMerkleTree.of(snapshot, ["address", "uint256"]);
+  console.log("Number of records in snapshot:", snapshot.length);
+  console.log("Root:", tree.root);
 
-  const merkleTree = new MerkleTree(leaves, keccak256, { sortPairs: true });
-  console.log("Merkle root: ", merkleTree.getHexRoot());
+  fs.writeFileSync(`data/airgrab.${network}.tree.json`, JSON.stringify(tree.dump()));
 
-  const treeData = {
-    root: merkleTree.getHexRoot(),
-    leaves: merkleTree.getHexLeaves(),
-    layers: merkleTree.getHexLayers(),
-  };
-
-  fs.writeFileSync(`data/airgrab.${network}.tree.json`, JSON.stringify(treeData, null, 2));
-
-  return merkleTree;
+  return tree;
 };
 
 generateTree();
