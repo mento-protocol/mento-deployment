@@ -99,7 +99,7 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
   function readAirgrabMerkleRoot() internal view returns (bytes32) {
     string memory network = Chain.rpcToken(); // celo | baklava | alfajores
     string memory root = vm.projectRoot();
-    string memory path = string(abi.encodePacked(root, "/data/airgrab.", network, ".tree.json"));
+    string memory path = string(abi.encodePacked(root, "/data/airgrab.", network, ".root.json"));
     string memory json = vm.readFile(path);
     return stdJson.readBytes32(json, ".root");
   }
