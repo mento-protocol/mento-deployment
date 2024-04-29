@@ -32,6 +32,7 @@ export const generateTree = async (): Promise<any> => {
   console.log("Root:", tree.root);
 
   fs.writeFileSync(`data/airgrab.${network}.tree.json`, JSON.stringify(tree.dump()));
+  fs.writeFileSync(`data/airgrab.${network}.root.json`, JSON.stringify({ root: tree.root }));
 
   return tree;
 };
