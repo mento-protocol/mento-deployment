@@ -56,8 +56,6 @@ contract MUGOVChecks is GovernanceScript, Test {
 
   function run() public {
     console.log("\n ======== 🔍 Checking MUGOV setup ========");
-    printContracts();
-    console.log("\n\n");
 
     // ============== Token allocation ==============
     assertEq(mentoToken.balanceOf(mentoLabsMultisig), 300_000_000 * 1e18, "❌ mentoLabsMultisig allocation");
@@ -144,16 +142,6 @@ contract MUGOVChecks is GovernanceScript, Test {
     assertEq(locking.symbol(), "veMENTO", "Locking symbol is incorrect");
     assertEq(locking.name(), "Mento Vote-Escrow", "Locking name is incorrect");
     console.log("🟢 Locking setup correctly");
-  }
-
-  function printContracts() public {
-    console.log("GovFactory: ", address(governanceFactory));
-    console.log("MentoToken: ", address(mentoToken));
-    console.log("Emission: ", address(emission));
-    console.log("Airgrab: ", address(airgrab));
-    console.log("GovernanceTimelock: ", address(governanceTimelock));
-    console.log("MentoGovernor: ", address(mentoGovernor));
-    console.log("Locking: ", address(locking));
   }
 
   function readAirgrabMerkleRoot() internal view returns (bytes32) {
