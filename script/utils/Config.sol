@@ -277,6 +277,17 @@ library Config {
     uint256[] constitutionThresholds;
   }
 
+  struct StableTokenV2 {
+    /**
+     * @dev The name of the stable token.
+     */
+    string name;
+    /**
+     * @dev The symbol of the stable token.
+     */
+    string symbol;
+  }
+
   /**
    * @dev Helper to create an empty trading limit config.
    */
