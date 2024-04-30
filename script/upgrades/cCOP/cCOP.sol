@@ -21,7 +21,7 @@ import { IStableTokenV2 } from "mento-core-2.4.0/interfaces/IStableTokenV2.sol";
 
 import { BiPoolManagerProxy } from "mento-core-2.4.0/proxies/BiPoolManagerProxy.sol";
 import { BrokerProxy } from "mento-core-2.4.0/proxies/BrokerProxy.sol";
-import { Broker } from "mento-core-2.4.0/swap/Broker.sol";  
+import { Broker } from "mento-core-2.4.0/swap/Broker.sol";
 import { Exchange } from "mento-core-2.4.0/legacy/Exchange.sol";
 import { TradingLimits } from "mento-core-2.4.0/libraries/TradingLimits.sol";
 import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
