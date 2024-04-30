@@ -62,7 +62,7 @@ library cCOPConfig {
     // TODO: Should be updated after config values have been finalized
     poolConfig = Config.Pool({
       asset0: contracts.deployed("StableTokenCOPProxy"),
-      asset1: contracts.celoRegistry("StableTokenProxy"),
+      asset1: contracts.celoRegistry("StableToken"),
       isConstantSum: false,
       spread: FixidityLib.newFixedFraction(1, 1),
       referenceRateResetFrequency: 5 minutes,
