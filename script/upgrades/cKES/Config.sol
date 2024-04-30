@@ -21,18 +21,18 @@ library cKESConfig {
   using Contracts for Contracts.Cache;
 
   struct cKES {
-    Config.Pool cKEScUSDPool;
-    Config.RateFeed KESUSDRateFeed;
-    Config.StableTokenV2 stableTokenKES;
+    Config.Pool poolConfig;
+    Config.RateFeed rateFeedConfig;
+    Config.StableTokenV2 stableTokenConfig;
   }
 
   /**
    * @dev Returns the populated configuration object for the cKES governance proposal.
    */
   function get(Contracts.Cache storage contracts) internal view returns (cKES memory config) {
-    config.cKEScUSDPool = cKEScUSD_PoolConfig(contracts);
-    config.KESUSDRateFeed = KESUSD_RateFeedConfig();
-    config.stableTokenKES = stableTokenKESConfig();
+    config.poolConfig = cKEScUSD_PoolConfig(contracts);
+    config.rateFeedConfig = KESUSD_RateFeedConfig();
+    config.stableTokenConfig = stableTokenKESConfig();
   }
 
   /* ==================== Rate Feed Configuration ==================== */
