@@ -21,8 +21,8 @@ library cCOPConfig {
   using Contracts for Contracts.Cache;
 
   struct cCOP {
-    Config.Pool cCOPcUSDPool; 
-    Config.RateFeed COPUSDRateFeed; 
+    Config.Pool cCOPcUSDPool;
+    Config.RateFeed COPUSDRateFeed;
     Config.StableTokenV2 stableTokenCOP;
   }
 
@@ -30,7 +30,7 @@ library cCOPConfig {
    * @dev Returns the populated configuration object for the cCOP governance proposal.
    */
   function get(Contracts.Cache storage contracts) internal view returns (cCOP memory config) {
-    config.cCOPcUSDPool = cCOPcUSD_PoolConfig(contracts); 
+    config.cCOPcUSDPool = cCOPcUSD_PoolConfig(contracts);
     config.COPUSDRateFeed = COPUSD_RateFeedConfig();
     config.stableTokenCOP = stableTokenCOPConfig();
   }
@@ -41,15 +41,14 @@ library cCOPConfig {
    * @dev Returns the configuration for the COPUSD rate feed.
    */
   function COPUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
- 
     rateFeedConfig.rateFeedID = Config.rateFeedID("COPUSD");
-    // TODO: Should be updated after config values have been finalized  
+    // TODO: Should be updated after config values have been finalized
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: false,
       threshold: FixidityLib.newFixedFraction(1, 1),
       cooldown: 0 minutes,
       smoothingFactor: 1e1
-    }); 
+    });
   }
 
   /* ==================== Pool Configuration ==================== */
@@ -60,16 +59,15 @@ library cCOPConfig {
   function cCOPcUSD_PoolConfig(
     Contracts.Cache storage contracts
   ) internal view returns (Config.Pool memory poolConfig) {
-
     // TODO: Should be updated after config values have been finalized
     poolConfig = Config.Pool({
       asset0: contracts.deployed("StableTokenCOPProxy"),
       asset1: contracts.celoRegistry("StableTokenProxy"),
       isConstantSum: false,
-      spread: FixidityLib.newFixedFraction(1,1), 
+      spread: FixidityLib.newFixedFraction(1, 1),
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 0,
-      stablePoolResetSize: 0, 
+      stablePoolResetSize: 0,
       referenceRateFeedID: Config.rateFeedID("COPUSD"),
       asset0limits: Config.TradingLimit({
         enabled0: true,
@@ -84,10 +82,10 @@ library cCOPConfig {
       asset1limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 50_000, 
+        limit0: 50_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 250_000, 
+        limit1: 250_000,
         enabledGlobal: true,
         limitGlobal: 1_000_000
       })
@@ -104,9 +102,6 @@ library cCOPConfig {
    * @dev Returns the configuration for the cCOP stable token.
    */
   function stableTokenCOPConfig() internal pure returns (Config.StableTokenV2 memory config) {
-    config = Config.StableTokenV2({
-      name: "Celo Colombian Peso",
-      symbol: "cCOP"
-    });
+    config = Config.StableTokenV2({ name: "Celo Colombian Peso", symbol: "cCOP" });
   }
 }
