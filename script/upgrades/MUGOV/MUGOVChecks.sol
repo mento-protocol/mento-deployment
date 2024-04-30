@@ -98,7 +98,7 @@ contract MUGOVChecks is GovernanceScript, Test {
     assertEq(airgrab.token(), address(mentoToken), "Airgrab token is incorrect");
     assertEq(airgrab.locking(), address(locking), "Airgrab locking is incorrect");
     assertEq(airgrab.mentoTreasury(), address(governanceTimelock), "Airgrab Mento Treasury is incorrect");
-    assertEq(airgrab.endTimestamp() - block.timestamp, 8 weeks, "Airgrab duration is incorrect");
+    assertEq(airgrab.endTimestamp() - block.timestamp, 10 weeks, "Airgrab duration is incorrect");
     console.log("🟢 Airgrab setup correctly");
 
     // ============== Timelock Checks ==============
@@ -147,7 +147,7 @@ contract MUGOVChecks is GovernanceScript, Test {
   function readAirgrabMerkleRoot() internal view returns (bytes32) {
     string memory network = Chain.rpcToken(); // celo | baklava | alfajores
     string memory root = vm.projectRoot();
-    string memory path = string(abi.encodePacked(root, "/data/airgrab.", network, ".tree.json"));
+    string memory path = string(abi.encodePacked(root, "/data/airgrab.", network, ".root.json"));
     string memory json = vm.readFile(path);
     return stdJson.readBytes32(json, ".root");
   }
