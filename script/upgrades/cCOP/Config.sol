@@ -21,18 +21,18 @@ library cCOPConfig {
   using Contracts for Contracts.Cache;
 
   struct cCOP {
-    Config.Pool cCOPcUSDPool;
-    Config.RateFeed COPUSDRateFeed;
-    Config.StableTokenV2 stableTokenCOP;
+    Config.Pool poolConfig;
+    Config.RateFeed rateFeedConfig;
+    Config.StableTokenV2 stableTokenConfig;
   }
 
   /**
    * @dev Returns the populated configuration object for the cCOP governance proposal.
    */
   function get(Contracts.Cache storage contracts) internal view returns (cCOP memory config) {
-    config.cCOPcUSDPool = cCOPcUSD_PoolConfig(contracts);
-    config.COPUSDRateFeed = COPUSD_RateFeedConfig();
-    config.stableTokenCOP = stableTokenCOPConfig();
+    config.poolConfig = cCOPcUSD_PoolConfig(contracts);
+    config.rateFeedConfig = COPUSD_RateFeedConfig();
+    config.stableTokenConfig = stableTokenCOPConfig();
   }
 
   /* ==================== Rate Feed Configuration ==================== */
