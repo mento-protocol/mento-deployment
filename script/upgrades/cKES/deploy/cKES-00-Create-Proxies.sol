@@ -5,8 +5,7 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-// TODO: Update ref to latest mento-core and import StableTokenKES
-import { StableTokenKESProxy } from "mento-core-copkes/legacy/proxies/StableTokenKESProxy.sol";
+import { StableTokenKESProxy } from "mento-core-2.4.0/legacy/proxies/StableTokenKESProxy.sol";
 
 /*
  yarn deploy -n <network> -u cKES -s cKES-00-Create-Proxies.sol
