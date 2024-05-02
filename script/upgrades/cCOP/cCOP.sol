@@ -148,6 +148,23 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
           )
         )
       );
+
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          stableTokenCOPProxy,
+          abi.encodeWithSelector(
+            _cCOPProxy._setAndInitializeImplementation.selector,
+            contracts.deployed("StableTokenV2"),
+            abi.encodeWithSelector(
+              IStableTokenV2(0).initializeV2.selector,
+              brokerProxy,
+              address(0), // Validators address TODO: Do we need to set this
+              address(0) // Exchange address (not used)
+            )
+          )
+        )
+      );
     } else {
       console.log("StableTokenCOPProxy is already initialized, skipping initialization.");
     }
