@@ -16,7 +16,6 @@ import { IReserve } from "mento-core-2.4.0/interfaces/IReserve.sol";
 import { IRegistry } from "mento-core-2.4.0/common/interfaces/IRegistry.sol";
 import { IFeeCurrencyWhitelist } from "../../interfaces/IFeeCurrencyWhitelist.sol";
 import { Proxy } from "mento-core-2.4.0/common/Proxy.sol";
-import { IERC20Metadata } from "mento-core-2.4.0/common/interfaces/IERC20Metadata.sol";
 import { IStableTokenV2 } from "mento-core-2.4.0/interfaces/IStableTokenV2.sol";
 
 import { BiPoolManagerProxy } from "mento-core-2.4.0/proxies/BiPoolManagerProxy.sol";
