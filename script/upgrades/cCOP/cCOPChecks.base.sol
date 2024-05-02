@@ -20,7 +20,7 @@ import { IRegistry } from "mento-core-2.4.0/common/interfaces/IRegistry.sol";
 import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
 
 import { BiPoolManagerProxy } from "mento-core-2.4.0/proxies/BiPoolManagerProxy.sol";
-import { StableTokenCOPProxy } from "mento-core-2.4.0/legacy/proxies/StableTokenCOPProxy.sol"; 
+import { StableTokenCOPProxy } from "mento-core-2.4.0/legacy/proxies/StableTokenCOPProxy.sol";
 import { Broker } from "mento-core-2.4.0/swap/Broker.sol";
 import { BiPoolManager } from "mento-core-2.4.0/swap/BiPoolManager.sol";
 import { Exchange } from "mento-core-2.4.0/legacy/Exchange.sol";
@@ -33,7 +33,6 @@ import { ValueDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/ValueDeltaB
 import { ConstantSumPricingModule } from "mento-core-2.4.0/swap/ConstantSumPricingModule.sol";
 import { SafeMath } from "celo-foundry/test/SafeMath.sol";
 import { Proxy } from "mento-core-2.4.0/common/Proxy.sol";
-
 
 import { cCOPConfig, Config } from "./Config.sol";
 
