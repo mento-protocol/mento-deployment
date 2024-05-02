@@ -107,6 +107,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
     cKESConfig.cKES memory config = cKESConfig.get(contracts);
 
     proposal_initializeCKESToken(config);
+    proposal_configureCKESConstitutionParameters();
     proposal_addCKESToReserve();
 
     //TODO: Confirm we actuallyu want to do this
@@ -150,6 +151,32 @@ contract cKES is IMentoUpgrade, GovernanceScript {
       );
     } else {
       console.log("StableTokenKESProxy is already initialized, skipping initialization.");
+    }
+  }
+
+  /**
+   * @notice configure cKES constitution parameters
+   * @dev see cBRl GCP(https://celo.stake.id/#/proposal/49) for reference
+   */
+  function proposal_configureCKESConstitutionParameters() private {
+    address governanceProxy = contracts.celoRegistry("Governance");
+
+    bytes4[] memory constitutionFunctionSelectors = Config.getCeloStableConstitutionSelectors();
+    uint256[] memory constitutionThresholds = Config.getCeloStableConstitutionThresholds();
+
+    for (uint256 i = 0; i < constitutionFunctionSelectors.length; i++) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          governanceProxy,
+          abi.encodeWithSelector(
+            ICeloGovernance(0).setConstitution.selector,
+            stableTokenKESProxy,
+            constitutionFunctionSelectors[i],
+            constitutionThresholds[i]
+          )
+        )
+      );
     }
   }
 
