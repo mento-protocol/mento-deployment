@@ -55,7 +55,7 @@ contract cKESChecksVerify is cKESChecksBase {
     console.log("   KESUSD: %s", config.rateFeedConfig.rateFeedID);
 
     verifyToken(config);
-    verifyExchange(config);
+    // verifyExchange(config); // TODO: Uncomment this line
     verifyCircuitBreaker(config);
   }
 

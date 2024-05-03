@@ -117,7 +117,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
     //TODO: Confirm we actuallyu want to do this
     proposal_enableGasPaymentsWithCKES();
 
-    proposal_createExchange(config);
+    // proposal_createExchange(config); // TODO: Uncomment this once we have the pool config
     proposal_configureTradingLimits(config);
     proposal_configureBreakerBox(config);
     proposal_configureMedianDeltaBreaker(config);

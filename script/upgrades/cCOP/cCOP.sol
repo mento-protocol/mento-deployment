@@ -115,7 +115,7 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
     //TODO: Confirm we actuallyu want to do this
     proposal_enableGasPaymentsWithcCOP();
 
-    proposal_createExchange(config);
+    // proposal_createExchange(config);
     proposal_configureTradingLimits(config);
     proposal_configureBreakerBox(config);
     proposal_configureMedianDeltaBreaker(config);

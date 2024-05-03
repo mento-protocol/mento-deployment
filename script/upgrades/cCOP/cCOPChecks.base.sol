@@ -45,9 +45,7 @@ contract cCOPChecksBase is GovernanceScript, Test {
   address payable public cCOP;
   address public governance;
   address public medianDeltaBreaker;
-  address public biPoolManager;
   address payable sortedOraclesProxy;
-  address public sortedOracles;
   address public constantProduct;
   address payable biPoolManagerProxy;
   address public reserve;
@@ -56,9 +54,10 @@ contract cCOPChecksBase is GovernanceScript, Test {
 
   function setUp() public {
     // Load addresses from deployments
-    contracts.load("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
-    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
-    contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
+    contracts.loadSilent("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
+    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
+    contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
     contracts.loadSilent("cCOP-00-Create-Proxies", "latest");
 
     // Get proxy addresses
@@ -72,9 +71,7 @@ contract cCOPChecksBase is GovernanceScript, Test {
     // Get Deployment addresses
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
-    biPoolManager = contracts.deployed("BiPoolManager");
     constantProduct = contracts.deployed("ConstantProductPricingModule");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
-    sortedOracles = contracts.deployed("SortedOracles");
   }
 }

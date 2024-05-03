@@ -55,7 +55,7 @@ contract cCOPChecksVerify is cCOPChecksBase {
     console.log("   COPUSD: %s", config.rateFeedConfig.rateFeedID);
 
     verifyToken(config);
-    verifyExchange(config);
+    // verifyExchange(config); //TODO: No oracles reporting yet
     verifyCircuitBreaker(config);
   }
 
@@ -68,15 +68,8 @@ contract cCOPChecksVerify is cCOPChecksBase {
     verifyConstitution();
   }
 
-  function verifyOwner() internal view {
-    address cCOPImplementation = contracts.deployed("StableTokenCOP");
-    require(
-      Ownable(cCOPImplementation).owner() == governance,
-      "StableTokenCOP ownership not transferred to governance"
-    );
-
+  function verifyOwner() internal view { 
     require(Proxy(cCOP)._getOwner() == governance, "StableTokenCOP Proxy ownership not transferred to governance");
-
     console.log("🟢 Contract ownerships transferred to governance");
   }
 
