@@ -70,7 +70,7 @@ contract cKESChecksVerify is cKESChecksBase {
 
   function verifyOwner() internal view {
     require(Proxy(cKES)._getOwner() == governance, "StableTokenKES Proxy ownership not transferred to governance");
-    console.log("🟢 Contract ownerships transferred to governance");
+    console.log("🟢 cKES proxy ownership transferred to governance");
   }
 
   function verifyCKESStableToken(cKESConfig.cKES memory config) internal {
@@ -80,11 +80,12 @@ contract cKESChecksVerify is cKESChecksBase {
     address cKESImplementation = stableTokenKESProxy._getImplementation();
     if (cKESImplementation != stableTokenV2) {
       console.log(
-        "The implementation from StableTokenKESProxy: %s does not match the deployed StableTokenV2 address: %s.",
+        "The implementation from StableTokenKESProxy(%s): %s does not match the deployed StableTokenV2 address: %s.",
+        cKES,
         cKESImplementation,
         stableTokenV2
       );
-      revert("StableTokenKESProxy does not points to StableTokenV2 deployed implementation. See logs.");
+      revert("StableTokenKESProxy does not point to StableTokenV2 deployed implementation. See logs.");
     }
     console.log("🟢 StableTokenKESProxy has the correct implementation address");
 
