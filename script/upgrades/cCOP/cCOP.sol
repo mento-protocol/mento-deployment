@@ -49,6 +49,9 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
   address private biPoolManagerProxy;
   address private reserveProxy;
 
+  address private validators;
+
+
   bytes32 private constant POOL_EXCHANGE_ID = keccak256(abi.encodePacked("cCOP", "cUSD", "ConstantProduct"));
 
   bool public hasChecks = true;
@@ -84,6 +87,8 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
     brokerProxy = contracts.deployed("BrokerProxy");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
     reserveProxy = contracts.celoRegistry("Reserve");
+
+    validators = contracts.celoRegistry("Validators");
   }
 
   function run() public {
@@ -158,7 +163,7 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
             abi.encodeWithSelector(
               IStableTokenV2(0).initializeV2.selector,
               brokerProxy,
-              address(0), // Validators address TODO: Do we need to set this
+              validators, // TODO: Do we need to set this
               address(0) // Exchange address (not used)
             )
           )
