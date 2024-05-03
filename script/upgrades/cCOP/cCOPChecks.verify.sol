@@ -68,7 +68,7 @@ contract cCOPChecksVerify is cCOPChecksBase {
     verifyConstitution();
   }
 
-  function verifyOwner() internal view { 
+  function verifyOwner() internal view {
     require(Proxy(cCOP)._getOwner() == governance, "StableTokenCOP Proxy ownership not transferred to governance");
     console.log("🟢 Contract ownerships transferred to governance");
   }
