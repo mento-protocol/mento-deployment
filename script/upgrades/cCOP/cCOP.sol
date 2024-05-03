@@ -66,7 +66,7 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
   function loadDeployedContracts() public {
     contracts.load("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
-    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
+    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox, MedianDeltaBreaker and ConstantSumPricingModule
     contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
     contracts.load("cCOP-00-Create-Proxies", "latest");
   }
@@ -241,10 +241,13 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
    * @notice Creates the exchange for the new pool.
    */
   function proposal_createExchange(cCOPConfig.cCOP memory config) private {
+    IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
+    IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
+
     IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
       asset0: config.poolConfig.asset0,
       asset1: config.poolConfig.asset1,
-      pricingModule: IPricingModule(contracts.deployed("ConstantProductPricingModule")),
+      pricingModule: config.poolConfig.isConstantSum ? constantSum : constantProduct,
       bucket0: 0,
       bucket1: 0,
       lastBucketUpdate: 0,
