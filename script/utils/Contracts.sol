@@ -93,7 +93,10 @@ library Contracts {
 
   function deployed(Cache storage self, string memory contractName) internal view returns (address payable addr) {
     addr = address(uint160(self.contractAddress[keccak256(bytes(contractName))]));
-    require(addr != address(0), string(abi.encodePacked(contractName, ":NotFoundInDeployedCache")));
+    require(
+      addr != address(0),
+      string(abi.encodePacked(contractName, ":NotFoundInDeployedCache:Check relevant deployemnt script was loaded"))
+    );
   }
 
   function celoRegistry(Cache storage, string memory contractName) internal view returns (address) {
