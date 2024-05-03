@@ -43,8 +43,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  address payable private stableTokenKESProxy;
-  address private stableTokenProxy;
+  address payable private stableTokenKESProxy; 
 
   address private breakerBox;
   address private medianDeltaBreaker;
@@ -77,8 +76,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
    */
   function setAddresses() public {
     // Tokens
-    stableTokenKESProxy = contracts.deployed("StableTokenKESProxy");
-    stableTokenProxy = contracts.celoRegistry("StableToken");
+    stableTokenKESProxy = contracts.deployed("StableTokenKESProxy"); 
 
     // Oracles
     breakerBox = contracts.deployed("BreakerBox");

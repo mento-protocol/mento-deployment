@@ -41,8 +41,7 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  address payable private stableTokenCOPProxy;
-  address private stableTokenProxy;
+  address payable private stableTokenCOPProxy; 
 
   address private breakerBox;
   address private medianDeltaBreaker;
@@ -75,8 +74,7 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
    */
   function setAddresses() public {
     // Tokens
-    stableTokenCOPProxy = contracts.deployed("StableTokenCOPProxy");
-    stableTokenProxy = contracts.celoRegistry("StableToken");
+    stableTokenCOPProxy = contracts.deployed("StableTokenCOPProxy"); 
 
     // Oracles
     breakerBox = contracts.deployed("BreakerBox");
