@@ -78,7 +78,7 @@ library cKESConfig {
         limit1: 500_000,
         enabledGlobal: true,
         limitGlobal: 2_500_000
-      }),      
+      }),
       asset1limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,

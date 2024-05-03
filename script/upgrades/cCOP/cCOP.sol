@@ -51,7 +51,6 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
 
   address private validators;
 
-
   bytes32 private constant POOL_EXCHANGE_ID = keccak256(abi.encodePacked("cCOP", "cUSD", "ConstantProduct"));
 
   bool public hasChecks = true;
