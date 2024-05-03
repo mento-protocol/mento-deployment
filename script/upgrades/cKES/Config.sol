@@ -61,8 +61,8 @@ library cKESConfig {
   ) internal view returns (Config.Pool memory poolConfig) {
     // TODO: Should be updated after config values have been finalized
     poolConfig = Config.Pool({
-      asset0: contracts.deployed("StableTokenKESProxy"),
-      asset1: contracts.celoRegistry("StableToken"),
+      asset0: contracts.celoRegistry("StableToken"),
+      asset1: contracts.deployed("StableTokenKESProxy"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(1, 100), // 1%
       referenceRateResetFrequency: 5 minutes,
@@ -72,22 +72,22 @@ library cKESConfig {
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 133 * 100_000,
-        enabled1: true,
-        timeStep1: 1 days,
-        limit1: 133 * 500_000,
-        enabledGlobal: true,
-        limitGlobal: 133 * 2_500_000
-      }),
-      asset1limits: Config.TradingLimit({
-        enabled0: true,
-        timeStep0: 5 minutes,
         limit0: 100_000,
         enabled1: true,
         timeStep1: 1 days,
         limit1: 500_000,
         enabledGlobal: true,
         limitGlobal: 2_500_000
+      }),      
+      asset1limits: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 133 * 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 133 * 500_000,
+        enabledGlobal: true,
+        limitGlobal: 133 * 2_500_000
       })
     });
 
