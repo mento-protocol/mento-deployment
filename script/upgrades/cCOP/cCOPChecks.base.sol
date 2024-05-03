@@ -59,7 +59,7 @@ contract cCOPChecksBase is GovernanceScript, Test {
     contracts.load("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
     contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
-    contracts.loadSilent("cCOP-00-Create-Proxies", "latest"); // cCOPProxy creatino
+    contracts.loadSilent("cCOP-00-Create-Proxies", "latest");
 
     // Get proxy addresses
     cCOP = contracts.deployed("StableTokenCOPProxy");

@@ -43,7 +43,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
 
   ICeloGovernance.Transaction[] private transactions;
 
-  address payable private stableTokenKESProxy; 
+  address payable private stableTokenKESProxy;
 
   address private breakerBox;
   address private medianDeltaBreaker;
@@ -68,7 +68,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
     contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
-    contracts.load("cKES-00-Create-Proxies", "latest"); // cKESProxy creation
+    contracts.load("cKES-00-Create-Proxies", "latest");
   }
 
   /**
@@ -76,7 +76,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
    */
   function setAddresses() public {
     // Tokens
-    stableTokenKESProxy = contracts.deployed("StableTokenKESProxy"); 
+    stableTokenKESProxy = contracts.deployed("StableTokenKESProxy");
 
     // Oracles
     breakerBox = contracts.deployed("BreakerBox");

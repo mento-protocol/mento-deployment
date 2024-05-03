@@ -58,7 +58,7 @@ contract cKESChecksBase is GovernanceScript, Test {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
     contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
-    contracts.loadSilent("cKES-00-Create-Proxies", "latest"); // cKESProxy creatino
+    contracts.loadSilent("cKES-00-Create-Proxies", "latest");
 
     // Get proxy addresses
     cKES = contracts.deployed("StableTokenKESProxy");
