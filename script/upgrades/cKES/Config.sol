@@ -45,9 +45,9 @@ library cKESConfig {
     // TODO: Should be updated after config values have been finalized
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: false,
-      threshold: FixidityLib.newFixedFraction(1, 1),
-      cooldown: 0 minutes,
-      smoothingFactor: 1e1
+      threshold: FixidityLib.newFixedFraction(4, 100), // 4%
+      cooldown: 15 minutes,
+      smoothingFactor: FixidityLib.newFixedFraction(5, 1000).unwrap() // 0.005
     });
   }
 
@@ -63,31 +63,31 @@ library cKESConfig {
     poolConfig = Config.Pool({
       asset0: contracts.deployed("StableTokenKESProxy"),
       asset1: contracts.celoRegistry("StableToken"),
-      isConstantSum: false,
-      spread: FixidityLib.newFixedFraction(1, 1),
+      isConstantSum: true,
+      spread: FixidityLib.newFixedFraction(1, 100), // 1%
       referenceRateResetFrequency: 5 minutes,
-      minimumReports: 0,
-      stablePoolResetSize: 0,
+      minimumReports: 1,
+      stablePoolResetSize: 10_000_000,
       referenceRateFeedID: Config.rateFeedID("KESUSD"),
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 3886 * 100_000,
+        limit0: 133 * 100_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 3886 * 250_000,
+        limit1: 133 * 500_000,
         enabledGlobal: true,
-        limitGlobal: 3886 * 1_000_000
+        limitGlobal: 133 * 2_500_000
       }),
       asset1limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 50_000,
+        limit0: 100_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 250_000,
+        limit1: 500_000,
         enabledGlobal: true,
-        limitGlobal: 1_000_000
+        limitGlobal: 2_500_000
       })
     });
 
