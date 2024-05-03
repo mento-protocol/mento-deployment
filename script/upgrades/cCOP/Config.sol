@@ -61,8 +61,8 @@ library cCOPConfig {
   ) internal view returns (Config.Pool memory poolConfig) {
     // TODO: Should be updated after config values have been finalized
     poolConfig = Config.Pool({
-      asset0: contracts.deployed("StableTokenCOPProxy"),
-      asset1: contracts.celoRegistry("StableToken"),
+      asset0: contracts.celoRegistry("StableToken"),
+      asset1: contracts.deployed("StableTokenCOPProxy"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(1, 100), // 1%
       referenceRateResetFrequency: 5 minutes,
@@ -72,22 +72,22 @@ library cCOPConfig {
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 3886 * 100_000,
-        enabled1: true,
-        timeStep1: 1 days,
-        limit1: 3886 * 250_000,
-        enabledGlobal: true,
-        limitGlobal: 3886 * 1_000_000
-      }),
-      asset1limits: Config.TradingLimit({
-        enabled0: true,
-        timeStep0: 5 minutes,
         limit0: 100_000,
         enabled1: true,
         timeStep1: 1 days,
         limit1: 250_000,
         enabledGlobal: true,
         limitGlobal: 1_000_000
+      }),
+      asset1limits: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 3886 * 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 3886 * 250_000,
+        enabledGlobal: true,
+        limitGlobal: 3886 * 1_000_000
       })
     });
 
