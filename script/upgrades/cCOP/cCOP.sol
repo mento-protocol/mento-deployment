@@ -66,7 +66,7 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
   function loadDeployedContracts() public {
     contracts.load("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
-    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox, MedianDeltaBreaker and ConstantSumPricingModule
+    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
     contracts.load("cCOP-00-Create-Proxies", "latest");
   }
