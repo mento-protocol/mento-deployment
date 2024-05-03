@@ -35,24 +35,31 @@ contract cCOPChecksSwap is cCOPChecksBase {
 
     console.log("\n== Starting cCOP test swaps: ==");
 
-    console.log("COPUSD tradingMode: ", BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID)); 
+    console.log(
+      "COPUSD tradingMode: ",
+      BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID)
+    );
 
     swapCUSDToCCOP(config);
-    swapCCOPtoCUSD(config); 
+    swapCCOPtoCUSD(config);
   }
 
   // *** Swap Checks *** //
 
   function swapCCOPtoCUSD(cCOPConfig.cCOP memory config) internal {
-    bytes32 exchangeID = getExchangeId(config.poolConfig.asset0, config.poolConfig.asset1, config.poolConfig.isConstantSum);
+    bytes32 exchangeID = getExchangeId(
+      config.poolConfig.asset0,
+      config.poolConfig.asset1,
+      config.poolConfig.isConstantSum
+    );
     address trader = vm.addr(5);
     address tokenIn = cCOP;
     address tokenOut = cUSD;
     uint256 amountIn = 100e18;
 
-    //TODO: 
+    //TODO:
     // Give trader some cCOP
-    deal(cCOP, trader, 1000e18, true); 
+    deal(cCOP, trader, 1000e18, true);
 
     testAndPerformConstantProductSwap(
       exchangeID,
@@ -67,7 +74,11 @@ contract cCOPChecksSwap is cCOPChecksBase {
   }
 
   function swapCUSDToCCOP(cCOPConfig.cCOP memory config) internal {
-    bytes32 exchangeID = getExchangeId(config.poolConfig.asset0, config.poolConfig.asset1, config.poolConfig.isConstantSum);
+    bytes32 exchangeID = getExchangeId(
+      config.poolConfig.asset0,
+      config.poolConfig.asset1,
+      config.poolConfig.isConstantSum
+    );
     address trader = vm.addr(5);
     address tokenIn = cUSD;
     address tokenOut = cCOP;
@@ -84,8 +95,6 @@ contract cCOPChecksSwap is cCOPChecksBase {
 
     console.log("🟢 cCOP -> CELO swap successful 🚀");
   }
-
-
 
   // *** Helper Functions *** //
 

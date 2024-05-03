@@ -35,24 +35,31 @@ contract cKESChecksSwap is cKESChecksBase {
 
     console.log("\n== Starting cKES test swaps: ==");
 
-    console.log("KESUSD tradingMode: ", BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID)); 
+    console.log(
+      "KESUSD tradingMode: ",
+      BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID)
+    );
 
     swapCUSDToCKES(config);
-    swapCKEStoCUSD(config); 
+    swapCKEStoCUSD(config);
   }
 
   // *** Swap Checks *** //
 
   function swapCKEStoCUSD(cKESConfig.cKES memory config) internal {
-    bytes32 exchangeID = getExchangeId(config.poolConfig.asset0, config.poolConfig.asset1, config.poolConfig.isConstantSum);
+    bytes32 exchangeID = getExchangeId(
+      config.poolConfig.asset0,
+      config.poolConfig.asset1,
+      config.poolConfig.isConstantSum
+    );
     address trader = vm.addr(5);
     address tokenIn = cKES;
     address tokenOut = cUSD;
     uint256 amountIn = 100e18;
 
-    //TODO: 
+    //TODO:
     // Give trader some cKES
-    deal(cKES, trader, 1000e18, true); 
+    deal(cKES, trader, 1000e18, true);
 
     testAndPerformConstantProductSwap(
       exchangeID,
@@ -67,7 +74,11 @@ contract cKESChecksSwap is cKESChecksBase {
   }
 
   function swapCUSDToCKES(cKESConfig.cKES memory config) internal {
-    bytes32 exchangeID = getExchangeId(config.poolConfig.asset0, config.poolConfig.asset1, config.poolConfig.isConstantSum);
+    bytes32 exchangeID = getExchangeId(
+      config.poolConfig.asset0,
+      config.poolConfig.asset1,
+      config.poolConfig.isConstantSum
+    );
     address trader = vm.addr(5);
     address tokenIn = cUSD;
     address tokenOut = cKES;
@@ -84,8 +95,6 @@ contract cKESChecksSwap is cKESChecksBase {
 
     console.log("🟢 cKES -> CELO swap successful 🚀");
   }
-
-
 
   // *** Helper Functions *** //
 

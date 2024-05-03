@@ -45,7 +45,7 @@ contract cKESChecksBase is GovernanceScript, Test {
   address payable public cKES;
   address public governance;
   address public medianDeltaBreaker;
-  address payable sortedOraclesProxy; 
+  address payable sortedOraclesProxy;
   address public constantProduct;
   address payable biPoolManagerProxy;
   address public reserve;
@@ -72,6 +72,6 @@ contract cKESChecksBase is GovernanceScript, Test {
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     constantProduct = contracts.deployed("ConstantProductPricingModule");
-    biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy"); 
+    biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
   }
 }
