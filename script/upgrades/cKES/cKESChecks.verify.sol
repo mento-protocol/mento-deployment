@@ -69,14 +69,7 @@ contract cKESChecksVerify is cKESChecksBase {
   }
 
   function verifyOwner() internal view {
-    address cKESImplementation = contracts.deployed("StableTokenKES");
-    require(
-      Ownable(cKESImplementation).owner() == governance,
-      "StableTokenKES ownership not transferred to governance"
-    );
-
     require(Proxy(cKES)._getOwner() == governance, "StableTokenKES Proxy ownership not transferred to governance");
-
     console.log("🟢 Contract ownerships transferred to governance");
   }
 

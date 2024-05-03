@@ -45,9 +45,7 @@ contract cKESChecksBase is GovernanceScript, Test {
   address payable public cKES;
   address public governance;
   address public medianDeltaBreaker;
-  address public biPoolManager;
-  address payable sortedOraclesProxy;
-  address public sortedOracles;
+  address payable sortedOraclesProxy; 
   address public constantProduct;
   address payable biPoolManagerProxy;
   address public reserve;
@@ -57,6 +55,7 @@ contract cKESChecksBase is GovernanceScript, Test {
   function setUp() public {
     // Load addresses from deployments
     contracts.load("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
     contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
     contracts.loadSilent("cKES-00-Create-Proxies", "latest"); // cKESProxy creatino
@@ -72,9 +71,7 @@ contract cKESChecksBase is GovernanceScript, Test {
     // Get Deployment addresses
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
-    biPoolManager = contracts.deployed("BiPoolManager");
     constantProduct = contracts.deployed("ConstantProductPricingModule");
-    biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
-    sortedOracles = contracts.deployed("SortedOracles");
+    biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy"); 
   }
 }
