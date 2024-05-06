@@ -54,8 +54,22 @@ contract MUGOVChecks is GovernanceScript, Test {
     fractalSigner = contracts.dependency("FractalSigner");
   }
 
+  function printContractAddresses() public {
+    console.log("\n ======== 🔍 Contract addresses ========");
+    console.log("GovernanceFactory: ", address(governanceFactory));
+    console.log("Airgrab: ", address(airgrab));
+    console.log("Emission: ", address(emission));
+    console.log("MentoGovernor: ", address(mentoGovernor));
+    console.log("MentoToken: ", address(mentoToken));
+    console.log("GovernanceTimelock: ", address(governanceTimelock));
+    console.log("Locking: ", address(locking));
+  }
+
   function run() public {
     console.log("\n ======== 🔍 Checking MUGOV setup ========");
+    printContractAddresses();
+    console.log("\n asserts \n");
+
 
     // ============== Token allocation ==============
     assertEq(mentoToken.balanceOf(mentoLabsMultisig), 300_000_000 * 1e18, "❌ mentoLabsMultisig allocation");
@@ -102,7 +116,7 @@ contract MUGOVChecks is GovernanceScript, Test {
     console.log("🟢 Airgrab setup correctly");
 
     // ============== Timelock Checks ==============
-    assertEq(governanceTimelock.getMinDelay(), 2 * 24 * 60 * 60, "Timelock min delay is incorrect");
+    assertEq(governanceTimelock.getMinDelay(), 10 * 60, "Timelock min delay is incorrect");
     assertTrue(
       governanceTimelock.hasRole(governanceTimelock.PROPOSER_ROLE(), address(mentoGovernor)),
       "governanceTimelock proposer role for mentoGovernor is incorrect"
@@ -127,8 +141,8 @@ contract MUGOVChecks is GovernanceScript, Test {
     // ============== Mento Governor checks ==============:
     assertEq(mentoGovernor.token(), address(locking), "MentoGovernor token is incorrect");
     assertEq(mentoGovernor.votingDelay(), 0, "MentoGovernor voting delay is incorrect");
-    assertEq(mentoGovernor.votingPeriod(), 120960, "MentoGovernor voting period is incorrect");
-    assertEq(mentoGovernor.proposalThreshold(), 1000 * 1e18, "MentoGovernor proposal threshold is incorrect");
+    assertEq(mentoGovernor.votingPeriod(), 60, "MentoGovernor voting period is incorrect");
+    assertEq(mentoGovernor.proposalThreshold(), 500 * 1e18, "MentoGovernor proposal threshold is incorrect");
     assertEq(mentoGovernor.quorumNumerator(), 2, "MentoGovernor quorum numerator is incorrect");
     assertEq(mentoGovernor.timelock(), address(governanceTimelock), "MentoGovernor timelock is incorrect");
     console.log("🟢 Mento Governor setup correctly");
