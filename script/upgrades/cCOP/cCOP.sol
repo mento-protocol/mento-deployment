@@ -112,9 +112,9 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
     proposal_configureCCOPConstitutionParameters();
     proposal_addcCOPToReserve();
 
-    //TODO: Confirm we actuallyu want to do this
     proposal_enableGasPaymentsWithcCOP();
 
+    // TODO: Cannot create exchange without any rates
     // proposal_createExchange(config);
     proposal_configureTradingLimits(config);
     proposal_configureBreakerBox(config);
