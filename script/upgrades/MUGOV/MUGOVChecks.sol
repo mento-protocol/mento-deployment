@@ -70,7 +70,6 @@ contract MUGOVChecks is GovernanceScript, Test {
     printContractAddresses();
     console.log("\n asserts \n");
 
-
     // ============== Token allocation ==============
     assertEq(mentoToken.balanceOf(mentoLabsMultisig), 300_000_000 * 1e18, "❌ mentoLabsMultisig allocation");
     assertEq(mentoToken.balanceOf(mentoLiquiditySupport), 100_000_000 * 1e18, "❌ mentoLiquiditySupport allocation");
