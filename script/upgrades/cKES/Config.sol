@@ -42,9 +42,8 @@ library cKESConfig {
    */
   function KESUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = Config.rateFeedID("KESUSD");
-    // TODO: Should be updated after config values have been finalized
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
-      enabled: false,
+      enabled: true,
       threshold: FixidityLib.newFixedFraction(4, 100), // 4%
       cooldown: 15 minutes,
       smoothingFactor: FixidityLib.newFixedFraction(5, 1000).unwrap() // 0.005
@@ -59,7 +58,6 @@ library cKESConfig {
   function cKEScUSD_PoolConfig(
     Contracts.Cache storage contracts
   ) internal view returns (Config.Pool memory poolConfig) {
-    // TODO: Should be updated after config values have been finalized
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.deployed("StableTokenKESProxy"),
@@ -91,9 +89,8 @@ library cKESConfig {
       })
     });
 
-    // TODO: Should be updated after config values have been finalized
     if (Chain.isBaklava() || Chain.isAlfajores()) {
-      poolConfig.minimumReports = 0;
+      poolConfig.minimumReports = 2;
     }
   }
 

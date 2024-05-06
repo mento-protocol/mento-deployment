@@ -42,9 +42,8 @@ library cCOPConfig {
    */
   function COPUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = Config.rateFeedID("COPUSD");
-    // TODO: Should be updated after config values have been finalized
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
-      enabled: false,
+      enabled: true,
       threshold: FixidityLib.newFixedFraction(4, 100), // 4%
       cooldown: 15 minutes,
       smoothingFactor: FixidityLib.newFixedFraction(5, 1000).unwrap() // 0.005
@@ -92,7 +91,7 @@ library cCOPConfig {
     });
 
     if (Chain.isBaklava() || Chain.isAlfajores()) {
-      poolConfig.minimumReports = 0;
+      poolConfig.minimumReports = 2;
     }
   }
 
