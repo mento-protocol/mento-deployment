@@ -55,7 +55,7 @@ contract cKESChecksVerify is cKESChecksBase {
     console.log("   KESUSD: %s", config.rateFeedConfig.rateFeedID);
 
     verifyToken(config);
-    // TODO: Exchange creation is currently commented out. 
+    // TODO: Exchange creation is currently commented out.
     //       Once we have rate feeds, we can uncomment this line
     // verifyExchange(config);
     verifyCircuitBreaker(config);
