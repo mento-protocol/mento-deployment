@@ -9,6 +9,9 @@ import { cCOPChecksVerify } from "./cCOPChecks.verify.sol";
 contract cCOPChecks is Test {
   function run() public {
     new cCOPChecksVerify().run();
-    // new cCOPChecksSwap().run(); // TODO
+
+    // TODO: Exchange creation is currently commented out.
+    //       Once we have rate feeds, we can uncomment this line
+    // new cCOPChecksSwap().run();
   }
 }

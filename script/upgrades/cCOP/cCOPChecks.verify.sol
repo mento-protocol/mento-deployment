@@ -55,7 +55,10 @@ contract cCOPChecksVerify is cCOPChecksBase {
     console.log("   COPUSD: %s", config.rateFeedConfig.rateFeedID);
 
     verifyToken(config);
-    // verifyExchange(config); //TODO: No oracles reporting yet
+
+    // TODO: Exchange creation is currently commented out. 
+    //       Once we have rate feeds, we can uncomment this line
+    // verifyExchange(config);
     verifyCircuitBreaker(config);
   }
 
