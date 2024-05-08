@@ -64,7 +64,7 @@ library cKESConfig {
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(1, 100), // 1%
       referenceRateResetFrequency: 5 minutes,
-      minimumReports: 5,
+      minimumReports: 3,
       stablePoolResetSize: 10_000_000,
       referenceRateFeedID: Config.rateFeedID("KESUSD"),
       asset0limits: Config.TradingLimit({
