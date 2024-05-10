@@ -15,13 +15,14 @@ import { IPricingModule } from "mento-core-2.4.0/interfaces/IPricingModule.sol";
 import { IReserve } from "mento-core-2.4.0/interfaces/IReserve.sol";
 import { IRegistry } from "mento-core-2.4.0/common/interfaces/IRegistry.sol";
 import { IFeeCurrencyWhitelist } from "../../interfaces/IFeeCurrencyWhitelist.sol";
-import { Proxy } from "mento-core-2.4.0/common/Proxy.sol"; 
+import { Proxy } from "mento-core-2.4.0/common/Proxy.sol";
 import { IStableTokenV2 } from "mento-core-2.4.0/interfaces/IStableTokenV2.sol";
-  
-import { Broker } from "mento-core-2.4.0/swap/Broker.sol"; 
+import { IERC20Metadata } from "mento-core-2.4.0/common/interfaces/IERC20Metadata.sol";
+
+import { Broker } from "mento-core-2.4.0/swap/Broker.sol";
 import { TradingLimits } from "mento-core-2.4.0/libraries/TradingLimits.sol";
 import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
-import { MedianDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/MedianDeltaBreaker.sol"; 
+import { MedianDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/MedianDeltaBreaker.sol";
 import { StableTokenKESProxy } from "mento-core-2.4.0/legacy/proxies/StableTokenKESProxy.sol";
 
 import { cKESConfig, Config } from "./Config.sol";
@@ -45,10 +46,6 @@ contract cKES is IMentoUpgrade, GovernanceScript {
   address private brokerProxy;
   address private biPoolManagerProxy;
   address private reserveProxy;
-
-  address private validators;
-
-  bytes32 private constant POOL_EXCHANGE_ID = keccak256(abi.encodePacked("cKES", "cUSD", "ConstantProduct"));
 
   bool public hasChecks = true;
 
@@ -83,8 +80,6 @@ contract cKES is IMentoUpgrade, GovernanceScript {
     brokerProxy = contracts.deployed("BrokerProxy");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
     reserveProxy = contracts.celoRegistry("Reserve");
-
-    validators = contracts.celoRegistry("Validators");
   }
 
   function run() public {
@@ -159,7 +154,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
             abi.encodeWithSelector(
               IStableTokenV2(0).initializeV2.selector,
               brokerProxy,
-              validators, // TODO: Do we need to set this
+              address(0), // Validator address (not used)
               address(0) // Exchange address (not used)
             )
           )
@@ -270,6 +265,12 @@ contract cKES is IMentoUpgrade, GovernanceScript {
    * @notice This function creates the transactions to configure the trading limits.
    */
   function proposal_configureTradingLimits(cKESConfig.cKES memory config) private {
+    bytes32 exchangeId = getExchangeId(
+      config.poolConfig.asset0,
+      config.poolConfig.asset1,
+      config.poolConfig.isConstantSum
+    );
+
     // Set the trading limit for asset0 of the pool
     transactions.push(
       ICeloGovernance.Transaction(
@@ -277,7 +278,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
         brokerProxy,
         abi.encodeWithSelector(
           Broker(0).configureTradingLimit.selector,
-          POOL_EXCHANGE_ID,
+          exchangeId,
           config.poolConfig.asset0,
           TradingLimits.Config({
             timestep0: config.poolConfig.asset0limits.timeStep0,
@@ -298,7 +299,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
         brokerProxy,
         abi.encodeWithSelector(
           Broker(0).configureTradingLimit.selector,
-          POOL_EXCHANGE_ID,
+          exchangeId,
           config.poolConfig.asset1,
           TradingLimits.Config({
             timestep0: config.poolConfig.asset1limits.timeStep0,
@@ -379,7 +380,7 @@ contract cKES is IMentoUpgrade, GovernanceScript {
       )
     );
 
-     // Set the smoothing factor
+    // Set the smoothing factor
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -391,7 +392,19 @@ contract cKES is IMentoUpgrade, GovernanceScript {
         )
       )
     );
+  }
 
-
+  /**
+   * @notice Helper function to get the exchange ID for a pool.
+   */
+  function getExchangeId(address asset0, address asset1, bool isConstantSum) internal view returns (bytes32) {
+    return
+      keccak256(
+        abi.encodePacked(
+          IERC20Metadata(asset0).symbol(),
+          IERC20Metadata(asset1).symbol(),
+          isConstantSum ? "ConstantSum" : "ConstantProduct"
+        )
+      );
   }
 }
