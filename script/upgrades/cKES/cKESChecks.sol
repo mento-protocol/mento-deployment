@@ -9,6 +9,6 @@ import { cKESChecksVerify } from "./cKESChecks.verify.sol";
 contract cKESChecks is Test {
   function run() public {
     new cKESChecksVerify().run();
-    // new cKESChecksSwap().run(); // TODO: Uncomment this line
+    new cKESChecksSwap().run();
   }
 }

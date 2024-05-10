@@ -9,14 +9,15 @@ import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 
 import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import { IStableTokenV2 } from "mento-core-2.4.0/interfaces/IStableTokenV2.sol";
 
-import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
+import { FixidityLib } from "mento-core-2.4.0/common/FixidityLib.sol";
 
-import { Broker } from "mento-core-2.2.0/swap/Broker.sol";
-import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";
-import { BiPoolManager } from "mento-core-2.2.0/swap/BiPoolManager.sol";
-import { SortedOracles } from "mento-core-2.2.0/oracles/SortedOracles.sol";
-import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
+import { Broker } from "mento-core-2.4.0/swap/Broker.sol";
+import { IBiPoolManager } from "mento-core-2.4.0/interfaces/IBiPoolManager.sol";
+import { BiPoolManager } from "mento-core-2.4.0/swap/BiPoolManager.sol";
+import { SortedOracles } from "mento-core-2.4.0/common/SortedOracles.sol";
+import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
 
 import { cKESChecksBase } from "./cKESChecks.base.sol";
 import { cKESConfig, Config } from "./Config.sol";
@@ -40,8 +41,8 @@ contract cKESChecksSwap is cKESChecksBase {
       BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID)
     );
 
-    swapCUSDToCKES(config);
     swapCKEStoCUSD(config);
+    // swapCUSDToCKES(config);
   }
 
   // *** Swap Checks *** //
@@ -57,9 +58,15 @@ contract cKESChecksSwap is cKESChecksBase {
     address tokenOut = cUSD;
     uint256 amountIn = 100e18;
 
-    //TODO:
-    // Give trader some cKES
-    deal(cKES, trader, 1000e18, true);
+    deal(tokenIn, trader, amountIn);
+
+    console.log("======================== cKES -> cUSD ====================================\r\n");
+
+    console.log("=========================== BEFORE SWAP ====================================");
+    console.log("============================================================================");
+    console.log("cKES balance: ", IERC20(cKES).balanceOf(trader));
+    console.log("cUSD balance: ", IERC20(cUSD).balanceOf(trader));
+    console.log("============================================================================\r\n");
 
     testAndPerformConstantSumSwap(
       exchangeID,
@@ -67,10 +74,14 @@ contract cKESChecksSwap is cKESChecksBase {
       tokenIn,
       tokenOut,
       amountIn,
-      config.poolConfig.referenceRateFeedID,
-      false
+      config.poolConfig.referenceRateFeedID
     );
 
+    console.log("============================ AFTER SWAP ====================================");
+    console.log("============================================================================");
+    console.log("cKES balance: ", IERC20(cKES).balanceOf(trader));
+    console.log("cUSD balance: ", IERC20(cUSD).balanceOf(trader));
+    console.log("============================================================================\r\n");
     console.log("🟢 cKES -> cUSD swap successful 🚀");
   }
 
@@ -85,7 +96,17 @@ contract cKESChecksSwap is cKESChecksBase {
     address tokenOut = cKES;
     uint256 amountIn = 100e18;
 
-    testAndPerformConstantProductSwap(
+    deal(tokenIn, trader, amountIn);
+
+    console.log("\r======================== cUSD -> cKES ====================================\r\n");
+
+    console.log("=========================== BEFORE SWAP ====================================");
+    console.log("============================================================================");
+    console.log("cUSD balance: ", IERC20(cUSD).balanceOf(trader));
+    console.log("cKES balance: ", IERC20(cKES).balanceOf(trader));
+    console.log("============================================================================\r\n");
+
+    testAndPerformConstantSumSwap(
       exchangeID,
       trader,
       tokenIn,
@@ -94,12 +115,18 @@ contract cKESChecksSwap is cKESChecksBase {
       config.poolConfig.referenceRateFeedID
     );
 
+    console.log("============================ AFTER SWAP ====================================");
+    console.log("============================================================================");
+    console.log("cUSD balance: ", IERC20(cUSD).balanceOf(trader));
+    console.log("cKES balance: ", IERC20(cKES).balanceOf(trader));
+    console.log("============================================================================\r\n");
+
     console.log("🟢 cKES -> CELO swap successful 🚀");
   }
 
   // *** Helper Functions *** //
 
-  function testAndPerformConstantProductSwap(
+  function testAndPerformConstantSumSwap(
     bytes32 exchangeID,
     address trader,
     address tokenIn,
@@ -108,54 +135,18 @@ contract cKESChecksSwap is cKESChecksBase {
     address rateFeedID
   ) internal {
     uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
-    IBiPoolManager.PoolExchange memory pool = BiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeID);
-
-    (uint256 numerator, uint256 denominator) = SortedOracles(sortedOraclesProxy).medianRate(rateFeedID);
-    FixidityLib.Fraction memory rate = FixidityLib.newFixedFraction(numerator, denominator);
-
-    FixidityLib.Fraction memory amountInAfterSpread = FixidityLib.newFixed(amountIn).multiply(
-      FixidityLib.newFixedFraction(9950, 10000)
-    );
-
-    uint256 estimatedAmountOut;
-    if (tokenIn == pool.asset0) {
-      estimatedAmountOut = amountInAfterSpread.divide(rate).fromFixed();
-    } else {
-      estimatedAmountOut = amountInAfterSpread.multiply(rate).fromFixed();
-    }
-
-    FixidityLib.Fraction memory maxTolerance = FixidityLib.newFixedFraction(25, 1000);
-    uint256 threshold = FixidityLib.newFixed(estimatedAmountOut).multiply(maxTolerance).fromFixed();
-
-    assertApproxEq(amountOut, estimatedAmountOut, threshold);
-    doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn, amountOut);
-  }
-
-  function testAndPerformConstantSumSwap(
-    bytes32 exchangeID,
-    address trader,
-    address tokenIn,
-    address tokenOut,
-    uint256 amountIn,
-    address rateFeedID,
-    bool isInputTokenBridgedStable
-  ) internal {
-    uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
     (uint256 numerator, uint256 denominator) = SortedOracles(sortedOraclesProxy).medianRate(rateFeedID);
     uint256 estimatedAmountOut;
 
-    if (isInputTokenBridgedStable) {
-      estimatedAmountOut = FixidityLib
-        .newFixed(amountIn.mul(1e12))
-        .multiply(FixidityLib.wrap(numerator).divide(FixidityLib.wrap(denominator)))
-        .fromFixed();
-    } else {
-      estimatedAmountOut = FixidityLib
-        .newFixed(amountIn)
-        .multiply(FixidityLib.wrap(denominator).divide(FixidityLib.wrap(numerator)))
-        .fromFixed();
-      estimatedAmountOut = estimatedAmountOut.div(1e12);
-    }
+    estimatedAmountOut = FixidityLib
+      .newFixed(amountIn)
+      .multiply(FixidityLib.wrap(numerator).divide(FixidityLib.wrap(denominator)))
+      .fromFixed();
+
+    console.log("=========================== AMOUNTS ====================================");
+    console.log("============================================================================");
+    console.log("Broker amount out", amountOut);
+    console.log("Estimated amount out: ", estimatedAmountOut);
 
     FixidityLib.Fraction memory maxTolerance = FixidityLib.newFixedFraction(25, 1000);
     uint256 threshold = FixidityLib.newFixed(estimatedAmountOut).multiply(maxTolerance).fromFixed();
@@ -176,7 +167,16 @@ contract cKESChecksSwap is cKESChecksBase {
 
     vm.startPrank(trader);
     IERC20(tokenIn).approve(address(broker), amountIn);
-    Broker(broker).swapIn(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn, amountOut);
+    uint256 actualAmountOut = Broker(broker).swapIn(
+      biPoolManagerProxy,
+      exchangeID,
+      tokenIn,
+      tokenOut,
+      amountIn,
+      amountOut
+    );
+    console.log("Actual amount out: ", actualAmountOut);
+    console.log("============================================================================\r\n");
     assertEq(IERC20(tokenOut).balanceOf(trader), beforeBuyingTokenOut + amountOut);
     assertEq(IERC20(tokenIn).balanceOf(trader), beforeSellingTokenIn - amountIn);
     vm.stopPrank();

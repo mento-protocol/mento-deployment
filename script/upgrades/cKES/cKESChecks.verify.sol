@@ -55,9 +55,7 @@ contract cKESChecksVerify is cKESChecksBase {
     console.log("   KESUSD: %s", config.rateFeedConfig.rateFeedID);
 
     verifyToken(config);
-    // TODO: Exchange creation is currently commented out.
-    //       Once we have rate feeds, we can uncomment this line
-    // verifyExchange(config);
+    verifyExchange(config);
     verifyCircuitBreaker(config);
   }
 
@@ -198,11 +196,11 @@ contract cKESChecksVerify is cKESChecksBase {
     }
 
     // Ensure the pricing module is the constant product
-    if (address(deployedPool.pricingModule) != constantProduct) {
+    if (address(deployedPool.pricingModule) != constantSum) {
       console.log(
         "The pricing module of deployed pool: %s does not match the expected pricing module: %s.",
         address(deployedPool.pricingModule),
-        constantProduct
+        constantSum
       );
       revert("pricing module of pool does not match the expected pricing module. See logs.");
     }
@@ -391,7 +389,7 @@ contract cKESChecksVerify is cKESChecksBase {
         revert("MedianDeltaBreaker smoothing factor not set correctly for all rate feeds");
       }
     }
-    console.log("🟢 MedianDeltaBreaker cooldown, rate change threshold and smoothing factor set correctly 🔒");
+    console.log("🟢 MedianDeltaBreaker cooldown, rate change threshold and smoothing factor set correctly 🔒\r\n");
   }
 
   function verifyRateChangeTheshold(
