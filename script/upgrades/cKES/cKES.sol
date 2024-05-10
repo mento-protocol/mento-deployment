@@ -15,18 +15,13 @@ import { IPricingModule } from "mento-core-2.4.0/interfaces/IPricingModule.sol";
 import { IReserve } from "mento-core-2.4.0/interfaces/IReserve.sol";
 import { IRegistry } from "mento-core-2.4.0/common/interfaces/IRegistry.sol";
 import { IFeeCurrencyWhitelist } from "../../interfaces/IFeeCurrencyWhitelist.sol";
-import { Proxy } from "mento-core-2.4.0/common/Proxy.sol";
-import { IERC20Metadata } from "mento-core-2.4.0/common/interfaces/IERC20Metadata.sol";
+import { Proxy } from "mento-core-2.4.0/common/Proxy.sol"; 
 import { IStableTokenV2 } from "mento-core-2.4.0/interfaces/IStableTokenV2.sol";
-
-import { BiPoolManagerProxy } from "mento-core-2.4.0/proxies/BiPoolManagerProxy.sol";
-import { BrokerProxy } from "mento-core-2.4.0/proxies/BrokerProxy.sol";
-import { Broker } from "mento-core-2.4.0/swap/Broker.sol";
-import { Exchange } from "mento-core-2.4.0/legacy/Exchange.sol";
+  
+import { Broker } from "mento-core-2.4.0/swap/Broker.sol"; 
 import { TradingLimits } from "mento-core-2.4.0/libraries/TradingLimits.sol";
 import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
-import { MedianDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/MedianDeltaBreaker.sol";
-import { ValueDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/ValueDeltaBreaker.sol";
+import { MedianDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/MedianDeltaBreaker.sol"; 
 import { StableTokenKESProxy } from "mento-core-2.4.0/legacy/proxies/StableTokenKESProxy.sol";
 
 import { cKESConfig, Config } from "./Config.sol";
