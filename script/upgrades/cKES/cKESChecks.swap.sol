@@ -61,13 +61,14 @@ contract cKESChecksSwap is cKESChecksBase {
     // Give trader some cKES
     deal(cKES, trader, 1000e18, true);
 
-    testAndPerformConstantProductSwap(
+    testAndPerformConstantSumSwap(
       exchangeID,
       trader,
       tokenIn,
       tokenOut,
       amountIn,
-      config.poolConfig.referenceRateFeedID
+      config.poolConfig.referenceRateFeedID,
+      false
     );
 
     console.log("🟢 cKES -> cUSD swap successful 🚀");
