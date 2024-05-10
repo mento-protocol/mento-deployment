@@ -5,8 +5,7 @@ pragma experimental ABIEncoderV2;
 
 import { Chain } from "script/utils/Chain.sol";
 import { Config } from "script/utils/Config.sol";
-import { Contracts } from "script/utils/Contracts.sol";
-import { Arrays } from "script/utils/Arrays.sol";
+import { Contracts } from "script/utils/Contracts.sol"; 
 import { FixidityLib } from "script/utils/FixidityLib.sol";
 
 /**
@@ -65,7 +64,7 @@ library cKESConfig {
       spread: FixidityLib.newFixedFraction(1, 100), // 1%
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 3,
-      stablePoolResetSize: 10_000_000,
+      stablePoolResetSize: 10_000_000 * 1e18,
       referenceRateFeedID: Config.rateFeedID("KESUSD"),
       asset0limits: Config.TradingLimit({
         enabled0: true,
