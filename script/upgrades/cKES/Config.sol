@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 
 import { Chain } from "script/utils/Chain.sol";
 import { Config } from "script/utils/Config.sol";
-import { Contracts } from "script/utils/Contracts.sol"; 
+import { Contracts } from "script/utils/Contracts.sol";
 import { FixidityLib } from "script/utils/FixidityLib.sol";
 
 /**
