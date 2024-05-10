@@ -383,5 +383,20 @@ contract cKES is IMentoUpgrade, GovernanceScript {
         )
       )
     );
+
+     // Set the smoothing factor
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        medianDeltaBreaker,
+        abi.encodeWithSelector(
+          MedianDeltaBreaker(0).setSmoothingFactor.selector,
+          config.rateFeedConfig.rateFeedID,
+          config.rateFeedConfig.medianDeltaBreaker0.smoothingFactor
+        )
+      )
+    );
+
+
   }
 }
