@@ -70,7 +70,7 @@ contract cKESChecksBase is GovernanceScript, Test {
 
     // Get Deployment addresses
     breakerBox = contracts.deployed("BreakerBox");
-    medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker"); 
+    medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     constantSum = contracts.deployed("ConstantSumPricingModule");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
   }
