@@ -265,10 +265,8 @@ contract cKES is IMentoUpgrade, GovernanceScript {
    * @notice This function creates the transactions to configure the trading limits.
    */
   function proposal_configureTradingLimits(cKESConfig.cKES memory config) private {
-    bytes32 exchangeId = getExchangeId(
-      config.poolConfig.asset0,
-      config.poolConfig.asset1,
-      config.poolConfig.isConstantSum
+    bytes32 exchangeId = keccak256(
+      abi.encodePacked("cUSD", "cKES", config.poolConfig.isConstantSum ? "ConstantSum" : "ConstantProduct")
     );
 
     // Set the trading limit for asset0 of the pool
