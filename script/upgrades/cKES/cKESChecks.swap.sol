@@ -42,7 +42,7 @@ contract cKESChecksSwap is cKESChecksBase {
     );
 
     swapCKEStoCUSD(config);
-    // swapCUSDToCKES(config);
+    swapCUSDToCKES(config);
   }
 
   // *** Swap Checks *** //
@@ -121,7 +121,7 @@ contract cKESChecksSwap is cKESChecksBase {
     console.log("cKES balance: ", IERC20(cKES).balanceOf(trader));
     console.log("============================================================================\r\n");
 
-    console.log("🟢 cKES -> CELO swap successful 🚀");
+    console.log("🟢 cUSD -> cKES swap successful 🚀");
   }
 
   // *** Helper Functions *** //
@@ -135,18 +135,29 @@ contract cKESChecksSwap is cKESChecksBase {
     address rateFeedID
   ) internal {
     uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
+
+    // This is the KES to USD rate
     (uint256 numerator, uint256 denominator) = SortedOracles(sortedOraclesProxy).medianRate(rateFeedID);
     uint256 estimatedAmountOut;
+
+    // If asset 0 is cUSD flip the rate]
+    if (tokenIn == cUSD) {
+      (numerator, denominator) = (denominator, numerator);
+    }
 
     estimatedAmountOut = FixidityLib
       .newFixed(amountIn)
       .multiply(FixidityLib.wrap(numerator).divide(FixidityLib.wrap(denominator)))
       .fromFixed();
 
-    console.log("=========================== AMOUNTS ====================================");
+    console.log("\r=========================== AMOUNTS ====================================");
     console.log("============================================================================");
-    console.log("Broker amount out", amountOut);
-    console.log("Estimated amount out: ", estimatedAmountOut);
+    console.log("Amount In: ", amountIn);
+    console.log("Broker amount out(Broker.getAmountOut)", amountOut);
+    console.log("Estimated amount out(amountIn * num/dennom): ", estimatedAmountOut);
+
+    uint256 scaledAmountIn = BiPoolManager(biPoolManagerProxy).tokenPrecisionMultipliers(tokenIn);
+    console.log("Scaled amount in: ", scaledAmountIn);
 
     FixidityLib.Fraction memory maxTolerance = FixidityLib.newFixedFraction(25, 1000);
     uint256 threshold = FixidityLib.newFixed(estimatedAmountOut).multiply(maxTolerance).fromFixed();
