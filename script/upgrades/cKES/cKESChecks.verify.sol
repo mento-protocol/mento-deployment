@@ -96,7 +96,7 @@ contract cKESChecksVerify is cKESChecksBase {
     assertEq(cKESTokenMetadata.name(), config.stableTokenConfig.name, "❗️❌ cKES name not set correctly!");
     assertEq(cKESTokenMetadata.symbol(), config.stableTokenConfig.symbol, "❗️❌ cKES symbol not set correctly!");
     assertEq(cKESToken.broker(), broker, "❗️❌ cKES broker not set correctly!");
-    assertEq(cKESToken.validators(), validators, "❗️❌ cKES broker not set correctly!");
+    assertEq(cKESToken.validators(), validators, "❗️❌ cKES validators not set correctly!");
 
     // no pre-mint
     assertEq(cKESToken.totalSupply(), 0, "❗️❌ cKES pre-minted tokens!");
