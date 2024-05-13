@@ -51,6 +51,7 @@ contract cKESChecksBase is GovernanceScript, Test {
   address public reserve;
   address public broker;
   address public breakerBox;
+  address public validators;
 
   function setUp() public {
     // Load addresses from deployments
@@ -73,5 +74,7 @@ contract cKESChecksBase is GovernanceScript, Test {
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     constantSum = contracts.deployed("ConstantSumPricingModule");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
+
+    validators = contracts.celoRegistry("Validators");
   }
 }
