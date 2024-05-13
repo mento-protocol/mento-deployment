@@ -58,7 +58,9 @@ contract cKESChecksSwap is cKESChecksBase {
     address tokenOut = cUSD;
     uint256 amountIn = 100e18;
 
-    deal(tokenIn, trader, amountIn);
+    vm.startPrank(broker);
+    IStableTokenV2(tokenIn).mint(trader, amountIn);
+    vm.stopPrank();
 
     console.log("======================== cKES -> cUSD ====================================\r\n");
 
@@ -157,7 +159,6 @@ contract cKESChecksSwap is cKESChecksBase {
     console.log("Estimated amount out(amountIn * num/dennom): ", estimatedAmountOut);
 
     uint256 scaledAmountIn = BiPoolManager(biPoolManagerProxy).tokenPrecisionMultipliers(tokenIn);
-    console.log("Scaled amount in: ", scaledAmountIn);
 
     FixidityLib.Fraction memory maxTolerance = FixidityLib.newFixedFraction(25, 1000);
     uint256 threshold = FixidityLib.newFixed(estimatedAmountOut).multiply(maxTolerance).fromFixed();
