@@ -277,6 +277,17 @@ library Config {
     uint256[] constitutionThresholds;
   }
 
+  struct StableTokenV2 {
+    /**
+     * @dev The name of the stable token.
+     */
+    string name;
+    /**
+     * @dev The symbol of the stable token.
+     */
+    string symbol;
+  }
+
   /**
    * @dev Helper to create an empty trading limit config.
    */
@@ -316,5 +327,26 @@ library Config {
    */
   function rateFeedID(string memory pair) internal pure returns (address) {
     return address(uint160(uint256(keccak256(abi.encodePacked(pair)))));
+  }
+
+  /**
+   * @notice Helper function to get the function selectors for the Celo stable constitution
+   */
+  function getCeloStableConstitutionSelectors() internal pure returns (bytes4[] memory) {
+    return
+      Arrays.bytes4s(
+        getSelector("setRegistry(address)"),
+        getSelector("setInflationParameters(uint256,uint256)"),
+        getSelector("transfer(address,uint256)"),
+        getSelector("transferWithComment(address,uint256,string)"),
+        getSelector("approve(address,uint256)")
+      );
+  }
+
+  /**
+   * @notice Helper function to get the thresholds for the Celo stable constitution
+   */
+  function getCeloStableConstitutionThresholds() internal pure returns (uint256[] memory) {
+    return Arrays.uints(0.9 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24);
   }
 }
