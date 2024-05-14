@@ -151,14 +151,10 @@ contract cKES is IMentoUpgrade, GovernanceScript {
           0,
           stableTokenKESProxy,
           abi.encodeWithSelector(
-            _cKESProxy._setAndInitializeImplementation.selector,
-            contracts.deployed("StableTokenV2"),
-            abi.encodeWithSelector(
-              IStableTokenV2(0).initializeV2.selector,
-              brokerProxy,
-              validators,
-              address(0) // Exchange address (not used)
-            )
+            IStableTokenV2(0).initializeV2.selector,
+            brokerProxy,
+            validators,
+            address(0) // Exchange address (not used)
           )
         )
       );

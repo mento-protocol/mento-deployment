@@ -335,8 +335,6 @@ library Config {
   function getCeloStableConstitutionSelectors() internal pure returns (bytes4[] memory) {
     return
       Arrays.bytes4s(
-        getSelector("setRegistry(address)"),
-        getSelector("setInflationParameters(uint256,uint256)"),
         getSelector("transfer(address,uint256)"),
         getSelector("transferWithComment(address,uint256,string)"),
         getSelector("approve(address,uint256)")
