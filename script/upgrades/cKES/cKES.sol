@@ -93,7 +93,11 @@ contract cKES is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "https://github.com/celo-org/governance/blob/6b4b2974b82984f9f2298df816e3adfb8950f6cf/CGPs/cgp-0136.md", governance);
+      createProposal(
+        _transactions,
+        "https://github.com/celo-org/governance/blob/6b4b2974b82984f9f2298df816e3adfb8950f6cf/CGPs/cgp-0136.md",
+        governance
+      );
     }
     vm.stopBroadcast();
   }
