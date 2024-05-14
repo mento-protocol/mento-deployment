@@ -43,6 +43,7 @@
     "solhint": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\"",
     "solhint:check": "solhint --config \"./.solhint.json\" \"{contracts,test,script}/**/*.sol\" -q",
     "verify:bytecodes": "yarn ts-node ./bin/verify-bytecodes.ts",
+    "verify:celoscan": "yarn ts-node ./bin/verify-celoscan.ts",
     "deploy": "./bin/deploy.sh",
     "build": "./bin/build.sh",
     "script:dev": "./bin/dev-script.sh",
