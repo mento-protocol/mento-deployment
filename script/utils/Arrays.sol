@@ -214,6 +214,23 @@ library Arrays {
     return arr;
   }
 
+  function bytes4s(bytes4 e0, bytes4 e1, bytes4 e2) internal pure returns (bytes4[] memory arr) {
+    arr = new bytes4[](3);
+    arr[0] = bytes4(e0);
+    arr[1] = bytes4(e1);
+    arr[2] = bytes4(e2);
+    return arr;
+  }
+
+  function bytes4s(bytes4 e0, bytes4 e1, bytes4 e2, bytes4 e3) internal pure returns (bytes4[] memory arr) {
+    arr = new bytes4[](4);
+    arr[0] = bytes4(e0);
+    arr[1] = bytes4(e1);
+    arr[2] = bytes4(e2);
+    arr[3] = bytes4(e3);
+    return arr;
+  }
+
   function bytes4s(bytes4 e0, bytes4 e1, bytes4 e2, bytes4 e3, bytes4 e4) internal pure returns (bytes4[] memory arr) {
     arr = new bytes4[](5);
     arr[0] = bytes4(e0);

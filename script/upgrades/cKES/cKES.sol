@@ -93,8 +93,11 @@ contract cKES is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      //TODO: Add link to CGP MD once it's created
-      createProposal(_transactions, "SET ME PLS :(", governance);
+      createProposal(
+        _transactions,
+        "https://github.com/celo-org/governance/blob/6b4b2974b82984f9f2298df816e3adfb8950f6cf/CGPs/cgp-0136.md",
+        governance
+      );
     }
     vm.stopBroadcast();
   }
@@ -151,14 +154,10 @@ contract cKES is IMentoUpgrade, GovernanceScript {
           0,
           stableTokenKESProxy,
           abi.encodeWithSelector(
-            _cKESProxy._setAndInitializeImplementation.selector,
-            contracts.deployed("StableTokenV2"),
-            abi.encodeWithSelector(
-              IStableTokenV2(0).initializeV2.selector,
-              brokerProxy,
-              validators,
-              address(0) // Exchange address (not used)
-            )
+            IStableTokenV2(0).initializeV2.selector,
+            brokerProxy,
+            validators,
+            address(0) // Exchange address (not used)
           )
         )
       );
