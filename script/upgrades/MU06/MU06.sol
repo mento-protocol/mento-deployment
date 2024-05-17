@@ -131,10 +131,7 @@ contract MU06 is IMentoUpgrade, GovernanceScript {
     }
 
     // set EUROC daily spending ratio to 100%
-    if (
-      Reserve(reserveProxy).getDailySpendingRatioForCollateralAsset(nativeUSDT) !=
-      FixidityLib.fixed1().unwrap()
-    ) {
+    if (Reserve(reserveProxy).getDailySpendingRatioForCollateralAsset(nativeUSDT) != FixidityLib.fixed1().unwrap()) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
