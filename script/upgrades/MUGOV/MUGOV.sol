@@ -77,9 +77,9 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
     IGovernanceFactory.MentoTokenAllocationParams memory params;
 
     params.additionalAllocationRecipients = Arrays.addresses(
-      contracts.dependency("MentoLabsMultisig"), // #2, Mento Labs Team. @TODO: Update final recipient in deps.json
+      contracts.dependency("MentoLabsMultisig"), // #2, Mento Labs Team.
       contracts.dependency("MentoLiquiditySupport"), // #3, Liquidity Support. @TODO: Update final recipient in deps.json
-      contracts.dependency("CeloCommunityTreasury"), // #5, Celo Community Treasury. @TODO: Update final recipient in deps.json
+      contracts.celoRegistry("Governance"), // #5, Celo Community Treasury.
       contracts.dependency("PartialReserveMultisig") // #6, Reserve Safety Fund.
     );
     params.additionalAllocationAmounts = Arrays.uints(300, 100, 50, 50);

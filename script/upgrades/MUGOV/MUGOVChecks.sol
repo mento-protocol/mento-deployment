@@ -48,7 +48,7 @@ contract MUGOVChecks is GovernanceScript, Test {
 
     mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
     mentoLiquiditySupport = contracts.dependency("MentoLiquiditySupport");
-    celoCommunityTreasury = contracts.dependency("CeloCommunityTreasury");
+    celoCommunityTreasury = contracts.celoRegistry("Governance");
     reserve = contracts.dependency("PartialReserveMultisig");
     watchdogMultisig = contracts.dependency("WatchdogMultisig");
     fractalSigner = contracts.dependency("FractalSigner");
