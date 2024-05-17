@@ -70,7 +70,7 @@ library cINRConfig {
         enabled0: true, //TODO
         timeStep0: 0, //TODO
         limit0: 0, //TODO
-        enabled1: 0, //TODO
+        enabled1: true, //TODO
         timeStep1: 0, //TODO
         limit1: 0, //TODO
         enabledGlobal: true, //TODO
