@@ -21,7 +21,7 @@ library MU06Config {
    * @dev Returns the populated configuration object for the MU06 governance proposal.
    */
   function get(Contracts.Cache storage contracts) internal returns (MU06 memory config) {
-    config.poolConfig = USDTcUSD_PoolConfig(contracts);
+    config.poolConfig = cUSDUSDT_PoolConfig(contracts);
     config.rateFeedConfig = USDTUSD_RateFeedConfig();
   }
 
@@ -43,9 +43,9 @@ library MU06Config {
   /* ==================== Pool Configuration ==================== */
 
   /**
-   * @dev Returns the configuration for the USDT/cUSD pool.
+   * @dev Returns the configuration for the cUSD/USDT pool.
    */
-  function USDTcUSD_PoolConfig(Contracts.Cache storage contracts) internal returns (Config.Pool memory config) {
+  function cUSDUSDT_PoolConfig(Contracts.Cache storage contracts) internal returns (Config.Pool memory config) {
     config = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("NativeUSDT"),
@@ -58,10 +58,10 @@ library MU06Config {
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 50_000,
+        limit0: 2_500_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 100_000,
+        limit1: 5_000_000,
         enabledGlobal: false,
         limitGlobal: 0
       }),

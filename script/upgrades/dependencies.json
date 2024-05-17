@@ -2,6 +2,7 @@
   "42220": {
     "BridgedUSDC": "0xEB466342C4d449BC9f53A865D5Cb90586f405215",
     "NativeUSDC": "0xcebA9300f2b948710d2653dD7B07f33A8B32118C",
+    "NativeUSDT": "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
     "BridgedEUROC": "0x061cc5a2C863E0C1Cb404006D559dB18A34C762d",
     "USDCUSDRateFeedAddr": "0xA1A8003936862E7a15092A91898D69fa8bCE290c",
     "USDCEURRateFeedAddr": "0x206B25Ea01E188Ee243131aFdE526bA6E131a016",
@@ -15,13 +16,13 @@
     "GrandaMento": "0x03f6842b82dd2c9276931a17dd23d73c16454a49",
     "MentoLabsMultisig": "0x",
     "WatchdogMultisig": "0x",
-    "FractalSigner": "0xacD08d6714ADba531beFF582e6FD5DA1AFD6bc65",
-    "NativeUSDT": "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e"
+    "FractalSigner": "0xacD08d6714ADba531beFF582e6FD5DA1AFD6bc65"
   },
   "62320": {
     "BridgedUSDC": "0xD4079B322c392D6b196f90AA4c439fC2C16d6770",
     "BridgedEUROC": "0x6f90ac394b1F45290d3023e4Ba0203005cAF2A4B",
     "NativeUSDC": "0xB407D37d76c417B6343310D42611FCA106B2abB8",
+    "NativeUSDT": "",
     "USDCUSDRateFeedAddr": "0xA1A8003936862E7a15092A91898D69fa8bCE290c",
     "USDCEURRateFeedAddr": "0x206B25Ea01E188Ee243131aFdE526bA6E131a016",
     "USDCBRLRateFeedAddr": "0x25F21A1f97607Edf6852339fad709728cffb9a9d",
@@ -34,12 +35,12 @@
     "GrandaMento": "0xdfd641aB188Add84B317fB0b241F6b879E5EF906",
     "MentoLabsMultisig": "0xNotDeployingOnBaklava",
     "WatchdogMultisig": "0xNotDeployingBaklava",
-    "FractalSigner": "0xNotDeployingOnBaklava",
-    "NativeUSDT": ""
+    "FractalSigner": "0xNotDeployingOnBaklava"
   },
   "44787": {
     "BridgedUSDC": "0x87D61dA3d668797786D73BC674F053f87111570d",
     "NativeUSDC": "0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B",
+    "NativeUSDT": "",
     "BridgedEUROC": "0x6e673502c5b55F3169657C004e5797fFE5be6653",
     "USDCUSDRateFeedAddr": "0xA1A8003936862E7a15092A91898D69fa8bCE290c",
     "USDCEURRateFeedAddr": "0x206B25Ea01E188Ee243131aFdE526bA6E131a016",
@@ -55,7 +56,6 @@
     "WatchdogMultisig": "0x823655c966be3b6344Efd4D2A0FE8d0a1e3D691B",
     "CeloCommunityTreasury": "0x707D2B6Bd0acf76821AD5A09A1C6F43d6d6f692c",
     "MentoLiquiditySupport": "0x6bD481a12cb2790E7EE805b9E6e7E91917DeEe6a",
-    "FractalSigner": "0x2fCAb633adFA6aF8266025D63228047033c3ceD0",
-    "NativeUSDT": ""
+    "FractalSigner": "0x2fCAb633adFA6aF8266025D63228047033c3ceD0"
   }
 }
