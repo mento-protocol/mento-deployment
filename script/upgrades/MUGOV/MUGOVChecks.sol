@@ -128,7 +128,7 @@ contract MUGOVChecks is GovernanceScript, Test {
     assertEq(mentoGovernor.token(), address(locking), "MentoGovernor token is incorrect");
     assertEq(mentoGovernor.votingDelay(), 0, "MentoGovernor voting delay is incorrect");
     assertEq(mentoGovernor.votingPeriod(), 120960, "MentoGovernor voting period is incorrect");
-    assertEq(mentoGovernor.proposalThreshold(), 1000 * 1e18, "MentoGovernor proposal threshold is incorrect");
+    assertEq(mentoGovernor.proposalThreshold(), 10000 * 1e18, "MentoGovernor proposal threshold is incorrect");
     assertEq(mentoGovernor.quorumNumerator(), 2, "MentoGovernor quorum numerator is incorrect");
     assertEq(mentoGovernor.timelock(), address(governanceTimelock), "MentoGovernor timelock is incorrect");
     console.log("🟢 Mento Governor setup correctly");
