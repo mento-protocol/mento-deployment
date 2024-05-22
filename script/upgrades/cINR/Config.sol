@@ -42,10 +42,10 @@ library cINRConfig {
   function INRUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = Config.rateFeedID("INRUSD");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
-      enabled: true, // TODO
-      threshold: FixidityLib.newFixedFraction(0, 0), // TODO
-      cooldown: 0, // TODO
-      smoothingFactor: FixidityLib.newFixedFraction(0, 0).unwrap() // TODO
+      enabled: true, 
+      threshold: FixidityLib.newFixedFraction(5, 1000), //  0.005
+      cooldown: 15m, 
+      smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap() // 0.0005
     });
   }
 
@@ -60,31 +60,31 @@ library cINRConfig {
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.deployed("StableTokenINRProxy"),
-      isConstantSum: true, //TODO
-      spread: FixidityLib.newFixedFraction(0, 0), //TODO
-      referenceRateResetFrequency: 0, //TODO
-      minimumReports: 0, //TODO
-      stablePoolResetSize: 0, //TODO
+      isConstantSum: true, 
+      spread: FixidityLib.newFixedFraction(5, 1000), // 0.005
+      referenceRateResetFrequency: 5m, 
+      minimumReports: 3, // assuming 5 oracle clients
+      stablePoolResetSize: 10_000_000 * 1e18, //
       referenceRateFeedID: Config.rateFeedID("INRUSD"),
       asset0limits: Config.TradingLimit({
-        enabled0: true, //TODO
-        timeStep0: 0, //TODO
-        limit0: 0, //TODO
-        enabled1: true, //TODO
-        timeStep1: 0, //TODO
-        limit1: 0, //TODO
-        enabledGlobal: true, //TODO
-        limitGlobal: 0 //TODO
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: true,
+        limitGlobal: 1_250_000
       }),
       asset1limits: Config.TradingLimit({
-        enabled0: true, //TODO
-        timeStep0: 0, //TODO
-        limit0: 0, //TODO
-        enabled1: true, //TODO
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 84 * 100_000,
+        enabled1: true,
         timeStep1: 1 days,
-        limit1: 0, //TODO
-        enabledGlobal: true, //TODO
-        limitGlobal: 0 //TODO
+        limit1: 84 * 500_000,
+        enabledGlobal: true,
+        limitGlobal: 84 * 1_250_000
       })
     });
 
