@@ -22,7 +22,7 @@ contract MUGOVChecks is GovernanceScript, Test {
 
   address mentoLabsMultisig;
   address mentoLiquiditySupport;
-  address celoCommunityTreasury;
+  address foundationMultisig;
   address reserve;
   address watchdogMultisig;
   address fractalSigner;
@@ -48,7 +48,7 @@ contract MUGOVChecks is GovernanceScript, Test {
 
     mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
     mentoLiquiditySupport = contracts.dependency("MentoLiquiditySupport");
-    celoCommunityTreasury = contracts.celoRegistry("Governance");
+    foundationMultisig = contracts.dependency("MentoFoundationMultisig");
     reserve = contracts.dependency("PartialReserveMultisig");
     watchdogMultisig = contracts.dependency("WatchdogMultisig");
     fractalSigner = contracts.dependency("FractalSigner");
@@ -60,7 +60,7 @@ contract MUGOVChecks is GovernanceScript, Test {
     // ============== Token allocation ==============
     assertEq(mentoToken.balanceOf(mentoLabsMultisig), 300_000_000 * 1e18, "❌ mentoLabsMultisig allocation");
     assertEq(mentoToken.balanceOf(mentoLiquiditySupport), 100_000_000 * 1e18, "❌ mentoLiquiditySupport allocation");
-    assertEq(mentoToken.balanceOf(celoCommunityTreasury), 50_000_000 * 1e18, "❌ celoCommunityTreasury allocation");
+    assertEq(mentoToken.balanceOf(foundationMultisig), 50_000_000 * 1e18, "❌ celoCommunityTreasury allocation");
     assertEq(mentoToken.balanceOf(reserve), 50_000_000 * 1e18, "❌ reserve allocation");
     assertEq(mentoToken.balanceOf(address(airgrab)), 50_000_000 * 1e18, "❌ airgrab allocation");
     assertEq(mentoToken.balanceOf(address(governanceTimelock)), 50_000_000 * 1e18, "❌ governanceTimelock allocation");
