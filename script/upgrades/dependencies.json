@@ -13,7 +13,8 @@
     "ExchangeEUR": "0xe383394b913d7302c49f794c7d3243c429d53d1d",
     "ExchangeBRL": "0x8f2cf9855c919afac8bd2e7acec0205ed568a4ea",
     "GrandaMento": "0x03f6842b82dd2c9276931a17dd23d73c16454a49",
-    "MentoLabsMultisig": "0x",
+    "MentoLabsMultisig": "0x655133d8E90F8190ed5c1F0f3710F602800C0150",
+    "MentoLiquiditySupport": "0x",
     "WatchdogMultisig": "0x",
     "FractalSigner": "0xacD08d6714ADba531beFF582e6FD5DA1AFD6bc65"
   },
