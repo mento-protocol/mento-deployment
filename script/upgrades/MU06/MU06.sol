@@ -278,7 +278,6 @@ contract MU06 is IMentoUpgrade, GovernanceScript {
       )
     );
 
-
     // Enable Value Delta Breaker for rate feeds
     if (rateFeed.valueDeltaBreaker0.enabled) {
       transactions.push(
