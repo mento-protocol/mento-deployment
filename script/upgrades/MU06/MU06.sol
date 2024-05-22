@@ -267,16 +267,17 @@ contract MU06 is IMentoUpgrade, GovernanceScript {
    * @notice This function creates the transactions to configure the Breakerbox.
    */
   function proposal_configureBreakerBox(MU06Config.MU06 memory config) private {
+    Config.RateFeed memory rateFeed = config.rateFeedConfig;
+
     // Add the new rate feed to breaker box
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         breakerBox,
-        abi.encodeWithSelector(BreakerBox(0).addRateFeeds.selector, Arrays.addresses(config.rateFeedConfig.rateFeedID))
+        abi.encodeWithSelector(BreakerBox(0).addRateFeeds.selector, Arrays.addresses(rateFeed.rateFeedID))
       )
     );
 
-    Config.RateFeed memory rateFeed = config.rateFeedConfig;
 
     // Enable Value Delta Breaker for rate feeds
     if (rateFeed.valueDeltaBreaker0.enabled) {

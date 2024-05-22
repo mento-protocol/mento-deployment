@@ -7,6 +7,7 @@ import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
 
 import { Reserve } from "mento-core-2.2.0/swap/Reserve.sol";
 import { TradingLimits } from "mento-core-2.2.0/libraries/TradingLimits.sol";
+import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";
 
 import { MU06ChecksBase } from "./MU06Checks.base.sol";
 import { MU06Config, Config } from "./Config.sol";
@@ -34,6 +35,7 @@ contract MU06ChecksVerify is MU06ChecksBase {
     MU06Config.MU06 memory config = MU06Config.get(contracts);
 
     verifyReserveCollateralAssets();
+    verifyPoolExchanges(config);
     verifyTradingLimits(config);
   }
 
@@ -62,11 +64,71 @@ contract MU06ChecksVerify is MU06ChecksBase {
       bytes32 asset1LimitId = exchangeId ^ bytes32(uint256(uint160(config.pools[i].asset1)));
       TradingLimits.Config memory asset1ActualLimit = _broker.tradingLimitsConfig(asset1LimitId);
 
-      checkTradingLimt(poolConfig.asset0limits, asset0ActualLimit);
-      checkTradingLimt(poolConfig.asset1limits, asset1ActualLimit);
+      checkTradingLimit(poolConfig.asset0limits, asset0ActualLimit);
+      checkTradingLimit(poolConfig.asset1limits, asset1ActualLimit);
     }
 
     console.log("🟢 Trading limits correctly updated for all exchanges 🔒");
+  }
+
+  function verifyPoolExchanges(MU06Config.MU06 memory config) internal {
+    console.log("\n== Verifying Pool Exchanges ==");
+    for (uint256 i = 0; i < config.pools.length; i++) {
+      Config.Pool memory poolConfig = config.pools[i];
+      console.log("\nVerifying pool exchange for %s/%s", poolConfig.asset0, poolConfig.asset1);
+
+      bytes32 exchangeId = getExchangeId(poolConfig.asset0, poolConfig.asset1, poolConfig.isConstantSum);
+
+      IBiPoolManager.PoolExchange memory pool = IBiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeId);
+
+      if (pool.config.spread.unwrap() != poolConfig.spread.unwrap()) {
+        console.log(
+          "The spread of deployed pool: %s does not match the expected spread: %s.",
+          pool.config.spread.unwrap(),
+          poolConfig.spread.unwrap()
+        );
+        revert("spread of pool does not match the expected spread. See logs.");
+      }
+
+      if (pool.config.referenceRateFeedID != poolConfig.referenceRateFeedID) {
+        console.log(
+          "The referenceRateFeedID of deployed pool: %s does not match the expected referenceRateFeedID: %s.",
+          pool.config.referenceRateFeedID,
+          poolConfig.referenceRateFeedID
+        );
+        revert("referenceRateFeedID of pool does not match the expected referenceRateFeedID. See logs.");
+      }
+
+      if (pool.config.minimumReports != poolConfig.minimumReports) {
+        console.log(
+          "The minimumReports of deployed pool: %s does not match the expected minimumReports: %s.",
+          pool.config.minimumReports,
+          poolConfig.minimumReports
+        );
+        revert("minimumReports of pool does not match the expected minimumReports. See logs.");
+      }
+
+      if (pool.config.referenceRateResetFrequency != poolConfig.referenceRateResetFrequency) {
+        console.log(
+          "The referenceRateResetFrequency of deployed pool: %s does not match the expected: %s.",
+          pool.config.referenceRateResetFrequency,
+          poolConfig.referenceRateResetFrequency
+        );
+        revert(
+          "referenceRateResetFrequency of pool does not match the expected referenceRateResetFrequency. See logs."
+        );
+      }
+
+      if (pool.config.stablePoolResetSize != poolConfig.stablePoolResetSize) {
+        console.log(
+          "The stablePoolResetSize of deployed pool: %s does not match the expected stablePoolResetSize: %s.",
+          pool.config.stablePoolResetSize,
+          poolConfig.stablePoolResetSize
+        );
+        revert("stablePoolResetSize of pool does not match the expected stablePoolResetSize. See logs.");
+      }
+    }
+    console.log("\tPool config is correctly configured 🤘🏼");
   }
 
   function verifyCollateralSpendingRatio(address collateralAsset, uint256 expectedRatio) internal {
@@ -93,7 +155,7 @@ contract MU06ChecksVerify is MU06ChecksBase {
     console.log("🟢 Spending ratio for Asset: %s successfully set to ", collateralAsset, expectedRatio);
   }
 
-  function checkTradingLimt(
+  function checkTradingLimit(
     Config.TradingLimit memory expectedTradingLimit,
     TradingLimits.Config memory actualTradingLimit
   ) internal view {

@@ -55,7 +55,7 @@ library MU06Config {
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("NativeUSDC"),
       isConstantSum: true,
-      spread: FixidityLib.newFixedFraction(0, 1), // 0%
+      spread: FixidityLib.wrap(0), // 0%
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 12_000_000 * 1e18, // 12 million
@@ -87,7 +87,7 @@ library MU06Config {
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("BridgedUSDC"),
       isConstantSum: true,
-      spread: FixidityLib.newFixedFraction(0, 1), // 0%
+      spread: FixidityLib.wrap(0), // 0%
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 12_000_000 * 1e18, // 12 million
@@ -118,7 +118,7 @@ library MU06Config {
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.dependency("NativeUSDT"),
       isConstantSum: true,
-      spread: FixidityLib.newFixedFraction(0, 1), // 0%
+      spread: FixidityLib.wrap(0), // 0%
       minimumReports: 5,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 12_000_000 * 1e18, // 12 million
