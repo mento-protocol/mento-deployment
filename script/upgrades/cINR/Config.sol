@@ -61,7 +61,7 @@ library cINRConfig {
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.deployed("StableTokenINRProxy"),
       isConstantSum: true, 
-      spread: FixidityLib.newFixedFraction(5, 1000), // 0.005
+      spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
       referenceRateResetFrequency: 5m, 
       minimumReports: 3, // assuming 5 oracle clients
       stablePoolResetSize: 10_000_000 * 1e18, //
