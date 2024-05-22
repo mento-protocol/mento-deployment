@@ -24,6 +24,7 @@ contract MU06ChecksBase is GovernanceScript, Test {
   address public biPoolManagerProxy;
   address payable public reserveProxy;
   address public breakerBox;
+  address public valueDeltaBreaker;
   address public sortedOraclesProxy;
 
   address public reserveSpender;
@@ -33,8 +34,9 @@ contract MU06ChecksBase is GovernanceScript, Test {
 
     // Load addresses from deployments
     contracts.loadSilent("MU01-00-Create-Proxies", "latest");
+    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.loadSilent("MU03-02-Create-Implementations", "latest");
 
     // Tokens
     cUSDProxy = address(uint160(contracts.celoRegistry("StableToken")));
@@ -43,10 +45,11 @@ contract MU06ChecksBase is GovernanceScript, Test {
     nativeUSDT = contracts.dependency("NativeUSDT");
 
     // Mento contracts
-    brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
-    biPoolManagerProxy = address(uint160(contracts.deployed("BiPoolManagerProxy")));
+    brokerProxy = contracts.deployed("BrokerProxy");
+    biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
     reserveProxy = address(uint160(contracts.celoRegistry("Reserve")));
-    breakerBox = address(uint160(contracts.deployed("BreakerBox")));
+    breakerBox = contracts.deployed("BreakerBox");
+    valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
     sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
 
     reserveSpender = contracts.dependency("PartialReserveMultisig");

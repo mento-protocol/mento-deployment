@@ -8,6 +8,8 @@ import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
 import { Reserve } from "mento-core-2.2.0/swap/Reserve.sol";
 import { TradingLimits } from "mento-core-2.2.0/libraries/TradingLimits.sol";
 import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";
+import { BreakerBox } from "mento-core-2.2.0/oracles/BreakerBox.sol";
+import { ValueDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/ValueDeltaBreaker.sol";
 
 import { MU06ChecksBase } from "./MU06Checks.base.sol";
 import { MU06Config, Config } from "./Config.sol";
@@ -37,6 +39,8 @@ contract MU06ChecksVerify is MU06ChecksBase {
     verifyReserveCollateralAssets();
     verifyPoolExchanges(config);
     verifyTradingLimits(config);
+    verifyBreakerBoxChanges(config);
+    verifyValueDeltaBreakerChanges(config);
   }
 
   function verifyReserveCollateralAssets() internal {
@@ -48,27 +52,6 @@ contract MU06ChecksVerify is MU06ChecksBase {
     deal(nativeUSDT, reserveProxy, 100_000e6);
     verifyCollateralSpendingRatio(nativeUSDT, 1e24);
     console.log("🟢 Asset: %s successfully added to collateral asset list", nativeUSDT);
-  }
-
-  function verifyTradingLimits(MU06Config.MU06 memory config) internal view {
-    console.log("\n== Verifying TradingLimits changes in Broker ==");
-    IBrokerWithCasts _broker = IBrokerWithCasts(brokerProxy);
-
-    for (uint256 i = 0; i < config.pools.length; i++) {
-      bytes32 exchangeId = getExchangeId(config.pools[i].asset0, config.pools[i].asset1, config.pools[i].isConstantSum);
-      Config.Pool memory poolConfig = config.pools[i];
-
-      bytes32 asset0LimitId = exchangeId ^ bytes32(uint256(uint160(config.pools[i].asset0)));
-      TradingLimits.Config memory asset0ActualLimit = _broker.tradingLimitsConfig(asset0LimitId);
-
-      bytes32 asset1LimitId = exchangeId ^ bytes32(uint256(uint160(config.pools[i].asset1)));
-      TradingLimits.Config memory asset1ActualLimit = _broker.tradingLimitsConfig(asset1LimitId);
-
-      checkTradingLimit(poolConfig.asset0limits, asset0ActualLimit);
-      checkTradingLimit(poolConfig.asset1limits, asset1ActualLimit);
-    }
-
-    console.log("🟢 Trading limits correctly updated for all exchanges 🔒");
   }
 
   function verifyPoolExchanges(MU06Config.MU06 memory config) internal {
@@ -131,6 +114,74 @@ contract MU06ChecksVerify is MU06ChecksBase {
     console.log("\tPool config is correctly configured 🤘🏼");
   }
 
+  function verifyTradingLimits(MU06Config.MU06 memory config) internal view {
+    console.log("\n== Verifying TradingLimits changes in Broker ==");
+    IBrokerWithCasts _broker = IBrokerWithCasts(brokerProxy);
+
+    for (uint256 i = 0; i < config.pools.length; i++) {
+      bytes32 exchangeId = getExchangeId(config.pools[i].asset0, config.pools[i].asset1, config.pools[i].isConstantSum);
+      Config.Pool memory poolConfig = config.pools[i];
+
+      bytes32 asset0LimitId = exchangeId ^ bytes32(uint256(uint160(config.pools[i].asset0)));
+      TradingLimits.Config memory asset0ActualLimit = _broker.tradingLimitsConfig(asset0LimitId);
+
+      bytes32 asset1LimitId = exchangeId ^ bytes32(uint256(uint160(config.pools[i].asset1)));
+      TradingLimits.Config memory asset1ActualLimit = _broker.tradingLimitsConfig(asset1LimitId);
+
+      checkTradingLimit(poolConfig.asset0limits, asset0ActualLimit);
+      checkTradingLimit(poolConfig.asset1limits, asset1ActualLimit);
+    }
+
+    console.log("🟢 Trading limits correctly updated for all exchanges 🔒");
+  }
+
+  function verifyBreakerBoxChanges(MU06Config.MU06 memory config) internal {
+    // verify USDT rate feed is added to the breaker box
+    console.log("\n== Verifying BreakerBox Changes ==");
+    require(
+      BreakerBox(breakerBox).rateFeedStatus(config.rateFeedConfig.rateFeedID),
+      "❗️❌ USDT rate feed not added to the BreakerBox"
+    );
+    require(
+      BreakerBox(breakerBox).isBreakerEnabled(valueDeltaBreaker, config.rateFeedConfig.rateFeedID),
+      "❗️❌ ValueDeltaBreaker not enabled for USDT rate feed"
+    );
+
+    console.log("🟢 USDT rate feed added to the BreakerBox with ValueDeltaBreaker enabled");
+  }
+
+  function verifyValueDeltaBreakerChanges(MU06Config.MU06 memory config) internal {
+    Config.RateFeed memory rateFeed = config.rateFeedConfig;
+
+    if (rateFeed.valueDeltaBreaker0.enabled) {
+      uint256 cooldown = ValueDeltaBreaker(valueDeltaBreaker).rateFeedCooldownTime(rateFeed.rateFeedID);
+      uint256 rateChangeThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(rateFeed.rateFeedID);
+      uint256 referenceValue = ValueDeltaBreaker(valueDeltaBreaker).referenceValues(rateFeed.rateFeedID);
+
+      // verify cooldown period
+      verifyCooldownTime(cooldown, rateFeed.valueDeltaBreaker0.cooldown, rateFeed.rateFeedID, true);
+
+      // verify rate change threshold
+      verifyRateChangeTheshold(
+        rateChangeThreshold,
+        rateFeed.valueDeltaBreaker0.threshold.unwrap(),
+        rateFeed.rateFeedID,
+        true
+      );
+
+      // verify reference value
+      if (referenceValue != rateFeed.valueDeltaBreaker0.referenceValue) {
+        console.log("ValueDeltaBreaker reference value not set correctly for the rate feed: %s", rateFeed.rateFeedID);
+        revert("ValueDeltaBreaker reference values not set correctly for all rate feeds");
+      }
+    }
+    console.log("\tValueDeltaBreaker cooldown, rate change threshold and reference value set correctly 🔒");
+  }
+
+  // /* ================================================================ */
+  // /* ============================ Helpers =========================== */
+  // /* ================================================================ */
+
   function verifyCollateralSpendingRatio(address collateralAsset, uint256 expectedRatio) internal {
     console.log("\n== Verifying Collateral Spending Ratio for %s ==", collateralAsset);
     // @notice verifying spending ratios by trying to move the allowed, and more than the allowed amount
@@ -153,6 +204,38 @@ contract MU06ChecksVerify is MU06ChecksBase {
     console.log("🟢 Successfully transferred the max allowed amount");
 
     console.log("🟢 Spending ratio for Asset: %s successfully set to ", collateralAsset, expectedRatio);
+  }
+
+  function verifyRateChangeTheshold(
+    uint256 currentThreshold,
+    uint256 expectedThreshold,
+    address rateFeedID,
+    bool isValueDeltaBreaker
+  ) internal view {
+    if (currentThreshold != expectedThreshold) {
+      if (isValueDeltaBreaker) {
+        console.log("ValueDeltaBreaker rate change threshold not set correctly for rate feed %s", rateFeedID);
+        revert("ValueDeltaBreaker rate change threshold not set correctly for all rate feeds");
+      }
+      console.log("MedianDeltaBreaker rate change threshold not set correctly for rate feed %s", rateFeedID);
+      revert("MedianDeltaBreaker rate change threshold not set correctly for all rate feeds");
+    }
+  }
+
+  function verifyCooldownTime(
+    uint256 currentCoolDown,
+    uint256 expectedCoolDown,
+    address rateFeedID,
+    bool isValueDeltaBreaker
+  ) internal view {
+    if (currentCoolDown != expectedCoolDown) {
+      if (isValueDeltaBreaker) {
+        console.log("ValueDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);
+        revert("ValueDeltaBreaker cooldown not set correctly for all rate feeds");
+      }
+      console.log("MedianDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);
+      revert("MedianDeltaBreaker cooldown not set correctly for all rate feeds");
+    }
   }
 
   function checkTradingLimit(
