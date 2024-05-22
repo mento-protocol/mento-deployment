@@ -37,6 +37,8 @@ contract MU06 is IMentoUpgrade, GovernanceScript {
   // Tokens
   address private cUSD;
   address private nativeUSDT;
+  address private nativeUSDC;
+  address private bridgedUSDC;
 
   // Mento contracts
   address private breakerBox;
@@ -68,6 +70,8 @@ contract MU06 is IMentoUpgrade, GovernanceScript {
     // Tokens
     cUSD = contracts.celoRegistry("StableToken");
     nativeUSDT = contracts.dependency("NativeUSDT");
+    nativeUSDC = contracts.dependency("NativeUSDC");
+    bridgedUSDC = contracts.dependency("BridgedUSDC");
 
     // Oracles
     breakerBox = contracts.deployed("BreakerBox");
@@ -99,8 +103,11 @@ contract MU06 is IMentoUpgrade, GovernanceScript {
     // Add USDT to the reserve as a collateral asset
     proposal_addUSDTToReserve();
 
+    // Destroy the existing cUSD/USDC exchanges
+    proposal_destroyExchanges(config);
+
     // Create the exchanges
-    proposal_createExchange(config);
+    proposal_createExchanges(config);
 
     // Configure the trading limits
     proposal_configureTradingLimits(config);
@@ -146,44 +153,93 @@ contract MU06 is IMentoUpgrade, GovernanceScript {
   }
 
   /**
-   * @notice Creates the exchange for the new native USDT pool.
+   * @notice This function creates the transactions to destroy the existing cUSD/USDC pairs
+   * to redeploy them in the next step.
    */
-  function proposal_createExchange(MU06Config.MU06 memory config) private {
+
+  function proposal_destroyExchanges(MU06Config.MU06 memory config) private {
+    bytes32[2] memory exchangeIds;
+    exchangeIds[0] = getExchangeId(config.cUSDUSDC.asset0, config.cUSDUSDC.asset1, config.cUSDUSDC.isConstantSum);
+    exchangeIds[1] = getExchangeId(
+      config.cUSDaxlUSDC.asset0,
+      config.cUSDaxlUSDC.asset1,
+      config.cUSDaxlUSDC.isConstantSum
+    );
+
+    //it's ok to hardcode the indexes here since the transaction would fail if index and identifier don't match
+    uint256[2] memory exchangeIndices;
+    exchangeIndices[0] = 9; // cUSD/USDC
+    require(
+      IBiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeIds[0]).asset0 == config.cUSDUSDC.asset0,
+      "Wrong exchange idx"
+    );
+    require(
+      IBiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeIds[0]).asset1 == config.cUSDUSDC.asset1,
+      "Wrong exchange idx"
+    );
+
+    exchangeIndices[1] = 3; // cUSD/axL/USDC
+    require(
+      IBiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeIds[1]).asset0 == config.cUSDaxlUSDC.asset0,
+      "Wrong exchange idx"
+    );
+    require(
+      IBiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeIds[1]).asset1 == config.cUSDaxlUSDC.asset1,
+      "Wrong exchange idx"
+    );
+
+    for (uint256 i = 0; i < exchangeIndices.length; i++) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          biPoolManagerProxy,
+          abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, exchangeIds[i], exchangeIndices[i])
+        )
+      );
+    }
+  }
+
+  /**
+   * @notice Creates the exchange for the new native USDT pool and the destroyed USDC pools
+   */
+  function proposal_createExchanges(MU06Config.MU06 memory config) private {
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
-    IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
-      asset0: config.poolConfig.asset0,
-      asset1: config.poolConfig.asset1,
-      pricingModule: config.poolConfig.isConstantSum ? constantSum : constantProduct,
-      bucket0: 0,
-      bucket1: 0,
-      lastBucketUpdate: 0,
-      config: IBiPoolManager.PoolConfig({
-        spread: FixidityLib.wrap(config.poolConfig.spread.unwrap()),
-        referenceRateFeedID: config.poolConfig.referenceRateFeedID,
-        referenceRateResetFrequency: config.poolConfig.referenceRateResetFrequency,
-        minimumReports: config.poolConfig.minimumReports,
-        stablePoolResetSize: config.poolConfig.stablePoolResetSize
-      })
-    });
+    for (uint256 i = 0; i < config.pools.length; i++) {
+      IBiPoolManager.PoolExchange memory pool = IBiPoolManager.PoolExchange({
+        asset0: config.pools[i].asset0,
+        asset1: config.pools[i].asset1,
+        pricingModule: config.pools[i].isConstantSum ? constantSum : constantProduct,
+        bucket0: 0,
+        bucket1: 0,
+        lastBucketUpdate: 0,
+        config: IBiPoolManager.PoolConfig({
+          spread: FixidityLib.wrap(config.pools[i].spread.unwrap()),
+          referenceRateFeedID: config.pools[i].referenceRateFeedID,
+          referenceRateResetFrequency: config.pools[i].referenceRateResetFrequency,
+          minimumReports: config.pools[i].minimumReports,
+          stablePoolResetSize: config.pools[i].stablePoolResetSize
+        })
+      });
 
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        biPoolManagerProxy,
-        abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, pool)
-      )
-    );
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          biPoolManagerProxy,
+          abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, pool)
+        )
+      );
+    }
   }
 
   /**
    * @notice This function creates the transactions to configure the trading limits.
    */
   function proposal_configureTradingLimits(MU06Config.MU06 memory config) private {
-    bytes32 exchangeId = keccak256(
-      abi.encodePacked("cUSD", "USDT", config.poolConfig.isConstantSum ? "ConstantSum" : "ConstantProduct")
-    );
+    Config.Pool memory pool = config.cUSDUSDT;
+
+    bytes32 exchangeId = getExchangeId(pool.asset0, pool.asset1, pool.isConstantSum);
 
     // Set the trading limit for asset0 of the pool
     transactions.push(
@@ -193,14 +249,14 @@ contract MU06 is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           Broker(0).configureTradingLimit.selector,
           exchangeId,
-          config.poolConfig.asset0,
+          pool.asset0,
           TradingLimits.Config({
-            timestep0: config.poolConfig.asset0limits.timeStep0,
-            timestep1: config.poolConfig.asset0limits.timeStep1,
-            limit0: config.poolConfig.asset0limits.limit0,
-            limit1: config.poolConfig.asset0limits.limit1,
-            limitGlobal: config.poolConfig.asset0limits.limitGlobal,
-            flags: Config.tradingLimitConfigToFlag(config.poolConfig.asset0limits)
+            timestep0: pool.asset0limits.timeStep0,
+            timestep1: pool.asset0limits.timeStep1,
+            limit0: pool.asset0limits.limit0,
+            limit1: pool.asset0limits.limit1,
+            limitGlobal: pool.asset0limits.limitGlobal,
+            flags: Config.tradingLimitConfigToFlag(pool.asset0limits)
           })
         )
       )
