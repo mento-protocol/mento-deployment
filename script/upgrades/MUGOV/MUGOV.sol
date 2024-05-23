@@ -55,7 +55,7 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           IGovernanceFactory(0).createGovernance.selector,
           contracts.dependency("WatchdogMultisig"),
-          readAirgrabMerkleRoot(), // @TODO: Update merkle tree after final snapshot
+          readAirgrabMerkleRoot(),
           contracts.dependency("FractalSigner"),
           allocationParams
         )
@@ -79,7 +79,7 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
     params.additionalAllocationRecipients = Arrays.addresses(
       contracts.dependency("MentoLabsMultisig"), // #2, Mento Labs Team.
       contracts.dependency("MentoLiquiditySupport"), // #3, Liquidity Support.
-      contracts.celoRegistry("Governance"), // #5, Celo Community Treasury. // TODO: Update this to the correct address
+      contracts.dependency("MentoFoundationMultisig"), // #5, Celo Community Allocation initially goes to the Foundation Multisig.
       contracts.dependency("PartialReserveMultisig") // #6, Reserve Safety Fund.
     );
     params.additionalAllocationAmounts = Arrays.uints(300, 100, 50, 50);
