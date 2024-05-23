@@ -119,7 +119,7 @@ library MU06Config {
       asset1: contracts.dependency("NativeUSDT"),
       isConstantSum: true,
       spread: FixidityLib.wrap(0), // 0%
-      minimumReports: 5,
+      minimumReports: 3,
       referenceRateResetFrequency: 5 minutes,
       stablePoolResetSize: 12_000_000 * 1e18, // 12 million
       referenceRateFeedID: Config.rateFeedID("USDTUSD"),
