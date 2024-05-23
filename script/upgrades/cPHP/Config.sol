@@ -42,10 +42,10 @@ library cPHPConfig {
   function PHPUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = Config.rateFeedID("PHPUSD");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
-      enabled: true, // TODO
-      threshold: FixidityLib.newFixedFraction(0, 0), // TODO
-      cooldown: 0, // TODO
-      smoothingFactor: FixidityLib.newFixedFraction(0, 0).unwrap() // TODO
+      enabled: true, 
+      threshold: FixidityLib.newFixedFraction(2, 100), // 0.02
+      cooldown: 15 minutes, 
+      smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap() // 0.0005
     });
   }
 
@@ -60,31 +60,31 @@ library cPHPConfig {
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.deployed("StableTokenPHPProxy"),
-      isConstantSum: true, //TODO
-      spread: FixidityLib.newFixedFraction(0, 0), //TODO
-      referenceRateResetFrequency: 0, //TODO
-      minimumReports: 0, //TODO
-      stablePoolResetSize: 0, //TODO
+      isConstantSum: true, 
+      spread: FixidityLib.newFixedFraction(5, 1000), // 0.005
+      referenceRateResetFrequency: 5 minutes, 
+      minimumReports: 3, // assuming 5 oracle clients
+      stablePoolResetSize: 10_000_000 * 1e18, 
       referenceRateFeedID: Config.rateFeedID("PHPUSD"),
       asset0limits: Config.TradingLimit({
-        enabled0: true, //TODO
-        timeStep0: 0, //TODO
-        limit0: 0, //TODO
-        enabled1: true, //TODO
-        timeStep1: 0, //TODO
-        limit1: 0, //TODO
-        enabledGlobal: true, //TODO
-        limitGlobal: 0 //TODO
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 50_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 250_000,
+        enabledGlobal: true,
+        limitGlobal: 1_000_000
       }),
       asset1limits: Config.TradingLimit({
-        enabled0: true, //TODO
-        timeStep0: 0, //TODO
-        limit0: 0, //TODO
-        enabled1: true, //TODO
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 58 * 50_000,
+        enabled1: true,
         timeStep1: 1 days,
-        limit1: 0, //TODO
-        enabledGlobal: true, //TODO
-        limitGlobal: 0 //TODO
+        limit1: 58 * 250_000,
+        enabledGlobal: true,
+        limitGlobal: 58 * 1_000_000
       })
     });
 
