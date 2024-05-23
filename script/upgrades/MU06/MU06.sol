@@ -91,7 +91,7 @@ contract MU06 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "SET ME PLS :(", governance);
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0138.md", governance);
     }
     vm.stopBroadcast();
   }
