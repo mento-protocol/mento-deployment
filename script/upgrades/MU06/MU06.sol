@@ -91,7 +91,7 @@ contract MU06 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "SET ME PLS :'(", governance);
+      createProposal(_transactions, "https://forum.celo.org/t/proposal-mento-upgrade-mu06-native-usdt-integration/8010", governance);
     }
     vm.stopBroadcast();
   }

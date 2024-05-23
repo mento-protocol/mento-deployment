@@ -150,7 +150,7 @@ contract MU06ChecksSwap is MU06ChecksBase {
 
     testAndPerformConstantSumSwap(exchangeID, trader, tokenIn, tokenOut, amountIn, config.cUSDUSDT.referenceRateFeedID);
 
-    console.log("\t🟢 native USDC -> cUSD swap successful 🚀");
+    console.log("\t🟢 native USDT -> cUSD swap successful 🚀");
   }
 
   function swapcUSDtoNativeUSDT(MU06Config.MU06 memory config) internal {
@@ -166,7 +166,7 @@ contract MU06ChecksSwap is MU06ChecksBase {
 
     testAndPerformConstantSumSwap(exchangeID, trader, tokenIn, tokenOut, amountIn, config.cUSDUSDT.referenceRateFeedID);
 
-    console.log("\t🟢 cUSD -> native USDC swap successful 🚀");
+    console.log("\t🟢 cUSD -> native USDT swap successful 🚀");
   }
 
   // *** Helper Functions *** //
