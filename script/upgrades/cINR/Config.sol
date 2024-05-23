@@ -44,7 +44,7 @@ library cINRConfig {
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true, 
       threshold: FixidityLib.newFixedFraction(5, 1000), //  0.005
-      cooldown: 15m, 
+      cooldown: 15 minutes, 
       smoothingFactor: FixidityLib.newFixedFraction(5, 10000).unwrap() // 0.0005
     });
   }
@@ -62,7 +62,7 @@ library cINRConfig {
       asset1: contracts.deployed("StableTokenINRProxy"),
       isConstantSum: true, 
       spread: FixidityLib.newFixedFraction(25, 10000), // 0.0025
-      referenceRateResetFrequency: 5m, 
+      referenceRateResetFrequency: 5 minutes, 
       minimumReports: 3, // assuming 5 oracle clients
       stablePoolResetSize: 10_000_000 * 1e18, //
       referenceRateFeedID: Config.rateFeedID("INRUSD"),
