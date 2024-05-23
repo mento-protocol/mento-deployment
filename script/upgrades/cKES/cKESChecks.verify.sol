@@ -7,20 +7,20 @@ import { Arrays } from "script/utils/Arrays.sol";
 
 import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
-import { TradingLimits } from "mento-core-2.4.0/libraries/TradingLimits.sol";
-import { StableTokenKESProxy } from "mento-core-2.4.0/legacy/proxies/StableTokenKESProxy.sol";
+import { TradingLimits } from "mento-core-2.3.1/libraries/TradingLimits.sol";
+import { StableTokenKESProxy } from "mento-core-2.3.1/legacy/proxies/StableTokenKESProxy.sol";
 
-import { IRegistry } from "mento-core-2.4.0/common/interfaces/IRegistry.sol";
-import { IBiPoolManager } from "mento-core-2.4.0/interfaces/IBiPoolManager.sol";
-import { IERC20Metadata } from "mento-core-2.4.0/common/interfaces/IERC20Metadata.sol";
-import { IStableTokenV2 } from "mento-core-2.4.0/interfaces/IStableTokenV2.sol";
+import { IRegistry } from "mento-core-2.3.1/common/interfaces/IRegistry.sol";
+import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
+import { IERC20Metadata } from "mento-core-2.3.1/common/interfaces/IERC20Metadata.sol";
+import { IStableTokenV2 } from "mento-core-2.3.1/interfaces/IStableTokenV2.sol";
 
-import { Reserve } from "mento-core-2.4.0/swap/Reserve.sol";
+import { Reserve } from "mento-core-2.3.1/swap/Reserve.sol";
 import { Ownable } from "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import { Proxy } from "mento-core-2.4.0/common/Proxy.sol";
-import { BiPoolManager } from "mento-core-2.4.0/swap/BiPoolManager.sol";
-import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
-import { MedianDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/MedianDeltaBreaker.sol";
+import { Proxy } from "mento-core-2.3.1/common/Proxy.sol";
+import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
+import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
+import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 
 import { cKESChecksBase } from "./cKESChecks.base.sol";
 import { cKESConfig, Config } from "./Config.sol";

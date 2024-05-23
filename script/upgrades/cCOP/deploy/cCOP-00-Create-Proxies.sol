@@ -5,7 +5,7 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-import { StableTokenCOPProxy } from "mento-core-2.4.0/legacy/proxies/StableTokenCOPProxy.sol";
+import { StableTokenCOPProxy } from "mento-core-2.3.1/legacy/proxies/StableTokenCOPProxy.sol";
 
 /*
  yarn deploy -n <network> -u cCOP -s cCOP-00-Create-Proxies.sol

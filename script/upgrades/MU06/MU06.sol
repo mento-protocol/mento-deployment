@@ -9,16 +9,16 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-import { FixidityLib } from "mento-core-2.4.0/common/FixidityLib.sol";
-import { IBiPoolManager } from "mento-core-2.4.0/interfaces/IBiPoolManager.sol";
-import { IPricingModule } from "mento-core-2.4.0/interfaces/IPricingModule.sol";
-import { IReserve } from "mento-core-2.4.0/interfaces/IReserve.sol";
+import { FixidityLib } from "mento-core-2.3.1/common/FixidityLib.sol";
+import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
+import { IPricingModule } from "mento-core-2.3.1/interfaces/IPricingModule.sol";
+import { IReserve } from "mento-core-2.3.1/interfaces/IReserve.sol";
 
-import { Broker } from "mento-core-2.4.0/swap/Broker.sol";
-import { TradingLimits } from "mento-core-2.4.0/libraries/TradingLimits.sol";
-import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
-import { ValueDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/ValueDeltaBreaker.sol";
-import { Reserve } from "mento-core-2.4.0/swap/Reserve.sol";
+import { Broker } from "mento-core-2.3.1/swap/Broker.sol";
+import { TradingLimits } from "mento-core-2.3.1/libraries/TradingLimits.sol";
+import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
+import { ValueDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/ValueDeltaBreaker.sol";
+import { Reserve } from "mento-core-2.3.1/swap/Reserve.sol";
 
 import { MU06Config, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
