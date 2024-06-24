@@ -11,80 +11,61 @@ import { IBroker } from "mento-core-3.0.0/interfaces/IBroker.sol";
 
 contract GoodDollar_CreateTestingEnviorment is Script {
   function run() public {
-    address mockGoodDollarExchangeProvider;
-    string memory gdProviderPath = string(
-      abi.encodePacked("out/GoodDollarExchangeProvider.sol/GoodDollarExchangeProvider.json")
-    );
-    bytes memory gdProviderBytecode = abi.encodePacked(vm.getCode(gdProviderPath), abi.encode(false));
-
-    address mockGoodDollarExpansionController;
-    string memory gdExpansionControllerPath = string(
-      abi.encodePacked("out/GoodDollarExpansionController.sol/GoodDollarExpansionController.json")
-    );
-    bytes memory gdExpansionControllerBytecode = abi.encodePacked(
-      vm.getCode(gdExpansionControllerPath),
-      abi.encode(false)
-    );
-
-    address mockCUSD;
-    string memory cusdPath = string(abi.encodePacked("out/StableTokenV2.sol/StableTokenV2.json"));
-    bytes memory cusdBytecode = abi.encodePacked(vm.getCode(cusdPath), abi.encode(false));
-
-    address mockBrokerV2;
-    string memory brokerPath = string(abi.encodePacked("out/Broker.sol/Broker.json"));
-    bytes memory brokerBytecode = abi.encodePacked(vm.getCode(brokerPath), abi.encode(true));
-
-    address payable mockReserve;
-
     vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
-    {
-      assembly {
-        mockGoodDollarExchangeProvider := create(0, add(gdProviderBytecode, 0x20), mload(gdProviderBytecode))
 
-        mockGoodDollarExpansionController := create(
-          0,
-          add(gdExpansionControllerBytecode, 0x20),
-          mload(gdExpansionControllerBytecode)
-        )
+    address mockGoodDollarExchangeProvider = deployProvider(
+      "out/GoodDollarExchangeProvider.sol/GoodDollarExchangeProvider.json",
+      false
+    );
+    address mockGoodDollarExpansionController = deployProvider(
+      "out/GoodDollarExpansionController.sol/GoodDollarExpansionController.json",
+      false
+    );
+    address mockCUSD = deployToken("out/StableTokenV2.sol/StableTokenV2.json", false);
+    address mockBrokerV2 = deployProvider("out/Broker.sol/Broker.json", true);
 
-        mockCUSD := create(0, add(cusdBytecode, 0x20), mload(cusdBytecode))
+    address payable mockReserve = address(new Reserve(true));
+    configureReserve(address(uint160(mockReserve)), mockBrokerV2, mockCUSD);
+    initializeCUSD(mockCUSD, mockBrokerV2);
+    configureBrokerV2(mockBrokerV2, mockGoodDollarExchangeProvider, mockReserve);
 
-        mockBrokerV2 := create(0, add(brokerBytecode, 0x20), mload(brokerBytecode))
-      }
-
-      // configure and initilize mockReserve
-
-      mockReserve = address(new Reserve(true));
-
-      configureReserve(address(uint160(mockReserve)), mockBrokerV2, mockCUSD);
-
-      // configure and initialize mockCUSD
-      address[] memory initialBalanceAddresses = new address[](0);
-      uint256[] memory initialBalances = new uint256[](0);
-      IStableTokenV2(mockCUSD).initialize(
-        "mockCUSD",
-        "mockCUSD",
-        0,
-        address(0),
-        0,
-        0,
-        initialBalanceAddresses,
-        initialBalances,
-        ""
-      );
-      IStableTokenV2(mockCUSD).initializeV2(address(mockBrokerV2), address(0), address(0));
-
-      // // configure and initialize mockBrokerV2
-
-      configureBrokerV2(mockBrokerV2, mockGoodDollarExchangeProvider, mockReserve);
-    }
     vm.stopBroadcast();
 
     console.log("----------");
     console.log("----------");
   }
 
-  function configureReserve(address payable reserve, address broker, address collateralAsset) public {
+  function deployProvider(string memory path, bool isBroker) private returns (address) {
+    bytes memory bytecode = abi.encodePacked(vm.getCode(path), abi.encode(isBroker));
+    address deployedAddress;
+    assembly {
+      deployedAddress := create(0, add(bytecode, 0x20), mload(bytecode))
+    }
+    return deployedAddress;
+  }
+
+  function deployToken(string memory path, bool isToken) private returns (address) {
+    return deployProvider(path, isToken); // Reuse deployProvider as logic is similar
+  }
+
+  function initializeCUSD(address mockCUSD, address mockBrokerV2) private {
+    address[] memory initialBalanceAddresses = new address[](0);
+    uint256[] memory initialBalances = new uint256[](0);
+    IStableTokenV2(mockCUSD).initialize(
+      "mockCUSD",
+      "mockCUSD",
+      0,
+      address(0),
+      0,
+      0,
+      initialBalanceAddresses,
+      initialBalances,
+      ""
+    );
+    IStableTokenV2(mockCUSD).initializeV2(address(mockBrokerV2), address(0), address(0));
+  }
+
+  function configureReserve(address payable reserve, address broker, address collateralAsset) internal {
     bytes32[] memory initialAssetAllocationSymbols = new bytes32[](2);
     initialAssetAllocationSymbols[0] = bytes32("cGLD");
     initialAssetAllocationSymbols[1] = bytes32("mockCUSD");
@@ -115,7 +96,7 @@ contract GoodDollar_CreateTestingEnviorment is Script {
     Reserve(reserve).addExchangeSpender(broker);
   }
 
-  function configureBrokerV2(address brokerV2, address exchangeProvider, address reserve) public {
+  function configureBrokerV2(address brokerV2, address exchangeProvider, address reserve) internal {
     address[] memory exchangeProviders = new address[](1);
     address[] memory reserves = new address[](1);
     exchangeProviders[0] = exchangeProvider;
