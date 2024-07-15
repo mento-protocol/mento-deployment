@@ -49,6 +49,26 @@ parse_upgrade () { # $1: upgrade
     fi
 }
 
+parse_gov () { # $1: governance
+    if [ -z "$1" ]; then
+        echo "🚨 No governance provided (-g)"
+        exit 1
+    fi
+
+    case $1 in
+        "celo")
+            UTILS_DIR="script/utils"
+            ;;
+        "mento")
+            UTILS_DIR="script/utils/mento"
+            ;;
+        *)
+            echo "🚨 Invalid governance: '$1' (celo|mento)"
+            exit 1
+    esac
+    echo "🗳️  Governance in use: $1"
+}
+
 forge_skip () { # $1: target
     if [ "dev" = $1 ]; then
         # If target is dev script, skip all upgrades
