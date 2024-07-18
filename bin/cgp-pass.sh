@@ -5,29 +5,32 @@
 # Usage: yarn cgp:pass 
 #               -n <baklava|alfajores>  -- network to pass the proposal on
 #               -p <proposal_id>        -- proposal ID
-# Example: yarn cgp:pass -n baklava -p 79
+#               -g <celo|mento>         -- governance to use
+# Example: yarn cgp:pass -n baklava -p 79 -g mento
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
 PROPOSAL_ID=""
-while getopts n:p: flag
+GOVERNANCE=""
+while getopts n:p:g: flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         p) PROPOSAL_ID=${OPTARG};;
+        g) GOVERNANCE=${OPTARG};;
     esac
 done
 
 parse_network "$NETWORK"
+parse_gov "$GOVERNANCE"
 
 if [ -z "$PROPOSAL_ID" ]; then
     echo "🚨 No proposal ID provided"
     exit 1
 fi
 
-celocli config:set --node $RPC_URL
 
 SIGNER_PK_PARAM="--privateKey $SIGNER_PK"
 if [ -z "$SIGNER_PK" ]; then
@@ -36,19 +39,29 @@ if [ -z "$SIGNER_PK" ]; then
     SIGNER_PK_PARAM=""
 fi
 
-echo "✅ Approving proposal $PROPOSAL_ID"
-echo "=========================================="
-celocli governance:approve --proposalID $PROPOSAL_ID --from $APPROVER --useMultiSig --privateKey $APPROVER_PK
-echo -e "\a"
-echo "🗳️ Voting proposal $PROPOSAL_ID"
-echo "=========================================="
-celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
-echo "😴 301s"
-echo -e "\a" && sleep 301
-echo "💃 Executing proposal $PROPOSAL_ID"
-yarn cgp:execute -n $NETWORK -p $PROPOSAL_ID
-# celocli governance:execute --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
+if [ "$GOVERNANCE" = "celo" ]; then
+    celocli config:set --node $RPC_URL
+    echo "✅ Approving proposal $PROPOSAL_ID"
+    echo "=========================================="
+    celocli governance:approve --proposalID $PROPOSAL_ID --from $APPROVER --useMultiSig --privateKey $APPROVER_PK
+    echo -e "\a"
+    echo "🗳️ Voting proposal $PROPOSAL_ID"
+    echo "=========================================="
+    celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
+    echo "😴 301s"
+    echo -e "\a" && sleep 301
+    # celocli governance:execute --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
+elif [ "$GOVERNANCE" = "mento" ]; then
+    # TODO: implement proposal passing for mento governance
+    echo "❌ Mento Governance proposal passing not implemented"
+    exit 1
+else
+    echo "❌ Unknown governance: $GOVERNANCE"
+    exit 1
+fi
 
+echo "💃 Executing proposal $PROPOSAL_ID"
+yarn cgp:execute -n $NETWORK -p $PROPOSAL_ID -g $GOVERNANCE
 # Proposal passed, make some noise
 echo -e "\a"
 echo -e "\a"
