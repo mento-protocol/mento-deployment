@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines, var-name-mixedcase
-pragma solidity ^0.5.13;
+pragma solidity >=0.5.13 <0.9.0;
 pragma experimental ABIEncoderV2;
 
 import { FixidityLib } from "./FixidityLib.sol";
