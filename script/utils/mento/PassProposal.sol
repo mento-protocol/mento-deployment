@@ -33,7 +33,7 @@ contract PassProposal is Script {
     if (forVotes >= quorumRequired && forVotes > againstVotes) {
       console2.log(unicode"🟢 Proposal has enough votes to pass");
     } else {
-      revert(unicode"❌ Proposal need more votes to pass");
+      revert(unicode"❌ Proposal needs more votes to pass");
     }
   }
 }
