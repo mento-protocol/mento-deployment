@@ -53,11 +53,11 @@ if [ "$GOVERNANCE" = "celo" ]; then
 elif [ "$GOVERNANCE" = "mento" ]; then
     echo "🗳️ Voting proposal: $PROPOSAL_ID"
     echo "=========================================="
-    forge script --rpc-url $RPC_URL --sig "run(uint256)" $UTILS_DIR/PassProposal.sol:PassProposal $PROPOSAL_ID --broadcast --no-cache
+    forge script --rpc-url $RPC_URL --sig "run(uint256)" $UTILS_DIR/PassProposal.sol:PassProposal $PROPOSAL_ID --broadcast 
     countdown 301 # wait for voting period to end
     echo "✅ Queuing proposal: $PROPOSAL_ID"
     echo "=========================================="
-    forge script --rpc-url $RPC_URL --sig "run(uint256)" $UTILS_DIR/QueueProposal.sol:QueueProposal $PROPOSAL_ID --broadcast --no-cache
+    forge script --rpc-url $RPC_URL --sig "run(uint256)" $UTILS_DIR/QueueProposal.sol:QueueProposal $PROPOSAL_ID --broadcast 
     countdown 601 # wait for queue period to end
 else
     echo "❌ Unknown governance: $GOVERNANCE"
