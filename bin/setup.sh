@@ -101,3 +101,12 @@ confirm_if_celo () { # $1: network
         done
     fi
 }
+
+countdown() { # $1: seconds
+    local seconds=$1
+    echo "😴 Waiting for $seconds seconds..."
+    for ((i=seconds; i>0; i--)); do
+        echo -ne "$i seconds remaining\033[0K\r"
+        sleep 1
+    done
+}

@@ -48,13 +48,17 @@ if [ "$GOVERNANCE" = "celo" ]; then
     echo "🗳️ Voting proposal $PROPOSAL_ID"
     echo "=========================================="
     celocli governance:vote --value=Yes --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
-    echo "😴 301s"
-    echo -e "\a" && sleep 301
+    countdown 301
     # celocli governance:execute --from=$SIGNER --proposalID=$PROPOSAL_ID $SIGNER_PK_PARAM
 elif [ "$GOVERNANCE" = "mento" ]; then
-    # TODO: implement proposal passing for mento governance
-    echo "❌ Mento Governance proposal passing not implemented"
-    exit 1
+    echo "🗳️ Voting proposal: $PROPOSAL_ID"
+    echo "=========================================="
+    forge script --rpc-url $RPC_URL --sig "run(uint256)" $UTILS_DIR/PassProposal.sol:PassProposal $PROPOSAL_ID --broadcast --no-cache
+    countdown 301 # wait for voting period to end
+    echo "✅ Queuing proposal: $PROPOSAL_ID"
+    echo "=========================================="
+    forge script --rpc-url $RPC_URL --sig "run(uint256)" $UTILS_DIR/QueueProposal.sol:QueueProposal $PROPOSAL_ID --broadcast --no-cache
+    countdown 601 # wait for queue period to end
 else
     echo "❌ Unknown governance: $GOVERNANCE"
     exit 1
