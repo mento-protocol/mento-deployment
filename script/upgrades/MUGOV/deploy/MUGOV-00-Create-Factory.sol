@@ -9,6 +9,7 @@ contract MUGOV_CreateImplementations is Script {
   function run() public {
     IRegistry registry = IRegistry(0x000000000000000000000000000000000000ce10);
     address owner = registry.getAddressForStringOrDie("Governance");
+    owner = 0xa0Ad8DD40104556122c21dF50eD14bb1B53A3338;
     address governanceFactory;
 
     vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));

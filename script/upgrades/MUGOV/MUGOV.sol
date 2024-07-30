@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines, var-name-mixedcase, max-line-length
-pragma solidity ^0.5.13;
+pragma solidity 0.8.18;
 pragma experimental ABIEncoderV2;
 
-import { GovernanceScript } from "script/utils/Script.sol";
+import { GovernanceScript } from "script/utils/mento/Script.sol";
 import { console2 as console } from "forge-std/Script.sol";
-import { Contracts } from "script/utils/Contracts.sol";
-import { Chain } from "script/utils/Chain.sol";
+import { Contracts } from "script/utils/mento/Contracts.sol";
+import { Chain } from "script/utils/mento/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 import { stdJson } from "forge-std/StdJson.sol";
 
@@ -14,6 +14,7 @@ import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 
 contract MUGOV is IMentoUpgrade, GovernanceScript {
+  using Contracts for Contracts.Cache;
   ICeloGovernance.Transaction[] private transactions;
   bytes32 private markleRoot;
 
@@ -32,7 +33,9 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
 
   function run() public {
     prepare();
-    address governance = contracts.celoRegistry("Governance");
+    //address governance = contracts.celoRegistry("Governance");
+    address governance = 0x558e92236f85Bb4e8A63ec0D5Bf9d34087Eab744;
+
     ICeloGovernance.Transaction[] memory _transactions = buildProposal();
 
     vm.startBroadcast(Chain.deployerPrivateKey());
@@ -53,7 +56,7 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
         0,
         mentoGovernanceFactory,
         abi.encodeWithSelector(
-          IGovernanceFactory(0).createGovernance.selector,
+          IGovernanceFactory(address(0)).createGovernance.selector,
           contracts.dependency("WatchdogMultisig"),
           readAirgrabMerkleRoot(),
           contracts.dependency("FractalSigner"),
