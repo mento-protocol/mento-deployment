@@ -2,7 +2,6 @@
 pragma solidity ^0.8.18;
 
 import { Script, console2 } from "forge-std/Script.sol";
-import { Chain } from "./Chain.sol";
 import { ICeloGovernance } from "../../interfaces/ICeloGovernance.sol";
 import { IGovernor } from "../../interfaces/IGovernor.sol";
 
@@ -17,9 +16,10 @@ contract GovernanceHelper is Script {
   function createProposal(
     ICeloGovernance.Transaction[] memory transactions,
     string memory descriptionURL,
-    address governance
+    address governance,
+    uint256 chainId
   ) internal {
-    if (Chain.isCelo()) {
+    if (chainId == 42220) {
       verifyDescription(descriptionURL);
     } else {
       // Add timestamp to the description URL on testnets to avoid proposalId conflicts

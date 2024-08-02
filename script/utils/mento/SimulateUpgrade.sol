@@ -18,7 +18,7 @@ contract SimulateUpgrade is GovernanceScript {
   function run(string memory _upgrade) public {
     fork();
 
-    address governance = IGovernanceFactory(GOVERNANCE_FACTORY).governanceTimelock();
+    address governance = IGovernanceFactory(chainInfo.governanceFactory).governanceTimelock();
     IMentoUpgrade upgrade = IMentoUpgrade(factory.create(_upgrade));
     upgrade.prepare();
 
