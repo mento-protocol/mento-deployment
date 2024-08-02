@@ -12,10 +12,8 @@ import { IERC20Lite } from "../../interfaces/IERC20Lite.sol";
 contract Script is BaseScript {
   using Contracts for Contracts.Cache;
   using FixidityLib for FixidityLib.Fraction;
-  using Chain for Chain.ChainInfo;
 
   Contracts.Cache public contracts;
-  Chain.ChainInfo public chainInfo;
   Factory public factory;
 
   constructor() {
@@ -24,7 +22,6 @@ contract Script is BaseScript {
 
   function _init() internal {
     factory = new Factory();
-    chainInfo.setChainInfo();
   }
 
   function fork() public {

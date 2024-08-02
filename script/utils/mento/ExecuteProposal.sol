@@ -7,7 +7,7 @@ import { IGovernor } from "../../interfaces/IGovernor.sol";
 
 contract ExecuteProposal is Script {
   function run(uint256 proposalId) public {
-    address governance = IGovernanceFactory(chainInfo.governanceFactory).mentoGovernor();
+    address governance = IGovernanceFactory(Chain.governanceFactory()).mentoGovernor();
 
     vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
     {

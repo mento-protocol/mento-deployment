@@ -28,12 +28,6 @@ library Chain {
   string public constant NETWORK_ALFAJORES_PK_ENV_VAR = "ALFAJORES_DEPLOYER_PK";
   address public constant GOVERNANCE_FACTORY_ALFAJORES = 0x96Fe03DBFEc1EB419885a01d2335bE7c1a45e33b;
 
-  struct ChainInfo {
-    string name;
-    uint256 id;
-    address governanceFactory;
-  }
-
   /**
    * @notice Get the current chainId
    * @return _chainId the chain id
@@ -89,21 +83,15 @@ library Chain {
     vm.selectFork(forkId);
   }
 
-  function setChainInfo(ChainInfo storage self) internal {
-    self.name = rpcToken();
-    self.id = id();
-    self.governanceFactory = governanceFactory();
-  }
-
-  function isCelo() public view returns (bool) {
+  function isCelo() internal view returns (bool) {
     return id() == NETWORK_CELO_CHAINID;
   }
 
-  function isBaklava() public view returns (bool) {
+  function isBaklava() internal view returns (bool) {
     return id() == NETWORK_BAKLAVA_CHAINID;
   }
 
-  function isAlfajores() public view returns (bool) {
+  function isAlfajores() internal view returns (bool) {
     return id() == NETWORK_ALFAJORES_CHAINID;
   }
 }
