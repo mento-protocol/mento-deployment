@@ -2,9 +2,9 @@
 pragma solidity ^0.8.18;
 
 import { Script, console2 } from "forge-std/Script.sol";
-import { Chain } from "./Chain.sol";
 import { ICeloGovernance } from "../../interfaces/ICeloGovernance.sol";
 import { IGovernor } from "../../interfaces/IGovernor.sol";
+import { Chain } from "./Chain.sol";
 
 contract GovernanceHelper is Script {
   struct MentoGovernanceTransaction {

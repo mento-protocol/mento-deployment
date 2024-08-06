@@ -4,10 +4,11 @@ pragma solidity ^0.8.18;
 import { Script } from "./Script.sol";
 import { IGovernanceFactory } from "../../interfaces/IGovernanceFactory.sol";
 import { IGovernor } from "../../interfaces/IGovernor.sol";
+import { Chain } from "./Chain.sol";
 
 contract ExecuteProposal is Script {
   function run(uint256 proposalId) public {
-    address governance = IGovernanceFactory(GOVERNANCE_FACTORY).mentoGovernor();
+    address governance = IGovernanceFactory(Chain.governanceFactory()).mentoGovernor();
 
     vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
     {

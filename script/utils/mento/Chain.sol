@@ -14,16 +14,19 @@ library Chain {
   string public constant NETWORK_CELO_CHAINID_STRING = "42220";
   string public constant NETWORK_CELO_RPC = "celo";
   string public constant NETWORK_CELO_PK_ENV_VAR = "MENTO_DEPLOYER_PK";
+  address public constant GOVERNANCE_FACTORY_CELO = 0xee6CE2dbe788dFC38b8F583Da86cB9caf2C8cF5A;
 
   uint256 public constant NETWORK_BAKLAVA_CHAINID = 62320;
   string public constant NETWORK_BAKLAVA_CHAINID_STRING = "62320";
   string public constant NETWORK_BAKLAVA_RPC = "baklava";
   string public constant NETWORK_BAKLAVA_PK_ENV_VAR = "BAKLAVA_DEPLOYER_PK";
+  address public constant GOVERNANCE_FACTORY_BAKLAVA = 0xe23A28a92B95c743fC0F09c16a6b2E6D59F234Fa;
 
   uint256 public constant NETWORK_ALFAJORES_CHAINID = 44787;
   string public constant NETWORK_ALFAJORES_CHAINID_STRING = "44787";
   string public constant NETWORK_ALFAJORES_RPC = "alfajores";
   string public constant NETWORK_ALFAJORES_PK_ENV_VAR = "ALFAJORES_DEPLOYER_PK";
+  address public constant GOVERNANCE_FACTORY_ALFAJORES = 0x96Fe03DBFEc1EB419885a01d2335bE7c1a45e33b;
 
   /**
    * @notice Get the current chainId
@@ -60,6 +63,14 @@ library Chain {
     revert("unexpected network");
   }
 
+  function governanceFactory() internal view returns (address) {
+    uint256 _chainId = id();
+    if (_chainId == NETWORK_CELO_CHAINID) return GOVERNANCE_FACTORY_CELO;
+    if (_chainId == NETWORK_BAKLAVA_CHAINID) return GOVERNANCE_FACTORY_BAKLAVA;
+    if (_chainId == NETWORK_ALFAJORES_CHAINID) return GOVERNANCE_FACTORY_ALFAJORES;
+    revert("unexpected network");
+  }
+
   function deployerAddr() internal view returns (address payable) {
     return payable(address(uint160(vm.addr(deployerPrivateKey()))));
   }
@@ -72,15 +83,15 @@ library Chain {
     vm.selectFork(forkId);
   }
 
-  function isCelo() public view returns (bool) {
+  function isCelo() internal view returns (bool) {
     return id() == NETWORK_CELO_CHAINID;
   }
 
-  function isBaklava() public view returns (bool) {
+  function isBaklava() internal view returns (bool) {
     return id() == NETWORK_BAKLAVA_CHAINID;
   }
 
-  function isAlfajores() public view returns (bool) {
+  function isAlfajores() internal view returns (bool) {
     return id() == NETWORK_ALFAJORES_CHAINID;
   }
 }

@@ -16,20 +16,8 @@ contract Script is BaseScript {
   Contracts.Cache public contracts;
   Factory public factory;
 
-  address public GOVERNANCE_FACTORY;
-
   constructor() {
     _init();
-
-    if (Chain.isCelo()) {
-      GOVERNANCE_FACTORY = 0xee6CE2dbe788dFC38b8F583Da86cB9caf2C8cF5A;
-    } else if (Chain.isBaklava()) {
-      GOVERNANCE_FACTORY = 0xe23A28a92B95c743fC0F09c16a6b2E6D59F234Fa;
-    } else if (Chain.isAlfajores()) {
-      GOVERNANCE_FACTORY = 0x96Fe03DBFEc1EB419885a01d2335bE7c1a45e33b;
-    } else {
-      revert("unexpected network");
-    }
   }
 
   function _init() internal {

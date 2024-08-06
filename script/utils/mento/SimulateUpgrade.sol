@@ -7,6 +7,7 @@ import { Contracts } from "script/utils/mento/Contracts.sol";
 import { IMentoUpgrade } from "script/interfaces/IMentoUpgrade.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 import { GovernanceScript } from "script/utils/mento/Script.sol";
+import { Chain } from "script/utils/mento/Chain.sol";
 
 interface IScript {
   function run() external;
@@ -18,7 +19,7 @@ contract SimulateUpgrade is GovernanceScript {
   function run(string memory _upgrade) public {
     fork();
 
-    address governance = IGovernanceFactory(GOVERNANCE_FACTORY).governanceTimelock();
+    address governance = IGovernanceFactory(Chain.governanceFactory()).governanceTimelock();
     IMentoUpgrade upgrade = IMentoUpgrade(factory.create(_upgrade));
     upgrade.prepare();
 
