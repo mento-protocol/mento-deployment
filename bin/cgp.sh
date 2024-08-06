@@ -58,7 +58,7 @@ if [ "$SIMULATE" = true ] ; then
 else 
     echo "🔥 Submitting $CONTRACT"
     confirm_if_celo "$NETWORK"
-    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast ${CONTRACT} --sender $SIGNER
+    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast ${CONTRACT}
 fi
 
 

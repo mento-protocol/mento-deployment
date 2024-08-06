@@ -28,14 +28,11 @@ interface IGovernor {
 
   /**
    * @dev Cast a vote
-   *
-   * Emits a {VoteCast} event.
    */
   function castVote(uint256 proposalId, uint8 support) external returns (uint256 balance);
 
   /**
    * @dev Returns information about a proposal
-   *
    */
   function proposals(
     uint256 proposalId
