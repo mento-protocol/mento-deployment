@@ -10,6 +10,10 @@ contract ExecuteProposal is Script {
   function run(uint256 proposalId) public {
     address governance = IGovernanceFactory(Chain.governanceFactory()).mentoGovernor();
 
+    if (IGovernor(governance).state(proposalId) != 5) {
+      revert(unicode"❌ Proposal is not queued, cannot be executed");
+    }
+
     vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
     {
       IGovernor(governance).execute(proposalId);

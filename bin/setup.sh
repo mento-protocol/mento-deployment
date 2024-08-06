@@ -66,7 +66,7 @@ parse_gov () { # $1: governance
             echo "🚨 Invalid governance: '$1' (celo|mento)"
             exit 1
     esac
-    echo "🗳️  Governance in use: $1"
+    echo "🗳️  Governance in use is $1 governance"
 }
 
 forge_skip () { # $1: target
@@ -104,9 +104,9 @@ confirm_if_celo () { # $1: network
 
 countdown() { # $1: seconds
     local seconds=$1
-    echo "😴 Waiting for $seconds seconds..."
+    echo "😴 Sleeping for $seconds seconds"
     for ((i=seconds; i>0; i--)); do
-        echo -ne "$i seconds remaining\033[0K\r"
+        echo -ne "$i seconds remaining...\033[0K\r"
         sleep 1
     done
 }

@@ -5,13 +5,13 @@ import { Script } from "./Script.sol";
 import { IGovernanceFactory } from "../../interfaces/IGovernanceFactory.sol";
 import { IGovernor } from "../../interfaces/IGovernor.sol";
 import { console2 } from "forge-std/Script.sol";
+import { Chain } from "./Chain.sol";
 
 contract PassProposal is Script {
   function run(uint256 proposalId) public {
-    IGovernor governance = IGovernor(IGovernanceFactory(GOVERNANCE_FACTORY).mentoGovernor());
-    uint8 state = governance.state(proposalId);
+    IGovernor governance = IGovernor(IGovernanceFactory(Chain.governanceFactory()).mentoGovernor());
 
-    if (state != 1) {
+    if (governance.state(proposalId) != 1) {
       revert(unicode"❌ Proposal is not active");
     }
 
@@ -21,7 +21,7 @@ contract PassProposal is Script {
 
     vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
     {
-      IGovernor(governance).castVote(proposalId, 1);
+      governance.castVote(proposalId, 1);
     }
     vm.stopBroadcast();
 
@@ -31,7 +31,7 @@ contract PassProposal is Script {
     console2.log("Against votes: ", againstVotes);
 
     if (forVotes >= quorumRequired && forVotes > againstVotes) {
-      console2.log(unicode"🟢 Proposal has enough votes to pass");
+      console2.log(unicode"✅ Proposal has enough votes to pass");
     } else {
       revert(unicode"❌ Proposal needs more votes to pass");
     }
