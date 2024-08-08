@@ -81,7 +81,7 @@ forge_skip () { # $1: target
     fi
 }
 
-forge_script () { # $1: script name, $2: script file path
+forge_script () { # $1: script name, $2: script file path, $3: options
     echo "=================================================================="
     echo "🏃🏼 Running $1"
     echo "=================================================================="

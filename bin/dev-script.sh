@@ -4,8 +4,9 @@
 # Script for running all deployment tasks for a protocol upgrade
 # Usage: ./bin/dev-script.sh 
 #               -n <baklava|alfajores|celo>  -- network to submit the proposal to
-#               -i <script-index>               -- index of the script (optional)
-#               -s <script-name>                -- name of the script (optional)
+#               -i <script-index>            -- index of the script (optional)
+#               -s <script-name>             -- name of the script (optional)
+#               -r <run-signature>           -- signature of the run function (optional)
 # Example: 
 # To pick the script:
 # ./bin/deploy.sh -n baklava 
@@ -20,14 +21,19 @@ source "$(dirname "$0")/setup.sh"
 NETWORK=""
 INDEX=""
 SCRIPT_NAME=""
-while getopts n:i:s: flag
+RUN_SIGNATURE="run()"
+while getopts n:i:s:r: flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         i) INDEX=${OPTARG};;
         s) SCRIPT_NAME=${OPTARG};;
+        r) RUN_SIGNATURE=${OPTARG};;
     esac
 done
+
+shift "$((OPTIND - 1))"
+echo $@
 
 parse_network "$NETWORK"
 
@@ -35,7 +41,7 @@ if ! [ -z "$SCRIPT_NAME" ]; then # Pick the script by name
     SCRIPT_FILE="script/dev/dev-$SCRIPT_NAME.sol"
     if test -f "$SCRIPT_FILE"; then
         echo "🔎  $SCRIPT_FILE found"
-        forge_script "$SCRIPT_NAME" "$SCRIPT_FILE" $(forge_skip "dev")
+        forge_script "$SCRIPT_NAME $@" "$SCRIPT_FILE $@" "$(forge_skip "dev") -s $RUN_SIGNATURE"
         exit 0
     else
         echo "🚨 Script $SCRIPT_NAME not found in $SCRIPT_FILE"

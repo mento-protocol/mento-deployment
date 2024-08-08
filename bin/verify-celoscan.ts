@@ -28,7 +28,8 @@ interface BroadcastFile {
       initCode: string;
     }>;
     transaction: {
-      data: string;
+      data?: string;
+      input?: string
     };
   }>;
   chain: number;
@@ -81,7 +82,7 @@ async function run() {
       if (tx.transactionType === "CREATE") {
         createdContracts.push({
           contract: tx.contractAddress,
-          initCode: tx.transaction.data,
+          initCode: tx.transaction.data || tx.transaction.input
         });
       }
       if (tx.additionalContracts && tx.additionalContracts.length > 0) {
@@ -132,7 +133,7 @@ async function run() {
   }
 }
 
-async function verify({ contract, initCode }: { contract: string; initCode: string }) {
+async function verify({ contract, initCode }: { contract: string; initCode?: string }) {
   const status = await sourcify.check(broadcast.chain, contract);
   if (status === "false") {
     console.error(`🚨 Contract ${contract} not found on sourcify`);
@@ -156,7 +157,7 @@ async function verify({ contract, initCode }: { contract: string; initCode: stri
   const standardJson = makeStandardJson(metadata, sources, libraryMap);
 
   let constructorArgs = constructorArgsFromSourcify;
-  if (constructorArgs === "") {
+  if (constructorArgs === "" && !!initCode) {
     constructorArgs = getConstructorArgs(target, contract, initCode);
   }
 

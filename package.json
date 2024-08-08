@@ -49,6 +49,7 @@
     "script:dev": "./bin/dev-script.sh",
     "cgp": "./bin/cgp.sh",
     "cgp:pass": "./bin/cgp-pass.sh",
+    "cgp:deploy": "./bin/cgp-deploy.sh",
     "cgp:diff": "./bin/cgp-diff.sh",
     "cgp:check": "./bin/cgp-check.sh",
     "cgp:execute": "./bin/cgp-execute.sh",
