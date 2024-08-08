@@ -4,20 +4,23 @@ pragma solidity ^0.8.18;
 import { Script } from "./Script.sol";
 import { IGovernanceFactory } from "../../interfaces/IGovernanceFactory.sol";
 import { IGovernor } from "../../interfaces/IGovernor.sol";
+import { console2 } from "forge-std/Script.sol";
 import { Chain } from "./Chain.sol";
 
-contract ExecuteProposal is Script {
+contract QueueProposal is Script {
   function run(uint256 proposalId) public {
-    address governance = IGovernanceFactory(Chain.governanceFactory()).mentoGovernor();
+    IGovernor governance = IGovernor(IGovernanceFactory(Chain.governanceFactory()).mentoGovernor());
 
-    if (IGovernor(governance).state(proposalId) != 5) {
-      revert(unicode"❌ Proposal is not queued, cannot be executed");
+    if (governance.state(proposalId) != 4) {
+      revert(unicode"❌ Proposal is not successful, cannot be queued");
     }
 
     vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
     {
-      IGovernor(governance).execute(proposalId);
+      governance.queue(proposalId);
     }
     vm.stopBroadcast();
+
+    console2.log(unicode"✅ Proposal has been queued");
   }
 }
