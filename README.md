@@ -1,6 +1,6 @@
 # Mento Deployment
 
-This repo contains scripts for deploying & proposing upgrades to the Mento protocol.
+This repo contains scripts for deploying & proposing upgrades to the Mento protocol. It can be used for both Mento and Celo governance proposals.
 Deployments for the core contracts are done using [Foundry solidity scripting](https://book.getfoundry.sh/tutorials/solidity-scripting).
 
 ## Getting Started
@@ -34,7 +34,8 @@ The deployment scripts are organized in the following structure:
   - `script/upgrades/`: Contains all the upgrade scripts, which serve as a migration from one version of mento to another
     - `script/upgrades/MU01/`: Contains all the upgrade scripts to migrate from version v1.0.0. to v2.0.0
   - `script/dev/`: Contains dev scripts that are used in the deployment process, especially on testnets, but aren't central to the upgrade.
-  - `script/utils/`: Contains helpers and utilities used in the deployment process.
+  - `script/utils/`: Contains helpers and utilities used in the deployment and governance operations using Celo Governance.
+  - `script/utils/mento`: Contains helpers and utilities used in the deployment and governance operations using Mento Governance.
 - `bin/`: Contains bash/typescript scripts that are used to execute the deployment process.
 - `broadcast/`: Contains the broadcasted transactions for the deployment process.
 
@@ -46,6 +47,7 @@ General options will include:
 
 - `-n`: The network to run on, e.g. `baklava` or `alfajores`
 - `-u`: The upgrade number, e.g. `MU01`
+- `-g`: The governance that will be used, e.g. `celo` or `mento`
 
 Check the script file for more details on usage but here's a quick overview:
 
@@ -89,9 +91,9 @@ Check the script file for more details on usage but here's a quick overview:
 # Run an upgrade deployment, will run all deploy scripts in an upgrade
 > yarn deploy -n baklava -u MU01
 
-# Submit an upgrade CGP, will output the proposal ID
-> yarn cgp -n baklava -u MU01
+# Submit an upgrade proposal, will output the proposal ID
+> yarn cgp -n baklava -u MU01 -g celo
 
 # Pass a CGP on testnets
-> yarn cgp:pass -n baklava -p <proposal-id>
+> yarn cgp:pass -n baklava -g celo -p <proposal-id>
 ```
