@@ -43,7 +43,7 @@ export function parseFiles(files: any): SourcifyOutput {
   const libraryMap = libraryMapFile ? JSON.parse(libraryMapFile.content) : {};
   const sourcesArray = files.filter(
     (file: File) =>
-      file.name !== "metadata.json" && file.name !== "constructor-args.txt" && !file.name.endsWith("json"),
+      file.name !== "metadata.json" && file.name !== "constructor-args.txt" && !file.name.endsWith("json") && !file.name.endsWith("txt")
   );
   const version = `v${metadata.compiler.version}`;
   const target = Object.entries(metadata.settings.compilationTarget)[0].join(":");
