@@ -1,5 +1,5 @@
 /*******************************************************************
- * One-off script used to reproduce the mainned Mento Governance
+ * One-off script used to reproduce the mainnet Mento Governance
  * deployment broadcast files. This was needed because two things
  * happened in quick succession:
  * (1) Bogdan didn't commit the broadcast files to git
