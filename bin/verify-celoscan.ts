@@ -192,8 +192,11 @@ async function verify({ contract, initCode }: { contract: string; initCode?: str
 }
 
 function getConstructorArgs(target: string, contract: string, initCode: string) {
-  const solidityFile = /([^\/]*.sol)/.exec(target)![0];
-  const contractName = solidityFile.split(".")[0];
+  const match = /(([^\/]*).sol):?(.*)?/.exec(target);
+  if (!match) throw Error(`Error extracting filename and contract from: ${target}`)
+  const solidityFile = match[1]
+  const contractName = match[3] || match[2];
+
   try {
     const foundryJson = JSON.parse(fs.readFileSync(`out/${solidityFile}/${contractName}.json`, "utf8"));
     let bytecode = foundryJson.bytecode.object;

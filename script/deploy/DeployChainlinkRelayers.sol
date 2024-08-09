@@ -27,7 +27,22 @@ contract DeployChainlinkRelayers is Script {
     Relayer({
       rateFeed: "chainlink:USDT/USD:v1",
       config: singleAggConfig(contracts.dependency("Chainlink.USDTUSD"), false)
-    })
+    }),
+    Relayer({
+      rateFeed: "chainlink:CELO/PHP",
+      config: IChainlinkRelayer.Config({
+        maxTimestampSpread: 1000,
+        chainlinkAggregator0: contracts.dependency("Chainlink.CELOUSD"),
+        chainlinkAggregator1: contracts.dependency("Chainlink.PHPUSD"),
+        chainlinkAggregator2: address(0),
+        chainlinkAggregator3: address(0),
+        invertAggregator0: false,
+        invertAggregator1: true,
+        invertAggregator2: false,
+        invertAggregator3: false
+      })
+    }),
+    Relayer({ rateFeed: "PHP/USD", config: singleAggConfig(contracts.dependency("Chainlink.PHPUSD"), false) })
   ];
 
   ChainlinkRelayerFactory relayerFactory;

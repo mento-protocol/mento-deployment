@@ -33,7 +33,6 @@ do
 done
 
 shift "$((OPTIND - 1))"
-echo $@
 
 parse_network "$NETWORK"
 
@@ -41,7 +40,7 @@ if ! [ -z "$SCRIPT_NAME" ]; then # Pick the script by name
     SCRIPT_FILE="script/dev/dev-$SCRIPT_NAME.sol"
     if test -f "$SCRIPT_FILE"; then
         echo "🔎  $SCRIPT_FILE found"
-        forge_script "$SCRIPT_NAME $@" "$SCRIPT_FILE $@" "$(forge_skip "dev") -s $RUN_SIGNATURE"
+        forge_script "$SCRIPT_NAME" "$SCRIPT_FILE" "$(forge_skip "dev") -s $RUN_SIGNATURE" "$@"
         exit 0
     else
         echo "🚨 Script $SCRIPT_NAME not found in $SCRIPT_FILE"
