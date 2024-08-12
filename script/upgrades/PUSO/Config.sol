@@ -98,7 +98,7 @@ library PSOConfig {
   /**
    * @dev Returns the configuration for the PUSO stable token.
    */
-  function stableTokenKESConfig() internal pure returns (Config.StableTokenV2 memory config) {
+  function stableTokenPSOConfig() internal pure returns (Config.StableTokenV2 memory config) {
     config = Config.StableTokenV2({ name: "PUSO", symbol: "PSO" });
   }
 }
