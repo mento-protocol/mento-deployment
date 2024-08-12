@@ -31,7 +31,7 @@ library PSOConfig {
   function get(Contracts.Cache storage contracts) internal view returns (PSO memory config) {
     config.poolConfig = PSOcUSD_PoolConfig(contracts);
     config.rateFeedConfig = PHPUSD_RateFeedConfig();
-    config.stableTokenConfig = stableTokenKESConfig();
+    config.stableTokenConfig = stableTokenPSOConfig();
   }
 
   /* ==================== Rate Feed Configuration ==================== */
