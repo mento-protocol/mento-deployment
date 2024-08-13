@@ -79,6 +79,7 @@ type Output = {
     transaction: {
       type: string,
       from: string,
+      to: string|null,
       gas: string,
       value: string,
       data: string,
@@ -161,10 +162,11 @@ async function generate_MUGOV_Create_Factory() {
       transaction: {
         type: tx["typeHex"],
         from: tx["from"],
+        to: tx["to"],
         gas: `0x${tx["gas"].toString(16)}`,
         value: `0x${tx["value"].toString(16)}`,
         data: trace["result"]["input"],
-        nonce: tx["nonce"]
+        nonce: `0x${tx["nonce"].toString(16)}`
       },
       isFixedGasLimit: false
     }
@@ -251,10 +253,11 @@ async function generate_MUGOV_Execution() {
     transaction: {
       type: tx["typeHex"],
       from: tx["from"],
+      to: tx["to"],
       gas: `0x${tx["gas"].toString(16)}`,
       value: `0x${tx["value"].toString(16)}`,
       data: trace["result"]["input"],
-      nonce: tx["nonce"]
+      nonce: `0x${tx["nonce"].toString(16)}`
     },
     additionalContracts: createCalls.map(cc => ({
       transactionType: "CREATE",
