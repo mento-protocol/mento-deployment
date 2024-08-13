@@ -79,7 +79,7 @@ type Output = {
     transaction: {
       type: string,
       from: string,
-      to: string|null,
+      to: string | null,
       gas: string,
       value: string,
       data: string,
@@ -285,7 +285,7 @@ async function generate_MUGOV_Execution() {
 }
 
 async function run() {
-  // await generate_MUGOV_Create_Factory()
+  await generate_MUGOV_Create_Factory()
   await generate_MUGOV_Execution()
 
 }
