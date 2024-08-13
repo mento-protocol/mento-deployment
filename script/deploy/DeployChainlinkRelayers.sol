@@ -16,33 +16,29 @@ contract DeployChainlinkRelayers is Script {
 
   struct Relayer {
     string rateFeed;
-    IChainlinkRelayer.Config config;
+    string rateFeedDescription;
+    uint256 maxTimestampSpread;
+    IChainlinkRelayer.ChainlinkAggregator[] aggregators;
   }
 
   Relayer[] relayers = [
     Relayer({
-      rateFeed: "chainlink:CELO/USD:v1",
-      config: singleAggConfig(contracts.dependency("Chainlink.CELOUSD"), false)
+      rateFeed: "CELO/PHP",
+      rateFeedDescription: "CELO/PHP (CELO/USD * USD/PHP)",
+      maxTimestampSpread: maxTimestampSpread,
+      aggregators: aggregators(
+        IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.CELOUSD"), invert: false }),
+        IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.PHPUSD"), invert: true })
+      )
     }),
     Relayer({
-      rateFeed: "chainlink:USDT/USD:v1",
-      config: singleAggConfig(contracts.dependency("Chainlink.USDTUSD"), false)
-    }),
-    Relayer({
-      rateFeed: "chainlink:CELO/PHP",
-      config: IChainlinkRelayer.Config({
-        maxTimestampSpread: 1000,
-        chainlinkAggregator0: contracts.dependency("Chainlink.CELOUSD"),
-        chainlinkAggregator1: contracts.dependency("Chainlink.PHPUSD"),
-        chainlinkAggregator2: address(0),
-        chainlinkAggregator3: address(0),
-        invertAggregator0: false,
-        invertAggregator1: true,
-        invertAggregator2: false,
-        invertAggregator3: false
-      })
-    }),
-    Relayer({ rateFeed: "PHP/USD", config: singleAggConfig(contracts.dependency("Chainlink.PHPUSD"), false) })
+      rateFeed: "PHP/USD",
+      rateFeedDescription: "PHP/USD",
+      maxTimestampSpread: 0,
+      aggregators: aggregators(
+        IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.PHPUSD"), invert: false })
+      )
+    })
   ];
 
   ChainlinkRelayerFactory relayerFactory;
@@ -84,18 +80,43 @@ contract DeployChainlinkRelayers is Script {
     return address(uint160(uint256(keccak256(abi.encodePacked(rateFeedString)))));
   }
 
-  function singleAggConfig(address aggregator, bool invert) internal pure returns (IChainlinkRelayer.Config memory) {
-    return
-      IChainlinkRelayer.Config({
-        maxTimestampSpread: 0,
-        chainlinkAggregator0: aggregator,
-        chainlinkAggregator1: address(0),
-        chainlinkAggregator2: address(0),
-        chainlinkAggregator3: address(0),
-        invertAggregator0: invert,
-        invertAggregator1: false,
-        invertAggregator2: false,
-        invertAggregator3: false
-      });
+  function aggregators(
+    IChainlinkRelayer.ChainlinkAggregator agg0
+  ) internal pure returns (IChainlinkRelayer.ChainlinkAggregator[] memory aggs) {
+    aggs = new IChainlinkRelayer.ChainlinkAggregator[](1);
+    aggs[0] = agg0;
+  }
+
+  function aggregators(
+    IChainlinkRelayer.ChainlinkAggregator agg0,
+    IChainlinkRelayer.ChainlinkAggregator agg1
+  ) internal pure returns (IChainlinkRelayer.ChainlinkAggregator[] memory aggs) {
+    aggs = new IChainlinkRelayer.ChainlinkAggregator[](2);
+    aggs[0] = agg0;
+    aggs[1] = agg1;
+  }
+
+  function aggregators(
+    IChainlinkRelayer.ChainlinkAggregator agg0,
+    IChainlinkRelayer.ChainlinkAggregator agg1,
+    IChainlinkRelayer.ChainlinkAggregator agg2
+  ) internal pure returns (IChainlinkRelayer.ChainlinkAggregator[] memory aggs) {
+    aggs = new IChainlinkRelayer.ChainlinkAggregator[](3);
+    aggs[0] = agg0;
+    aggs[1] = agg1;
+    aggs[2] = agg2;
+  }
+
+  function aggregators(
+    IChainlinkRelayer.ChainlinkAggregator agg0,
+    IChainlinkRelayer.ChainlinkAggregator agg1,
+    IChainlinkRelayer.ChainlinkAggregator agg2,
+    IChainlinkRelayer.ChainlinkAggregator agg3
+  ) internal pure returns (IChainlinkRelayer.ChainlinkAggregator[] memory aggs) {
+    aggs = new IChainlinkRelayer.ChainlinkAggregator[](4);
+    aggs[0] = agg0;
+    aggs[1] = agg1;
+    aggs[2] = agg2;
+    aggs[3] = agg3;
   }
 }
