@@ -13,6 +13,7 @@
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",
     "@commitlint/config-conventional": "^17.0.3",
+    "@openzeppelin/merkle-tree": "^1.0.5",
     "commitizen": "^4.2.4",
     "csv-parse": "^5.5.3",
     "cz-conventional-changelog": "^3.3.0",
@@ -20,7 +21,6 @@
     "ethers": "^6.9.2",
     "husky": "^8.0.0",
     "lint-staged": "^13.0.3",
-    "@openzeppelin/merkle-tree": "^1.0.5",
     "prettier": "^2.7.1",
     "prettier-plugin-solidity": "^1.0.0-dev.22",
     "solhint": "^3.3.7",
@@ -58,5 +58,8 @@
     "clean": "./bin/clean.sh",
     "secrets:get": "./bin/get-secrets.sh",
     "merkle-tree:build": "yarn ts-node ./bin/merkle-tree.ts"
+  },
+  "dependencies": {
+    "@quicknode/sdk": "^2.3.0"
   }
 }
