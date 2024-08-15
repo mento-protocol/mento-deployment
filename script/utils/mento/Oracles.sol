@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+// solhint-disable func-visibility
 pragma solidity ^0.8.18;
 
 import { IChainlinkRelayer } from "mento-core-develop/interfaces/IChainlinkRelayer.sol";

@@ -9,7 +9,8 @@ import { GovernanceScript } from "script/utils/Script.sol";
 
 import { IChainlinkRelayerFactory } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayer.sol";
-import { toRateFeedId } from "script/utils/mento/Oracles.sol";
+
+// import { toRateFeedId } from "script/utils/mento/Oracles.sol";
 
 interface ISortedOracles {
   function addOracle(address, address) external;
@@ -63,7 +64,7 @@ contract MU07Checks is GovernanceScript, Test {
         console.log("Whitelisted oracle wrong for rateFeed: %s [%s]", relayer.rateFeedDescription(), rateFeedId);
       }
       assertEq(oracles[0], relayers[i]);
-      console.log(unicode"﫟 Rate feed %s setup correctly", relayer.rateFeedDescription());
+      console.log("Rate feed %s setup correctly", relayer.rateFeedDescription());
     }
   }
 
@@ -77,6 +78,6 @@ contract MU07Checks is GovernanceScript, Test {
       console.log("Invalid equivalent token for cPHP (%s)", cPHP);
     }
     assertEq(equivalentToken, CELOPHPRateFeedId);
-    console.log(unicode"﫟 cPHP [%s] equivalent token is correct", cPHP);
+    console.log("cPHP [%s] equivalent token is correct", cPHP);
   }
 }

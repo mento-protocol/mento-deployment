@@ -3,12 +3,12 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { GovernanceScript } from "script/utils/GovernanceScript.sol";
-import { console } from "forge-std-next/Console.sol";
-import { Contracts } from "script/utils/mento/Contracts.sol";
-import { Chain as ChainLib } from "script/utils/Chain.next.sol";
+import { GovernanceScript } from "script/utils/Script.sol";
+import { console } from "forge-std/Console.sol";
+import { Contracts } from "script/utils/Contracts.sol";
+import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
-import { toRateFeedId } from "script/utils/mento/Oracles.sol";
+// import { toRateFeedId } from "script/utils/mento/Oracles.sol";
 
 import { IChainlinkRelayerFactory } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayer.sol";
@@ -77,7 +77,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
     address governance = contracts.celoRegistry("Governance");
     ICeloGovernance.Transaction[] memory _transactions = buildProposal();
 
-    vm.startBroadcast(ChainLib.deployerPrivateKey());
+    vm.startBroadcast(Chain.deployerPrivateKey());
     {
       createProposal(_transactions, "whitelist-oracles", governance);
     }
@@ -120,7 +120,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
         ICeloGovernance.Transaction({
           value: 0,
           destination: address(sortedOracles),
-          data: abi.encodeWithSelector(ISortedOracles.removeOracle.selector, rateFeedId, oracles[i], i)
+          data: abi.encodeWithSelector(ISortedOracles(0).removeOracle.selector, rateFeedId, oracles[i], i)
         })
       );
     }
@@ -130,7 +130,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
         ICeloGovernance.Transaction({
           value: 0,
           destination: address(sortedOracles),
-          data: abi.encodeWithSelector(ISortedOracles.addOracle.selector, rateFeedId, address(relayer))
+          data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedId, address(relayer))
         })
       );
     }
@@ -152,7 +152,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
       ICeloGovernance.Transaction({
         value: 0,
         destination: contracts.celoRegistry("SortedOracles"),
-        data: abi.encodeWithSelector(ISortedOracles.setEquivalentToken.selector, cPHP, CELOPHPRateFeedId)
+        data: abi.encodeWithSelector(ISortedOracles(0).setEquivalentToken.selector, cPHP, CELOPHPRateFeedId)
       })
     );
   }
