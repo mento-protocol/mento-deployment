@@ -19,7 +19,7 @@ interface ISortedOracles {
 
 /*
  * How to run:
- * yarn script:dev -n alfajores -s RelayerStatus -r "run(string)" "relayed:CELO/PHP"
+ * yarn script:dev -n alfajores -s RelayerStatus
  */
 contract RelayerStatus is Script {
   using Contracts for Contracts.Cache;
@@ -32,10 +32,18 @@ contract RelayerStatus is Script {
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
   }
 
-  function run(string calldata rateFeed) public view {
-    address rateFeedId = toRateFeedId(rateFeed);
-    // IChainlinkRelayer relayer = IChainlinkRelayer(relayerFactory.getRelayer(rateFeedId));
-    console.log("RateFeedID: %s", rateFeedId);
-    console.log("Num rates: %d", sortedOracles.numRates(rateFeedId));
+  function run() public {
+    address[] memory relayers = relayerFactory.getRelayers();
+
+    for (uint i = 0; i < relayers.length; i++) {
+      IChainlinkRelayer relayer = IChainlinkRelayer(relayers[i]);
+      address rateFeedId = relayer.rateFeedId();
+      string memory description = relayer.rateFeedDescription();
+      (uint256 num, ) = sortedOracles.medianRate(rateFeedId);
+      console.log("====== %s =======", description);
+      console.log("RateFeedID: %s", rateFeedId);
+      console.log("Num rates: %d", sortedOracles.numRates(rateFeedId));
+      console.log("Median rate: %d", num);
+    }
   }
 }
