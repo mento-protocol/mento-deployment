@@ -42,7 +42,7 @@ contract DeployChainlinkRelayerFactory is Script {
     }
     console.log("ChainlinkRelayerFactory implementation: ", address(relayerFactory));
     console.log("ChainlinkRelayerFactoryProxy: ", address(proxy));
-    console.log("ChainlinkRelayerFactoryProxyAdmin: ", address(proxy));
+    console.log("ChainlinkRelayerFactoryProxyAdmin: ", address(proxyAdmin));
     vm.stopBroadcast();
   }
 }
