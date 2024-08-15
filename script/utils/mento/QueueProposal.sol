@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.18;
 
-import { console } from "forge-std-next/console.sol";
 import { Script } from "./Script.sol";
 import { IGovernanceFactory } from "../../interfaces/IGovernanceFactory.sol";
 import { IGovernor } from "../../interfaces/IGovernor.sol";
+import { console2 } from "forge-std/Script.sol";
 import { Chain } from "./Chain.sol";
 
 contract QueueProposal is Script {
@@ -21,6 +21,6 @@ contract QueueProposal is Script {
     }
     vm.stopBroadcast();
 
-    console.log(unicode"✅ Proposal has been queued");
+    console2.log(unicode"✅ Proposal has been queued");
   }
 }
