@@ -3,16 +3,18 @@ pragma solidity ^0.8.18;
 
 import { console } from "forge-std-next/console.sol";
 import { Script } from "script/utils/mento/Script.sol";
-import { Chain } from "script/utils/mento/Chain.sol";
+import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
-
-import { MockAggregatorV3 } from "lib/mento-core-develop/test/mocks/MockAggregatorV3.sol";
 
 interface IAggregatorV3 {
   function latestRoundData()
     external
     view
     returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+}
+
+interface IMockAggregator {
+  function setAnswer(int256 answer) external;
 }
 
 /**
@@ -25,23 +27,43 @@ interface IAggregatorV3 {
  */
 contract UpdateMockChainlinkAggregators is Script {
   using Contracts for Contracts.Cache;
-  address PHPUSD = 0x4ce8e628Bb82Ea5271908816a6C580A71233a66c;
+  address constant PHPUSDMainnetAggregator = 0x4ce8e628Bb82Ea5271908816a6C580A71233a66c;
+  address PHPUSDTestnetMock;
+
+  mapping(address => address) mockForAggregator;
+  mapping(address => int256) aggregatorAnswers;
+  address[] aggregatorsToForward;
 
   constructor() Script() {
-    contracts.load("dev-DeployMockChainlinkAggregator", "PHPUSD");
+    /// @dev Load additional deployed aggregators here to forward rates
+    contracts.load("DeployMockPHPUSDAggregator", "latest");
+    PHPUSDTestnetMock = contracts.deployed("MockPHPUSDAggregator");
+    mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDTestnetMock;
+
+    aggregatorsToForward.push(PHPUSDMainnetAggregator);
   }
 
   function run() public {
     uint256 celoFork = vm.createFork("celo");
     uint256 alfajoresFork = vm.createFork("alfajores");
+
     vm.selectFork(celoFork);
-    (, int256 answer, , uint256 timestamp, ) = IAggregatorV3(PHPUSD).latestRoundData();
+    for (uint i = 0; i < aggregatorsToForward.length; i++) {
+      address agg = aggregatorsToForward[i];
+      (, int256 answer, , , ) = IAggregatorV3(agg).latestRoundData();
+      aggregatorAnswers[agg] = answer;
+    }
+
     vm.selectFork(alfajoresFork);
 
-    address PHPUSD_aggregator = contracts.deployed("PHPUSDAggregatorV3");
-    vm.startBroadcast(Chain.deployerPrivateKey());
+    vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
-      MockAggregatorV3(PHPUSD_aggregator).setRoundData(answer, timestamp);
+      for (uint i = 0; i < aggregatorsToForward.length; i++) {
+        address agg = aggregatorsToForward[i];
+        address mock = mockForAggregator[agg];
+        int256 answer = aggregatorAnswers[agg];
+        IMockAggregator(mock).setAnswer(answer);
+      }
     }
     vm.stopBroadcast();
   }

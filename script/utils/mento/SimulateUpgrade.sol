@@ -2,7 +2,7 @@
 // solhint-disable func-name-mixedcase, contract-name-camelcase
 pragma solidity ^0.8.18;
 
-import { console } from "forge-std/console.sol";
+import { console } from "forge-std-next/console.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
 import { IMentoUpgrade } from "script/interfaces/IMentoUpgrade.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";

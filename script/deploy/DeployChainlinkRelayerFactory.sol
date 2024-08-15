@@ -3,7 +3,7 @@ pragma solidity ^0.8.18;
 
 import { console } from "forge-std-next/console.sol";
 import { Script } from "script/utils/mento/Script.sol";
-import { Chain } from "script/utils/mento/Chain.sol";
+import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
 
 import { ChainlinkRelayerFactory } from "mento-core-develop/oracles/ChainlinkRelayerFactory.sol";
@@ -18,16 +18,16 @@ contract DeployChainlinkRelayerFactory is Script {
   ChainlinkRelayerFactoryProxyAdmin proxyAdmin;
 
   function getProxyAdminOwner() internal returns (address) {
-    if (Chain.isCelo()) {
+    if (ChainLib.isCelo()) {
       return 0x655133d8E90F8190ed5c1F0f3710F602800C0150;
     } else {
-      return vm.addr(Chain.deployerPrivateKey());
+      return vm.addr(ChainLib.deployerPrivateKey());
     }
   }
 
   function run() public {
     address proxyAdminOwner = getProxyAdminOwner();
-    vm.startBroadcast(Chain.deployerPrivateKey());
+    vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
       relayerFactory = new ChainlinkRelayerFactory(true);
       proxyAdmin = new ChainlinkRelayerFactoryProxyAdmin();

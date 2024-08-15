@@ -3,7 +3,7 @@ pragma solidity ^0.8.18;
 
 import { console } from "forge-std-next/console.sol";
 import { Script } from "script/utils/mento/Script.sol";
-import { Chain } from "script/utils/mento/Chain.sol";
+import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
 
 import { ChainlinkRelayerFactory } from "mento-core-develop/oracles/ChainlinkRelayerFactory.sol";
@@ -11,40 +11,37 @@ import { ChainlinkRelayerFactoryProxy } from "mento-core-develop/oracles/Chainli
 import { ChainlinkRelayerFactoryProxyAdmin } from "mento-core-develop/oracles/ChainlinkRelayerFactoryProxyAdmin.sol";
 import { IChainlinkRelayer } from "mento-core-develop/interfaces/IChainlinkRelayer.sol";
 
+import { toRateFeedId } from "script/utils/mento/Oracles.sol";
+
 /*
  * How to run:
- * yarn script:dev -n alfajores -s RelayerReport -r "run(string)" "chainlink:CELO/USD:v1"
+ * yarn script:dev -n alfajores -s RelayerReport
  */
 contract RelayerReport is Script {
   using Contracts for Contracts.Cache;
   ChainlinkRelayerFactory relayerFactory;
 
   constructor() Script() {
-    contracts.load("ChainlinkRelayerFactory", "checkpoint");
+    contracts.load("DeployChainlinkRelayerFactory", "latest");
     relayerFactory = ChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
   }
 
-  function run(string calldata rateFeed) public {
-    IChainlinkRelayer relayer;
+  function run() public {
     address[] memory relayers = relayerFactory.getRelayers();
-    address requestedRateFeedId = toRateFeedId(rateFeed);
+
     for (uint i = 0; i < relayers.length; i++) {
-      address rateFeedId = IChainlinkRelayer(relayers[i]).rateFeedId();
-      if (rateFeedId == requestedRateFeedId) {
-        relayer = IChainlinkRelayer(relayers[i]);
-        break;
+      IChainlinkRelayer relayer = IChainlinkRelayer(relayers[i]);
+      string memory description = relayer.rateFeedDescription();
+      vm.startBroadcast(ChainLib.deployerPrivateKey());
+      {
+        try relayer.relay() {
+          console.log("Relayed %s successfully.", description);
+        } catch (bytes memory reason) {
+          console.log("Could not relay %s", description);
+          console.logBytes(reason);
+        }
       }
+      vm.stopBroadcast();
     }
-
-    vm.startBroadcast(Chain.deployerPrivateKey());
-    {
-      // CELOUSD_relayer.relay();
-      relayer.relay();
-    }
-    vm.stopBroadcast();
-  }
-
-  function toRateFeedId(string memory rateFeedString) internal pure returns (address) {
-    return address(uint160(uint256(keccak256(abi.encodePacked(rateFeedString)))));
   }
 }
