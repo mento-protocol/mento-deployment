@@ -16,3 +16,6 @@
 [submodule "lib/mento-core-2.3.1"]
 	path = lib/mento-core-2.3.1
 	url = https://github.com/mento-protocol/mento-core
+[submodule "lib/mento-std"]
+	path = lib/mento-std
+	url = https://github.com/mento-protocol/mento-std
