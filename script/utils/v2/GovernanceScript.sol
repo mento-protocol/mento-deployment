@@ -17,6 +17,14 @@ abstract contract GovernanceScript is Script {
     transactions.push(Transaction(value, destination, data));
   }
 
+  function add(address destination, bytes memory data) internal {
+    add(0, destination, data);
+  }
+
+  function add(uint256 value, address destination) internal {
+    add(value, destination, bytes(""));
+  }
+
   function run() public virtual {
     setUp();
     buildProposal();

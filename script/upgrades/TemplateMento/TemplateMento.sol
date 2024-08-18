@@ -20,6 +20,6 @@ contract TemplateMento is MentoGovernanceScript {
 
   function buildProposal() internal override {
     // TODO: Add transactions to proposal.
-    add({ value: 0, destination: lookup("Governance"), data: abi.encode() });
+    add({ destination: lookup("Governance"), data: bytes("") });
   }
 }
