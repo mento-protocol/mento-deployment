@@ -13,19 +13,16 @@ source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
 UPGRADE=""
-GOVERNANCE=""
 while getopts n:u:g:sfr flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         u) UPGRADE=${OPTARG};;
-        g) GOVERNANCE=${OPTARG};;
     esac
 done
 
 parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
-parse_gov "$GOVERNANCE"
 
 echo "👀  Checking $UPGRADE"
 forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --sig "check(string)"script/bin/SimulateProposal.sol:SimulateProposal $UPGRADE

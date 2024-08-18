@@ -13,18 +13,15 @@ source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
 PROPOSAL_ID=""
-GOVERNANCE=""
 while getopts n:p:g: flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         p) PROPOSAL_ID=${OPTARG};;
-        g) GOVERNANCE=${OPTARG};;
     esac
 done
 
 parse_network "$NETWORK"
-parse_gov "$GOVERNANCE"
 
 if [ -z "$PROPOSAL_ID" ]; then
     echo "🚨 No proposal ID provided"
@@ -53,7 +50,7 @@ if [ "$GOVERNANCE" = "celo" ]; then
 elif [ "$GOVERNANCE" = "mento" ]; then
     echo "🗳️  Voting proposal: $PROPOSAL_ID"
     echo "=========================================="
-    forge script --rpc-url $RPC_URL --sig "run(uint256)" script/bin/mento//PassProposal.sol:PassProposal $PROPOSAL_ID --broadcast
+    forge script --rpc-url $RPC_URL --sig "run(uint256)" script/bin/mento/PassProposal.sol:PassProposal $PROPOSAL_ID --broadcast
     echo "⏳ Waiting for voting period to end"
     countdown 301 # 5 minutes
     echo "🚶🚶🚶 Queuing proposal: $PROPOSAL_ID"

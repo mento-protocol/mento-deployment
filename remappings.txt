@@ -1,6 +1,5 @@
 openzeppelin-solidity/=lib/mento-core-2.0.0/lib/openzeppelin-contracts/
 celo-foundry/=lib/celo-foundry/src/
-forge-std/=lib/forge-std-next/src/
 forge-std-prev/=lib/celo-foundry/lib/forge-std/src/
 contracts/=contracts/
 

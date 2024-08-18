@@ -5,20 +5,21 @@ import { MentoGovernanceScript } from "script/utils/v2/MentoGovernanceScript.sol
 
 contract TemplateMento is MentoGovernanceScript {
   bool public constant override hasChecks = true;
-  // Add the descroption URL here:
-  string public constant TITLE = "<todo: add title>";
-  string public constant PROPOSAL_ID = "TemplateMento"; // Same as filename
+  // TODO: Add the proposal title.
+  string public constant TITLE = "Template for Mento Governance Proposals";
+  // TODO: Add the path to the description markdown.
+  string public constant DESCRIPTION_PATH = "script/upgrades/TemplateMento/TemplateMento.md";
 
-  constructor() MentoGovernanceScript(TITLE, PROPOSAL_ID) {}
+  constructor() MentoGovernanceScript(TITLE, DESCRIPTION_PATH) {}
 
   function setUp() internal override {
     super.setUp();
-    // Load any deployments scripts needed:
-    // load("DeployMentScript", latest);
+    // TODO: Load any deployments scripts needed.
+    // e.g.: load("DeployExampleContract", latest);
   }
 
   function buildProposal() internal override {
-    // Add transactions here
+    // TODO: Add transactions to proposal.
     add({ value: 0, destination: lookup("Governance"), data: abi.encode() });
   }
 }

@@ -7,6 +7,7 @@ import { TemplateCelo } from "./TemplateCelo.sol";
 
 contract TemplateCeloChecks is TemplateCelo, Test {
   function run() public override {
+    // TODO: Add checks to verify the proposal.
     console.log(unicode"  Governance proposal checks passed");
   }
 }

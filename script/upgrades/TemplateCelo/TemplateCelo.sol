@@ -5,18 +5,18 @@ import { CeloGovernanceScript } from "script/utils/v2/CeloGovernanceScript.sol";
 
 contract TemplateCelo is CeloGovernanceScript {
   bool public constant override hasChecks = true;
-  // Add the descroption URL here:
-  string public constant DESCRIPTION_URL = "<todo: add url>";
+  // TODO: Add the description URL.
+  string public constant DESCRIPTION_URL = "Template For Celo Governance Proposals";
 
   constructor() CeloGovernanceScript(DESCRIPTION_URL) {}
 
-  function setUp() public override {
-    // Load any deployments scripts needed:
-    // load("DeployMentScript", latest);
+  function setUp() internal override {
+    // TODO: Load any deployments scripts needed.
+    // e.g.: load("DeployExampleContract", latest);
   }
 
-  function buildProposal() public override {
-    // Add transactions here
+  function buildProposal() internal override {
+    // TODO: Add transactions to proposal.
     add({ value: 0, destination: lookup("Governance"), data: abi.encode() });
   }
 }

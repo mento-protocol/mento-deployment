@@ -5,7 +5,6 @@
 # Usage: yarn cgp
 #               -n <baklava|alfajores|celo>  -- network to submit the proposal to
 #               -u <upgrade_name>            -- name of the upgrade (MU01)
-#               -g <celo|mento>              -- governance to use
 #               -s                           -- simulate the proposal (optional)
 #               -r                           -- revert (optional)
 #               -f                           -- use forked network (optional)
@@ -16,7 +15,6 @@ source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
 UPGRADE=""
-GOVERNANCE=""
 SIMULATE=false
 USE_FORK=false
 REVERT=false
@@ -25,7 +23,6 @@ do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         u) UPGRADE=${OPTARG};;
-        g) GOVERNANCE=${OPTARG};;
         s) SIMULATE=true;;
         f) USE_FORK=true;;
         r) REVERT=true;;
@@ -34,7 +31,6 @@ done
 
 parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
-parse_gov "$GOVERNANCE"
 
 if [ "$USE_FORK" = true ] ; then
     # Make sure you're running a local anvil node:

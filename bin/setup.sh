@@ -42,31 +42,22 @@ parse_upgrade () { # $1: upgrade
 
     UPGRADE_DIR=script/upgrades/$1
     if test -d "$UPGRADE_DIR"; then
-        echo "🔎 Upgrade $1 found"
+        if grep -q MentoGovernanceScript "$UPGRADE_DIR/$1.sol" ; then
+            GOVERNANCE="mento"
+            BIG_DIR="script/bin/mento"
+        elif grep -q CeloGovernanceScript "$UPGRADE_DIR/$1.sol" ; then
+            GOVERNANCE="celo"
+            BIG_DIR="script/bin/celo"
+        elif grep -q GovernanceScript "$UPGRADE_DIR/$1.sol" ; then
+            # Backwards compatible to v1 scripts
+            GOVERNANCE="celo"
+            BIG_DIR="script/bin/celo"
+        fi
+        echo "🔎 Upgrade $1 found for $GOVERNANCE governance"
     else
         echo "🚨 Upgrade $1 not found in $UPGRADE_DIR"
         exit 1
     fi
-}
-
-parse_gov () { # $1: governance
-    if [ -z "$1" ]; then
-        echo "🚨 No governance provided (-g)"
-        exit 1
-    fi
-
-    case $1 in
-        "celo")
-            BIN_DIR="script/bin/celo"
-            ;;
-        "mento")
-            BIN_DIR="script/bin/mento"
-            ;;
-        *)
-            echo "🚨 Invalid governance: '$1' (celo|mento)"
-            exit 1
-    esac
-    echo "🗳️  Governance in use is $1 governance"
 }
 
 forge_skip () { # $1: target

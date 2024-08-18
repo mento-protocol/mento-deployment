@@ -20,10 +20,8 @@ abstract contract MentoGovernanceScript is GovernanceScript {
 
   string description;
 
-  constructor(string memory _proposalTitle, string memory _proposalId) {
-    string memory markdownDescription = vm.readFile(
-      string(abi.encodePacked(vm.projectRoot(), "/script/upgrades/", _proposalId, "/", _proposalId, ".md"))
-    );
+  constructor(string memory _proposalTitle, string memory _descriptionPath) {
+    string memory markdownDescription = vm.readFile(_descriptionPath);
     string memory proposal = "proposal";
     vm.serializeString(proposal, "title", _proposalTitle);
     vm.serializeUint(proposal, "timestamp", block.timestamp);
