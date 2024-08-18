@@ -5,12 +5,15 @@ import { MentoGovernanceScript } from "script/utils/v2/MentoGovernanceScript.sol
 
 contract TemplateMento is MentoGovernanceScript {
   bool public constant override hasChecks = true;
-  // TODO: Add the proposal title.
-  string public constant TITLE = "Template for Mento Governance Proposals";
-  // TODO: Add the path to the description markdown.
-  string public constant DESCRIPTION_PATH = "script/upgrades/TemplateMento/TemplateMento.md";
 
-  constructor() MentoGovernanceScript(TITLE, DESCRIPTION_PATH) {}
+  constructor()
+    MentoGovernanceScript(
+      // TODO: Add the proposal title.
+      "todo: Proposal Title",
+      // TODO: Add the path to the description markdown.
+      "script/upgrades/TemplateMento/TemplateMento.md"
+    )
+  {}
 
   function setUp() internal override {
     super.setUp();

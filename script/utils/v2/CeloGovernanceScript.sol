@@ -68,7 +68,7 @@ abstract contract CeloGovernanceScript is GovernanceScript {
         revert("Failed to simulate the proposal");
       }
     }
-    console.log("Proposal was simulated successfully.");
+    console.log(unicode"  Governance proposal simulated successfully.");
     vm.stopPrank();
   }
 
