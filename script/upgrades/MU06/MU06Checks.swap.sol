@@ -218,7 +218,7 @@ contract MU06ChecksSwap is MU06ChecksBase {
     vm.stopPrank();
   }
 
-  function assertApproxEq(uint256 a, uint256 b, uint256 maxDelta) internal view {
+  function assertApproxEq(uint256 a, uint256 b, uint256 maxDelta) internal pure {
     uint256 delta = a > b ? a - b : b - a;
 
     if (delta > maxDelta) {

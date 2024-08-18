@@ -6,7 +6,7 @@ import { Test } from "mento-std/Test.sol";
 import { TemplateMento } from "./TemplateMento.sol";
 
 contract TemplateMentoChecks is TemplateMento, Test {
-  function run() public override {
+  function run() public pure override {
     // TODO: Add checks to verify the proposal.
     console.log(unicode"  Governance proposal checks passed");
   }

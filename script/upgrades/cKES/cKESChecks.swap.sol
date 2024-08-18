@@ -36,8 +36,8 @@ contract cKESChecksSwap is cKESChecksBase {
     console.log("\n== Starting cKES test swaps: ==");
 
     console.log(
-      "KESUSD tradingMode: ",
-      BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID)
+      "KESUSD tradingMode: %d",
+      uint256(BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID))
     );
 
     swapCKEStoCUSD(config);
@@ -157,8 +157,6 @@ contract cKESChecksSwap is cKESChecksBase {
     console.log("Broker amount out(Broker.getAmountOut)", amountOut);
     console.log("Estimated amount out(amountIn * num/dennom): ", estimatedAmountOut);
 
-    uint256 scaledAmountIn = BiPoolManager(biPoolManagerProxy).tokenPrecisionMultipliers(tokenIn);
-
     FixidityLib.Fraction memory maxTolerance = FixidityLib.newFixedFraction(25, 1000);
     uint256 threshold = FixidityLib.newFixed(estimatedAmountOut).multiply(maxTolerance).fromFixed();
     assertApproxEq(amountOut, estimatedAmountOut, threshold);
@@ -193,7 +191,7 @@ contract cKESChecksSwap is cKESChecksBase {
     vm.stopPrank();
   }
 
-  function assertApproxEq(uint256 a, uint256 b, uint256 maxDelta) internal view {
+  function assertApproxEq(uint256 a, uint256 b, uint256 maxDelta) internal pure {
     uint256 delta = a > b ? a - b : b - a;
 
     if (delta > maxDelta) {

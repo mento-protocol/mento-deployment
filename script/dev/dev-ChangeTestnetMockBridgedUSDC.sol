@@ -3,11 +3,11 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { console2 as console } from "forge-std/Script.sol";
-import { GovernanceScript } from "script/utils/Script.sol";
-import { Contracts } from "script/utils/Contracts.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { Arrays } from "script/utils/Arrays.sol";
+import { console } from "forge-std/console.sol";
+import { GovernanceScript } from "script/utils/v1/Script.sol";
+import { Contracts } from "script/utils/v1/Contracts.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { Arrays } from "script/utils/v1/Arrays.sol";
 
 import { FixidityLib } from "mento-core-2.0.0/common/FixidityLib.sol";
 import { IBiPoolManager } from "mento-core-2.0.0/interfaces/IBiPoolManager.sol";

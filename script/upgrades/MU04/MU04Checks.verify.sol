@@ -105,7 +105,7 @@ contract MU04ChecksVerify is MU04ChecksBase {
     console.log("🟢 StableTokenV2 implementation ownership transferred to governance");
   }
 
-  function verifyExchangesAreFrozen() internal {
+  function verifyExchangesAreFrozen() internal view {
     console.log("\n== Verifying Exchanges are frozen ==");
     address[] memory exchanges = Arrays.addresses(exchangeProxy, exchangeEURProxy, exchangeBRLProxy);
 
@@ -133,7 +133,7 @@ contract MU04ChecksVerify is MU04ChecksBase {
     }
   }
 
-  function verifyRegistryChanges() internal {
+  function verifyRegistryChanges() internal view {
     console.log("\n== Verifying Registry Changes ==");
     bytes32[] memory exchangesV1 = Arrays.bytes32s("Exchange", "ExchangeEUR", "ExchangeBRL", "GrandaMento");
     for (uint i = 0; i < exchangesV1.length; i++) {
@@ -145,7 +145,7 @@ contract MU04ChecksVerify is MU04ChecksBase {
     console.log("🟢 Exchanges removed from registry");
   }
 
-  function verifyReserveImplementation() internal {
+  function verifyReserveImplementation() internal view {
     console.log("\n== Verifying Main Reserve Implementation ==");
     require(
       IProxy(reserveProxy)._getImplementation() == newReserveImplementation,
@@ -154,7 +154,7 @@ contract MU04ChecksVerify is MU04ChecksBase {
     console.log("🟢 Main Reserve Implementation set correctly");
   }
 
-  function verifyReserveExchangeSpender() internal {
+  function verifyReserveExchangeSpender() internal view {
     console.log("\n== Verifying Main Reserve Exchange Spender ==");
     require(Reserve(reserveProxy).isExchangeSpender(brokerProxy), "❗️❌ Broker wasn't added to exchange spender list");
     console.log("🟢 Broker successfully added to exchange spender list");
@@ -185,7 +185,7 @@ contract MU04ChecksVerify is MU04ChecksBase {
     }
   }
 
-  function verifyReserveTokens() internal {
+  function verifyReserveTokens() internal view {
     console.log("\n== Verifying Main Reserve Tokens ==");
     require(Reserve(reserveProxy).isToken(eXOFProxy), "❗️❌ eXOF not added to Reserve StableToken list ");
     console.log("🟢 eXOF successfully added to Reserve StableToken list");
@@ -206,7 +206,7 @@ contract MU04ChecksVerify is MU04ChecksBase {
     console.log("🟢 Old main reserve multisig successfully removed from Reserve spender list");
   }
 
-  function verifyReserveReferenceInBroker() internal {
+  function verifyReserveReferenceInBroker() internal view {
     console.log("\n== Verifying Reserve reference in Broker ==");
     require(
       address(Broker(brokerProxy).reserve()) == reserveProxy,
@@ -215,7 +215,7 @@ contract MU04ChecksVerify is MU04ChecksBase {
     console.log("🟢 Reserve reference in Broker set correctly");
   }
 
-  function verifyReserveReferenceInBiPoolManager() internal {
+  function verifyReserveReferenceInBiPoolManager() internal view {
     console.log("\n== Verifying Reserve reference in BiPoolManager ==");
     require(
       address(BiPoolManager(biPoolManagerProxy).reserve()) == reserveProxy,
@@ -277,7 +277,7 @@ contract MU04ChecksVerify is MU04ChecksBase {
     }
   }
 
-  function bytes32ToStr(bytes32 _bytes32) public view returns (string memory) {
+  function bytes32ToStr(bytes32 _bytes32) public pure returns (string memory) {
     uint256 length = 0;
     while (bytes1(_bytes32[length]) != 0) {
       length++;

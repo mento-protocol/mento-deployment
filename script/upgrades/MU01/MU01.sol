@@ -127,9 +127,9 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     MU01Config.MU01 memory config = MU01Config.get(contracts);
 
     proposal_initializeNewProxies(config);
-    proposal_upgradeContracts(config);
-    proposal_configurePartialReserve(config);
-    proposal_registryUpdates(config);
+    proposal_upgradeContracts();
+    proposal_configurePartialReserve();
+    proposal_registryUpdates();
     proposal_createExchanges(config);
     proposal_configureCircuitBreaker(config);
     proposal_configureTradingLimits(config);
@@ -250,7 +250,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
       );
   }
 
-  function proposal_upgradeContracts(MU01Config.MU01 memory config) private {
+  function proposal_upgradeContracts() private {
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -284,7 +284,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     );
   }
 
-  function proposal_configurePartialReserve(MU01Config.MU01 memory config) private {
+  function proposal_configurePartialReserve() private {
     address payable partialReserveProxy = contracts.deployed("PartialReserveProxy");
     bool reserveNotInitialized = PartialReserveProxy(partialReserveProxy)._getImplementation() == address(0);
 
@@ -354,7 +354,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
     }
   }
 
-  function proposal_registryUpdates(MU01Config.MU01 memory config) private {
+  function proposal_registryUpdates() private {
     transactions.push(
       ICeloGovernance.Transaction(
         0,

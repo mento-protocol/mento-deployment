@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { console2 as console } from "forge-std/Script.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { console } from "forge-std/console.sol";
 
 import { IERC20Metadata } from "mento-core-2.0.0/common/interfaces/IERC20Metadata.sol";
 import { IReserve } from "mento-core-2.0.0/interfaces/IReserve.sol";

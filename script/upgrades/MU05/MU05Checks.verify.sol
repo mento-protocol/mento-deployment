@@ -96,7 +96,7 @@ contract MU05ChecksVerify is MU05ChecksBase {
   function checkTradingLimt(
     Config.TradingLimit memory expectedTradingLimit,
     TradingLimits.Config memory actualTradingLimit
-  ) internal view {
+  ) internal pure {
     if (expectedTradingLimit.limit0 != actualTradingLimit.limit0) {
       console.log("limit0 was not set as expected ❌");
       revert("Not all trading limits were configured correctly.");

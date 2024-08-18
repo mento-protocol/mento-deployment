@@ -34,9 +34,18 @@ contract eXOFChecksSwap is eXOFChecksBase {
 
     console.log("\n== Starting eXOF test swaps: ==");
 
-    console.log("EUROCXOF tradingMode: ", BreakerBox(breakerBox).getRateFeedTradingMode(config.EUROCXOF.rateFeedID));
-    console.log("CELOXOF tradingMode: ", BreakerBox(breakerBox).getRateFeedTradingMode(config.CELOXOF.rateFeedID));
-    console.log("EURXOF tradingMode: ", BreakerBox(breakerBox).getRateFeedTradingMode(config.EURXOF.rateFeedID));
+    console.log(
+      "EUROCXOF tradingMode: %d",
+      uint(BreakerBox(breakerBox).getRateFeedTradingMode(config.EUROCXOF.rateFeedID))
+    );
+    console.log(
+      "CELOXOF tradingMode: %d",
+      uint(BreakerBox(breakerBox).getRateFeedTradingMode(config.CELOXOF.rateFeedID))
+    );
+    console.log(
+      "EURXOF tradingMode: %d",
+      uint(BreakerBox(breakerBox).getRateFeedTradingMode(config.EURXOF.rateFeedID))
+    );
 
     swapCeloToEXOF(config);
     swapEXOFtoCelo(config);
@@ -225,7 +234,7 @@ contract eXOFChecksSwap is eXOFChecksBase {
     vm.stopPrank();
   }
 
-  function assertApproxEq(uint256 a, uint256 b, uint256 maxDelta) internal view {
+  function assertApproxEq(uint256 a, uint256 b, uint256 maxDelta) internal pure {
     uint256 delta = a > b ? a - b : b - a;
 
     if (delta > maxDelta) {

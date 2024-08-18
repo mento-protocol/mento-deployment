@@ -850,7 +850,7 @@ contract MU03Checks is Script, Test {
     uint256 expectedThreshold,
     address rateFeedID,
     bool isValueDeltaBreaker
-  ) internal view {
+  ) internal pure {
     if (currentThreshold != expectedThreshold) {
       if (isValueDeltaBreaker) {
         console.log("ValueDeltaBreaker rate change threshold not set correctly for rate feed %s", rateFeedID);
@@ -866,7 +866,7 @@ contract MU03Checks is Script, Test {
     uint256 expectedCoolDown,
     address rateFeedID,
     bool isValueDeltaBreaker
-  ) internal view {
+  ) internal pure {
     if (currentCoolDown != expectedCoolDown) {
       if (isValueDeltaBreaker) {
         console.log("ValueDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);

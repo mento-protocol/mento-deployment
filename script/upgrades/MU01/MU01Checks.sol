@@ -300,7 +300,6 @@ contract MU01Checks is Script, Test {
     uint256 amountOut = broker.getAmountOut(address(bpm), exchangeID, tokenIn, tokenOut, amountIn);
 
     // fund reserve with usdc
-    MockERC20 mockBridgedUSDCContract = MockERC20(bridgedUSDC);
     deal(bridgedUSDC, address(reserve), 1000e18, true);
 
     vm.startPrank(trader);

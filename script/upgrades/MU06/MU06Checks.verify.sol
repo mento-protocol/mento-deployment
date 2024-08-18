@@ -54,7 +54,7 @@ contract MU06ChecksVerify is MU06ChecksBase {
     console.log("🟢 Asset: %s successfully added to collateral asset list", nativeUSDT);
   }
 
-  function verifyPoolExchanges(MU06Config.MU06 memory config) internal {
+  function verifyPoolExchanges(MU06Config.MU06 memory config) internal view {
     console.log("\n== Verifying Pool Exchanges ==");
     for (uint256 i = 0; i < config.pools.length; i++) {
       Config.Pool memory poolConfig = config.pools[i];
@@ -135,7 +135,7 @@ contract MU06ChecksVerify is MU06ChecksBase {
     console.log("🟢 Trading limits correctly updated for all exchanges 🔒");
   }
 
-  function verifyBreakerBoxChanges(MU06Config.MU06 memory config) internal {
+  function verifyBreakerBoxChanges(MU06Config.MU06 memory config) internal view {
     // verify USDT rate feed is added to the breaker box
     console.log("\n== Verifying BreakerBox Changes ==");
     require(
@@ -150,7 +150,7 @@ contract MU06ChecksVerify is MU06ChecksBase {
     console.log("🟢 USDT rate feed added to the BreakerBox with ValueDeltaBreaker enabled");
   }
 
-  function verifyValueDeltaBreakerChanges(MU06Config.MU06 memory config) internal {
+  function verifyValueDeltaBreakerChanges(MU06Config.MU06 memory config) internal view {
     Config.RateFeed memory rateFeed = config.rateFeedConfig;
 
     if (rateFeed.valueDeltaBreaker0.enabled) {
@@ -211,7 +211,7 @@ contract MU06ChecksVerify is MU06ChecksBase {
     uint256 expectedThreshold,
     address rateFeedID,
     bool isValueDeltaBreaker
-  ) internal view {
+  ) internal pure {
     if (currentThreshold != expectedThreshold) {
       if (isValueDeltaBreaker) {
         console.log("ValueDeltaBreaker rate change threshold not set correctly for rate feed %s", rateFeedID);
@@ -227,7 +227,7 @@ contract MU06ChecksVerify is MU06ChecksBase {
     uint256 expectedCoolDown,
     address rateFeedID,
     bool isValueDeltaBreaker
-  ) internal view {
+  ) internal pure {
     if (currentCoolDown != expectedCoolDown) {
       if (isValueDeltaBreaker) {
         console.log("ValueDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);
@@ -241,7 +241,7 @@ contract MU06ChecksVerify is MU06ChecksBase {
   function checkTradingLimit(
     Config.TradingLimit memory expectedTradingLimit,
     TradingLimits.Config memory actualTradingLimit
-  ) internal view {
+  ) internal pure {
     if (expectedTradingLimit.limit0 != actualTradingLimit.limit0) {
       console.log("limit0 was not set as expected ❌");
       revert("Not all trading limits were configured correctly.");

@@ -480,7 +480,7 @@ contract MU04 is IMentoUpgrade, GovernanceScript {
     return true;
   }
 
-  function bytes32ToStr(bytes32 _bytes32) public view returns (string memory) {
+  function bytes32ToStr(bytes32 _bytes32) public pure returns (string memory) {
     uint256 length = 0;
     while (bytes1(_bytes32[length]) != 0) {
       length++;

@@ -70,7 +70,7 @@ library eXOFConfig {
   /**
    * @dev Returns the configuration for the EURXOF rate feed.
    */
-  function EUROCXOF_RateFeedConfig() internal view returns (Config.RateFeed memory rateFeedConfig) {
+  function EUROCXOF_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = Config.rateFeedID("EUROCXOF");
     rateFeedConfig.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
       enabled: true,
@@ -81,7 +81,7 @@ library eXOFConfig {
     rateFeedConfig.dependentRateFeeds = Arrays.addresses(Config.rateFeedID("EURXOF"), Config.rateFeedID("EUROCEUR"));
   }
 
-  function EURXOF_RateFeedConfig() internal view returns (Config.RateFeed memory rateFeedConfig) {
+  function EURXOF_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
     rateFeedConfig.rateFeedID = Config.rateFeedID("EURXOF");
     rateFeedConfig.valueDeltaBreaker0 = Config.ValueDeltaBreaker({
       enabled: true,

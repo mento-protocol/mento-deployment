@@ -330,7 +330,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
   function checkTradingLimt(
     Config.TradingLimit memory expectedTradingLimit,
     TradingLimits.Config memory actualTradingLimit
-  ) internal view {
+  ) internal pure {
     if (expectedTradingLimit.limit0 != actualTradingLimit.limit0) {
       console.log("limit0 was not set as expected ❌");
       revert("Not all trading limits were configured correctly.");
@@ -488,7 +488,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
     uint256 expectedThreshold,
     address rateFeedID,
     bool isValueDeltaBreaker
-  ) internal view {
+  ) internal pure {
     if (currentThreshold != expectedThreshold) {
       if (isValueDeltaBreaker) {
         console.log("ValueDeltaBreaker rate change threshold not set correctly for rate feed with id %s", rateFeedID);
@@ -504,7 +504,7 @@ contract eXOFChecksVerify is eXOFChecksBase {
     uint256 expectedCoolDown,
     address rateFeedID,
     bool isValueDeltaBreaker
-  ) internal view {
+  ) internal pure {
     if (currentCoolDown != expectedCoolDown) {
       console.log("currentCoolDown: %s", currentCoolDown);
       console.log("expectedCoolDown: %s", expectedCoolDown);
