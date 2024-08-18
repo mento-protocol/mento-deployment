@@ -2,8 +2,8 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { Script, console2 } from "forge-std/Script.sol";
-import { ICeloGovernance } from "../interfaces/ICeloGovernance.sol";
+import { Script, console2 } from "forge-std-prev/Script.sol";
+import { ICeloGovernance } from "../../interfaces/ICeloGovernance.sol";
 import { Chain } from "./Chain.sol";
 
 contract GovernanceHelper is Script {

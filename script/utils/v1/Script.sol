@@ -2,14 +2,14 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { Script as BaseScript, console2 } from "forge-std/Script.sol";
-import { FixidityLib } from "./FixidityLib.sol";
+import { Script as BaseScript, console2 } from "forge-std-prev/Script.sol";
+import { FixidityLib } from "../FixidityLib.sol";
 import { Chain } from "./Chain.sol";
 import { Contracts } from "./Contracts.sol";
 import { GovernanceHelper } from "./GovernanceHelper.sol";
 import { Factory } from "./Factory.sol";
 
-import { IERC20Lite } from "../interfaces/IERC20Lite.sol";
+import { IERC20Lite } from "../../interfaces/IERC20Lite.sol";
 
 contract Script is BaseScript {
   using Contracts for Contracts.Cache;

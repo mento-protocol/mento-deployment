@@ -2,11 +2,10 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { console2 as console } from "forge-std/Script.sol";
-
+import { console } from "forge-std/console.sol";
 import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
 
-import { Contracts } from "script/utils/Contracts.sol";
+import { Contracts } from "script/utils/v1/Contracts.sol";
 
 import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 

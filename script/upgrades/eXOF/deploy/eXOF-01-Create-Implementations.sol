@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { console2 } from "forge-std/Script.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { console } from "forge-std/console.sol";
 
 import { StableTokenXOF } from "mento-core-2.2.0/legacy/StableTokenXOF.sol";
 
@@ -22,9 +22,9 @@ contract eXOF_CreateImplementations is Script {
     }
     vm.stopBroadcast();
 
-    console2.log("----------");
-    console2.log("StableTokenXOF deployed at: ", stableTokenXOF);
-    console2.log("StableTokenXOF(%s) ownership transferred to %s", stableTokenXOF, governance);
-    console2.log("----------");
+    console.log("----------");
+    console.log("StableTokenXOF deployed at: ", stableTokenXOF);
+    console.log("StableTokenXOF(%s) ownership transferred to %s", stableTokenXOF, governance);
+    console.log("----------");
   }
 }

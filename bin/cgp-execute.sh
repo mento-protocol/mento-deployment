@@ -36,9 +36,9 @@ fi
 
 if [ "$SIMULATE" = true ] ; then
     echo "🥸  Simulating execution of proposal $PROPOSAL_ID on $NETWORK"
-    forge script --rpc-url $RPC_URL --sig "run(uint256)" $UTILS_DIR/ExecuteProposal.sol:ExecuteProposal $PROPOSAL_ID -vvvv
+    forge script --rpc-url $RPC_URL --sig "run(uint256)" $BIN_DIR/ExecuteProposal.sol:ExecuteProposal $PROPOSAL_ID -vvvv
 else 
     echo "🔥 Executing proposal $PROPOSAL_ID on $NETWORK"
     confirm_if_celo "$NETWORK"
-    forge script --rpc-url $RPC_URL --sig "run(uint256)" $UTILS_DIR/ExecuteProposal.sol:ExecuteProposal $PROPOSAL_ID --broadcast -vvvv --verify --verifier sourcify
+    forge script --rpc-url $RPC_URL --sig "run(uint256)" $BIN_DIR/ExecuteProposal.sol:ExecuteProposal $PROPOSAL_ID --broadcast -vvvv --verify --verifier sourcify
 fi

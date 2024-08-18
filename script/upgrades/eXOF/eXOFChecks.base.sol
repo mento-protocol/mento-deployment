@@ -2,14 +2,14 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { console2 as console } from "forge-std/Script.sol";
-import { Test } from "forge-std/Test.sol";
+import { console } from "forge-std/console.sol";
+import { Test } from "forge-std-prev/Test.sol";
 import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
 import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
-import { GovernanceScript } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { Arrays } from "script/utils/Arrays.sol";
+import { GovernanceScript } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { Arrays } from "script/utils/v1/Arrays.sol";
 
 import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
 import { IBiPoolManager } from "mento-core-2.2.0/interfaces/IBiPoolManager.sol";

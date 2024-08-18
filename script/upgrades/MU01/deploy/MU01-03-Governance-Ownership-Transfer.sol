@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { console2 } from "forge-std/Script.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { console } from "forge-std/console.sol";
 
 import { Ownable } from "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import { Proxy } from "mento-core-2.0.0/common/Proxy.sol";
@@ -38,7 +38,7 @@ contract MU01_GovernanceOwnershipTransfer is Script {
         address payable proxyAddy = contracts.deployed(proxies[i]);
         Proxy proxy = Proxy(proxyAddy);
         if (proxy._getOwner() != governance) {
-          console2.log("%s(%s) ownership transferred to %s", proxies[i], proxyAddy, governance);
+          console.log("%s(%s) ownership transferred to %s", proxies[i], proxyAddy, governance);
           proxy._transferOwnership(governance);
         }
       }
@@ -47,7 +47,7 @@ contract MU01_GovernanceOwnershipTransfer is Script {
         address ownableAddy = contracts.deployed(ownables[i]);
         Ownable ownable = Ownable(ownableAddy);
         if (ownable.owner() != governance) {
-          console2.log("%s(%s) ownership transferred to %s", ownables[i], ownableAddy, governance);
+          console.log("%s(%s) ownership transferred to %s", ownables[i], ownableAddy, governance);
           ownable.transferOwnership(governance);
         }
       }

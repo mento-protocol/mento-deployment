@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { console2 } from "forge-std/Script.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { console } from "forge-std/console.sol";
 
 /*
  yarn deploy -n <network> -u MU04 -s MU04-00-Create-Implementations.sol
@@ -30,9 +30,9 @@ contract MU04_CreateImplementations is Script {
     }
     vm.stopBroadcast();
 
-    console2.log("----------");
-    console2.log("StableTokenV2 deployed at: ", stableTokenV2);
-    console2.log("StableTokenV2(%s) ownership transferred to %s", stableTokenV2, governance);
-    console2.log("----------");
+    console.log("----------");
+    console.log("StableTokenV2 deployed at: ", stableTokenV2);
+    console.log("StableTokenV2(%s) ownership transferred to %s", stableTokenV2, governance);
+    console.log("----------");
   }
 }

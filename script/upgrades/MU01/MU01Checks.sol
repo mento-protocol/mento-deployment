@@ -2,14 +2,14 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { console2 } from "forge-std/Script.sol";
-import { Test } from "forge-std/Test.sol";
+import { console } from "forge-std-prev/console.sol";
+import { Test } from "forge-std-prev/Test.sol";
 import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
 import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { Arrays } from "script/utils/Arrays.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { Arrays } from "script/utils/v1/Arrays.sol";
 import { MockERC20 } from "contracts/MockERC20.sol";
 
 import { IBroker } from "mento-core-2.0.0/interfaces/IBroker.sol";
@@ -82,7 +82,7 @@ contract MU01Checks is Script, Test {
   /* ================================================================ */
 
   function verifyPartialReserve() public {
-    console2.log("\n== Verifying partial reserve... ==");
+    console.log("\n== Verifying partial reserve... ==");
 
     checkReserveCollateralAssets();
     checkReserveStableAssets();
@@ -94,7 +94,7 @@ contract MU01Checks is Script, Test {
     require(reserve.checkIsCollateralAsset(celoToken), "CELO is not collateral asset");
     require(reserve.checkIsCollateralAsset(bridgedUSDC), "bridgedUSDC is not collateral asset");
 
-    console2.log("\t collateral assets are added 🎉");
+    console.log("\t collateral assets are added 🎉");
   }
 
   function checkReserveStableAssets() public view {
@@ -102,7 +102,7 @@ contract MU01Checks is Script, Test {
     require(reserve.isStableAsset(cEUR), "cEUR is not a stable asset");
     require(reserve.isStableAsset(cBRL), "cBRL is not a stable asset!!");
 
-    console2.log("\t stable assets are added 🥹");
+    console.log("\t stable assets are added 🥹");
   }
 
   function checkReserveSpenders() public {
@@ -111,7 +111,7 @@ contract MU01Checks is Script, Test {
     address spenderMultiSig = contracts.dependency("PartialReserveMultisig");
     require(reserve.isSpender(spenderMultiSig), "Mento multisig is not a spender");
 
-    console2.log("\t spender addresses are added 😮");
+    console.log("\t spender addresses are added 😮");
   }
 
   function checkReserveMultisigCanSpend() public {
@@ -133,7 +133,7 @@ contract MU01Checks is Script, Test {
     assert(address(mainReserve).balance == prevMainReserveCeloBalance + oneMillion);
     assert(MockERC20(bridgedUSDC).balanceOf(address(mainReserve)) == prevMainReserveUsdcBalance + oneMillion);
 
-    console2.log("\t multiSig spender can spend collateral assets 🤑");
+    console.log("\t multiSig spender can spend collateral assets 🤑");
   }
 
   /* ================================================================ */
@@ -141,7 +141,7 @@ contract MU01Checks is Script, Test {
   /* ================================================================ */
 
   function verifyBroker() public view {
-    console2.log("\n== Verifying broker... ==");
+    console.log("\n== Verifying broker... ==");
 
     verifyExchangeProviders();
     verifyBiPoolManager();
@@ -152,10 +152,10 @@ contract MU01Checks is Script, Test {
   function verifyExchangeProviders() public view {
     address[] memory exchangeProviders = broker.getExchangeProviders();
     if (exchangeProviders.length != 1) {
-      console2.log("Exchange provider count was %s but should have been 1", exchangeProviders.length);
+      console.log("Exchange provider count was %s but should have been 1", exchangeProviders.length);
       revert("Exchange provider count was not 1");
     }
-    console2.log("\tchecked exchange providers ✅");
+    console.log("\tchecked exchange providers ✅");
   }
 
   function verifyBiPoolManager() public view {
@@ -165,15 +165,15 @@ contract MU01Checks is Script, Test {
     // Get the address of the deployed BiPoolManagerProxy from the deployment json.
     address expectedBiPoolManager = contracts.deployed("BiPoolManagerProxy");
     if (biPoolManager != expectedBiPoolManager) {
-      console2.log(
+      console.log(
         "The address of the BiPool manager retrieved from the Broker was not the address found in the deployment json."
       );
-      console2.log("Expected address:", expectedBiPoolManager);
-      console2.log("Actual address:", biPoolManager);
+      console.log("Expected address:", expectedBiPoolManager);
+      console.log("Actual address:", biPoolManager);
 
       revert("BiPoolManager address found was not expected. See logs.");
     }
-    console2.log("\tchecked biPoolManager address 🫡");
+    console.log("\tchecked biPoolManager address 🫡");
   }
 
   function verifyExchanges() public view {
@@ -194,7 +194,7 @@ contract MU01Checks is Script, Test {
       );
     }
 
-    console2.log("\texchanges correctly configured 🤘🏼");
+    console.log("\texchanges correctly configured 🤘🏼");
   }
 
   function verifyTradingLimits() public view {
@@ -209,12 +209,12 @@ contract MU01Checks is Script, Test {
       TradingLimits.Config memory limits = _broker.tradingLimitsConfig(limitId);
 
       if (limits.timestep0 == 0 || limits.timestep1 == 0 || limits.limit0 == 0 || limits.limit1 == 0) {
-        console2.log("The trading limit for %s, %s was not set ❌", pool.asset0, pool.asset1);
+        console.log("The trading limit for %s, %s was not set ❌", pool.asset0, pool.asset1);
         revert("Not all trading limits were set.");
       }
     }
 
-    console2.log("\tTrading limits set for all exchanges 🔒");
+    console.log("\tTrading limits set for all exchanges 🔒");
   }
 
   function verifyCircuitBreaker() public view {
@@ -226,12 +226,12 @@ contract MU01Checks is Script, Test {
 
       // if configured, TradingModeInfo.lastUpdatedTime is greater than zero
       if (lastUpdatedTime == 0) {
-        console2.log("Circuit breaker for %s was not set ❌", token);
+        console.log("Circuit breaker for %s was not set ❌", token);
         revert("Not all breakers were set.");
       }
     }
 
-    console2.log("\tCircuit breakers set for all tokens 😬");
+    console.log("\tCircuit breakers set for all tokens 😬");
   }
 
   /* ================================================================ */
@@ -239,7 +239,7 @@ contract MU01Checks is Script, Test {
   /* ================================================================ */
 
   function doSwaps() public {
-    console2.log("\n== Doing some test swaps... ==");
+    console.log("\n== Doing some test swaps... ==");
     swapCeloTocUSD();
     swapBridgedUSDCTocUSD();
     swapcUSDtoBridgedUSDC();
@@ -257,7 +257,7 @@ contract MU01Checks is Script, Test {
     IERC20Metadata(contracts.celoRegistry("GoldToken")).approve(address(broker), 1e18);
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, 1e18, amountOut - 1e17);
 
-    console2.log("\tCELO -> cUSD swap successful 🚀");
+    console.log("\tCELO -> cUSD swap successful 🚀");
   }
 
   function swapBridgedUSDCTocUSD() public {
@@ -286,7 +286,7 @@ contract MU01Checks is Script, Test {
     assert(MockERC20(cUSD).balanceOf(trader) == beforecUSD + amountOut);
     vm.stopPrank();
 
-    console2.log("\tbridgedUSDC -> cUSD swap successful 🚀");
+    console.log("\tbridgedUSDC -> cUSD swap successful 🚀");
   }
 
   function swapcUSDtoBridgedUSDC() public {
@@ -308,7 +308,7 @@ contract MU01Checks is Script, Test {
     broker.swapIn(address(bpm), exchangeID, tokenIn, tokenOut, amountIn, amountOut);
     vm.stopPrank();
 
-    console2.log("\tcUSD -> bridgedUSDC swap successful 🚀");
+    console.log("\tcUSD -> bridgedUSDC swap successful 🚀");
   }
 
   /* ================================================================ */

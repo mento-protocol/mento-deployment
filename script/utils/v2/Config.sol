@@ -1,14 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines, var-name-mixedcase
-pragma solidity >=0.5.13 <0.9.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8;
 
-import { FixidityLib } from "./FixidityLib.sol";
-import { console2 as console } from "forge-std/Script.sol";
-
-import { Chain } from "script/utils/Chain.sol";
-import { Contracts } from "script/utils/Contracts.sol";
-import { Arrays } from "script/utils/Arrays.sol";
+import { FixidityLib } from "../FixidityLib.sol";
+import { uints, bytes4s } from "mento-std/Array.sol";
 
 library Config {
   struct MedianDeltaBreaker {
@@ -334,7 +329,7 @@ library Config {
    */
   function getCeloStableConstitutionSelectors() internal pure returns (bytes4[] memory) {
     return
-      Arrays.bytes4s(
+      bytes4s(
         getSelector("transfer(address,uint256)"),
         getSelector("transferWithComment(address,uint256,string)"),
         getSelector("approve(address,uint256)")
@@ -345,6 +340,6 @@ library Config {
    * @notice Helper function to get the thresholds for the Celo stable constitution
    */
   function getCeloStableConstitutionThresholds() internal pure returns (uint256[] memory) {
-    return Arrays.uints(0.9 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24);
+    return uints(0.9 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24, 0.6 * 1e24);
   }
 }

@@ -3,12 +3,12 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { GovernanceScript } from "script/utils/Script.sol";
-import { console2 as console } from "forge-std/Script.sol";
-import { Contracts } from "script/utils/Contracts.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { Arrays } from "script/utils/Arrays.sol";
-import { stdJson } from "forge-std/StdJson.sol";
+import { GovernanceScript } from "script/utils/v1/Script.sol";
+import { console } from "forge-std/console.sol";
+import { Contracts } from "script/utils/v1/Contracts.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { Arrays } from "script/utils/v1/Arrays.sol";
+import { stdJson } from "forge-std-prev/StdJson.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
@@ -40,6 +40,13 @@ contract MUGOV is IMentoUpgrade, GovernanceScript {
       createProposal(_transactions, "MUGOV", governance);
     }
     vm.stopBroadcast();
+  }
+
+  function simulate() public {
+    prepare();
+    address governance = contracts.celoRegistry("Governance");
+    ICeloGovernance.Transaction[] memory _transactions = buildProposal();
+    simulateProposal(_transactions, governance);
   }
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {

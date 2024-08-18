@@ -2,10 +2,10 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { Test } from "forge-std/Test.sol";
+import { Test } from "forge-std-prev/Test.sol";
 import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
 
-import { GovernanceScript } from "script/utils/Script.sol";
+import { GovernanceScript } from "script/utils/v1/Script.sol";
 import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
 import { SafeMath } from "celo-foundry/test/SafeMath.sol";
 

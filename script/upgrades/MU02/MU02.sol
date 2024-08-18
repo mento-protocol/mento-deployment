@@ -3,11 +3,11 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { GovernanceScript } from "script/utils/Script.sol";
+import { GovernanceScript } from "script/utils/v1/Script.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
-import { Chain } from "script/utils/Chain.sol";
-import { Arrays } from "script/utils/Arrays.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { Arrays } from "script/utils/v1/Arrays.sol";
 
 import { Proxy } from "mento-core-2.1.0/common/Proxy.sol";
 import { BiPoolManager } from "mento-core-2.1.0/BiPoolManager.sol";
@@ -63,6 +63,13 @@ contract MU02 is IMentoUpgrade, GovernanceScript {
       createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0081.md", governance);
     }
     vm.stopBroadcast();
+  }
+
+  function simulate() public {
+    prepare();
+    address governance = contracts.celoRegistry("Governance");
+    ICeloGovernance.Transaction[] memory _transactions = buildProposal();
+    simulateProposal(_transactions, governance);
   }
 
   /**

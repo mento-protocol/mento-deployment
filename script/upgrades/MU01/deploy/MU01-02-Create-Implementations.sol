@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { console2 } from "forge-std/Script.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { console } from "forge-std/console.sol";
 
 import { BreakerBox } from "mento-core-2.0.0/BreakerBox.sol";
 import { BiPoolManager } from "mento-core-2.0.0/BiPoolManager.sol";
@@ -44,15 +44,15 @@ contract MU01_CreateImplementations is Script {
     }
     vm.stopBroadcast();
 
-    console2.log("----------");
-    console2.log("BreakerBox deployed at: ", breakerBox);
-    console2.log("BiPoolManager deployed at: ", biPoolManager);
-    console2.log("Broker deployed at: ", broker);
-    console2.log("Reserve deployed at: ", reserve);
-    console2.log("StableToken deployed at: ", stableToken);
-    console2.log("StableTokenEUR deployed at: ", stableTokenEUR);
-    console2.log("StableTokenBRL deployed at: ", stableTokenBRL);
-    console2.log("SortedOracles deployed at: ", sortedOracles);
-    console2.log("----------");
+    console.log("----------");
+    console.log("BreakerBox deployed at: ", breakerBox);
+    console.log("BiPoolManager deployed at: ", biPoolManager);
+    console.log("Broker deployed at: ", broker);
+    console.log("Reserve deployed at: ", reserve);
+    console.log("StableToken deployed at: ", stableToken);
+    console.log("StableTokenEUR deployed at: ", stableTokenEUR);
+    console.log("StableTokenBRL deployed at: ", stableTokenBRL);
+    console.log("SortedOracles deployed at: ", sortedOracles);
+    console.log("----------");
   }
 }

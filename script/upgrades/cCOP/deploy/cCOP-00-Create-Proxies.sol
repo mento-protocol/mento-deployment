@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { console2 } from "forge-std/Script.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { console } from "forge-std/console.sol";
 
 import { StableTokenCOPProxy } from "mento-core-2.3.1/legacy/proxies/StableTokenCOPProxy.sol";
 
@@ -22,9 +22,9 @@ contract cCOP_CreateProxies is Script {
     }
     vm.stopBroadcast();
 
-    console2.log("----------");
-    console2.log("StableTokenCOPProxy deployed at: ", stableTokenCOPProxy);
-    console2.log("StableTokenCOPProxy(%s) ownership transferred to %s", stableTokenCOPProxy, governance);
-    console2.log("----------");
+    console.log("----------");
+    console.log("StableTokenCOPProxy deployed at: ", stableTokenCOPProxy);
+    console.log("StableTokenCOPProxy(%s) ownership transferred to %s", stableTokenCOPProxy, governance);
+    console.log("----------");
   }
 }

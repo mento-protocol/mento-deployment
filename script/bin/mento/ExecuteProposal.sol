@@ -1,22 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.18;
+pragma solidity ^0.8;
 
-import { Script } from "./Script.sol";
+import { Script } from "mento-std/Script.sol";
 import { IGovernanceFactory } from "../../interfaces/IGovernanceFactory.sol";
 import { IGovernor } from "../../interfaces/IGovernor.sol";
-import { Chain } from "./Chain.sol";
 
 contract ExecuteProposal is Script {
   function run(uint256 proposalId) public {
-    address governance = IGovernanceFactory(Chain.governanceFactory()).mentoGovernor();
+    IGovernor governance = IGovernor(lookup("MentoGovernor"));
 
-    if (IGovernor(governance).state(proposalId) != 5) {
+    if (governance.state(proposalId) != 5) {
       revert(unicode"❌ Proposal is not queued, cannot be executed");
     }
 
-    vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
+    vm.startBroadcast(deployerPrivateKey());
     {
-      IGovernor(governance).execute(proposalId);
+      governance.execute(proposalId);
     }
     vm.stopBroadcast();
   }

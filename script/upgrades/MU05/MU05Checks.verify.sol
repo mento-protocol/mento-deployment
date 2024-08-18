@@ -2,7 +2,7 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { console2 as console } from "forge-std/Script.sol";
+import { console } from "forge-std/console.sol";
 import { FixidityLib } from "mento-core-2.2.0/common/FixidityLib.sol";
 
 import { Reserve } from "mento-core-2.2.0/swap/Reserve.sol";

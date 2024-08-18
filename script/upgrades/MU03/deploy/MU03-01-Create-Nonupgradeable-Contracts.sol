@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { console2 } from "forge-std/Script.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { console } from "forge-std/console.sol";
 
 import { ISortedOracles } from "mento-core-2.2.0/interfaces/ISortedOracles.sol";
 import { MedianDeltaBreaker } from "mento-core-2.2.0/oracles/breakers/MedianDeltaBreaker.sol";
@@ -49,12 +49,12 @@ contract MU03_CreateNonupgradeableContracts is Script {
     }
     vm.stopBroadcast();
 
-    console2.log("----------");
-    console2.log("BreakerBox deployed at: ", address(breakerBox));
-    console2.log("BreakerBox(%s) ownership transferred to %s", address(breakerBox), governance);
-    console2.log("MedianDeltaBreaker deployed at: ", address(medianDeltaBreaker));
-    console2.log("MedianDeltaBreaker(%s) ownership transferred to %s", address(medianDeltaBreaker), governance);
-    console2.log("ConstantSumPricingModule(%s) deployed at %s", address(constantSumPriceModule));
-    console2.log("----------");
+    console.log("----------");
+    console.log("BreakerBox deployed at: ", address(breakerBox));
+    console.log("BreakerBox(%s) ownership transferred to %s", address(breakerBox), governance);
+    console.log("MedianDeltaBreaker deployed at: ", address(medianDeltaBreaker));
+    console.log("MedianDeltaBreaker(%s) ownership transferred to %s", address(medianDeltaBreaker), governance);
+    console.log("ConstantSumPricingModule(%s) deployed at %s", address(constantSumPriceModule));
+    console.log("----------");
   }
 }

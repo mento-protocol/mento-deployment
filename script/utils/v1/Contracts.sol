@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.18;
+pragma solidity ^0.5.13;
+pragma experimental ABIEncoderV2;
 
 import { console } from "forge-std/console.sol";
 
-import { Vm } from "forge-std/Vm.sol";
+import { Vm } from "forge-std-prev/Vm.sol";
 import { Chain } from "./Chain.sol";
-import { stdJson } from "forge-std/StdJson.sol";
+import { stdJson } from "forge-std-prev/StdJson.sol";
 import { IRegistry } from "script/interfaces/IRegistry.sol";
 
 library Contracts {
@@ -68,13 +69,12 @@ library Contracts {
     }
 
     for (uint256 i = 0; i < contractAddresses.length; i++) {
-      string memory stringIndex = uint2str(i);
+      string memory stringIndex = uintToString(i);
 
       string memory txType = abi.decode(
         json.parseRaw(string(abi.encodePacked(".transactions[", stringIndex, "].transactionType"))),
         (string)
       );
-
       if (keccak256(bytes(txType)) == keccak256(bytes("CREATE"))) {
         string memory contractName = abi.decode(
           json.parseRaw(string(abi.encodePacked(".transactions[", stringIndex, "].contractName"))),
@@ -92,7 +92,7 @@ library Contracts {
   }
 
   function deployed(Cache storage self, string memory contractName) internal view returns (address payable addr) {
-    addr = payable(address(uint160(self.contractAddress[keccak256(bytes(contractName))])));
+    addr = address(uint160(self.contractAddress[keccak256(bytes(contractName))]));
     require(
       addr != address(0),
       string(abi.encodePacked(contractName, ":NotFoundInDeployedCache:Check relevant deployemnt script was loaded"))
@@ -105,7 +105,7 @@ library Contracts {
 
   function _loadDependencies(Cache storage self) internal returns (Cache storage) {
     string memory root = vm.projectRoot();
-    string memory path = string(abi.encodePacked(root, "/script/upgrades/dependencies.json"));
+    string memory path = string(abi.encodePacked(root, "/dependencies.json"));
     self._dependenciesLoaded = true;
     self._dependencies = vm.readFile(path);
     return self;
@@ -124,27 +124,25 @@ library Contracts {
   }
 
   /// @notice converts number to string
-  /// @dev source: https://stackoverflow.com/questions/47129173/how-to-convert-uint-to-string-in-solidity
+  /// @dev source: https://github.com/provable-things/ethereum-api/blob/master/oraclizeAPI_0.5.sol#L1045
   /// @param _i integer to convert
   /// @return _uintAsString
-  function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
-    if (_i == 0) {
+  function uintToString(uint256 _i) internal pure returns (string memory _uintAsString) {
+    uint256 number = _i;
+    if (number == 0) {
       return "0";
     }
-    uint j = _i;
-    uint len;
+    uint256 j = number;
+    uint256 len;
     while (j != 0) {
       len++;
       j /= 10;
     }
     bytes memory bstr = new bytes(len);
-    uint k = len;
-    while (_i != 0) {
-      k = k - 1;
-      uint8 temp = (48 + uint8(_i - (_i / 10) * 10));
-      bytes1 b1 = bytes1(temp);
-      bstr[k] = b1;
-      _i /= 10;
+    uint256 k = len - 1;
+    while (number != 0) {
+      bstr[k--] = bytes1(uint8(48 + (number % 10)));
+      number /= 10;
     }
     return string(bstr);
   }

@@ -57,10 +57,10 @@ parse_gov () { # $1: governance
 
     case $1 in
         "celo")
-            UTILS_DIR="script/utils"
+            BIN_DIR="script/bin/celo"
             ;;
         "mento")
-            UTILS_DIR="script/utils/mento"
+            BIN_DIR="script/bin/mento"
             ;;
         *)
             echo "🚨 Invalid governance: '$1' (celo|mento)"

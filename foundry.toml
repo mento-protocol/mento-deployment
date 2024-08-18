@@ -14,9 +14,11 @@ fs_permissions = [
     { access = "read", path = "./broadcast" },
     { access = "read", path = "./out" },
     { access = "read", path = "./data" },
-    { access = "read", path = "./script/upgrades/dependencies.json" },
+    { access = "read", path = "./script/upgrades" },
+    { access = "read", path = "./dependencies.json" },
 ]
 via_ir = true
+unchecked_cheatcode_artifacts = true
 
 
 # There's a bug that occurs when trying to verify libraries in sourcify, on testnets.

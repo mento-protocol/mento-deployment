@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 
-import { console2 } from "forge-std/Script.sol";
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
+import { console } from "forge-std/console.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
 
 import { ConstantSumPricingModule } from "mento-core-2.0.0/ConstantSumPricingModule.sol";
 import { ConstantProductPricingModule } from "mento-core-2.0.0/ConstantProductPricingModule.sol";
@@ -59,11 +59,11 @@ contract MU01_CreateNonupgradeableContracts is Script {
     }
     vm.stopBroadcast();
 
-    console2.log("----------");
-    console2.log("Constant sum pricing module deployed at: ", address(csPricingModule));
-    console2.log("Constant product pricing module deployed at: ", address(cpPricingModule));
-    console2.log("MedianDeltaBreaker deployed at", address(medianDeltaBreaker));
-    console2.log("ValueDeltaBreaker deployed at", address(valueDeltaBreaker));
-    console2.log("----------");
+    console.log("----------");
+    console.log("Constant sum pricing module deployed at: ", address(csPricingModule));
+    console.log("Constant product pricing module deployed at: ", address(cpPricingModule));
+    console.log("MedianDeltaBreaker deployed at", address(medianDeltaBreaker));
+    console.log("ValueDeltaBreaker deployed at", address(valueDeltaBreaker));
+    console.log("----------");
   }
 }

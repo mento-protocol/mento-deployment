@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { console2 } from "forge-std/Script.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { console } from "forge-std/console.sol";
 
 import { BiPoolManager } from "mento-core-2.1.0/BiPoolManager.sol";
 
@@ -23,9 +23,9 @@ contract MU02_CreateImplementations is Script {
     }
     vm.stopBroadcast();
 
-    console2.log("----------");
-    console2.log("BiPoolManager deployed at: ", biPoolManager);
-    console2.log("BiPoolManager(%s) ownership transferred to %s", biPoolManager, governance);
-    console2.log("----------");
+    console.log("----------");
+    console.log("BiPoolManager deployed at: ", biPoolManager);
+    console.log("BiPoolManager(%s) ownership transferred to %s", biPoolManager, governance);
+    console.log("----------");
   }
 }

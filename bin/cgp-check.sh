@@ -28,4 +28,4 @@ parse_upgrade "$UPGRADE"
 parse_gov "$GOVERNANCE"
 
 echo "👀  Checking $UPGRADE"
-forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --skip .dev.sol --sig "check(string)" $UTILS_DIR/SimulateUpgrade.sol:SimulateUpgrade $UPGRADE
+forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --sig "check(string)"script/bin/SimulateProposal.sol:SimulateProposal $UPGRADE

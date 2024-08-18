@@ -2,12 +2,12 @@
 pragma solidity ^0.5.13;
 
 import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
-import { Test } from "forge-std/Test.sol";
-import { stdJson } from "forge-std/StdJson.sol";
-import { console2 as console } from "forge-std/Script.sol";
+import { Test } from "forge-std-prev/Test.sol";
+import { stdJson } from "forge-std-prev/StdJson.sol";
+import { console } from "forge-std/console.sol";
 
-import { Chain } from "script/utils/Chain.sol";
-import { GovernanceScript } from "script/utils/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { GovernanceScript } from "script/utils/v1/Script.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 import { IMentoToken, IEmission, IAirgrab, ITimelock, IMentoGovernor, ILocking } from "./interfaces.sol";
 
@@ -64,7 +64,7 @@ contract MUGOVChecks is GovernanceScript, Test {
     assertEq(mentoToken.balanceOf(reserve), 50_000_000 * 1e18, "❌ reserve allocation");
     assertEq(mentoToken.balanceOf(address(airgrab)), 50_000_000 * 1e18, "❌ airgrab allocation");
     assertEq(mentoToken.balanceOf(address(governanceTimelock)), 50_000_000 * 1e18, "❌ governanceTimelock allocation");
-    assertEq(mentoToken.emissionSupply(), 400_000_000 * 1e18, "❌ emission allocation");
+    assertEq(mentoToken.emissionSupply(), 400_000_000 * 1e18, "�� emission allocation");
 
     assertEq(
       mentoToken.totalSupply() + mentoToken.emissionSupply(),

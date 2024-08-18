@@ -53,8 +53,9 @@ else
 fi
 
 if [ "$SIMULATE" = true ] ; then
-    echo "🥸  Simulating $CONTRACT"
-    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --skip .dev.sol --sig "run(string)" $UTILS_DIR/SimulateUpgrade.sol:SimulateUpgrade $CONTRACT
+    echo "🥸 Simulating $CONTRACT"
+    ./bin/build.sh -u $UPGRADE
+    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --sig "run(string)" script/bin/SimulateProposal.sol:SimulateProposal $CONTRACT -vvvv
 else 
     echo "🔥 Submitting $CONTRACT"
     confirm_if_celo "$NETWORK"

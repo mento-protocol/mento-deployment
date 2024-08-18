@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.5.13;
+pragma solidity ^0.8;
 
-import { Script, console2 } from "forge-std/Script.sol";
-import { IRegistry } from "../interfaces/IRegistry.sol";
-import { ICeloGovernance } from "../interfaces/ICeloGovernance.sol";
+import { console } from "forge-std/console.sol";
+import { Script } from "mento-std/Script.sol";
+import { IRegistry } from "../../interfaces/IRegistry.sol";
+import { ICeloGovernance } from "../../interfaces/ICeloGovernance.sol";
 
 contract ExecuteProposal is Script {
   function run(uint256 proposalId) public {
-    IRegistry registry = IRegistry(0x000000000000000000000000000000000000ce10);
-    ICeloGovernance governance = ICeloGovernance(registry.getAddressForStringOrDie("Governance"));
+    ICeloGovernance governance = ICeloGovernance(lookup("Governance"));
 
     uint256[] memory dequeue = governance.getDequeue();
     uint256 proposalIndex = 0;
@@ -20,7 +20,7 @@ contract ExecuteProposal is Script {
     }
     require(dequeue[proposalIndex] == proposalId, "Proposal not found");
 
-    vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
+    vm.startBroadcast(deployerPrivateKey());
     {
       governance.execute(proposalId, proposalIndex);
     }

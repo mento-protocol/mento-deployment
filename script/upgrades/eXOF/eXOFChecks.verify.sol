@@ -2,9 +2,9 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { console2 as console } from "forge-std/Script.sol";
+import { console } from "forge-std/console.sol";
 
-import { Arrays } from "script/utils/Arrays.sol";
+import { Arrays } from "script/utils/v1/Arrays.sol";
 
 import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";

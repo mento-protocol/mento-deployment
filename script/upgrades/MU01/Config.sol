@@ -3,13 +3,13 @@
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-import { console2 as console } from "forge-std/Script.sol";
+import { console } from "forge-std/console.sol";
 
 import { FixidityLib } from "script/utils/FixidityLib.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { Config } from "script/utils/Config.sol";
-import { Contracts } from "script/utils/Contracts.sol";
-import { Arrays } from "script/utils/Arrays.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { Config } from "script/utils/v1/Config.sol";
+import { Contracts } from "script/utils/v1/Contracts.sol";
+import { Arrays } from "script/utils/v1/Arrays.sol";
 
 library MU01Config {
   using FixidityLib for FixidityLib.Fraction;

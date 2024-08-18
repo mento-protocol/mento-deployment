@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.5.13;
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { console2 } from "forge-std/Script.sol";
+import { Script } from "script/utils/v1/Script.sol";
+import { Chain } from "script/utils/v1/Chain.sol";
+import { console } from "forge-std/console.sol";
 
 import { BreakerBoxProxy } from "mento-core-2.0.0/proxies/BreakerBoxProxy.sol";
 import { BiPoolManagerProxy } from "mento-core-2.0.0/proxies/BiPoolManagerProxy.sol";
@@ -29,11 +29,11 @@ contract MU01_CreateProxies is Script {
     }
     vm.stopBroadcast();
 
-    console2.log("----------");
-    console2.log("BrokerProxy deployed at: ", brokerProxy);
-    console2.log("BiPoolManagerProxy deployed at: ", biPoolManagerProxy);
-    console2.log("BreakerBoxProxy deployed at: ", breakerBoxProxy);
-    console2.log("PartialReserveProxy deployed at: ", partialReserveProxy);
-    console2.log("----------");
+    console.log("----------");
+    console.log("BrokerProxy deployed at: ", brokerProxy);
+    console.log("BiPoolManagerProxy deployed at: ", biPoolManagerProxy);
+    console.log("BreakerBoxProxy deployed at: ", breakerBoxProxy);
+    console.log("PartialReserveProxy deployed at: ", partialReserveProxy);
+    console.log("----------");
   }
 }
