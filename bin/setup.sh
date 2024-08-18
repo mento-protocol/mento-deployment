@@ -44,14 +44,14 @@ parse_upgrade () { # $1: upgrade
     if test -d "$UPGRADE_DIR"; then
         if grep -q MentoGovernanceScript "$UPGRADE_DIR/$1.sol" ; then
             GOVERNANCE="mento"
-            BIG_DIR="script/bin/mento"
+            BIN_DIR="script/bin/mento"
         elif grep -q CeloGovernanceScript "$UPGRADE_DIR/$1.sol" ; then
             GOVERNANCE="celo"
-            BIG_DIR="script/bin/celo"
+            BIN_DIR="script/bin/celo"
         elif grep -q GovernanceScript "$UPGRADE_DIR/$1.sol" ; then
             # Backwards compatible to v1 scripts
             GOVERNANCE="celo"
-            BIG_DIR="script/bin/celo"
+            BIN_DIR="script/bin/celo"
         fi
         echo "🔎 Upgrade $1 found for $GOVERNANCE governance"
     else
