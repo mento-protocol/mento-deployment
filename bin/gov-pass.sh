@@ -2,11 +2,11 @@
 
 ##############################################################################
 # Script for passing a Celo Governance Proposal on a tesnet.
-# Usage: yarn cgp:pass 
+# Usage: yarn gov:pass 
 #               -n <baklava|alfajores>  -- network to pass the proposal on
 #               -p <proposal_id>        -- proposal ID
 #               -g <celo|mento>         -- governance to use
-# Example: yarn cgp:pass -n baklava -p 79 -g mento
+# Example: yarn gov:pass -n baklava -p 79 
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"

@@ -1,28 +1,28 @@
 #!/usr/bin/env bash
 
 ##############################################################################
-# Script for submitting a Governance Proposal for a protocol upgrade
-# Usage: yarn cgp
+# Script for submitting Governance Proposals for a protocol upgrade.
+# Usage: yarn gov
 #               -n <baklava|alfajores|celo>  -- network to submit the proposal to
-#               -u <upgrade_name>            -- name of the upgrade (MU01)
+#               -p <proposal_name>           -- name of the proposal (MU01)
 #               -s                           -- simulate the proposal (optional)
 #               -r                           -- revert (optional)
 #               -f                           -- use forked network (optional)
-# Example: yarn cgp -n baklava -u MU01 -g mento
+# Example: yarn gov -n baklava -p MU01
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"
 
 NETWORK=""
-UPGRADE=""
+PROPOSAL=""
 SIMULATE=false
 USE_FORK=false
 REVERT=false
-while getopts n:u:g:sfr flag
+while getopts n:p:g:sfr flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
-        u) UPGRADE=${OPTARG};;
+        p) PROPOSAL=${OPTARG};;
         s) SIMULATE=true;;
         f) USE_FORK=true;;
         r) REVERT=true;;
@@ -30,7 +30,7 @@ do
 done
 
 parse_network "$NETWORK"
-parse_upgrade "$UPGRADE"
+parse_proposal "$PROPOSAL"
 
 if [ "$USE_FORK" = true ] ; then
     # Make sure you're running a local anvil node:
@@ -41,21 +41,21 @@ fi
 
 
 if [ "$REVERT" = true ] ; then
-    CONTRACT=$UPGRADE'Revert'
-    echo "🔄 Reverting $UPGRADE via $CONTRACT"
+    CONTRACT=$PROPOSAL'Revert'
+    echo "🔄 Reverting $PROPOSAL via $CONTRACT"
 else
-    CONTRACT=$UPGRADE
-    echo "🔥 Submitting $UPGRADE via $CONTRACT"
+    CONTRACT=$PROPOSAL
+    echo "🔥 Submitting $PROPOSAL via $CONTRACT"
 fi
 
 if [ "$SIMULATE" = true ] ; then
     echo "🥸 Simulating $CONTRACT"
-    ./bin/build.sh -u $UPGRADE
-    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --sig "run(string)" script/bin/SimulateProposal.sol:SimulateProposal $CONTRACT -vvvv
+    ./bin/build.sh -u $PROPOSAL
+    forge script $(forge_skip $PROPOSAL) --rpc-url $RPC_URL --sig "run(string)" script/bin/SimulateProposal.sol:SimulateProposal $CONTRACT -vvvv
 else 
     echo "🔥 Submitting $CONTRACT"
     confirm_if_celo "$NETWORK"
-    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast ${CONTRACT}
+    forge script $(forge_skip $PROPOSAL) --rpc-url $RPC_URL --legacy --broadcast ${CONTRACT}
 fi
 
 

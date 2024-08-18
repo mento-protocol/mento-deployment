@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
 ##############################################################################
-# Script for executing a Governance Proposal for a protocol upgrade
-# Usage: yarn cgp:execute
+# Script for executing a Governance Proposal for a protocol upgrade.
+# Usage: yarn gov:execute
 #               -p                           -- proposalId
 #               -n <baklava|alfajores|celo>  -- network to submit the proposal to
-#               -g <celo|mento>              -- governance to use
 #               -s                           -- simulate the proposal (optional)
-# Example: yarn cgp -n baklava -p 1 -g mento
+# Example: yarn gov:execute -n baklava -p 1
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"
