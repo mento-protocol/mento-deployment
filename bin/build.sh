@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 
 ##############################################################################
-# Build the contracts for a give upgrade
+# Build the contracts for a give proposal.
 # Usage: ./bin/build.sh 
-#               -u <upgrade_name>               -- name of the upgrade (MU01)
-# Example: ./bin/clean.sh -n baklava -u MU01
+#               -p <proposal_name>        -- name of the proposal (MU01)
+# Example: ./bin/clean.sh -n baklava -p MU01
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"
 
-UPGRADE=""
-while getopts u: flag
+PROPOSAL=""
+while getopts p: flag
 do
     case "${flag}" in
-        u) UPGRADE=${OPTARG};;
+        p) PROPOSAL=${OPTARG};;
     esac
 done
 
-parse_upgrade "$UPGRADE"
+parse_upgrade "$PROPOSAL"
 forge clean
-forge build $(forge_skip $UPGRADE) 
+forge build $(forge_skip $PROPOSAL) 

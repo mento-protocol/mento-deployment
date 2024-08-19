@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+##############################################################################
+# Script for executing a Governance Proposal for a protocol upgrade.
+# Usage: yarn gov:execute
+#               -p                           -- proposalId
+#               -n <baklava|alfajores|celo>  -- network to submit the proposal to
+#               -s                           -- simulate the proposal (optional)
+# Example: yarn gov:execute -n baklava -p 1
+##############################################################################
+
+source "$(dirname "$0")/setup.sh"
+
+NETWORK=""
+PROPOSAL_ID=""
+SIMULATE=false
+while getopts n:p:g:sfr flag
+do
+    case "${flag}" in
+        n) NETWORK=${OPTARG};;
+        p) PROPOSAL_ID=${OPTARG};;
+        s) SIMULATE=true;;
+    esac
+done
+
+parse_network "$NETWORK"
+
+if [ -z "$PROPOSAL_ID" ]; then
+    echo "🚨 No proposal ID provided"
+    exit 1
+fi
+
+if [ "$SIMULATE" = true ] ; then
+    echo "🥸  Simulating execution of $GOVERNANCE proposal $PROPOSAL_ID on $NETWORK"
+    forge script --rpc-url $RPC_URL --sig "run(uint256)" $BIN_DIR/ExecuteProposal.sol:ExecuteProposal $PROPOSAL_ID -vvvv
+else 
+    echo "🔥 Executing $GOVERNANCE proposal $PROPOSAL_ID on $NETWORK"
+    confirm_if_celo "$NETWORK"
+    forge script --rpc-url $RPC_URL --sig "run(uint256)" $BIN_DIR/ExecuteProposal.sol:ExecuteProposal $PROPOSAL_ID --broadcast -vvvv --verify --verifier sourcify
+fi

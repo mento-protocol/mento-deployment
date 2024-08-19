@@ -34,50 +34,41 @@ parse_network () { # $1: network, $2: use_fork
     echo "📠 Network is $NETWORK ($RPC_URL)"
 }
 
-parse_upgrade () { # $1: upgrade
+parse_proposal () { # $1: proposal
     if [ -z "$1" ]; then
-        echo "🚨 No upgrade provided"
+        echo "🚨 No proposal provided"
         exit 1
     fi
 
-    UPGRADE_DIR=script/upgrades/$1
-    if test -d "$UPGRADE_DIR"; then
-        echo "🔎 Upgrade $1 found"
+    PROPOSAL_DIR=script/proposals/$1
+    if test -d "$PROPOSAL_DIR"; then
+        if grep -q MentoGovernanceScript "$PROPOSAL_DIR/$1.sol" ; then
+            GOVERNANCE="mento"
+            BIN_DIR="script/bin/mento"
+        elif grep -q CeloGovernanceScript "$PROPOSAL_DIR/$1.sol" ; then
+            GOVERNANCE="celo"
+            BIN_DIR="script/bin/celo"
+        elif grep -q GovernanceScript "$PROPOSAL_DIR/$1.sol" ; then
+            # Backwards compatible to v1 scripts
+            GOVERNANCE="celo"
+            BIN_DIR="script/bin/celo"
+        fi
+        echo "🔎 Proposal $1 found for $GOVERNANCE governance"
     else
-        echo "🚨 Upgrade $1 not found in $UPGRADE_DIR"
+        echo "🚨 Proposal $1 not found in $PROPOSAL_DIR"
         exit 1
     fi
-}
-
-parse_gov () { # $1: governance
-    if [ -z "$1" ]; then
-        echo "🚨 No governance provided (-g)"
-        exit 1
-    fi
-
-    case $1 in
-        "celo")
-            UTILS_DIR="script/utils"
-            ;;
-        "mento")
-            UTILS_DIR="script/utils/mento"
-            ;;
-        *)
-            echo "🚨 Invalid governance: '$1' (celo|mento)"
-            exit 1
-    esac
-    echo "🗳️  Governance in use is $1 governance"
 }
 
 forge_skip () { # $1: target
     if [ "dev" = $1 ]; then
-        # If target is dev script, skip all upgrades
-        upgrades=$(ls script/upgrades | tr '\n' ' ')
-        echo "--skip $upgrades"
+        # If target is dev script, skip all proposals
+        proposals=$(ls script/proposals | tr '\n' ' ')
+        echo "--skip $proposals"
     else
-        # if target is a un upgrade, skip dev and other upgrades
-        other_upgrades=$(ls script/upgrades | grep -v $1 | tr '\n' ' ')
-        echo "--skip dev- $other_upgrades"
+        # if target is a un upgrade, skip dev and other proposals
+        other_proposals=$(ls script/proposals | grep -v $1 | tr '\n' ' ')
+        echo "--skip dev- $other_proposals"
     fi
 }
 
