@@ -20,7 +20,7 @@ import { IRegistry } from "mento-core-2.4.0/common/interfaces/IRegistry.sol";
 import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
 
 import { BiPoolManagerProxy } from "mento-core-2.4.0/proxies/BiPoolManagerProxy.sol";
-import { StableTokenPSOProxy } from "mento-core-2.4.0/legacy/proxies/StableTokenPSOProxy.sol";
+import { StableTokenPHPProxy } from "mento-core-2.5.0/tokens/StableTokenPHPProxy.sol";
 import { Broker } from "mento-core-2.4.0/swap/Broker.sol";
 import { BiPoolManager } from "mento-core-2.4.0/swap/BiPoolManager.sol";
 import { Exchange } from "mento-core-2.4.0/legacy/Exchange.sol";
@@ -34,15 +34,15 @@ import { ConstantSumPricingModule } from "mento-core-2.4.0/swap/ConstantSumPrici
 import { SafeMath } from "celo-foundry/test/SafeMath.sol";
 import { Proxy } from "mento-core-2.4.0/common/Proxy.sol";
 
-import { PSOConfig, Config } from "./Config.sol";
+import { PUSOConfig, Config } from "./Config.sol";
 
-contract PSOChecksBase is GovernanceScript, Test {
+contract PUSOChecksBase is GovernanceScript, Test {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
   using SafeMath for uint256;
 
   address public cUSD;
-  address payable public PSO;
+  address payable public PUSO;
   address public governance;
   address public medianDeltaBreaker;
   address payable sortedOraclesProxy;
@@ -59,10 +59,10 @@ contract PSOChecksBase is GovernanceScript, Test {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
     contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
-    contracts.loadSilent("PSO-00-Create-Proxies", "latest");
+    contracts.loadSilent("PUSO-00-Create-Proxies", "latest");
 
     // Get proxy addresses
-    PSO = contracts.deployed("StableTokenPSOProxy");
+    PUSO = contracts.deployed("StableTokenPHPProxy");
     cUSD = contracts.celoRegistry("StableToken");
     reserve = contracts.celoRegistry("Reserve");
     broker = contracts.celoRegistry("Broker");

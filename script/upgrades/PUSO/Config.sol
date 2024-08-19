@@ -9,29 +9,29 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { FixidityLib } from "script/utils/FixidityLib.sol";
 
 /**
- * @dev This library contains the configuration required for the PSO governance proposal.
+ * @dev This library contains the configuration required for the PUSO governance proposal.
  *      The following configuration is used:
- *     - 1 pool: PSO<->cUSD
+ *     - 1 pool: PUSO<->cUSD
  *     - 1 rate feed: PHPUSD
- *     - Configuration params needed to initialize the PSO stable token
+ *     - Configuration params needed to initialize the PUSO stable token
  */
-library PSOConfig {
+library PUSOConfig {
   using FixidityLib for FixidityLib.Fraction;
   using Contracts for Contracts.Cache;
 
-  struct PSO {
+  struct PUSO {
     Config.Pool poolConfig;
     Config.RateFeed rateFeedConfig;
     Config.StableTokenV2 stableTokenConfig;
   }
 
   /**
-   * @dev Returns the populated configuration object for the PSO governance proposal.
+   * @dev Returns the populated configuration object for the PUSO governance proposal.
    */
-  function get(Contracts.Cache storage contracts) internal view returns (PSO memory config) {
-    config.poolConfig = PSOcUSD_PoolConfig(contracts);
+  function get(Contracts.Cache storage contracts) internal view returns (PUSO memory config) {
+    config.poolConfig = PUSOcUSD_PoolConfig(contracts);
     config.rateFeedConfig = PHPUSD_RateFeedConfig();
-    config.stableTokenConfig = stableTokenPSOConfig();
+    config.stableTokenConfig = stableTokenPUSOConfig();
   }
 
   /* ==================== Rate Feed Configuration ==================== */
@@ -52,12 +52,12 @@ library PSOConfig {
   /* ==================== Pool Configuration ==================== */
 
   /**
-   * @dev Returns the configuration for the PSOcUSD pool.
+   * @dev Returns the configuration for the PUSOcUSD pool.
    */
-  function PSOcUSD_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory poolConfig) {
+  function PUSOcUSD_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory poolConfig) {
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
-      asset1: contracts.deployed("StableTokenPSOProxy"),
+      asset1: contracts.deployed("StableTokenPUSOProxy"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(3, 1000), // 0.3%, in line with current DT of chainlink feed
       referenceRateResetFrequency: 5 minutes,
@@ -96,7 +96,7 @@ library PSOConfig {
   /**
    * @dev Returns the configuration for the PUSO stable token.
    */
-  function stableTokenPSOConfig() internal pure returns (Config.StableTokenV2 memory config) {
-    config = Config.StableTokenV2({ name: "PUSO", symbol: "PSO" });
+  function stableTokenPUSOConfig() internal pure returns (Config.StableTokenV2 memory config) {
+    config = Config.StableTokenV2({ name: "PUSO", symbol: "PUSO" });
   }
 }

@@ -8,7 +8,7 @@ import { Arrays } from "script/utils/Arrays.sol";
 import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
 import { TradingLimits } from "mento-core-2.4.0/libraries/TradingLimits.sol";
-import { StableTokenPSOProxy } from "mento-core-2.4.0/legacy/proxies/StableTokenPSOProxy.sol";
+import { StableTokenPHPProxy } from "mento-core-2.5.0/tokens/StableTokenPHPProxy.sol";
 
 import { IRegistry } from "mento-core-2.4.0/common/interfaces/IRegistry.sol";
 import { IBiPoolManager } from "mento-core-2.4.0/interfaces/IBiPoolManager.sol";
@@ -22,8 +22,8 @@ import { BiPoolManager } from "mento-core-2.4.0/swap/BiPoolManager.sol";
 import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/MedianDeltaBreaker.sol";
 
-import { PSOChecksBase } from "./PSOChecks.base.sol";
-import { PSOConfig, Config } from "./Config.sol";
+import { PUSOChecksBase } from "./PUSOChecks.base.sol";
+import { PUSOConfig, Config } from "./Config.sol";
 
 /**
  * @title IBrokerWithCasts
@@ -35,7 +35,7 @@ interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
-contract PSOChecksVerify is PSOChecksBase {
+contract PUSOChecksVerify is PUSOChecksBase {
   using TradingLimits for TradingLimits.Config;
 
   uint256 constant PRE_EXISTING_POOLS = 12;
@@ -48,77 +48,77 @@ contract PSOChecksVerify is PSOChecksBase {
   }
 
   function run() public {
-    PSOConfig.PSO memory config = PSOConfig.get(contracts);
-    console.log("\nStarting PSO checks:");
+    PUSOConfig.PUSO memory config = PUSOConfig.get(contracts);
+    console.log("\nStarting PUSO checks:");
 
     console.log("\n==  Rate feeds ==");
-    console.log("   PSOUSD: %s", config.rateFeedConfig.rateFeedID);
+    console.log("   PUSOUSD: %s", config.rateFeedConfig.rateFeedID);
 
     verifyToken(config);
     verifyExchange(config);
     verifyCircuitBreaker(config);
   }
 
-  function verifyToken(PSOConfig.PSO memory config) internal {
+  function verifyToken(PUSOConfig.PUSO memory config) internal {
     console.log("\n== Verifying Token Config Transactions ==");
     verifyOwner();
-    verifyPSOStableToken(config);
-    verifyPSOAddedToReserve();
-    verifyPSOAddedToFeeCurrencyWhitelist();
+    verifyPUSOStableToken(config);
+    verifyPUSOAddedToReserve();
+    verifyPUSOAddedToFeeCurrencyWhitelist();
     verifyConstitution();
   }
 
   function verifyOwner() internal view {
-    require(Proxy(PSO)._getOwner() == governance, "StableTokenPSO Proxy ownership not transferred to governance");
-    console.log("🟢 PSO proxy ownership transferred to governance");
+    require(Proxy(PUSO)._getOwner() == governance, "StableTokenPUSO Proxy ownership not transferred to governance");
+    console.log("🟢 PUSO proxy ownership transferred to governance");
   }
 
-  function verifyPSOStableToken(PSOConfig.PSO memory config) internal {
-    StableTokenPSOProxy stableTokenPSOProxy = StableTokenPSOProxy(PSO);
+  function verifyPUSOStableToken(PUSOConfig.PUSO memory config) internal {
+    StableTokenPHPProxy stableTokenPHPProxy = StableTokenPHPProxy(PUSO);
     address stableTokenV2 = contracts.deployed("StableTokenV2");
 
-    address PSOImplementation = stableTokenPSOProxy._getImplementation();
-    if (PSOImplementation != stableTokenV2) {
+    address PUSOImplementation = stableTokenPHPProxy._getImplementation();
+    if (PUSOImplementation != stableTokenV2) {
       console.log(
-        "The implementation from StableTokenPSOProxy(%s): %s does not match the deployed StableTokenV2 address: %s.",
-        PSO,
-        PSOImplementation,
+        "The implementation from StableTokenPHPProxy(%s): %s does not match the deployed StableTokenV2 address: %s.",
+        PUSO,
+        PUSOImplementation,
         stableTokenV2
       );
-      revert("StableTokenPSOProxy does not point to StableTokenV2 deployed implementation. See logs.");
+      revert("StableTokenPHPProxy does not point to StableTokenV2 deployed implementation. See logs.");
     }
-    console.log("🟢 StableTokenPSOProxy has the correct implementation address");
+    console.log("🟢 StableTokenPHPProxy has the correct implementation address");
 
     // ----- verify initialization parameters -----
-    IStableTokenV2 PSOToken = IStableTokenV2(PSO);
-    IERC20Metadata PSOTokenMetadata = IERC20Metadata(PSO);
+    IStableTokenV2 PUSOToken = IStableTokenV2(PUSO);
+    IERC20Metadata PUSOTokenMetadata = IERC20Metadata(PUSO);
 
-    assertEq(PSOTokenMetadata.name(), config.stableTokenConfig.name, "❗️❌ PSO name not set correctly!");
-    assertEq(PSOTokenMetadata.symbol(), config.stableTokenConfig.symbol, "❗️❌ PSO symbol not set correctly!");
-    assertEq(PSOToken.broker(), broker, "❗️❌ PSO broker not set correctly!");
-    assertEq(PSOToken.validators(), validators, "❗️❌ PSO validators not set correctly!");
+    assertEq(PUSOTokenMetadata.name(), config.stableTokenConfig.name, "❗️❌ PUSO name not set correctly!");
+    assertEq(PUSOTokenMetadata.symbol(), config.stableTokenConfig.symbol, "❗️❌ PUSO symbol not set correctly!");
+    assertEq(PUSOToken.broker(), broker, "❗️❌ PUSO broker not set correctly!");
+    assertEq(PUSOToken.validators(), validators, "❗️❌ PUSO validators not set correctly!");
 
     // no pre-mint
-    assertEq(PSOToken.totalSupply(), 0, "❗️❌ PSO pre-minted tokens!");
+    assertEq(PUSOToken.totalSupply(), 0, "❗️❌ PUSO pre-minted tokens!");
   }
 
-  function verifyPSOAddedToReserve() internal view {
-    if (!Reserve(address(uint160(reserve))).isStableAsset(PSO)) {
-      revert("PSO has not been added to the reserve.");
+  function verifyPUSOAddedToReserve() internal view {
+    if (!Reserve(address(uint160(reserve))).isStableAsset(PUSO)) {
+      revert("PUSO has not been added to the reserve.");
     }
 
-    console.log("🟢 PSO has been added to the reserve");
+    console.log("🟢 PUSO has been added to the reserve");
   }
 
-  function verifyPSOAddedToFeeCurrencyWhitelist() internal view {
+  function verifyPUSOAddedToFeeCurrencyWhitelist() internal view {
     address[] memory feeCurrencyWhitelist = IFeeCurrencyWhitelist(contracts.celoRegistry("FeeCurrencyWhitelist"))
       .getWhitelist();
 
-    if (!Arrays.contains(feeCurrencyWhitelist, PSO)) {
-      revert("PSO has not been added to the fee currency whitelist.");
+    if (!Arrays.contains(feeCurrencyWhitelist, PUSO)) {
+      revert("PUSO has not been added to the fee currency whitelist.");
     }
 
-    console.log("🟢 PSO has been added to the fee currency whitelist");
+    console.log("🟢 PUSO has been added to the fee currency whitelist");
   }
 
   function verifyConstitution() internal view {
@@ -137,7 +137,7 @@ contract PSOChecksVerify is PSOChecksBase {
   }
 
   function checkConstitutionParam(bytes4 functionSelector, uint256 expectedValue) internal view {
-    uint256 actualConstitutionValue = celoGovernance.getConstitution(PSO, functionSelector);
+    uint256 actualConstitutionValue = celoGovernance.getConstitution(PUSO, functionSelector);
 
     if (actualConstitutionValue != expectedValue) {
       console.log(
@@ -150,7 +150,7 @@ contract PSOChecksVerify is PSOChecksBase {
     }
   }
 
-  function verifyExchange(PSOConfig.PSO memory config) internal view {
+  function verifyExchange(PUSOConfig.PUSO memory config) internal view {
     console.log("\n== Verifying exchanges ==");
 
     verifyPoolExchange(config);
@@ -158,7 +158,7 @@ contract PSOChecksVerify is PSOChecksBase {
     verifyTradingLimits(config);
   }
 
-  function verifyPoolExchange(PSOConfig.PSO memory config) internal view {
+  function verifyPoolExchange(PUSOConfig.PUSO memory config) internal view {
     bytes32[] memory exchanges = BiPoolManager(biPoolManagerProxy).getExchangeIds();
 
     // check configured pools against the config
@@ -209,7 +209,7 @@ contract PSOChecksVerify is PSOChecksBase {
     console.log("🟢 PoolExchange has correct assets and pricing 🤘🏼");
   }
 
-  function verifyPoolConfig(PSOConfig.PSO memory config) internal view {
+  function verifyPoolConfig(PUSOConfig.PUSO memory config) internal view {
     bytes32 exchangeId = getExchangeId(
       config.poolConfig.asset0,
       config.poolConfig.asset1,
@@ -266,7 +266,7 @@ contract PSOChecksVerify is PSOChecksBase {
     console.log("🟢 Pool config is correct🤘🏼");
   }
 
-  function verifyTradingLimits(PSOConfig.PSO memory config) internal view {
+  function verifyTradingLimits(PUSOConfig.PUSO memory config) internal view {
     IBrokerWithCasts _broker = IBrokerWithCasts(address(broker));
 
     bytes32 exchangeId = getExchangeId(
@@ -325,14 +325,14 @@ contract PSOChecksVerify is PSOChecksBase {
   /* ======================== Circuit Breaker ======================= */
   /* ================================================================ */
 
-  function verifyCircuitBreaker(PSOConfig.PSO memory config) internal view {
+  function verifyCircuitBreaker(PUSOConfig.PUSO memory config) internal view {
     console.log("\n== Checking circuit breaker ==");
 
     verifyBreakersAreEnabled(config);
     verifyMedianDeltaBreaker(config);
   }
 
-  function verifyBreakersAreEnabled(PSOConfig.PSO memory config) internal view {
+  function verifyBreakersAreEnabled(PUSOConfig.PUSO memory config) internal view {
     // verify that MedianDeltaBreaker is enabled
     Config.RateFeed memory expectedRateFeedConfig = config.rateFeedConfig;
 
@@ -349,7 +349,7 @@ contract PSOChecksVerify is PSOChecksBase {
     console.log("🟢 Breakers enabled for the rate feed 🗳️");
   }
 
-  function verifyMedianDeltaBreaker(PSOConfig.PSO memory config) internal view {
+  function verifyMedianDeltaBreaker(PUSOConfig.PUSO memory config) internal view {
     // verify that cooldown period, rate change threshold and smoothing factor were set correctly
     Config.RateFeed memory expectedRateFeedConfig = config.rateFeedConfig;
 

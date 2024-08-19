@@ -19,10 +19,10 @@ import { BiPoolManager } from "mento-core-2.4.0/swap/BiPoolManager.sol";
 import { SortedOracles } from "mento-core-2.4.0/common/SortedOracles.sol";
 import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
 
-import { PSOChecksBase } from "./PSOChecks.base.sol";
-import { PSOConfig, Config } from "./Config.sol";
+import { PUSOChecksBase } from "./PUSOChecks.base.sol";
+import { PUSOConfig, Config } from "./Config.sol";
 
-contract PSOChecksSwap is PSOChecksBase {
+contract PUSOChecksSwap is PUSOChecksBase {
   using FixidityLib for FixidityLib.Fraction;
   using Contracts for Contracts.Cache;
 
@@ -32,29 +32,29 @@ contract PSOChecksSwap is PSOChecksBase {
   }
 
   function run() public {
-    PSOConfig.PSO memory config = PSOConfig.get(contracts);
+    PUSOConfig.PUSO memory config = PUSOConfig.get(contracts);
 
-    console.log("\n== Starting PSO test swaps: ==");
+    console.log("\n== Starting PUSO test swaps: ==");
 
     console.log(
       "PHPUSD tradingMode: ",
       BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID)
     );
 
-    swapPSOtoCUSD(config);
-    swapCUSDToPSO(config);
+    swapPUSOtoCUSD(config);
+    swapCUSDToPUSO(config);
   }
 
   // *** Swap Checks *** //
 
-  function swapPSOtoCUSD(PSOConfig.PSO memory config) internal {
+  function swapPUSOtoCUSD(PUSOConfig.PUSO memory config) internal {
     bytes32 exchangeID = getExchangeId(
       config.poolConfig.asset0,
       config.poolConfig.asset1,
       config.poolConfig.isConstantSum
     );
     address trader = vm.addr(5);
-    address tokenIn = PSO;
+    address tokenIn = PUSO;
     address tokenOut = cUSD;
     uint256 amountIn = 100e18;
 
@@ -62,11 +62,11 @@ contract PSOChecksSwap is PSOChecksBase {
     IStableTokenV2(tokenIn).mint(trader, amountIn);
     vm.stopPrank();
 
-    console.log("======================== PSO -> cUSD ====================================\r\n");
+    console.log("======================== PUSO -> cUSD ====================================\r\n");
 
     console.log("=========================== BEFORE SWAP ====================================");
     console.log("============================================================================");
-    console.log("PSO balance: ", IERC20(PSO).balanceOf(trader));
+    console.log("PUSO balance: ", IERC20(PUSO).balanceOf(trader));
     console.log("cUSD balance: ", IERC20(cUSD).balanceOf(trader));
     console.log("============================================================================\r\n");
 
@@ -81,13 +81,13 @@ contract PSOChecksSwap is PSOChecksBase {
 
     console.log("============================ AFTER SWAP ====================================");
     console.log("============================================================================");
-    console.log("PSO balance: ", IERC20(PSO).balanceOf(trader));
+    console.log("PUSO balance: ", IERC20(PUSO).balanceOf(trader));
     console.log("cUSD balance: ", IERC20(cUSD).balanceOf(trader));
     console.log("============================================================================\r\n");
-    console.log("🟢 PSO -> cUSD swap successful 🚀");
+    console.log("🟢 PUSO -> cUSD swap successful 🚀");
   }
 
-  function swapCUSDToPSO(PSOConfig.PSO memory config) internal {
+  function swapCUSDToPUSO(PUSOConfig.PUSO memory config) internal {
     bytes32 exchangeID = getExchangeId(
       config.poolConfig.asset0,
       config.poolConfig.asset1,
@@ -95,17 +95,17 @@ contract PSOChecksSwap is PSOChecksBase {
     );
     address trader = vm.addr(5);
     address tokenIn = cUSD;
-    address tokenOut = PSO;
+    address tokenOut = PUSO;
     uint256 amountIn = 100e18;
 
     deal(tokenIn, trader, amountIn);
 
-    console.log("\r======================== cUSD -> PSO ====================================\r\n");
+    console.log("\r======================== cUSD -> PUSO ====================================\r\n");
 
     console.log("=========================== BEFORE SWAP ====================================");
     console.log("============================================================================");
     console.log("cUSD balance: ", IERC20(cUSD).balanceOf(trader));
-    console.log("PSO balance: ", IERC20(PSO).balanceOf(trader));
+    console.log("PUSO balance: ", IERC20(PUSO).balanceOf(trader));
     console.log("============================================================================\r\n");
 
     testAndPerformConstantSumSwap(
@@ -120,10 +120,10 @@ contract PSOChecksSwap is PSOChecksBase {
     console.log("============================ AFTER SWAP ====================================");
     console.log("============================================================================");
     console.log("cUSD balance: ", IERC20(cUSD).balanceOf(trader));
-    console.log("PSO balance: ", IERC20(PSO).balanceOf(trader));
+    console.log("PUSO balance: ", IERC20(PUSO).balanceOf(trader));
     console.log("============================================================================\r\n");
 
-    console.log("🟢 cUSD -> PSO swap successful 🚀");
+    console.log("🟢 cUSD -> PUSO swap successful 🚀");
   }
 
   // *** Helper Functions *** //
