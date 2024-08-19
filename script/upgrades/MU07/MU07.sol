@@ -4,7 +4,7 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
-import { console } from "forge-std/Console.sol";
+import { console } from "forge-std/console.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
