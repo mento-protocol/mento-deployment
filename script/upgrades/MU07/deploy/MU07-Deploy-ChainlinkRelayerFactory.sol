@@ -19,7 +19,7 @@ contract MU07_Deploy_ChainlinkRelayerFactory is Script {
 
   function getProxyAdminOwner() internal view returns (address) {
     if (ChainLib.isCelo()) {
-      return 0x655133d8E90F8190ed5c1F0f3710F602800C0150;
+      return 0x655133d8E90F8190ed5c1F0f3710F602800C0150; // Mento Labs multisig
     } else {
       return vm.addr(ChainLib.deployerPrivateKey());
     }
