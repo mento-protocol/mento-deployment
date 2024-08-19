@@ -27,19 +27,24 @@ parse_network "$NETWORK"
 parse_upgrade "$UPGRADE"
 
 if ! [ -z "$SCRIPT" ]; then # Pick the script by name
-    SCRIPT_FILE="script/upgrades/$UPGRADE/deploy/$SCRIPT"
-    if test -f "$SCRIPT_FILE"; then
-        echo "🔎 $SCRIPT_FILE found"
-        forge_script "$SCRIPT" "$SCRIPT_FILE" "$(forge_skip $UPGRADE)"
+    DEPLOY_SCRIPT="script/upgrades/$UPGRADE/deploy/$SCRIPT"
+    if test -f "$DEPLOY_SCRIPT"; then
+        echo "🔎 $DEPLOY_SCRIPT found"
+        echo "=================================================================="
+        echo " Running $(basename $DEPLOY_SCRIPT)"
+        echo "=================================================================="
+        forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast $DEPLOY_SCRIPT
         exit 0
     else
-        echo "🚨 Script $SCRIPT not found in $SCRIPT_FILE"
+        echo "🚨 Script $SCRIPT not found in $DEPLOY_SCRIPT"
         exit 1
     fi
 fi
 
 export FOUNDRY_PROFILE=$NETWORK-deployment
 for DEPLOY_SCRIPT in $UPGRADE_DIR/deploy/*; do
-    DEPLOY_FILE=$(basename $DEPLOY_SCRIPT)
-    forge_script "$DEPLOY_FILE" "$DEPLOY_SCRIPT" "$(forge_skip $UPGRADE)"
+    echo "=================================================================="
+    echo " Running $(basename $DEPLOY_SCRIPT)"
+    echo "=================================================================="
+    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast $DEPLOY_SCRIPT
 done

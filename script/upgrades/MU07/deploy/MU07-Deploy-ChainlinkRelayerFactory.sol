@@ -10,7 +10,7 @@ import { ChainlinkRelayerFactory } from "mento-core-develop/oracles/ChainlinkRel
 import { ChainlinkRelayerFactoryProxy } from "mento-core-develop/oracles/ChainlinkRelayerFactoryProxy.sol";
 import { ChainlinkRelayerFactoryProxyAdmin } from "mento-core-develop/oracles/ChainlinkRelayerFactoryProxyAdmin.sol";
 
-contract DeployChainlinkRelayerFactory is Script {
+contract MU07_Deploy_ChainlinkRelayerFactory is Script {
   using Contracts for Contracts.Cache;
 
   ChainlinkRelayerFactory relayerFactory;

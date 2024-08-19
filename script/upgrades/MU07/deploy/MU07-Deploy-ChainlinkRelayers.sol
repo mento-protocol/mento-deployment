@@ -12,7 +12,7 @@ import { ChainlinkRelayerFactoryProxyAdmin } from "mento-core-develop/oracles/Ch
 import { IChainlinkRelayer } from "mento-core-develop/interfaces/IChainlinkRelayer.sol";
 import { toRateFeedId, aggregators } from "script/utils/mento/Oracles.sol";
 
-contract DeployChainlinkRelayers is Script {
+contract MU07_Deploy_ChainlinkRelayers is Script {
   using Contracts for Contracts.Cache;
   using { toRateFeedId } for string;
 
@@ -24,7 +24,7 @@ contract DeployChainlinkRelayers is Script {
 
   Relayer[] relayers = [
     Relayer({
-      rateFeed: "relayed:CELO/PHP",
+      rateFeed: "relayed:CELOPHP",
       rateFeedDescription: "CELO/PHP (CELO/USD * USD/PHP)",
       aggregators: aggregators(
         IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.CELOUSD"), invert: false }),
@@ -32,7 +32,7 @@ contract DeployChainlinkRelayers is Script {
       )
     }),
     Relayer({
-      rateFeed: "relayed:PHP/USD",
+      rateFeed: "relayed:PHPUSD",
       rateFeedDescription: "PHP/USD",
       aggregators: aggregators(
         IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.PHPUSD"), invert: false })
@@ -43,7 +43,7 @@ contract DeployChainlinkRelayers is Script {
   ChainlinkRelayerFactory relayerFactory;
 
   constructor() Script() {
-    contracts.load("DeployChainlinkRelayerFactory", "latest");
+    contracts.load("MU07-Deploy-ChainlinkRelayerFactory", "latest");
     relayerFactory = ChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
   }
 

@@ -8,7 +8,6 @@ import { console } from "forge-std/Console.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
-// import { toRateFeedId } from "script/utils/mento/Oracles.sol";
 
 import { IChainlinkRelayerFactory } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayer.sol";
@@ -39,7 +38,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
   // Mento contracts
   IChainlinkRelayerFactory private relayerFactory;
   ISortedOracles private sortedOracles;
-  address private cPHP;
+  address private PSO;
 
   mapping(address => IChainlinkRelayer) relayersByRateFeedId;
 
@@ -52,7 +51,8 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
    * @dev Loads the deployed contracts from previous deployments
    */
   function loadDeployedContracts() public {
-    contracts.loadSilent("DeployChainlinkRelayerFactory", "latest");
+    contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
+    contracts.loadSilent("PSO-00-Create-Proxies", "latest")
   }
 
   /**
@@ -61,8 +61,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
   function setAddresses() public {
     relayerFactory = IChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
-    // TODO: After cPHP token contract deployment is merged, get the address here.
-    cPHP = address(1);
+    PSO = contracts.deployed("StableTokenPSOProxy");
 
     address[] memory relayers = relayerFactory.getRelayers();
     for (uint i = 0; i < relayers.length; i++) {
@@ -142,8 +141,8 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
    * rate when asked. This was used for gas payments with USDC, by setting USDC's equivalent
    * token to be cUSD. But this also allows us to remove this duality between rate feeds that
    * are tokens, and rate feeds derived from identifiers.
-   * In the context of cPHP it means that we can report to the rateFeed defined by the
-   * cannonical id: `relayed:CELO/PHP`, and then have address(cPHP) point to that for
+   * In the context of PSO it means that we can report to the rateFeed defined by the
+   * cannonical id: `relayed:CELO/PHP`, and then have address(PSO) point to that for
    * gas payments.
    */
   function proposal_setEquivalentTokenForPHP() private {
@@ -152,7 +151,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
       ICeloGovernance.Transaction({
         value: 0,
         destination: contracts.celoRegistry("SortedOracles"),
-        data: abi.encodeWithSelector(ISortedOracles(0).setEquivalentToken.selector, cPHP, CELOPHPRateFeedId)
+        data: abi.encodeWithSelector(ISortedOracles(0).setEquivalentToken.selector, PSO, CELOPHPRateFeedId)
       })
     );
   }
