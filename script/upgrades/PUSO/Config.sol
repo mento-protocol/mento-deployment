@@ -59,7 +59,7 @@ library PUSOConfig {
   ) internal view returns (Config.Pool memory poolConfig) {
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
-      asset1: contracts.deployed("StableTokenPUSOProxy"),
+      asset1: contracts.deployed("StableTokenPHPProxy"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(3, 1000), // 0.3%, in line with current DT of chainlink feed
       referenceRateResetFrequency: 5 minutes,
