@@ -54,7 +54,9 @@ library PUSOConfig {
   /**
    * @dev Returns the configuration for the PUSOcUSD pool.
    */
-  function PUSOcUSD_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory poolConfig) {
+  function PUSOcUSD_PoolConfig(
+    Contracts.Cache storage contracts
+  ) internal view returns (Config.Pool memory poolConfig) {
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.deployed("StableTokenPUSOProxy"),

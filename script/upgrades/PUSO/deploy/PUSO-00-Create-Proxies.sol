@@ -24,6 +24,7 @@ contract PUSO_CreateProxies is Script {
 
     console2.log("----------");
     console2.log("StableTokenPHPProxy deployed at: ", stableTokenPHPProxy);
-    console2.log("StableTokenPHPProxy(%s) ownership transferred to %s", stableTokenPHPProxy, governance);    console2.log("----------");
+    console2.log("StableTokenPHPProxy(%s) ownership transferred to %s", stableTokenPHPProxy, governance);
+    console2.log("----------");
   }
 }
