@@ -192,6 +192,11 @@ async function verify({ contract, initCode }: { contract: string; initCode?: str
 }
 
 function getConstructorArgs(target: string, contract: string, initCode: string) {
+  // Target can be of the form "filename.sol:ContractName" or just "ContractName.sol"
+  // This regexp matches ((...).sol):(...) so:
+  //   match[1] is the filename, i.e. the first larger bracket
+  //   match[2] is the filename without termination
+  //   match[3] is the optional contract name which can be empty
   const match = /(([^\/]*).sol):?(.*)?/.exec(target);
   if (!match) throw Error(`Error extracting filename and contract from: ${target}`)
   const solidityFile = match[1]
