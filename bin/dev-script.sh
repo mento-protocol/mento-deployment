@@ -44,7 +44,7 @@ if ! [ -z "$SCRIPT_NAME" ]; then # Pick the script by name
         echo " Running $SCRIPT_NAME"
         echo "=================================================================="
         confirm_if_celo "$NETWORK"
-        forge script $(forge_skip "dev") --rpc-url $RPC_URL --legacy --broadcast -s $RUN_SIGNATURE $SCRIPT_FILE "$@"
+        forge script $(forge_skip "dev") --rpc-url $RPC_URL --legacy --verify --verifier sourcify --broadcast -s $RUN_SIGNATURE $SCRIPT_FILE "$@"
         exit 0
     else
         echo "🚨 Script $SCRIPT_NAME not found in $SCRIPT_FILE"
@@ -63,7 +63,7 @@ if ! [ -z "$INDEX" ]; then # Pick the script by index
     echo " Running $(basename SCRIPT_FILE)"
     echo "=================================================================="
     confirm_if_celo "$NETWORK"
-    forge script $(forge_skip "dev") --rpc-url $RPC_URL --legacy --broadcast -s $RUN_SIGNATURE $SCRIPT_FILE "$@"
+    forge script $(forge_skip "dev") --rpc-url $RPC_URL --legacy --verify --verifier sourcify --broadcast -s $RUN_SIGNATURE $SCRIPT_FILE "$@"
     exit 0
 fi
 
@@ -81,7 +81,7 @@ do
         echo " Running $(basename SCRIPT_FILE)"
         echo "=================================================================="
         confirm_if_celo "$NETWORK"
-        forge script $(forge_skip "dev") --rpc-url $RPC_URL --legacy --broadcast $SCRIPT_FILE
+        forge script $(forge_skip "dev") --rpc-url $RPC_URL --legacy --verify --verifier sourcify --broadcast $SCRIPT_FILE
     else
         echo "Invalid option, press Ctrl+C to exit"
     fi

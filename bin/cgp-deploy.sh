@@ -33,7 +33,7 @@ if ! [ -z "$SCRIPT" ]; then # Pick the script by name
         echo "=================================================================="
         echo " Running $(basename $DEPLOY_SCRIPT)"
         echo "=================================================================="
-        forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast $DEPLOY_SCRIPT
+        forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --verify --verifier sourcify --broadcast $DEPLOY_SCRIPT 
         exit 0
     else
         echo "🚨 Script $SCRIPT not found in $DEPLOY_SCRIPT"
@@ -46,5 +46,5 @@ for DEPLOY_SCRIPT in $UPGRADE_DIR/deploy/*; do
     echo "=================================================================="
     echo " Running $(basename $DEPLOY_SCRIPT)"
     echo "=================================================================="
-    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --broadcast $DEPLOY_SCRIPT
+    forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --legacy --verify --verifier sourcify --broadcast $DEPLOY_SCRIPT
 done

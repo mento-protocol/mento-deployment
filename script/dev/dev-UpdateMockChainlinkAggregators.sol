@@ -11,10 +11,14 @@ interface IAggregatorV3 {
     external
     view
     returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+
+  function description() external view returns (string memory);
 }
 
 interface IMockAggregator {
   function setAnswer(int256 answer) external;
+
+  function description() external view returns (string memory);
 }
 
 /**
@@ -28,33 +32,60 @@ interface IMockAggregator {
 contract UpdateMockChainlinkAggregators is Script {
   using Contracts for Contracts.Cache;
   address constant PHPUSDMainnetAggregator = 0x4ce8e628Bb82Ea5271908816a6C580A71233a66c;
-  address PHPUSDTestnetMock;
+  address constant CELOUSDMainnetAggregator = 0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e;
 
   mapping(address => address) mockForAggregator;
   mapping(address => int256) aggregatorAnswers;
+  mapping(address => string) aggregatorDescription;
   address[] aggregatorsToForward;
 
   constructor() Script() {
+    if (ChainLib.isAlfajores()) {
+      setUp_alfajores();
+    } else if (ChainLib.isBaklava()) {
+      setUp_baklava();
+    } else {
+      console.log("This script is only meant to be run on testnets");
+    }
+  }
+
+  function setUp_alfajores() internal {
     /// @dev Load additional deployed aggregators here to forward rates
-    contracts.load("DeployMockPHPUSDAggregator", "latest");
-    PHPUSDTestnetMock = contracts.deployed("MockPHPUSDAggregator");
+    contracts.loadSilent("DeployMockChainlinkAggregator", "PHPUSD");
+    address PHPUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
     mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDTestnetMock;
 
     aggregatorsToForward.push(PHPUSDMainnetAggregator);
   }
 
+  function setUp_baklava() internal {
+    /// @dev Load additional deployed aggregators here to forward rates
+    contracts.loadSilent("DeployMockChainlinkAggregator", "PHPUSD");
+    address PHPUSDMock = contracts.deployed("MockChainlinkAggregator");
+    contracts.loadSilent("DeployMockChainlinkAggregator", "CELOUSD");
+    address CELOUSDMock = contracts.deployed("MockChainlinkAggregator");
+
+    mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDMock;
+    mockForAggregator[CELOUSDMainnetAggregator] = CELOUSDMock;
+
+    aggregatorsToForward.push(PHPUSDMainnetAggregator);
+    aggregatorsToForward.push(CELOUSDMainnetAggregator);
+  }
+
   function run() public {
     uint256 celoFork = vm.createFork("celo");
-    uint256 alfajoresFork = vm.createFork("alfajores");
+    uint256 testnetFork = vm.createFork(ChainLib.rpcToken());
 
     vm.selectFork(celoFork);
     for (uint i = 0; i < aggregatorsToForward.length; i++) {
       address agg = aggregatorsToForward[i];
       (, int256 answer, , , ) = IAggregatorV3(agg).latestRoundData();
       aggregatorAnswers[agg] = answer;
+      aggregatorDescription[agg] = IAggregatorV3(agg).description();
     }
 
-    vm.selectFork(alfajoresFork);
+    vm.selectFork(testnetFork);
 
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
@@ -63,6 +94,9 @@ contract UpdateMockChainlinkAggregators is Script {
         address mock = mockForAggregator[agg];
         int256 answer = aggregatorAnswers[agg];
         IMockAggregator(mock).setAnswer(answer);
+        console.log("Update %s mock aggregator with value: %d", IMockAggregator(mock).description(), uint256(answer));
+        console.log("       From mainnet aggregator: %s (%s)", aggregatorDescription[agg], address(agg));
+        console.log("       Testnet mock aggregator: %s", mock);
       }
     }
     vm.stopBroadcast();

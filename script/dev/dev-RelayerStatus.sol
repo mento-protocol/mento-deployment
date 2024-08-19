@@ -27,7 +27,7 @@ contract RelayerStatus is Script {
   ChainlinkRelayerFactory relayerFactory;
 
   constructor() Script() {
-    contracts.loadSilent("DeployChainlinkRelayerFactory", "latest");
+    contracts.load("MU07-Deploy-ChainlinkRelayerFactory", "latest");
     relayerFactory = ChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
   }

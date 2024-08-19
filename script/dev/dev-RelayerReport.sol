@@ -22,7 +22,7 @@ contract RelayerReport is Script {
   ChainlinkRelayerFactory relayerFactory;
 
   constructor() Script() {
-    contracts.load("DeployChainlinkRelayerFactory", "latest");
+    contracts.load("MU07-Deploy-ChainlinkRelayerFactory", "latest");
     relayerFactory = ChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
   }
 

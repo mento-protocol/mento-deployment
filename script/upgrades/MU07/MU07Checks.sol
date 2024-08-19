@@ -10,40 +10,28 @@ import { GovernanceScript } from "script/utils/Script.sol";
 import { IChainlinkRelayerFactory } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayer.sol";
 
-// import { toRateFeedId } from "script/utils/mento/Oracles.sol";
-
-interface ISortedOracles {
-  function addOracle(address, address) external;
-
-  function removeOracle(address, address, uint256) external;
-
-  function setEquivalentToken(address, address) external;
-
-  function getEquivalentToken(address) external returns (address);
-
-  function getOracles(address) external returns (address[] memory);
-}
+import { ISortedOracles } from "./MU07.sol";
 
 contract MU07Checks is GovernanceScript, Test {
   using Contracts for Contracts.Cache;
 
   IChainlinkRelayerFactory private relayerFactory;
   ISortedOracles private sortedOracles;
-  address private cPHP;
+  address private PSO;
 
-  function setUp() public {
-    contracts.loadSilent("DeployChainlinkRelayerFactory", "latest");
+  function prepare() public {
+    contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
+    contracts.loadSilent("PSO-00-Create-Proxies", "latest");
 
     relayerFactory = IChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
-    // TODO: After cPHP token contract deployment is merged, get the address here.
-    cPHP = address(1);
+    PSO = contracts.deployed("StableTokenPSOProxy");
   }
 
   function run() public {
-    setUp();
+    prepare();
     verifyRelayersAreOnlyWhitelisted();
-    verifyCPHPHasEquivalentToken();
+    verifyPSOHasEquivalentToken();
   }
 
   function verifyRelayersAreOnlyWhitelisted() internal {
@@ -68,16 +56,16 @@ contract MU07Checks is GovernanceScript, Test {
     }
   }
 
-  function verifyCPHPHasEquivalentToken() internal {
-    address equivalentToken = sortedOracles.getEquivalentToken(cPHP);
-    address CELOPHPRateFeedId = toRateFeedId("relayed:CELO/PHP");
+  function verifyPSOHasEquivalentToken() internal {
+    address equivalentToken = sortedOracles.getEquivalentToken(PSO);
+    address CELOPHPRateFeedId = toRateFeedId("relayed:CELOPHP");
     if (equivalentToken == address(0)) {
-      console.log("Equivalent Token not set for cPHP (%s)", cPHP);
+      console.log("Equivalent Token not set for PSO (%s)", PSO);
     }
     if (equivalentToken != CELOPHPRateFeedId) {
-      console.log("Invalid equivalent token for cPHP (%s)", cPHP);
+      console.log("Invalid equivalent token for PSO (%s)", PSO);
     }
     assertEq(equivalentToken, CELOPHPRateFeedId);
-    console.log("cPHP [%s] equivalent token is correct", cPHP);
+    console.log("PSO [%s] equivalent token is correct", PSO);
   }
 }

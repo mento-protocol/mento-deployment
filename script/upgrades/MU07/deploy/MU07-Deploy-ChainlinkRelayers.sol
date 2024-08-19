@@ -25,7 +25,7 @@ contract MU07_Deploy_ChainlinkRelayers is Script {
   Relayer[] relayers = [
     Relayer({
       rateFeed: "relayed:CELOPHP",
-      rateFeedDescription: "CELO/PHP (CELO/USD * USD/PHP)",
+      rateFeedDescription: "CELO/PHP (CELO/USD:USD/PHP)",
       aggregators: aggregators(
         IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.CELOUSD"), invert: false }),
         IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.PHPUSD"), invert: true })

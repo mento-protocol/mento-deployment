@@ -6,18 +6,19 @@ import { Script } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
 
-import { MockPHPUSDAggregator } from "contracts/MockPHPUSDAggregator.sol";
+import { MockChainlinkAggregator } from "contracts/MockChainlinkAggregator.sol";
 
 /**
- * Usage: yarn script:dev -n alfajores -s DeployMockChainlinkAggregator
- * Used to deploy mock Chainlink Aggregators to Alfajores to be used
+ * Usage: yarn script:dev -n alfajores -s DeployMockChainlinkAggregator -r "run(string)" PHPUSD
+ * Used to deploy mock Chainlink Aggregators to Alfajores and Baklava to be used
  * in testnet relayers to mimic mainnet more closely.
+ * When using This script, change the string inside the
  */
 contract DeployMockPHPUSDAggregator is Script {
-  function run() public {
+  function run(string memory rateDescription) public {
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
-      new MockPHPUSDAggregator();
+      new MockChainlinkAggregator(rateDescription);
     }
     vm.stopBroadcast();
   }

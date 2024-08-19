@@ -21,6 +21,8 @@ interface ISortedOracles {
 
   function setEquivalentToken(address, address) external;
 
+  function getEquivalentToken(address) external returns (address);
+
   function getOracles(address) external returns (address[] memory);
 }
 
@@ -52,7 +54,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
    */
   function loadDeployedContracts() public {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
-    contracts.loadSilent("PSO-00-Create-Proxies", "latest")
+    contracts.loadSilent("PSO-00-Create-Proxies", "latest");
   }
 
   /**
@@ -86,9 +88,9 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    proposal_whitelistRelayerFor("relayed:CELO/PHP");
-    proposal_whitelistRelayerFor("relayed:PHP/USD");
-    proposal_setEquivalentTokenForPHP();
+    proposal_whitelistRelayerFor("relayed:CELOPHP");
+    proposal_whitelistRelayerFor("relayed:PHPUSD");
+    proposal_setEquivalentTokenForPSO();
 
     return transactions;
   }
@@ -145,8 +147,8 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
    * cannonical id: `relayed:CELO/PHP`, and then have address(PSO) point to that for
    * gas payments.
    */
-  function proposal_setEquivalentTokenForPHP() private {
-    address CELOPHPRateFeedId = toRateFeedId("relayed:CELO/PHP");
+  function proposal_setEquivalentTokenForPSO() private {
+    address CELOPHPRateFeedId = toRateFeedId("relayed:CELOPHP");
     transactions.push(
       ICeloGovernance.Transaction({
         value: 0,
