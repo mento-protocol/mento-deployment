@@ -144,7 +144,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
    * token to be cUSD. But this also allows us to remove this duality between rate feeds that
    * are tokens, and rate feeds derived from identifiers.
    * In the context of PSO it means that we can report to the rateFeed defined by the
-   * cannonical id: `relayed:CELO/PHP`, and then have address(PSO) point to that for
+   * cannonical id: `relayed:CELOPHP`, and then have address(PSO) point to that for
    * gas payments.
    */
   function proposal_setEquivalentTokenForPSO() private {
