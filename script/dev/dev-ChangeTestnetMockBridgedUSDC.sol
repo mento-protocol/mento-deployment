@@ -20,7 +20,7 @@ import { TradingLimits } from "mento-core-2.0.0/common/TradingLimits.sol";
 import { PartialReserveProxy } from "contracts/PartialReserveProxy.sol";
 import { Reserve } from "mento-core-2.0.0/Reserve.sol";
 
-import { MU01Config, Config } from "../upgrades/MU01/Config.sol";
+import { MU01Config, Config } from "../proposals/MU01/Config.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
 
 /**
