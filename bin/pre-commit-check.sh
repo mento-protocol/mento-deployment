@@ -41,11 +41,11 @@ fetch_addresses() {
     jq -r '
         [
             .transactions[] |
-            select(.transactionType == "CREATE") |
+            select(.transactionType == "CREATE" or .transactionType == "CREATE2") |
             .contractAddress
         ] + [
             .transactions[].additionalContracts[]? |
-            select(.transactionType == "CREATE") |
+            select(.transactionType == "CREATE" or .transactionType == "CREATE2") |
             .address
         ] | .[]
     ' |
