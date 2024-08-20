@@ -1,5 +1,6 @@
 {
   "*.{json,md,sol,yml}": [
-    "prettier --config ./.prettierrc.yml --write"
-  ]
+    "prettier --config .prettierrc.yml --write"
+  ],
+  "run*.json": "./bin/pre-commit-check.sh"
 }
