@@ -3,7 +3,7 @@ set -euo pipefail
 
 printf "\n"
 
-# Function to extract the network ID from a broadcast file path
+# Extract the network ID from a broadcast file path
 get_network_id() {
     local file_path="$1"
     local network_id=$(echo "$file_path" | sed -E 's/.*\/([0-9]+)\/.*/\1/')
@@ -14,7 +14,7 @@ get_network_id() {
     echo "$network_id"
 }
 
-# Function to map network ID to network name
+# Map network ID to network name
 get_network_name() {
     local network_id="$1"
     case "$network_id" in
@@ -37,10 +37,22 @@ get_network_name() {
 # Fetch addresses of newly deployed contracts from broadcast file
 fetch_addresses() {
     cat "${broadcast_file}" |
-    jq -r '.transactions[] | select(.transactionType == "CREATE") | .contractAddress' |
+    # This jq expression should find both normal contract deployments AND contracts deployed via factory
+    jq -r '
+        [
+            .transactions[] |
+            select(.transactionType == "CREATE") |
+            .contractAddress
+        ] + [
+            .transactions[].additionalContracts[]? |
+            select(.transactionType == "CREATE") |
+            .address
+        ] | .[]
+    ' |
     grep -v null
 }
 
+# Check one individual broadcast file
 process_file() {
     local broadcast_file="$1"
     local exit_status=0
