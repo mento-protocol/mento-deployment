@@ -64,6 +64,12 @@ process_file() {
     # Get network name
     network=$(get_network_name "$network_id")
 
+    # Skip checks for Baklava as CeloScan isn't available there
+    if [ "$network" == "baklava" ]; then
+        echo "ℹ️ Skipping verification check for Baklava network."
+        return 0
+    fi
+
     # Find newly deployed addresses and store them in an array
     addresses=($(fetch_addresses "$broadcast_file"))
 
