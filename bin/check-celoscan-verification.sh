@@ -6,18 +6,23 @@ source "$(dirname "$0")/../.env"
 # Celoscan API endpoint
 API_ENDPOINT="https://api.celoscan.io/api"
 
+printf "\n"
+
 # Function to check contract verification status
 check_celoscan_verification() {
-    local contract_address="$1"
+    local address="$1"
+
+    echo "🌀 Processing address: $address"
     
     # Make API request
-    response=$(curl -s "$API_ENDPOINT?module=contract&action=getabi&address=$contract_address&apikey=$CELOSCAN_API_KEY")
+    response=$(curl -s "$API_ENDPOINT?module=contract&action=getabi&address=$address&apikey=$CELOSCAN_API_KEY")
     
     # Check response
     if echo "$response" | grep -q '"status":"1"' && echo "$response" | grep -q '"message":"OK"'; then
-        echo "Contract $contract_address is verified"
+        echo "✅ Contract $address is verified on Celoscan"
     else
-        echo "Contract $contract_address is not verified"
+        echo "❌ Contract $address is not verified on CeloScan"
+        printf "\n"
         exit 1
     fi
 }
@@ -25,6 +30,7 @@ check_celoscan_verification() {
 # Main script
 if [ $# -eq 0 ]; then
     echo "Usage: $0 <contract_address>"
+    printf "\n"
     exit 1
 fi
 
