@@ -9,15 +9,15 @@ import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 
 import { IERC20 } from "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-import { IStableTokenV2 } from "mento-core-2.4.0/interfaces/IStableTokenV2.sol";
+import { IStableTokenV2 } from "mento-core-2.3.1/interfaces/IStableTokenV2.sol";
 
-import { FixidityLib } from "mento-core-2.4.0/common/FixidityLib.sol";
+import { FixidityLib } from "mento-core-2.3.1/common/FixidityLib.sol";
 
-import { Broker } from "mento-core-2.4.0/swap/Broker.sol";
-import { IBiPoolManager } from "mento-core-2.4.0/interfaces/IBiPoolManager.sol";
-import { BiPoolManager } from "mento-core-2.4.0/swap/BiPoolManager.sol";
-import { SortedOracles } from "mento-core-2.4.0/common/SortedOracles.sol";
-import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
+import { Broker } from "mento-core-2.3.1/swap/Broker.sol";
+import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
+import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
+import { SortedOracles } from "mento-core-2.3.1/common/SortedOracles.sol";
+import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 
 import { PUSOChecksBase } from "./PUSOChecks.base.sol";
 import { PUSOConfig, Config } from "./Config.sol";

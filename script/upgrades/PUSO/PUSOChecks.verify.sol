@@ -7,20 +7,20 @@ import { Arrays } from "script/utils/Arrays.sol";
 
 import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
-import { TradingLimits } from "mento-core-2.4.0/libraries/TradingLimits.sol";
-import { StableTokenPHPProxy } from "mento-core-2.5.0/tokens/StableTokenPHPProxy.sol";
+import { TradingLimits } from "mento-core-2.3.1/libraries/TradingLimits.sol";
+import { StableTokenPHPProxy } from "mento-core-2.3.1/legacy/proxies/StableTokenPHPProxy.sol";
 
-import { IRegistry } from "mento-core-2.4.0/common/interfaces/IRegistry.sol";
-import { IBiPoolManager } from "mento-core-2.4.0/interfaces/IBiPoolManager.sol";
-import { IERC20Metadata } from "mento-core-2.4.0/common/interfaces/IERC20Metadata.sol";
-import { IStableTokenV2 } from "mento-core-2.4.0/interfaces/IStableTokenV2.sol";
+import { IRegistry } from "mento-core-2.3.1/common/interfaces/IRegistry.sol";
+import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
+import { IERC20Metadata } from "mento-core-2.3.1/common/interfaces/IERC20Metadata.sol";
+import { IStableTokenV2 } from "mento-core-2.3.1/interfaces/IStableTokenV2.sol";
 
-import { Reserve } from "mento-core-2.4.0/swap/Reserve.sol";
+import { Reserve } from "mento-core-2.3.1/swap/Reserve.sol";
 import { Ownable } from "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-import { Proxy } from "mento-core-2.4.0/common/Proxy.sol";
-import { BiPoolManager } from "mento-core-2.4.0/swap/BiPoolManager.sol";
-import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
-import { MedianDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/MedianDeltaBreaker.sol";
+import { Proxy } from "mento-core-2.3.1/common/Proxy.sol";
+import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
+import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
+import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 
 import { PUSOChecksBase } from "./PUSOChecks.base.sol";
 import { PUSOConfig, Config } from "./Config.sol";
@@ -38,7 +38,7 @@ interface IBrokerWithCasts {
 contract PUSOChecksVerify is PUSOChecksBase {
   using TradingLimits for TradingLimits.Config;
 
-  uint256 constant PRE_EXISTING_POOLS = 12;
+  uint256 constant PRE_EXISTING_POOLS = 14;
 
   ICeloGovernance celoGovernance;
 

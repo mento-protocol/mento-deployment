@@ -9,6 +9,6 @@ import { PUSOChecksSwap } from "./PUSOChecks.swap.sol";
 contract PUSOChecks is Test {
   function run() public {
     new PUSOChecksVerify().run();
-    //new PUSOChecksSwap().run();
+    new PUSOChecksSwap().run();
   }
 }

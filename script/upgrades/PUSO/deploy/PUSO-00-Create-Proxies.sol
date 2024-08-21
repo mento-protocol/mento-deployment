@@ -5,7 +5,7 @@ import { Script } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { console2 } from "forge-std/Script.sol";
 
-import { StableTokenPHPProxy } from "mento-core-2.5.0/tokens/StableTokenPHPProxy.sol";
+import { StableTokenPHPProxy } from "mento-core-2.3.1/legacy/proxies/StableTokenPHPProxy.sol";
 
 /*
  yarn deploy -n <network> -u PUSO -s PUSO-00-Create-Proxies.sol

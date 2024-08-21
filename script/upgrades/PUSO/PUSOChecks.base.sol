@@ -11,28 +11,28 @@ import { GovernanceScript } from "script/utils/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-import { FixidityLib } from "mento-core-2.4.0/common/FixidityLib.sol";
-import { IBiPoolManager } from "mento-core-2.4.0/interfaces/IBiPoolManager.sol";
-import { IBroker } from "mento-core-2.4.0/interfaces/IBroker.sol";
-import { IERC20Metadata } from "mento-core-2.4.0/common/interfaces/IERC20Metadata.sol";
-import { IRegistry } from "mento-core-2.4.0/common/interfaces/IRegistry.sol";
+import { FixidityLib } from "mento-core-2.3.1/common/FixidityLib.sol";
+import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
+import { IBroker } from "mento-core-2.3.1/interfaces/IBroker.sol";
+import { IERC20Metadata } from "mento-core-2.3.1/common/interfaces/IERC20Metadata.sol";
+import { IRegistry } from "mento-core-2.3.1/common/interfaces/IRegistry.sol";
 
 import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
 
-import { BiPoolManagerProxy } from "mento-core-2.4.0/proxies/BiPoolManagerProxy.sol";
-import { StableTokenPHPProxy } from "mento-core-2.5.0/tokens/StableTokenPHPProxy.sol";
-import { Broker } from "mento-core-2.4.0/swap/Broker.sol";
-import { BiPoolManager } from "mento-core-2.4.0/swap/BiPoolManager.sol";
-import { Exchange } from "mento-core-2.4.0/legacy/Exchange.sol";
-import { TradingLimits } from "mento-core-2.4.0/libraries/TradingLimits.sol";
-import { BreakerBox } from "mento-core-2.4.0/oracles/BreakerBox.sol";
-import { SortedOracles } from "mento-core-2.4.0/common/SortedOracles.sol";
-import { Reserve } from "mento-core-2.4.0/swap/Reserve.sol";
-import { MedianDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/MedianDeltaBreaker.sol";
-import { ValueDeltaBreaker } from "mento-core-2.4.0/oracles/breakers/ValueDeltaBreaker.sol";
-import { ConstantSumPricingModule } from "mento-core-2.4.0/swap/ConstantSumPricingModule.sol";
+import { BiPoolManagerProxy } from "mento-core-2.3.1/proxies/BiPoolManagerProxy.sol";
+import { StableTokenPHPProxy } from "mento-core-2.3.1/legacy/proxies/StableTokenPHPProxy.sol";
+import { Broker } from "mento-core-2.3.1/swap/Broker.sol";
+import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
+import { Exchange } from "mento-core-2.3.1/legacy/Exchange.sol";
+import { TradingLimits } from "mento-core-2.3.1/libraries/TradingLimits.sol";
+import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
+import { SortedOracles } from "mento-core-2.3.1/common/SortedOracles.sol";
+import { Reserve } from "mento-core-2.3.1/swap/Reserve.sol";
+import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
+import { ValueDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/ValueDeltaBreaker.sol";
+import { ConstantSumPricingModule } from "mento-core-2.3.1/swap/ConstantSumPricingModule.sol";
 import { SafeMath } from "celo-foundry/test/SafeMath.sol";
-import { Proxy } from "mento-core-2.4.0/common/Proxy.sol";
+import { Proxy } from "mento-core-2.3.1/common/Proxy.sol";
 
 import { PUSOConfig, Config } from "./Config.sol";
 
