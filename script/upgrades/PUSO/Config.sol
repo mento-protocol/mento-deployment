@@ -40,7 +40,7 @@ library PUSOConfig {
    * @dev Returns the configuration for the PHPUSD rate feed.
    */
   function PHPUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
-    rateFeedConfig.rateFeedID = Config.rateFeedID("PHPUSD");
+    rateFeedConfig.rateFeedID = Config.rateFeedID("relayed:PHPUSD");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
       threshold: FixidityLib.newFixedFraction(4, 100), // 4%
@@ -65,7 +65,7 @@ library PUSOConfig {
       referenceRateResetFrequency: 5 minutes,
       minimumReports: 1,
       stablePoolResetSize: 10_000_000 * 1e18,
-      referenceRateFeedID: Config.rateFeedID("PHPUSD"),
+      referenceRateFeedID: Config.rateFeedID("relayed:PHPUSD"),
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
