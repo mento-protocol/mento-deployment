@@ -69,7 +69,7 @@ contract PUSOChecksVerify is PUSOChecksBase {
   }
 
   function verifyOwner() internal view {
-    require(Proxy(PUSO)._getOwner() == governance, "StableTokenPUSO Proxy ownership not transferred to governance");
+    require(Proxy(PUSO)._getOwner() == governance, "StableTokenPHP Proxy ownership not transferred to governance");
     console.log("🟢 PUSO proxy ownership transferred to governance");
   }
 
