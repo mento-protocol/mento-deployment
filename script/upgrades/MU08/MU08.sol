@@ -39,7 +39,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   address private cBRLProxy;
   address private eXOFProxy;
   address private cKESProxy;
-  address private POSProxy;
+  //address private POSProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -72,7 +72,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("eXOF-00-Create-Proxies", "latest");
     contracts.load("cKES-00-Create-Proxies", "latest");
-    //contracts.load("POS-00-Create-Proxies", "latest");
+    //contracts.load("PSO-00-Create-Proxies", "latest");
   }
 
   /**
@@ -115,7 +115,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "TODO", celoGovernance);
+      createProposal(_transactions, "https://TODO", celoGovernance);
     }
     vm.stopBroadcast();
   }
@@ -125,6 +125,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
 
     proposal_transferTokenOwnership();
     proposal_transferMentoV2Ownership();
+    proposal_transferMentoV1Ownership();
 
     return transactions;
   }
@@ -233,8 +234,10 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
       }
       address implementation = IProxyLite(mentoV1Proxies[i])._getImplementation();
       address implementationOwner = IOwnableLite(implementation).owner();
-      if (implementationOwner != timelockProxy) {
-        require(implementationOwner == celoGovernance, "MentoV1 contract implementation owner is not Celo governance");
+      // Some of the Mento V1 implementations are owned by cLabs addresses.
+      // since it's deprecated MentoV1 and only the implementations we are fine with them
+      // not being owned by Mento Governance
+      if (implementationOwner == celoGovernance) {
         transactions.push(
           ICeloGovernance.Transaction({
             value: 0,

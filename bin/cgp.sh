@@ -54,6 +54,7 @@ fi
 
 if [ "$SIMULATE" = true ] ; then
     echo "🥸  Simulating $CONTRACT"
+    yarn build -u $UPGRADE
     forge script $(forge_skip $UPGRADE) --rpc-url $RPC_URL --skip .dev.sol --sig "run(string)" $UTILS_DIR/SimulateUpgrade.sol:SimulateUpgrade $CONTRACT
 else 
     echo "🔥 Submitting $CONTRACT"
