@@ -19,6 +19,7 @@ contract MU07_Deploy_ChainlinkRelayers is Script {
   struct Relayer {
     string rateFeed;
     string rateFeedDescription;
+    uint256 maxTimestampSpread;
     IChainlinkRelayer.ChainlinkAggregator[] aggregators;
   }
 
@@ -26,6 +27,7 @@ contract MU07_Deploy_ChainlinkRelayers is Script {
     Relayer({
       rateFeed: "relayed:CELOPHP",
       rateFeedDescription: "CELO/PHP (CELO/USD:USD/PHP)",
+      maxTimestampSpread: 24 hours,
       aggregators: aggregators(
         IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.CELOUSD"), invert: false }),
         IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.PHPUSD"), invert: true })
@@ -34,6 +36,7 @@ contract MU07_Deploy_ChainlinkRelayers is Script {
     Relayer({
       rateFeed: "relayed:PHPUSD",
       rateFeedDescription: "PHP/USD",
+      maxTimestampSpread: 0,
       aggregators: aggregators(
         IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.PHPUSD"), invert: false })
       )
@@ -69,13 +72,24 @@ contract MU07_Deploy_ChainlinkRelayers is Script {
     address newRelayerAddress = relayerFactory.computedRelayerAddress(
       rateFeedId,
       relayer.rateFeedDescription,
+      relayer.maxTimestampSpread,
       relayer.aggregators
     );
     if (newRelayerAddress != relayerAddress) {
       if (relayerAddress == address(0)) {
-        relayerFactory.deployRelayer(rateFeedId, relayer.rateFeedDescription, relayer.aggregators);
+        relayerFactory.deployRelayer(
+          rateFeedId,
+          relayer.rateFeedDescription,
+          relayer.maxTimestampSpread,
+          relayer.aggregators
+        );
       } else {
-        relayerFactory.redeployRelayer(rateFeedId, relayer.rateFeedDescription, relayer.aggregators);
+        relayerFactory.redeployRelayer(
+          rateFeedId,
+          relayer.rateFeedDescription,
+          relayer.maxTimestampSpread,
+          relayer.aggregators
+        );
       }
     }
   }

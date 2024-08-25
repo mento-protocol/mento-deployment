@@ -24,6 +24,10 @@ interface ISortedOracles {
   function getEquivalentToken(address) external returns (address);
 
   function getOracles(address) external returns (address[] memory);
+
+  function setTokenReportExpiry(address, uint256) external;
+
+  function getTokenReportExpirySeconds(address) external returns (uint256);
 }
 
 /**
@@ -88,8 +92,8 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    proposal_whitelistRelayerFor("relayed:CELOPHP");
-    proposal_whitelistRelayerFor("relayed:PHPUSD");
+    proposal_whitelistRelayerFor("relayed:CELOPHP", 5 minutes);
+    proposal_whitelistRelayerFor("relayed:PHPUSD", 5 minutes);
     proposal_setEquivalentTokenForPSO();
 
     return transactions;
@@ -101,7 +105,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
    * If there are multiple oracles whitelisted, remove them.
    * If the existing relayer isn't whitelisted, add it.
    */
-  function proposal_whitelistRelayerFor(string memory rateFeed) private {
+  function proposal_whitelistRelayerFor(string memory rateFeed, uint256 tokenReportExpiry) private {
     address rateFeedId = toRateFeedId(rateFeed);
     IChainlinkRelayer relayer = relayersByRateFeedId[rateFeedId];
     require(
@@ -132,6 +136,13 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
           value: 0,
           destination: address(sortedOracles),
           data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedId, address(relayer))
+        })
+      );
+      transactions.push(
+        ICeloGovernance.Transaction({
+          value: 0,
+          destination: address(sortedOracles),
+          data: abi.encodeWithSelector(ISortedOracles(0).setTokenReportExpiry.selector, rateFeedId, tokenReportExpiry)
         })
       );
     }

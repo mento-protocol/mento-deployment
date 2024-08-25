@@ -30,11 +30,13 @@ contract MU07Checks is GovernanceScript, Test {
 
   function run() public {
     prepare();
-    verifyRelayersAreOnlyWhitelisted();
-    verifyPSOHasEquivalentToken();
+    assert_relayersAreWhitelisted();
+    assert_tokenReportExpiryEq(toRateFeedId("relayed:CELOPHP"), 5 minutes);
+    assert_tokenReportExpiryEq(toRateFeedId("relayed:PHPUSD"), 5 minutes);
+    assert_equivalentTokenEq(PSO, toRateFeedId("relayed:CELOPHP"));
   }
 
-  function verifyRelayersAreOnlyWhitelisted() internal {
+  function assert_relayersAreWhitelisted() internal {
     address[] memory relayers = relayerFactory.getRelayers();
     for (uint i = 0; i < relayers.length; i++) {
       IChainlinkRelayer relayer = IChainlinkRelayer(relayers[i]);
@@ -46,7 +48,7 @@ contract MU07Checks is GovernanceScript, Test {
         console.log("Too many oracles whitelisted for rateFeed: %s [%s]", relayer.rateFeedDescription(), rateFeedId);
       }
 
-      assert(oracles.length == 1);
+      assertEq(oracles.length, 1);
 
       if (oracles[0] != relayers[i]) {
         console.log("Whitelisted oracle wrong for rateFeed: %s [%s]", relayer.rateFeedDescription(), rateFeedId);
@@ -56,16 +58,21 @@ contract MU07Checks is GovernanceScript, Test {
     }
   }
 
-  function verifyPSOHasEquivalentToken() internal {
-    address equivalentToken = sortedOracles.getEquivalentToken(PSO);
-    address CELOPHPRateFeedId = toRateFeedId("relayed:CELOPHP");
-    if (equivalentToken == address(0)) {
-      console.log("Equivalent Token not set for PSO (%s)", PSO);
+  function assert_equivalentTokenEq(address token, address expected) internal {
+    address actual = sortedOracles.getEquivalentToken(token);
+    if (actual != expected) {
+      console.log("Equivalent token mismatch for PSO (%s).");
     }
-    if (equivalentToken != CELOPHPRateFeedId) {
-      console.log("Invalid equivalent token for PSO (%s)", PSO);
-    }
-    assertEq(equivalentToken, CELOPHPRateFeedId);
+    assertEq(actual, expected);
     console.log("PSO [%s] equivalent token is correct", PSO);
+  }
+
+  function assert_tokenReportExpiryEq(address rateFeedId, uint256 expected) internal {
+    uint256 actual = sortedOracles.getTokenReportExpirySeconds(rateFeedId);
+    if (actual != expected) {
+      console.log("Token report expiry mismatch for rateFeedId [%s].", rateFeedId);
+    }
+    assertEq(actual, expected);
+    console.log("Token report expiry for rateFeedId [%s] is correct", rateFeedId);
   }
 }
