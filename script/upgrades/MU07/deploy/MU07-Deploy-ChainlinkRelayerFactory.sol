@@ -37,7 +37,11 @@ contract MU07_Deploy_ChainlinkRelayerFactory is Script {
       proxy = new ChainlinkRelayerFactoryProxy(
         address(relayerFactory),
         address(proxyAdmin),
-        abi.encodeWithSelector(ChainlinkRelayerFactory.initialize.selector, contracts.celoRegistry("SortedOracles"))
+        abi.encodeWithSelector(
+          ChainlinkRelayerFactory.initialize.selector,
+          contracts.celoRegistry("SortedOracles"),
+          vm.addr(ChainLib.deployerPrivateKey())
+        )
       );
     }
     console.log("ChainlinkRelayerFactory implementation: ", address(relayerFactory));

@@ -114,7 +114,7 @@ async function run() {
   }
 
   if (successful.length > 0) {
-    console.log(`✅ Successfully verified ${successful.length} contracts`);
+    console.log(`✅ ${successful.length} contracts are verified:`);
     for (const contract of successful) {
       console.log(" - ", contract);
     }
@@ -134,17 +134,23 @@ async function run() {
 }
 
 async function verify({ contract, initCode }: { contract: string; initCode?: string }) {
+  const isVerified = await etherscan.check({
+    api: celoscanApiUrl,
+    apiKey: celoscanApiKey,
+    contract: contract,
+  })
+  if (isVerified) {
+    console.log(`✅ Contract ${contract} verified on celoscan`);
+    return true;
+  }
+
   const status = await sourcify.check(broadcast.chain, contract);
-  if (status === "false") {
+  if (status !== "verified") {
     console.error(`🚨 Contract ${contract} not found on sourcify`);
-    return;
+    return false;
   }
 
-  if (status === "verified") {
-    console.log(`✅ Contract ${contract} verified on sourcify`);
-  }
-
-  console.log(`🔍 Verifying ${contract} on celoscan...`);
+  console.log(`⌛ Contract ${contract} verified on sourcify, pushing to celoscan...`);
   const files = await sourcify.files(broadcast.chain, contract);
   const {
     target,
