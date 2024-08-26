@@ -14,7 +14,7 @@ import { MockChainlinkAggregator } from "contracts/MockChainlinkAggregator.sol";
  * in testnet relayers to mimic mainnet more closely.
  * When using This script, change the string inside the
  */
-contract DeployMockPHPUSDAggregator is Script {
+contract DeployMockChainlinkAggregator is Script {
   function run(string memory rateDescription) public {
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
