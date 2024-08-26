@@ -17,15 +17,15 @@ contract MU07Checks is GovernanceScript, Test {
 
   IChainlinkRelayerFactory private relayerFactory;
   ISortedOracles private sortedOracles;
-  address private PSO;
+  address private PUSO;
 
   function prepare() public {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
-    contracts.loadSilent("PSO-00-Create-Proxies", "latest");
+    contracts.loadSilent("PUSO-00-Create-Proxies", "latest");
 
     relayerFactory = IChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
-    PSO = contracts.deployed("StableTokenPSOProxy");
+    PUSO = contracts.deployed("StableTokenPHPProxy");
   }
 
   function run() public {
@@ -33,7 +33,7 @@ contract MU07Checks is GovernanceScript, Test {
     assert_relayersAreWhitelisted();
     assert_tokenReportExpiryEq(toRateFeedId("relayed:CELOPHP"), 5 minutes);
     assert_tokenReportExpiryEq(toRateFeedId("relayed:PHPUSD"), 5 minutes);
-    assert_equivalentTokenEq(PSO, toRateFeedId("relayed:CELOPHP"));
+    assert_equivalentTokenEq(PUSO, toRateFeedId("relayed:CELOPHP"));
   }
 
   function assert_relayersAreWhitelisted() internal {
@@ -61,10 +61,10 @@ contract MU07Checks is GovernanceScript, Test {
   function assert_equivalentTokenEq(address token, address expected) internal {
     address actual = sortedOracles.getEquivalentToken(token);
     if (actual != expected) {
-      console.log("Equivalent token mismatch for PSO (%s).");
+      console.log("Equivalent token mismatch for PUSO (%s).");
     }
     assertEq(actual, expected);
-    console.log("PSO [%s] equivalent token is correct", PSO);
+    console.log("PUSO [%s] equivalent token is correct", PUSO);
   }
 
   function assert_tokenReportExpiryEq(address rateFeedId, uint256 expected) internal {

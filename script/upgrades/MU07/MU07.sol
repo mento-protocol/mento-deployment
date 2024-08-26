@@ -44,7 +44,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
   // Mento contracts
   IChainlinkRelayerFactory private relayerFactory;
   ISortedOracles private sortedOracles;
-  address private PSO;
+  address private PUSO;
 
   mapping(address => IChainlinkRelayer) relayersByRateFeedId;
 
@@ -58,7 +58,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
    */
   function loadDeployedContracts() public {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
-    contracts.loadSilent("PSO-00-Create-Proxies", "latest");
+    contracts.loadSilent("PUSO-00-Create-Proxies", "latest");
   }
 
   /**
@@ -67,7 +67,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
   function setAddresses() public {
     relayerFactory = IChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
-    PSO = contracts.deployed("StableTokenPSOProxy");
+    PUSO = contracts.deployed("StableTokenPHPProxy");
 
     address[] memory relayers = relayerFactory.getRelayers();
     for (uint i = 0; i < relayers.length; i++) {
@@ -94,7 +94,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
 
     proposal_whitelistRelayerFor("relayed:CELOPHP", 5 minutes);
     proposal_whitelistRelayerFor("relayed:PHPUSD", 5 minutes);
-    proposal_setEquivalentTokenForPSO();
+    proposal_setEquivalentTokenForPUSO();
 
     return transactions;
   }
@@ -154,17 +154,17 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
    * rate when asked. This was used for gas payments with USDC, by setting USDC's equivalent
    * token to be cUSD. But this also allows us to remove this duality between rate feeds that
    * are tokens, and rate feeds derived from identifiers.
-   * In the context of PSO it means that we can report to the rateFeed defined by the
-   * cannonical id: `relayed:CELOPHP`, and then have address(PSO) point to that for
+   * In the context of PUSO it means that we can report to the rateFeed defined by the
+   * cannonical id: `relayed:CELOPHP`, and then have address(PUSO) point to that for
    * gas payments.
    */
-  function proposal_setEquivalentTokenForPSO() private {
+  function proposal_setEquivalentTokenForPUSO() private {
     address CELOPHPRateFeedId = toRateFeedId("relayed:CELOPHP");
     transactions.push(
       ICeloGovernance.Transaction({
         value: 0,
         destination: contracts.celoRegistry("SortedOracles"),
-        data: abi.encodeWithSelector(ISortedOracles(0).setEquivalentToken.selector, PSO, CELOPHPRateFeedId)
+        data: abi.encodeWithSelector(ISortedOracles(0).setEquivalentToken.selector, PUSO, CELOPHPRateFeedId)
       })
     );
   }
