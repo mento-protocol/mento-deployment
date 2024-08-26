@@ -2,7 +2,7 @@
 // solhint-disable func-visibility
 pragma solidity ^0.8.18;
 
-import { IChainlinkRelayer } from "mento-core-develop/interfaces/IChainlinkRelayer.sol";
+import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
 
 function toRateFeedId(string memory rateFeedString) pure returns (address) {
   return address(uint160(uint256(keccak256(abi.encodePacked(rateFeedString)))));

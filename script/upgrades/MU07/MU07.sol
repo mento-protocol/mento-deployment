@@ -9,8 +9,8 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-import { IChainlinkRelayerFactory } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayerFactory.sol";
-import { IChainlinkRelayer } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayer.sol";
+import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
+import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
@@ -28,6 +28,8 @@ interface ISortedOracles {
   function setTokenReportExpiry(address, uint256) external;
 
   function getTokenReportExpirySeconds(address) external returns (uint256);
+
+  function tokenReportExpirySeconds(address) external returns (uint256);
 }
 
 /**
@@ -138,13 +140,16 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
           data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedId, address(relayer))
         })
       );
-      transactions.push(
-        ICeloGovernance.Transaction({
-          value: 0,
-          destination: address(sortedOracles),
-          data: abi.encodeWithSelector(ISortedOracles(0).setTokenReportExpiry.selector, rateFeedId, tokenReportExpiry)
-        })
-      );
+      uint256 currentExpiry = sortedOracles.tokenReportExpirySeconds(rateFeedId);
+      if (currentExpiry != tokenReportExpiry) {
+        transactions.push(
+          ICeloGovernance.Transaction({
+            value: 0,
+            destination: address(sortedOracles),
+            data: abi.encodeWithSelector(ISortedOracles(0).setTokenReportExpiry.selector, rateFeedId, tokenReportExpiry)
+          })
+        );
+      }
     }
   }
 

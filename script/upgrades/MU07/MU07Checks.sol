@@ -8,8 +8,8 @@ import { console } from "forge-std/console.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { GovernanceScript } from "script/utils/Script.sol";
 
-import { IChainlinkRelayerFactory } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayerFactory.sol";
-import { IChainlinkRelayer } from "lib/mento-core-develop/contracts/interfaces/IChainlinkRelayer.sol";
+import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
+import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
 
 import { ISortedOracles } from "./MU07.sol";
 
