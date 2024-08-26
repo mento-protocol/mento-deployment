@@ -87,10 +87,6 @@ library PUSOConfig {
         limitGlobal: 57 * 5_000_000
       })
     });
-
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
-      poolConfig.minimumReports = 1;
-    }
   }
 
   /* ==================== Stable Token Configuration ==================== */

@@ -158,11 +158,7 @@ contract PUSOChecksSwap is PUSOChecksBase {
     console.log("Broker amount out(Broker.getAmountOut)", amountOut);
     console.log("Estimated amount out(amountIn * num/dennom): ", estimatedAmountOut);
 
-    uint256 scaledAmountIn = BiPoolManager(biPoolManagerProxy).tokenPrecisionMultipliers(tokenIn);
-
-    FixidityLib.Fraction memory maxTolerance = FixidityLib.newFixedFraction(25, 1000);
-    uint256 threshold = FixidityLib.newFixed(estimatedAmountOut).multiply(maxTolerance).fromFixed();
-    assertApproxEq(amountOut, estimatedAmountOut, threshold);
+    assertApproxEqRel(amountOut, estimatedAmountOut, 25 * 1e15 /* 0.025 or 2.5% */);
     doSwapIn(exchangeID, trader, tokenIn, tokenOut, amountIn, amountOut);
   }
 
@@ -192,15 +188,5 @@ contract PUSOChecksSwap is PUSOChecksBase {
     assertEq(IERC20(tokenOut).balanceOf(trader), beforeBuyingTokenOut + amountOut);
     assertEq(IERC20(tokenIn).balanceOf(trader), beforeSellingTokenIn - amountIn);
     vm.stopPrank();
-  }
-
-  function assertApproxEq(uint256 a, uint256 b, uint256 maxDelta) internal view {
-    uint256 delta = a > b ? a - b : b - a;
-
-    if (delta > maxDelta) {
-      console.log("Diff(%s) between amounts is greater than %s", delta, maxDelta);
-    }
-
-    require(delta <= maxDelta, "Values are not approximately equal. See logs for more information.");
   }
 }
