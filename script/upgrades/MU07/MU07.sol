@@ -46,7 +46,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
   ISortedOracles private sortedOracles;
   address private PUSO;
 
-  mapping(address => IChainlinkRelayer) relayersByRateFeedId;
+  mapping(address => IChainlinkRelayer) private relayersByRateFeedId;
 
   function prepare() public {
     loadDeployedContracts();

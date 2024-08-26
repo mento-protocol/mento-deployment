@@ -19,7 +19,7 @@ import { toRateFeedId } from "script/utils/mento/Oracles.sol";
  */
 contract RelayerReport is Script {
   using Contracts for Contracts.Cache;
-  ChainlinkRelayerFactory relayerFactory;
+  ChainlinkRelayerFactory private relayerFactory;
 
   constructor() Script() {
     contracts.load("MU07-Deploy-ChainlinkRelayerFactory", "latest");

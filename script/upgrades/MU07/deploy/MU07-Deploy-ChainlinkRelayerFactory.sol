@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+// solhint-disable contract-name-camelcase
 pragma solidity ^0.8.18;
 
 import { console } from "forge-std-next/console.sol";
@@ -6,16 +7,16 @@ import { Script } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
 
-import { ChainlinkRelayerFactory } from "mento-core-develop/oracles/ChainlinkRelayerFactory.sol";
-import { ChainlinkRelayerFactoryProxy } from "mento-core-develop/oracles/ChainlinkRelayerFactoryProxy.sol";
-import { ChainlinkRelayerFactoryProxyAdmin } from "mento-core-develop/oracles/ChainlinkRelayerFactoryProxyAdmin.sol";
+import { ChainlinkRelayerFactory } from "mento-core-2.5.0/oracles/ChainlinkRelayerFactory.sol";
+import { ChainlinkRelayerFactoryProxy } from "mento-core-2.5.0/oracles/ChainlinkRelayerFactoryProxy.sol";
+import { ChainlinkRelayerFactoryProxyAdmin } from "mento-core-2,5,0/oracles/ChainlinkRelayerFactoryProxyAdmin.sol";
 
 contract MU07_Deploy_ChainlinkRelayerFactory is Script {
   using Contracts for Contracts.Cache;
 
-  ChainlinkRelayerFactory relayerFactory;
-  ChainlinkRelayerFactoryProxy proxy;
-  ChainlinkRelayerFactoryProxyAdmin proxyAdmin;
+  ChainlinkRelayerFactory private relayerFactory;
+  ChainlinkRelayerFactoryProxy private proxy;
+  ChainlinkRelayerFactoryProxyAdmin private proxyAdmin;
 
   function getProxyAdminOwner() internal view returns (address) {
     if (ChainLib.isCelo()) {

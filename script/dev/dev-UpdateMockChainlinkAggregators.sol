@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+// solhint-disable var-name-mixedcase, const-name-snakecase
 pragma solidity ^0.8.18;
 
 import { console } from "forge-std-next/console.sol";
@@ -31,13 +32,13 @@ interface IMockAggregator {
  */
 contract UpdateMockChainlinkAggregators is Script {
   using Contracts for Contracts.Cache;
-  address constant PHPUSDMainnetAggregator = 0x4ce8e628Bb82Ea5271908816a6C580A71233a66c;
-  address constant CELOUSDMainnetAggregator = 0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e;
+  address private constant PHPUSDMainnetAggregator = 0x4ce8e628Bb82Ea5271908816a6C580A71233a66c;
+  address private constant CELOUSDMainnetAggregator = 0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e;
 
-  mapping(address => address) mockForAggregator;
-  mapping(address => int256) aggregatorAnswers;
-  mapping(address => string) aggregatorDescription;
-  address[] aggregatorsToForward;
+  mapping(address => address) private mockForAggregator;
+  mapping(address => int256) private aggregatorAnswers;
+  mapping(address => string) private aggregatorDescription;
+  address[] private aggregatorsToForward;
 
   constructor() Script() {
     if (ChainLib.isAlfajores()) {

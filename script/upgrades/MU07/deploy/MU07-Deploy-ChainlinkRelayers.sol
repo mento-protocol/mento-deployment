@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+// solhint-disable contract-name-camelcase
 pragma solidity ^0.8.18;
 
 import { console } from "forge-std-next/console.sol";
@@ -23,7 +24,7 @@ contract MU07_Deploy_ChainlinkRelayers is Script {
     IChainlinkRelayer.ChainlinkAggregator[] aggregators;
   }
 
-  Relayer[] relayers = [
+  Relayer[] private relayers = [
     Relayer({
       rateFeed: "relayed:CELOPHP",
       rateFeedDescription: "CELO/PHP (CELO/USD:USD/PHP)",
@@ -43,7 +44,7 @@ contract MU07_Deploy_ChainlinkRelayers is Script {
     })
   ];
 
-  ChainlinkRelayerFactory relayerFactory;
+  ChainlinkRelayerFactory private relayerFactory;
 
   constructor() Script() {
     contracts.load("MU07-Deploy-ChainlinkRelayerFactory", "latest");

@@ -23,8 +23,8 @@ interface ISortedOracles {
  */
 contract RelayerStatus is Script {
   using Contracts for Contracts.Cache;
-  ISortedOracles sortedOracles;
-  ChainlinkRelayerFactory relayerFactory;
+  ISortedOracles private sortedOracles;
+  ChainlinkRelayerFactory private relayerFactory;
 
   constructor() Script() {
     contracts.load("MU07-Deploy-ChainlinkRelayerFactory", "latest");
