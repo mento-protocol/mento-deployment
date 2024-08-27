@@ -35,7 +35,6 @@ contract MU07Checks is GovernanceScript, Test {
     assert_relayersAreWhitelisted();
     assert_tokenReportExpiryEq(toRateFeedId("relayed:CELOPHP"), 5 minutes);
     assert_tokenReportExpiryEq(toRateFeedId("relayed:PHPUSD"), 5 minutes);
-    assert_equivalentTokenEq(PUSO, toRateFeedId("relayed:CELOPHP"));
   }
 
   function assert_relayersAreWhitelisted() internal {

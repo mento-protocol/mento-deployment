@@ -18,7 +18,7 @@ contract MU07_Deploy_ChainlinkRelayerFactory is Script {
   ChainlinkRelayerFactoryProxy private proxy;
   ChainlinkRelayerFactoryProxyAdmin private proxyAdmin;
 
-  function getProxyAdminOwner() internal view returns (address) {
+  function getProxyAdminOwner() internal returns (address) {
     if (ChainLib.isCelo()) {
       return contracts.dependency("MentoLabsMultisig"); // Mento Labs multisig
     } else {
