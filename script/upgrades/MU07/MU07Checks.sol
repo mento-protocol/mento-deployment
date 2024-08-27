@@ -33,8 +33,19 @@ contract MU07Checks is GovernanceScript, Test {
   function run() public {
     prepare();
     assert_relayersAreWhitelisted();
+    assert_relayersReport();
     assert_tokenReportExpiryEq(toRateFeedId("relayed:CELOPHP"), 5 minutes);
     assert_tokenReportExpiryEq(toRateFeedId("relayed:PHPUSD"), 5 minutes);
+  }
+
+  function assert_relayersReport() internal {
+    address[] memory relayers = relayerFactory.getRelayers();
+    for (uint i = 0; i < relayers.length; i++) {
+      IChainlinkRelayer relayer = IChainlinkRelayer(relayers[i]);
+      relayer.relay();
+      (uint256 rate, ) = sortedOracles.medianRate(relayer.rateFeedId());
+      emit log_named_decimal_uint(relayer.rateFeedDescription(), rate, 24);
+    }
   }
 
   function assert_relayersAreWhitelisted() internal {

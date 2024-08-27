@@ -23,6 +23,8 @@ interface ISortedOracles {
 
   function getEquivalentToken(address) external returns (address);
 
+  function medianRate(address) external returns (uint256, uint256);
+
   function getOracles(address) external returns (address[] memory);
 
   function setTokenReportExpiry(address, uint256) external;
@@ -86,7 +88,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "whitelist-oracles", governance);
+      createProposal(_transactions, "https://whitelist-oracles", governance);
     }
     vm.stopBroadcast();
   }
