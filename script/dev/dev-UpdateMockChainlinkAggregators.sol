@@ -52,7 +52,7 @@ contract UpdateMockChainlinkAggregators is Script {
 
   function setUp_alfajores() internal {
     /// @dev Load additional deployed aggregators here to forward rates
-    contracts.loadSilent("DeployMockChainlinkAggregator", "PHPUSD");
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "PHPUSD");
     address PHPUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
 
     mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDTestnetMock;
@@ -62,9 +62,9 @@ contract UpdateMockChainlinkAggregators is Script {
 
   function setUp_baklava() internal {
     /// @dev Load additional deployed aggregators here to forward rates
-    contracts.loadSilent("DeployMockChainlinkAggregator", "PHPUSD");
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "PHPUSD");
     address PHPUSDMock = contracts.deployed("MockChainlinkAggregator");
-    contracts.loadSilent("DeployMockChainlinkAggregator", "CELOUSD");
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "CELOUSD");
     address CELOUSDMock = contracts.deployed("MockChainlinkAggregator");
 
     mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDMock;

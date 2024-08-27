@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.18;
 
-contract MockChainlinkAggregator {
+import { Ownable } from "openzeppelin-contracts-next/contracts/access/Ownable.sol";
+
+contract MockChainlinkAggregator is Ownable {
   int256 public savedAnswer;
   string public description;
 
@@ -13,7 +15,7 @@ contract MockChainlinkAggregator {
     return 8;
   }
 
-  function setAnswer(int256 _answer) external {
+  function setAnswer(int256 _answer) external onlyOwner {
     savedAnswer = _answer;
   }
 

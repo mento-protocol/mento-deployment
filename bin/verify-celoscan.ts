@@ -145,7 +145,7 @@ async function verify({ contract, initCode }: { contract: string; initCode?: str
   }
 
   const status = await sourcify.check(broadcast.chain, contract);
-  if (status !== "verified") {
+  if (!(status == "partial" || status == "full")) {
     console.error(`🚨 Contract ${contract} not found on sourcify`);
     return false;
   }

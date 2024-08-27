@@ -21,7 +21,8 @@ yarn-error.log*
 
 # broadcasts
 !/broadcast
-/broadcast/Dev-*
+/broadcast/dev-*
+!/broadcast/dev-DeployMockChainlinkAggregator.sol/
 !/broadcast/ExecuteProposal*
 /broadcast/PassProposal*
 /broadcast/QueueProposal*

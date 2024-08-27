@@ -6,6 +6,7 @@ pragma experimental ABIEncoderV2;
 import { Test } from "forge-std/Test.sol";
 import { console } from "forge-std/console.sol";
 import { Contracts } from "script/utils/Contracts.sol";
+import { Chain } from "script/utils/Chain.sol";
 import { GovernanceScript } from "script/utils/Script.sol";
 
 import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
@@ -60,6 +61,10 @@ contract MU07Checks is GovernanceScript, Test {
   }
 
   function assert_equivalentTokenEq(address token, address expected) internal {
+    if (Chain.isBaklava()) {
+      /// @dev This SortedOracles feature was not deployed to Baklava. Skipping check.
+      console.log("Skipping equivalent token check on Baklava.");
+    }
     address actual = sortedOracles.getEquivalentToken(token);
     if (actual != expected) {
       console.log("Equivalent token mismatch for PUSO (%s).");
