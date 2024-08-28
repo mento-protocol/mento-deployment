@@ -88,7 +88,7 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "https://whitelist-oracles", governance);
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0146.md", governance);
     }
     vm.stopBroadcast();
   }
