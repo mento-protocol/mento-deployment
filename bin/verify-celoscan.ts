@@ -28,7 +28,8 @@ interface BroadcastFile {
       initCode: string;
     }>;
     transaction: {
-      data: string;
+      data?: string;
+      input?: string
     };
   }>;
   chain: number;
@@ -81,7 +82,7 @@ async function run() {
       if (tx.transactionType === "CREATE") {
         createdContracts.push({
           contract: tx.contractAddress,
-          initCode: tx.transaction.data,
+          initCode: tx.transaction.data || tx.transaction.input
         });
       }
       if (tx.additionalContracts && tx.additionalContracts.length > 0) {
@@ -113,7 +114,7 @@ async function run() {
   }
 
   if (successful.length > 0) {
-    console.log(`✅ Successfully verified ${successful.length} contracts`);
+    console.log(`✅ ${successful.length} contracts are verified:`);
     for (const contract of successful) {
       console.log(" - ", contract);
     }
@@ -132,18 +133,24 @@ async function run() {
   }
 }
 
-async function verify({ contract, initCode }: { contract: string; initCode: string }) {
+async function verify({ contract, initCode }: { contract: string; initCode?: string }) {
+  const isVerified = await etherscan.check({
+    api: celoscanApiUrl,
+    apiKey: celoscanApiKey,
+    contract: contract,
+  })
+  if (isVerified) {
+    console.log(`✅ Contract ${contract} verified on celoscan`);
+    return true;
+  }
+
   const status = await sourcify.check(broadcast.chain, contract);
-  if (status === "false") {
+  if (!(status == "partial" || status == "full")) {
     console.error(`🚨 Contract ${contract} not found on sourcify`);
-    return;
+    return false;
   }
 
-  if (status === "verified") {
-    console.log(`✅ Contract ${contract} verified on sourcify`);
-  }
-
-  console.log(`🔍 Verifying ${contract} on celoscan...`);
+  console.log(`⌛ Contract ${contract} verified on sourcify, pushing to celoscan...`);
   const files = await sourcify.files(broadcast.chain, contract);
   const {
     target,
@@ -156,7 +163,7 @@ async function verify({ contract, initCode }: { contract: string; initCode: stri
   const standardJson = makeStandardJson(metadata, sources, libraryMap);
 
   let constructorArgs = constructorArgsFromSourcify;
-  if (constructorArgs === "") {
+  if (constructorArgs === "" && !!initCode) {
     constructorArgs = getConstructorArgs(target, contract, initCode);
   }
 
@@ -191,8 +198,16 @@ async function verify({ contract, initCode }: { contract: string; initCode: stri
 }
 
 function getConstructorArgs(target: string, contract: string, initCode: string) {
-  const solidityFile = /([^\/]*.sol)/.exec(target)![0];
-  const contractName = solidityFile.split(".")[0];
+  // Target can be of the form "filename.sol:ContractName" or just "ContractName.sol"
+  // This regexp matches ((...).sol):(...) so:
+  //   match[1] is the filename, i.e. the first larger bracket
+  //   match[2] is the filename without termination
+  //   match[3] is the optional contract name which can be empty
+  const match = /(([^\/]*).sol):?(.*)?/.exec(target);
+  if (!match) throw Error(`Error extracting filename and contract from: ${target}`)
+  const solidityFile = match[1]
+  const contractName = match[3] || match[2];
+
   try {
     const foundryJson = JSON.parse(fs.readFileSync(`out/${solidityFile}/${contractName}.json`, "utf8"));
     let bytecode = foundryJson.bytecode.object;

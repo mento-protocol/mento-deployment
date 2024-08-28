@@ -16,6 +16,30 @@ type VerifyParams = {
   version: string;
   args: string;
 };
+
+type CheckParams = {
+  api: string;
+  apiKey: string | undefined;
+  contract: string;
+}
+
+export async function check({ api, apiKey, contract }: CheckParams): Promise<boolean> {
+  const params = new URLSearchParams();
+  if (apiKey) {
+    params.append("apikey", apiKey);
+  }
+  params.append("module", "contract");
+  params.append("action", "getabi");
+  params.append("address", contract);
+
+  const data = await fetch(api, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded;charset=utf-8" },
+    body: params,
+  }).then(res => res.json());
+  return data['message'] === "OK" && data['status'] === "1";
+}
+
 export async function verify({ api, apiKey, contract, source, target, version, args }: VerifyParams): Promise<string> {
   const params = new URLSearchParams();
   if (apiKey) {

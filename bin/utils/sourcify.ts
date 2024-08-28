@@ -7,7 +7,9 @@ export async function check(chainId: number, contract: string): Promise<string> 
   if (!data || !data[0]) {
     return "false";
   }
-  return data[0].status;
+  return data[0].chainIds.find(
+    ({ chainId }: { chainId: string, status: string }) => chainId === chainId
+  )?.status ?? "false";
 }
 
 export async function files(chainId: number, contract: string): Promise<any> {
