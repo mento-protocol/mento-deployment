@@ -32,11 +32,10 @@ contract MU08Checks is GovernanceScript, Test {
   address private cBRLProxy;
   address private eXOFProxy;
   address private cKESProxy;
-  //address POSProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
-  address private biPoolMangerProxy;
+  address private biPoolManagerProxy;
   address private reserveProxy;
   address private breakerBox;
   address private medianDeltaBreaker;
@@ -49,7 +48,8 @@ contract MU08Checks is GovernanceScript, Test {
   address private grandaMentoProxy;
 
   // MentoGovernance contracts:
-  address timelockProxy;
+  address private governanceFactory;
+  address private timelockProxy;
 
   function prepare() public {
     // Load addresses from deployments
@@ -58,7 +58,6 @@ contract MU08Checks is GovernanceScript, Test {
     contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.loadSilent("eXOF-00-Create-Proxies", "latest");
     contracts.loadSilent("cKES-00-Create-Proxies", "latest");
-    //contracts.loadSilent("PSO-00-Create-Proxies", "latest");
 
     // Celo Governance:
     celoGovernance = contracts.celoRegistry("Governance");
@@ -69,11 +68,10 @@ contract MU08Checks is GovernanceScript, Test {
     cBRLProxy = address(uint160(contracts.celoRegistry("StableTokenBRL")));
     eXOFProxy = address(uint160(contracts.deployed("StableTokenXOFProxy")));
     cKESProxy = address(uint160(contracts.deployed("StableTokenKESProxy")));
-    //POSProxy = address(uint160(contracts.deployed("StableTokenPOSProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
-    biPoolMangerProxy = address(uint160(contracts.deployed("BiPoolManagerProxy")));
+    biPoolManagerProxy = address(uint160(contracts.deployed("BiPoolManagerProxy")));
     reserveProxy = address(uint160(contracts.celoRegistry("Reserve")));
     breakerBox = address(uint160(contracts.deployed("BreakerBox")));
     medianDeltaBreaker = address(uint160(contracts.deployed("MedianDeltaBreaker")));
@@ -86,7 +84,8 @@ contract MU08Checks is GovernanceScript, Test {
     grandaMentoProxy = contracts.dependency("GrandaMento");
 
     // MentoGovernance contracts:
-    timelockProxy = IGovernanceFactory(contracts.dependency("GovernanceFactory")).governanceTimelock();
+    governanceFactory = contracts.dependency("GovernanceFactory");
+    timelockProxy = IGovernanceFactory(governanceFactory).governanceTimelock();
   }
 
   function run() public {
@@ -96,12 +95,12 @@ contract MU08Checks is GovernanceScript, Test {
     verifyTokenOwnership();
     verifyMentoV2Ownership();
     verifyMentoV1Ownership();
+    verifyGovernanceFactoryOwnership();
   }
 
   function verifyTokenOwnership() public {
     console.log("\n== Verifying token proxy and implementation ownership: ==");
     address[] memory tokenProxies = Arrays.addresses(cUSDProxy, cEURProxy, cBRLProxy, eXOFProxy, cKESProxy);
-    //address[] memory tokenProxies = Arrays.addresses(cUSDProxy, cEURProxy, cBRLProxy, eXOFProxy, cKESProxy, POSProxy);
 
     for (uint256 i = 0; i < tokenProxies.length; i++) {
       verifyProxyAndImplementationOwnership(tokenProxies[i]);
@@ -111,7 +110,7 @@ contract MU08Checks is GovernanceScript, Test {
 
   function verifyMentoV2Ownership() public {
     console.log("\n== Verifying MentoV2 contract ownerships: ==");
-    address[] memory mentoV2Proxies = Arrays.addresses(brokerProxy, biPoolMangerProxy, reserveProxy);
+    address[] memory mentoV2Proxies = Arrays.addresses(brokerProxy, biPoolManagerProxy, reserveProxy);
     for (uint256 i = 0; i < mentoV2Proxies.length; i++) {
       verifyProxyAndImplementationOwnership(mentoV2Proxies[i]);
     }
@@ -139,6 +138,12 @@ contract MU08Checks is GovernanceScript, Test {
       verifyProxyAndImplementationOwnership(mentoV1Proxies[i]);
     }
     console.log("🤘🏼MentoV1 contract ownerships transferred to Mento Governance🤘🏼");
+  }
+
+  function verifyGovernanceFactoryOwnership() public {
+    console.log("\n== Verifying GovernanceFactory ownership: ==");
+    verifyNonupgradeableContractsOwnership(governanceFactory);
+    console.log("🤘🏼GovernanceFactory ownership transferred to Mento Governance🤘🏼");
   }
 
   function verifyProxyAndImplementationOwnership(address proxy) internal {
