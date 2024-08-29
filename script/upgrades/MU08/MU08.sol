@@ -67,11 +67,12 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
    * @dev Loads the deployed contracts from previous deployments
    */
   function loadDeployedContracts() public {
-    contracts.load("MU01-00-Create-Proxies", "latest");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.load("eXOF-00-Create-Proxies", "latest");
-    contracts.load("cKES-00-Create-Proxies", "latest");
+    contracts.loadSilent("MU01-00-Create-Proxies", "latest");
+    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.loadSilent("eXOF-00-Create-Proxies", "latest");
+    contracts.loadSilent("cKES-00-Create-Proxies", "latest");
+    contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
   }
 
   /**
@@ -103,7 +104,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     grandaMentoProxy = contracts.dependency("GrandaMento");
 
     // MentoGovernance contracts:
-    governanceFactory = contracts.dependency("GovernanceFactory");
+    governanceFactory = contracts.deployed("GovernanceFactory");
     timelockProxy = IGovernanceFactory(governanceFactory).governanceTimelock();
   }
 

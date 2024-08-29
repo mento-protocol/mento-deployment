@@ -58,6 +58,7 @@ contract MU08Checks is GovernanceScript, Test {
     contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.loadSilent("eXOF-00-Create-Proxies", "latest");
     contracts.loadSilent("cKES-00-Create-Proxies", "latest");
+    contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
 
     // Celo Governance:
     celoGovernance = contracts.celoRegistry("Governance");
@@ -84,7 +85,7 @@ contract MU08Checks is GovernanceScript, Test {
     grandaMentoProxy = contracts.dependency("GrandaMento");
 
     // MentoGovernance contracts:
-    governanceFactory = contracts.dependency("GovernanceFactory");
+    governanceFactory = contracts.deployed("GovernanceFactory");
     timelockProxy = IGovernanceFactory(governanceFactory).governanceTimelock();
   }
 
@@ -159,7 +160,7 @@ contract MU08Checks is GovernanceScript, Test {
     // so we are not able to transfer them. Since they are deprecated anyways we are fine with this.
     if (implementationOwner != timelockProxy && !isMentoV1Contract(proxy)) {
       console.log("🟡 Warning Implementation:[%s] ownership not transferred to Mento Governance 🟡 ", implementation);
-    } else {
+    } else if (implementationOwner == timelockProxy) {
       console.log("🟢 Implementation:[%s] ownership transferred to Mento Governance", implementation);
     }
   }
