@@ -154,11 +154,22 @@ contract MU08Checks is GovernanceScript, Test {
     address implementation = IProxyLite(proxy)._getImplementation();
     address implementationOwner = IOwnableLite(implementation).owner();
     require(implementationOwner != address(0), "❗️❌ Implementation not owned by anybody");
-    if (implementationOwner != timelockProxy) {
+
+    // Note: Mento V1 contracts are owned by the original deployer address and not by Celo Governance,
+    // so we are not able to transfer them. Since they are deprecated anyways we are fine with this.
+    if (implementationOwner != timelockProxy && !isMentoV1Contract(proxy)) {
       console.log("🟡 Warning Implementation:[%s] ownership not transferred to Mento Governance 🟡 ", implementation);
     } else {
       console.log("🟢 Implementation:[%s] ownership transferred to Mento Governance", implementation);
     }
+  }
+
+  function isMentoV1Contract(address contractAddr) internal view returns (bool) {
+    return
+      contractAddr == exchangeProxy ||
+      contractAddr == exchangeEURProxy ||
+      contractAddr == exchangeBRLProxy ||
+      contractAddr == grandaMentoProxy;
   }
 
   function verifyNonupgradeableContractsOwnership(address nonupgradeableContract) public {

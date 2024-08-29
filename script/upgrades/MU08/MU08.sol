@@ -136,10 +136,16 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
       transferOwnership(tokenProxies[i]);
     }
 
-    // Transfer ownership of the cUSD implementation all the token proxies
-    // are pointing to the same StableTokenV2 implementation
-    address implementation = IProxyLite(cUSDProxy)._getImplementation();
-    transferOwnership(implementation);
+    // All the token proxies are pointing to the same StableTokenV2 implementation (cUSD)
+    // so we only need to transfer ownership of that single contract.
+    address sharedImplementation = IProxyLite(cUSDProxy)._getImplementation();
+    for (uint i = 0; i < tokenProxies.length; i++) {
+      require(
+        IProxyLite(tokenProxies[i])._getImplementation() == sharedImplementation,
+        "Token proxies not poiting to cUSD implementation"
+      );
+    }
+    transferOwnership(sharedImplementation);
   }
 
   function proposal_transferMentoV2Ownership() public {
@@ -161,6 +167,8 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_transferMentoV1Ownership() public {
+    // For some reason Mento V1 implementation contracts were not transferred to Celo Governance and are
+    // owned by the original deployer address. Therefore we can only transfer ownership of the proxies.
     address[] memory mentoV1Proxies = Arrays.addresses(
       exchangeProxy,
       exchangeEURProxy,
@@ -170,7 +178,6 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     for (uint i = 0; i < mentoV1Proxies.length; i++) {
       transferOwnership(mentoV1Proxies[i]);
       address implementation = IProxyLite(mentoV1Proxies[i])._getImplementation();
-      transferOwnership(implementation);
     }
   }
 
