@@ -81,14 +81,6 @@ forge_skip () { # $1: target
     fi
 }
 
-forge_script () { # $1: script name, $2: script file path
-    echo "=================================================================="
-    echo "🏃🏼 Running $1"
-    echo "=================================================================="
-    confirm_if_celo "$NETWORK"
-    forge script $3 --rpc-url $RPC_URL --legacy --broadcast --verify --verifier sourcify $2
-}
-
 confirm_if_celo () { # $1: network
     if [ "celo" = $1 ]; then
         while true; do

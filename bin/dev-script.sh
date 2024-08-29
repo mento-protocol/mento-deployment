@@ -4,8 +4,9 @@
 # Script for running all deployment tasks for a protocol upgrade
 # Usage: ./bin/dev-script.sh 
 #               -n <baklava|alfajores|celo>  -- network to submit the proposal to
-#               -i <script-index>               -- index of the script (optional)
-#               -s <script-name>                -- name of the script (optional)
+#               -i <script-index>            -- index of the script (optional)
+#               -s <script-name>             -- name of the script (optional)
+#               -r <run-signature>           -- signature of the run function (optional)
 # Example: 
 # To pick the script:
 # ./bin/deploy.sh -n baklava 
@@ -20,14 +21,18 @@ source "$(dirname "$0")/setup.sh"
 NETWORK=""
 INDEX=""
 SCRIPT_NAME=""
-while getopts n:i:s: flag
+RUN_SIGNATURE="run()"
+while getopts n:i:s:r: flag
 do
     case "${flag}" in
         n) NETWORK=${OPTARG};;
         i) INDEX=${OPTARG};;
         s) SCRIPT_NAME=${OPTARG};;
+        r) RUN_SIGNATURE=${OPTARG};;
     esac
 done
+
+shift "$((OPTIND - 1))"
 
 parse_network "$NETWORK"
 
@@ -35,7 +40,11 @@ if ! [ -z "$SCRIPT_NAME" ]; then # Pick the script by name
     SCRIPT_FILE="script/dev/dev-$SCRIPT_NAME.sol"
     if test -f "$SCRIPT_FILE"; then
         echo "🔎  $SCRIPT_FILE found"
-        forge_script "$SCRIPT_NAME" "$SCRIPT_FILE" $(forge_skip "dev")
+        echo "=================================================================="
+        echo " Running $SCRIPT_NAME"
+        echo "=================================================================="
+        confirm_if_celo "$NETWORK"
+        forge script $(forge_skip "dev") --rpc-url $RPC_URL --legacy --verify --verifier sourcify --broadcast -s $RUN_SIGNATURE $SCRIPT_FILE "$@"
         exit 0
     else
         echo "🚨 Script $SCRIPT_NAME not found in $SCRIPT_FILE"
@@ -49,8 +58,12 @@ if ! [ -z "$INDEX" ]; then # Pick the script by index
         echo "🚨 Index $INDEX is out of range or invalid"
         exit 1
     fi
-    SCRIPT=$(ls script/dev/* | head -n $INDEX | tail -n 1)
-    forge_script "$(basename $SCRIPT .sol | sed 's/dev-//g')" "$SCRIPT" $(forge_skip "dev")
+    SCRIPT_FILE=$(ls script/dev/* | head -n $INDEX | tail -n 1)
+    echo "=================================================================="
+    echo " Running $(basename SCRIPT_FILE)"
+    echo "=================================================================="
+    confirm_if_celo "$NETWORK"
+    forge script $(forge_skip "dev") --rpc-url $RPC_URL --legacy --verify --verifier sourcify --broadcast -s $RUN_SIGNATURE $SCRIPT_FILE "$@"
     exit 0
 fi
 
@@ -64,8 +77,11 @@ do
     SCRIPT_FILE="script/dev/dev-$SCRIPT.sol"
     if test -f "$SCRIPT_FILE"; then
         echo "🔎  $SCRIPT_FILE found"
-        forge_script "$SCRIPT" "$SCRIPT_FILE" "$(forge_skip "dev")"
-        exit 0
+        echo "=================================================================="
+        echo " Running $(basename SCRIPT_FILE)"
+        echo "=================================================================="
+        confirm_if_celo "$NETWORK"
+        forge script $(forge_skip "dev") --rpc-url $RPC_URL --legacy --verify --verifier sourcify --broadcast $SCRIPT_FILE
     else
         echo "Invalid option, press Ctrl+C to exit"
     fi

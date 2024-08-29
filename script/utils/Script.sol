@@ -35,6 +35,10 @@ contract Script is BaseScript {
 }
 
 contract GovernanceScript is Script, GovernanceHelper {
+  function toRateFeedId(string memory rateFeedString) internal pure returns (address) {
+    return address(uint160(uint256(keccak256(abi.encodePacked(rateFeedString)))));
+  }
+
   /**
    * @notice Helper function to get the exchange ID for a pool.
    */
