@@ -30,32 +30,20 @@ contract MINIDROP_CreateMerkleDistributor is Script {
 
     vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
     {
-      cUSDDistributor = deployMerkleDistributor(
-        "out/MerkleDistributorWithDeadline.sol/MerkleDistributorWithDeadline.json",
-        cUSD,
-        merkleRootCUSD,
-        endTime
-      );
+      cUSDDistributor = deployMerkleDistributor(cUSD, merkleRootCUSD, endTime);
       console.log("MerkleDistributor for cUSD deployed at:", cUSDDistributor);
-      mentoDistributor = deployMerkleDistributor(
-        "out/MerkleDistributorWithDeadline.sol/MerkleDistributorWithDeadline.json",
-        MENTO,
-        merkleRootMENTO,
-        endTime
-      );
+      mentoDistributor = deployMerkleDistributor(MENTO, merkleRootMENTO, endTime);
       console.log("MerkleDistributor for MENTO deployed at:", mentoDistributor);
     }
 
     vm.stopBroadcast();
   }
 
-  function deployMerkleDistributor(
-    string memory path,
-    address token,
-    bytes32 merkleRoot,
-    uint256 endTime
-  ) private returns (address) {
-    bytes memory bytecode = abi.encodePacked(vm.getCode(path), abi.encode(token, merkleRoot, endTime));
+  function deployMerkleDistributor(address token, bytes32 merkleRoot, uint256 endTime) private returns (address) {
+    bytes memory bytecode = abi.encodePacked(
+      vm.getCode("out/MerkleDistributorWithDeadline.sol/MerkleDistributorWithDeadline.json"),
+      abi.encode(token, merkleRoot, endTime)
+    );
     address deployedAddress;
     assembly {
       deployedAddress := create(0, add(bytecode, 0x20), mload(bytecode))
