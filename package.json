@@ -14,8 +14,10 @@
     "@commitlint/cli": "^17.0.3",
     "@commitlint/config-conventional": "^17.0.3",
     "@openzeppelin/merkle-tree": "^1.0.5",
+    "@types/decimal.js": "^7.4.0",
     "commitizen": "^4.2.4",
     "csv-parse": "^5.5.3",
+    "csv-writer": "^1.6.0",
     "cz-conventional-changelog": "^3.3.0",
     "dotenv": "^16.4.2",
     "ethers": "^6.9.2",
@@ -58,6 +60,7 @@
     "clean": "./bin/clean.sh",
     "secrets:get": "./bin/get-secrets.sh",
     "merkle-tree:build": "yarn ts-node ./bin/merkle-tree.ts",
+    "generate-airdrop-csv": "yarn ts-node ./script/upgrades/MINIDROP/data/generate-airdrop-csv.ts",
     "prepare": "husky"
   },
   "dependencies": {
