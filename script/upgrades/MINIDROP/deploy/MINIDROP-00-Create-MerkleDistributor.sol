@@ -18,26 +18,44 @@ contract MINIDROP_CreateMerkleDistributor is Script {
     IRegistry registry = IRegistry(0x000000000000000000000000000000000000ce10);
     address cUSD = registry.getAddressForStringOrDie("StableToken");
     address MENTO = IGovernanceFactory(contracts.deployed("GovernanceFactory")).mentoToken();
-    bytes32 merkleRootCUSD = readMerkleRoot();
-    bytes32 merkleRootMENTO = readMerkleRoot();
+
+    // 91 days after the current block timestamp roughly 3 months
+    uint256 endTime = block.timestamp + 91 days;
+
+    bytes32 merkleRootCUSD = readMerkleRoot(".cUSDRoot");
+    bytes32 merkleRootMENTO = readMerkleRoot(".mentoRoot");
 
     address cUSDDistributor;
     address mentoDistributor;
 
     vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
-
     {
-      cUSDDistributor = deployMerkleDistributor("MerkleDistributor.sol", cUSD, merkleRootCUSD);
+      cUSDDistributor = deployMerkleDistributor(
+        "out/MerkleDistributorWithDeadline.sol/MerkleDistributorWithDeadline.json",
+        cUSD,
+        merkleRootCUSD,
+        endTime
+      );
       console.log("MerkleDistributor for cUSD deployed at:", cUSDDistributor);
-      mentoDistributor = deployMerkleDistributor("MerkleDistributor.sol", MENTO, merkleRootMENTO);
+      mentoDistributor = deployMerkleDistributor(
+        "out/MerkleDistributorWithDeadline.sol/MerkleDistributorWithDeadline.json",
+        MENTO,
+        merkleRootMENTO,
+        endTime
+      );
       console.log("MerkleDistributor for MENTO deployed at:", mentoDistributor);
     }
 
     vm.stopBroadcast();
   }
 
-  function deployMerkleDistributor(string memory path, address token, bytes32 merkleRoot) private returns (address) {
-    bytes memory bytecode = abi.encodePacked(vm.getCode(path), abi.encode(token, merkleRoot));
+  function deployMerkleDistributor(
+    string memory path,
+    address token,
+    bytes32 merkleRoot,
+    uint256 endTime
+  ) private returns (address) {
+    bytes memory bytecode = abi.encodePacked(vm.getCode(path), abi.encode(token, merkleRoot, endTime));
     address deployedAddress;
     assembly {
       deployedAddress := create(0, add(bytecode, 0x20), mload(bytecode))
@@ -45,11 +63,11 @@ contract MINIDROP_CreateMerkleDistributor is Script {
     return deployedAddress;
   }
 
-  function readMerkleRoot() internal view returns (bytes32) {
+  function readMerkleRoot(string memory token) internal view returns (bytes32) {
     string memory network = ChainLib.rpcToken(); // celo | alfajores
     string memory root = vm.projectRoot();
-    string memory path = string(abi.encodePacked(root, "/data/test.root.json"));
+    string memory path = string(abi.encodePacked(root, "/script/upgrades/MINIDROP/data/", network, ".root.json"));
     string memory json = vm.readFile(path);
-    return stdJson.readBytes32(json, ".root");
+    return stdJson.readBytes32(json, token);
   }
 }
