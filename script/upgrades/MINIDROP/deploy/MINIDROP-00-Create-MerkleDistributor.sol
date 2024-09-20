@@ -10,6 +10,10 @@ import { Contracts } from "../../../utils/Contracts.sol";
 import { IGovernanceFactory } from "../../../interfaces/IGovernanceFactory.sol";
 import { stdJson } from "forge-std/StdJson.sol";
 
+interface IOwnableLite {
+  function transferOwnership(address newOwner) external;
+}
+
 contract MINIDROP_CreateMerkleDistributor is Script {
   using Contracts for Contracts.Cache;
 
@@ -18,6 +22,9 @@ contract MINIDROP_CreateMerkleDistributor is Script {
     IRegistry registry = IRegistry(0x000000000000000000000000000000000000ce10);
     address cUSD = registry.getAddressForStringOrDie("StableToken");
     address MENTO = IGovernanceFactory(contracts.deployed("GovernanceFactory")).mentoToken();
+
+    // Transfer ownership to mentoLabsMultiig for drain mechanism
+    address mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
 
     // 91 days after the current block timestamp roughly 3 months
     uint256 endTime = block.timestamp + 91 days;
@@ -34,6 +41,10 @@ contract MINIDROP_CreateMerkleDistributor is Script {
       console.log("MerkleDistributor for cUSD deployed at:", cUSDDistributor);
       mentoDistributor = deployMerkleDistributor(MENTO, merkleRootMENTO, endTime);
       console.log("MerkleDistributor for MENTO deployed at:", mentoDistributor);
+
+      IOwnableLite(cUSDDistributor).transferOwnership(mentoLabsMultisig);
+      IOwnableLite(mentoDistributor).transferOwnership(mentoLabsMultisig);
+      console.log("Transferred ownership of MerkleDistributors to MentoLabs Multisig");
     }
 
     vm.stopBroadcast();
