@@ -55,7 +55,7 @@ async function run() {
       rowsFetched += jsonResponse.result.rows.length;
       console.log(`⏳ ${rowsFetched}/${jsonResponse.result.metadata.total_row_count} records fetched`);
     } catch (err) {
-      console.error(err);
+      throw new Error(`Error fetching data: ${err}`);
     }
 
     // Calculate the allocations

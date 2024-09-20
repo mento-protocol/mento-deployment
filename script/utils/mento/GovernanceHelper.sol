@@ -5,6 +5,7 @@ import { Script, console2 } from "forge-std/Script.sol";
 import { ICeloGovernance } from "../../interfaces/ICeloGovernance.sol";
 import { IGovernor } from "../../interfaces/IGovernor.sol";
 import { Chain } from "./Chain.sol";
+import { Contracts } from "./Contracts.sol";
 
 contract GovernanceHelper is Script {
   struct MentoGovernanceTransaction {
@@ -23,7 +24,7 @@ contract GovernanceHelper is Script {
       verifyDescription(descriptionURL);
     } else {
       // Add timestamp to the description URL on testnets to avoid proposalId conflicts
-      descriptionURL = string(abi.encodePacked(descriptionURL, abi.encode(block.timestamp)));
+      descriptionURL = string(abi.encodePacked(descriptionURL, "-", Contracts.uint2str(block.timestamp)));
     }
 
     MentoGovernanceTransaction memory govTx;
