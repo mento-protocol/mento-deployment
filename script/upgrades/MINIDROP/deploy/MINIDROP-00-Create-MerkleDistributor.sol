@@ -22,8 +22,6 @@ contract MINIDROP_CreateMerkleDistributor is Script {
     IRegistry registry = IRegistry(0x000000000000000000000000000000000000ce10);
     address cUSD = registry.getAddressForStringOrDie("StableToken");
     address MENTO = IGovernanceFactory(contracts.deployed("GovernanceFactory")).mentoToken();
-
-    // Transfer ownership to mentoLabsMultiig for drain mechanism
     address mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
 
     // 91 days after the current block timestamp roughly 3 months
