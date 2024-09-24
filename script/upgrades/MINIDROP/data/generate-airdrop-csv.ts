@@ -53,7 +53,7 @@ async function run() {
 
   const queryId = 3932204; // https://dune.com/queries/3932204
   const options = { method: "GET", headers: { "X-DUNE-API-KEY": duneApiKey } };
-  const limit = 1000;
+  const limit = 10000;
   let uri = `https://api.dune.com/api/v1/query/${queryId}/results?limit=${limit}`;
 
   let hasMorePages = true;
