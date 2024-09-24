@@ -20,6 +20,8 @@ interface Airdrop {
 config();
 
 const MENTO_THRESHOLD = new Decimal(1e18);
+const ROW_LIMIT = 10000;
+const QUERY_ID = 3932204; // https://dune.com/queries/3932204
 
 async function run() {
   const duneApiKey = process.env.DUNE_API_KEY;
@@ -51,10 +53,8 @@ async function run() {
     append: true,
   });
 
-  const queryId = 3932204; // https://dune.com/queries/3932204
   const options = { method: "GET", headers: { "X-DUNE-API-KEY": duneApiKey } };
-  const limit = 10000;
-  let uri = `https://api.dune.com/api/v1/query/${queryId}/results?limit=${limit}`;
+  let uri = `https://api.dune.com/api/v1/query/${QUERY_ID}/results?limit=${ROW_LIMIT}`;
 
   let hasMorePages = true;
   let rowsFetched = 0;
