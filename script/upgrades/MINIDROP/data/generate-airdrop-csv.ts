@@ -19,79 +19,106 @@ interface Airdrop {
 
 config();
 
+const MENTO_THRESHOLD = new Decimal(1e18);
+const ROW_LIMIT = 10000;
+const QUERY_ID = 3932204; // https://dune.com/queries/3932204
+
 async function run() {
   const duneApiKey = process.env.DUNE_API_KEY;
-  const filepath = path.resolve(__dirname, "airdrop.csv");
-  clearFileContents(filepath);
-
-  const csvWriter = createObjectCsvWriter({
-    path: filepath,
-    header: [
-      { id: "address", title: "Address" },
-      { id: "mentoAllocation", title: "MENTO Allocation" },
-      { id: "cUSDAllocation", title: "cUSD Allocation" },
-    ],
-    append: false,
-  });
-
-  const queryId = 3932204; // https://dune.com/queries/3932204
-
   if (!duneApiKey) {
     console.error("🚨 Missing DUNE_API_KEY environment variable");
     process.exit(1);
   }
 
+  const mentoFilepath = path.resolve(__dirname, "mento_airdrop.csv");
+  const cUSDFilepath = path.resolve(__dirname, "cusd_airdrop.csv");
+  clearFileContents(mentoFilepath);
+  clearFileContents(cUSDFilepath);
+
+  const mentoCsvWriter = createObjectCsvWriter({
+    path: mentoFilepath,
+    header: [
+      { id: "address", title: "Address" },
+      { id: "mentoAllocation", title: "MENTO Allocation" },
+    ],
+    append: true,
+  });
+
+  const cUSDCsvWriter = createObjectCsvWriter({
+    path: cUSDFilepath,
+    header: [
+      { id: "address", title: "Address" },
+      { id: "cUSDAllocation", title: "cUSD Allocation" },
+    ],
+    append: true,
+  });
+
   const options = { method: "GET", headers: { "X-DUNE-API-KEY": duneApiKey } };
-  const limit = 10000;
-  let uri = `https://api.dune.com/api/v1/query/${queryId}/results?limit=${limit}`;
+  let uri = `https://api.dune.com/api/v1/query/${QUERY_ID}/results?limit=${ROW_LIMIT}`;
 
   let hasMorePages = true;
   let rowsFetched = 0;
+  let totalRowCount = 0;
+
   while (hasMorePages) {
-    let jsonResponse;
     try {
       const response = await fetch(uri, options);
-      jsonResponse = await response.json();
-      rowsFetched += jsonResponse.result.rows.length;
-      console.log(`⏳ ${rowsFetched}/${jsonResponse.result.metadata.total_row_count} records fetched`);
-    } catch (err) {
-      throw new Error(`Error fetching data: ${err}`);
-    }
+      const jsonResponse = await response.json();
 
-    // Calculate the allocations
-    // Formula:
-    // MENTO Allocation = amountTransfered * 0.1 + avgAmountHeld
-    // cUSD Allocation = MENTO Allocation * 0.1
-    const data: Airdrop[] = jsonResponse.result.rows.map((row: any) => {
+      if (!totalRowCount) {
+        totalRowCount = jsonResponse.result.metadata.total_row_count;
+      }
+
+      const data = processRows(jsonResponse.result.rows);
+      rowsFetched += jsonResponse.result.rows.length;
+
+      console.log(`⏳ ${rowsFetched}/${totalRowCount} records fetched`);
+
+      if (data.length > 0) {
+        const mentoData = data.map(({ address, mentoAllocation }) => ({ address, mentoAllocation }));
+        const cUSDData = data.map(({ address, cUSDAllocation }) => ({ address, cUSDAllocation }));
+
+        await mentoCsvWriter.writeRecords(mentoData);
+        await cUSDCsvWriter.writeRecords(cUSDData);
+        console.log(`${data.length} records written to both CSV files 📝`);
+      }
+
+      hasMorePages = jsonResponse.next_uri != undefined;
+      uri = jsonResponse.next_uri || "";
+    } catch (err) {
+      console.error(`🚨 Error processing data: ${err}`);
+      break;
+    }
+  }
+}
+
+// Calculate the allocations
+// Formula:
+// MENTO Allocation = amountTransferred * 0.1 + avgAmountHeld
+// cUSD Allocation = MENTO Allocation * 0.1
+// Filter out allocations with less than 1 Mento earned
+function processRows(rows: any[]): Airdrop[] {
+  return rows
+    .map((row: any) => {
       const amountTransferred = new Decimal(row.amount_transferred).times(1e18).floor();
       const avgAmountHeld = new Decimal(row.avg_amount_held).times(1e18).floor();
 
-      const tenPercentTransferred = new Decimal(amountTransferred).times(0.1).floor();
-
+      const tenPercentTransferred = amountTransferred.times(0.1).floor();
       const mentoAllocation = tenPercentTransferred.plus(avgAmountHeld);
       const cUSDAllocation = mentoAllocation.times(0.1).floor();
+
       return {
         address: row.address,
         mentoAllocation: mentoAllocation.toString(),
         cUSDAllocation: cUSDAllocation.toString(),
       };
-    });
-
-    csvWriter
-      .writeRecords(data)
-      .then(() => console.log(`${data.length} records written to CSV file 📝`))
-      .catch(err => console.error("🚨 Error updating CSV file", err));
-
-    hasMorePages = jsonResponse.next_uri != undefined;
-    if (hasMorePages) {
-      uri = jsonResponse.next_uri;
-    }
-  }
+    })
+    .filter((item): item is Airdrop => new Decimal(item.mentoAllocation).greaterThanOrEqualTo(MENTO_THRESHOLD));
 }
 
 function clearFileContents(filePath: string): void {
   fs.writeFileSync(filePath, "", { flag: "w" });
-  console.log("Contents of airdrop.csv have been cleared 🧹");
+  console.log(`Contents of ${path.basename(filePath)} have been cleared 🧹`);
 }
 
 run().catch(console.error);
