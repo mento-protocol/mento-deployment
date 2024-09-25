@@ -245,7 +245,6 @@ function makeStandardJson(metadata: Metadata, sources: Sources, libraryMap: Reco
     settings: {
       viaIR: true,
       metadata: {
-        appendCBOR: true,
         bytecodeHash: "none",
         useLiteralContent: true,
       },
