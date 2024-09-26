@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // solhint-disable func-name-mixedcase, contract-name-camelcase
-pragma solidity ^0.8.18;
+pragma solidity ^0.8;
 
 import { console } from "forge-std-next/console.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
