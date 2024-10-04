@@ -20,6 +20,10 @@ interface IOwnableLite {
 
 interface IProxyLite {
   function _getImplementation() external view returns (address);
+
+  function _getOwner() external view returns (address);
+
+  function _transferOwnership(address) external;
 }
 
 contract MU08 is IMentoUpgrade, GovernanceScript {
@@ -39,6 +43,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   address private cBRLProxy;
   address private eXOFProxy;
   address private cKESProxy;
+  address private PUSOProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -72,6 +77,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.loadSilent("eXOF-00-Create-Proxies", "latest");
     contracts.loadSilent("cKES-00-Create-Proxies", "latest");
+    contracts.loadSilent("PUSO-00-Create-Proxies", "latest");
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
   }
 
@@ -88,6 +94,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     cBRLProxy = address(uint160(contracts.celoRegistry("StableTokenBRL")));
     eXOFProxy = address(uint160(contracts.deployed("StableTokenXOFProxy")));
     cKESProxy = address(uint160(contracts.deployed("StableTokenKESProxy")));
+    PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -132,9 +139,10 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_transferTokenOwnership() public {
-    address[] memory tokenProxies = Arrays.addresses(cUSDProxy, cEURProxy, cBRLProxy, eXOFProxy, cKESProxy);
+    address[] memory tokenProxies = Arrays.addresses(cUSDProxy, cEURProxy, cBRLProxy, eXOFProxy, cKESProxy, PUSOProxy);
     for (uint i = 0; i < tokenProxies.length; i++) {
       transferOwnership(tokenProxies[i]);
+      transferProxyAdmin(tokenProxies[i]);
     }
 
     // All the token proxies are pointing to the same StableTokenV2 implementation (cUSD)
@@ -153,6 +161,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     address[] memory mentoV2Proxies = Arrays.addresses(brokerProxy, biPoolManagerProxy, reserveProxy);
     for (uint i = 0; i < mentoV2Proxies.length; i++) {
       transferOwnership(mentoV2Proxies[i]);
+      transferProxyAdmin(mentoV2Proxies[i]);
       address implementation = IProxyLite(mentoV2Proxies[i])._getImplementation();
       transferOwnership(implementation);
     }
@@ -178,7 +187,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     );
     for (uint i = 0; i < mentoV1Proxies.length; i++) {
       transferOwnership(mentoV1Proxies[i]);
-      address implementation = IProxyLite(mentoV1Proxies[i])._getImplementation();
+      transferProxyAdmin(mentoV1Proxies[i]);
     }
   }
 
@@ -194,6 +203,19 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
           value: 0,
           destination: contractAddr,
           data: abi.encodeWithSelector(IOwnableLite(0).transferOwnership.selector, timelockProxy)
+        })
+      );
+    }
+  }
+
+  function transferProxyAdmin(address contractAddr) internal {
+    address proxyAdmin = IProxyLite(contractAddr)._getOwner();
+    if (proxyAdmin != timelockProxy && proxyAdmin == celoGovernance) {
+      transactions.push(
+        ICeloGovernance.Transaction({
+          value: 0,
+          destination: contractAddr,
+          data: abi.encodeWithSelector(IProxyLite(0)._transferOwnership.selector, timelockProxy)
         })
       );
     }

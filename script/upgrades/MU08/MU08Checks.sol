@@ -18,6 +18,8 @@ interface IOwnableLite {
 
 interface IProxyLite {
   function _getImplementation() external view returns (address);
+
+  function _getOwner() external view returns (address);
 }
 
 contract MU08Checks is GovernanceScript, Test {
@@ -32,6 +34,7 @@ contract MU08Checks is GovernanceScript, Test {
   address private cBRLProxy;
   address private eXOFProxy;
   address private cKESProxy;
+  address private PUSOProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -58,6 +61,7 @@ contract MU08Checks is GovernanceScript, Test {
     contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.loadSilent("eXOF-00-Create-Proxies", "latest");
     contracts.loadSilent("cKES-00-Create-Proxies", "latest");
+    contracts.loadSilent("PUSO-00-Create-Proxies", "latest");
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
 
     // Celo Governance:
@@ -69,6 +73,7 @@ contract MU08Checks is GovernanceScript, Test {
     cBRLProxy = address(uint160(contracts.celoRegistry("StableTokenBRL")));
     eXOFProxy = address(uint160(contracts.deployed("StableTokenXOFProxy")));
     cKESProxy = address(uint160(contracts.deployed("StableTokenKESProxy")));
+    PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -101,7 +106,7 @@ contract MU08Checks is GovernanceScript, Test {
 
   function verifyTokenOwnership() public {
     console.log("\n== Verifying token proxy and implementation ownership: ==");
-    address[] memory tokenProxies = Arrays.addresses(cUSDProxy, cEURProxy, cBRLProxy, eXOFProxy, cKESProxy);
+    address[] memory tokenProxies = Arrays.addresses(cUSDProxy, cEURProxy, cBRLProxy, eXOFProxy, cKESProxy, PUSOProxy);
 
     for (uint256 i = 0; i < tokenProxies.length; i++) {
       verifyProxyAndImplementationOwnership(tokenProxies[i]);
@@ -151,6 +156,10 @@ contract MU08Checks is GovernanceScript, Test {
     address proxyOwner = IOwnableLite(proxy).owner();
     require(proxyOwner == timelockProxy, "❗️❌ Proxy ownership not transferred to Mento Governance");
     console.log("🟢 Proxy:[%s] ownership transferred to Mento Governance", proxy);
+
+    address proxyAdmin = IProxyLite(proxy)._getOwner();
+    require(proxyAdmin == timelockProxy, "❗️❌ Proxy admin ownership not transferred to Mento Governance");
+    console.log("🟢 Proxy:[%s] admin ownership transferred to Mento Governance", proxy);
 
     address implementation = IProxyLite(proxy)._getImplementation();
     address implementationOwner = IOwnableLite(implementation).owner();
