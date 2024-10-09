@@ -9,38 +9,39 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { FixidityLib } from "script/utils/FixidityLib.sol";
 
 /**
- * @dev This library contains the configuration required for the PUSO governance proposal.
+ * @dev This library contains the configuration required for the cCOP governance proposal.
  *      The following configuration is used:
- *     - 1 pool: PUSO<->cUSD
- *     - 1 rate feed: PHPUSD
- *     - Configuration params needed to initialize the PUSO stable token
+ *     - 1 pool: cCOP<->cUSD
+ *     - 1 rate feed: COPUSD
+ *     - Configuration params needed to initialize the cCOP stable token
  */
-library PUSOConfig {
+library cCOPConfig {
   using FixidityLib for FixidityLib.Fraction;
   using Contracts for Contracts.Cache;
 
-  struct PUSO {
+  struct cCOP {
     Config.Pool poolConfig;
     Config.RateFeed rateFeedConfig;
     Config.StableTokenV2 stableTokenConfig;
   }
 
   /**
-   * @dev Returns the populated configuration object for the PUSO governance proposal.
+   * @dev Returns the populated configuration object for the cCOP governance proposal.
    */
-  function get(Contracts.Cache storage contracts) internal view returns (PUSO memory config) {
-    config.poolConfig = PUSOcUSD_PoolConfig(contracts);
-    config.rateFeedConfig = PHPUSD_RateFeedConfig();
-    config.stableTokenConfig = stableTokenPUSOConfig();
+  function get(Contracts.Cache storage contracts) internal view returns (cCOP memory config) {
+    config.poolConfig = cCOPcUSD_PoolConfig(contracts);
+    config.rateFeedConfig = COPUSD_RateFeedConfig();
+    config.stableTokenConfig = stableTokencCOPConfig();
   }
 
   /* ==================== Rate Feed Configuration ==================== */
 
   /**
-   * @dev Returns the configuration for the PHPUSD rate feed.
+   * @dev Returns the configuration for the COPUSD rate feed.
    */
-  function PHPUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
-    rateFeedConfig.rateFeedID = Config.rateFeedID("relayed:PHPUSD");
+  function COPUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
+    // TODO: Get the final circuit breaker configuration values from Roman and update them below.
+    rateFeedConfig.rateFeedID = Config.rateFeedID("relayed:COPUSD");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
       threshold: FixidityLib.newFixedFraction(4, 100), // 4%
@@ -52,20 +53,21 @@ library PUSOConfig {
   /* ==================== Pool Configuration ==================== */
 
   /**
-   * @dev Returns the configuration for the PUSOcUSD pool.
+   * @dev Returns the configuration for the cCOPcUSD pool.
    */
-  function PUSOcUSD_PoolConfig(
+  function cCOPcUSD_PoolConfig(
     Contracts.Cache storage contracts
   ) internal view returns (Config.Pool memory poolConfig) {
+    // TODO: Get the final pool parameters from Roman and update them below.
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
-      asset1: contracts.deployed("StableTokenPHPProxy"),
+      asset1: contracts.deployed("StableTokenCOPProxy"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(3, 1000), // 0.3%, in line with current DT of chainlink feed
-      referenceRateResetFrequency: 5 minutes,
+      referenceRateResetFrequency: 5 minutes, // TODO: decide whether to make this 6-7 minutes.
       minimumReports: 1,
       stablePoolResetSize: 10_000_000 * 1e18,
-      referenceRateFeedID: Config.rateFeedID("relayed:PHPUSD"),
+      referenceRateFeedID: Config.rateFeedID("relayed:COPUSD"),
       asset0limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
@@ -92,9 +94,10 @@ library PUSOConfig {
   /* ==================== Stable Token Configuration ==================== */
 
   /**
-   * @dev Returns the configuration for the PUSO stable token.
+   * @dev Returns the configuration for the cCOP stable token.
    */
-  function stableTokenPUSOConfig() internal pure returns (Config.StableTokenV2 memory config) {
-    config = Config.StableTokenV2({ name: "PUSO", symbol: "PUSO" });
+  function stableTokencCOPConfig() internal pure returns (Config.StableTokenV2 memory config) {
+    // TODO: Confirm the name of the currency with the Colombian DAO
+    config = Config.StableTokenV2({ name: "Colombian Peso", symbol: "cCOP" });
   }
 }

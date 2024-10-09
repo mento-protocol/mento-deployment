@@ -3,12 +3,12 @@ pragma solidity ^0.5.13;
 
 import { Test } from "forge-std/Test.sol";
 
-import { PUSOChecksVerify } from "./PUSOChecks.verify.sol";
-import { PUSOChecksSwap } from "./PUSOChecks.swap.sol";
+import { cCOPChecksVerify } from "./PUSOChecks.verify.sol";
+import { cCOPChecksSwap } from "./PUSOChecks.swap.sol";
 
-contract PUSOChecks is Test {
+contract cCOPChecks is Test {
   function run() public {
-    new PUSOChecksVerify().run();
-    new PUSOChecksSwap().run();
+    new cCOPChecksVerify().run();
+    new cCOPChecksSwap().run();
   }
 }

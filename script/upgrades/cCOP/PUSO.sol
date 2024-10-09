@@ -20,9 +20,9 @@ import { Broker } from "mento-core-2.3.1/swap/Broker.sol";
 import { TradingLimits } from "mento-core-2.3.1/libraries/TradingLimits.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
-import { StableTokenPHPProxy } from "mento-core-2.3.1/legacy/proxies/StableTokenPHPProxy.sol";
+import { StableTokenCOPProxy } from "mento-core-2.3.1/legacy/proxies/StableTokenCOPProxy.sol";
 
-import { PUSOConfig, Config } from "./Config.sol";
+import { cCOPConfig, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
 /**
@@ -30,13 +30,13 @@ import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
-contract PUSO is IMentoUpgrade, GovernanceScript {
+contract cCOP is IMentoUpgrade, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
 
   ICeloGovernance.Transaction[] private transactions;
 
-  address payable private stableTokenPHPProxy;
+  address payable private stableTokenCOPProxy;
 
   address private breakerBox;
   address private medianDeltaBreaker;
@@ -60,7 +60,7 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
-    contracts.load("PUSO-00-Create-Proxies", "latest");
+    contracts.load("cCOP-00-Create-Proxies", "latest");
   }
 
   /**
@@ -68,7 +68,7 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
    */
   function setAddresses() public {
     // Tokens
-    stableTokenPHPProxy = contracts.deployed("StableTokenPHPProxy");
+    stableTokenCOPProxy = contracts.deployed("StableTokenCOPProxy");
 
     // Oracles
     breakerBox = contracts.deployed("BreakerBox");
@@ -92,7 +92,7 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
     {
       createProposal(
         _transactions,
-        "https://TODO", //TODO
+        "https://TODO", // TODO: update with the final proposal MD url
         governance
       );
     }
@@ -101,13 +101,13 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
-    PUSOConfig.PUSO memory config = PUSOConfig.get(contracts);
+    cCOPConfig.cCOP memory config = cCOPConfig.get(contracts);
 
-    proposal_initializePUSOToken(config);
-    proposal_configurePUSOConstitutionParameters();
-    proposal_addPUSOToReserve();
+    proposal_initializeCOPToken(config);
+    proposal_configureCOPConstitutionParameters();
+    proposal_addCOPToReserve();
 
-    proposal_enableGasPaymentsWithPUSO();
+    proposal_enableGasPaymentsWithCOP();
 
     proposal_createExchange(config);
     proposal_configureTradingLimits(config);
@@ -118,17 +118,17 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
   }
 
   /**
-   * @notice Configures the PUSO token
+   * @notice Configures the cCOP token
    */
-  function proposal_initializePUSOToken(PUSOConfig.PUSO memory config) private {
-    StableTokenPHPProxy _PUSOProxy = StableTokenPHPProxy(stableTokenPHPProxy);
-    if (_PUSOProxy._getImplementation() == address(0)) {
+  function proposal_initializeCOPToken(cCOPConfig.cCOP memory config) private {
+    StableTokenCOPProxy _cCOPProxy = StableTokenCOPProxy(stableTokenCOPProxy);
+    if (_cCOPProxy._getImplementation() == address(0)) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
-          stableTokenPHPProxy,
+          stableTokenCOPProxy,
           abi.encodeWithSelector(
-            _PUSOProxy._setAndInitializeImplementation.selector,
+            _cCOPProxy._setAndInitializeImplementation.selector,
             contracts.deployed("StableTokenV2"),
             abi.encodeWithSelector(
               IStableTokenV2(0).initialize.selector,
@@ -149,7 +149,7 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
-          stableTokenPHPProxy,
+          stableTokenCOPProxy,
           abi.encodeWithSelector(
             IStableTokenV2(0).initializeV2.selector,
             brokerProxy,
@@ -159,15 +159,15 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
         )
       );
     } else {
-      console.log("StableTokenPHPProxy is already initialized, skipping initialization.");
+      console.log("StableTokenCOPProxy is already initialized, skipping initialization.");
     }
   }
 
   /**
-   * @notice configure PUSO constitution parameters
+   * @notice configure cCOP constitution parameters
    * @dev see cBRl GCP(https://celo.stake.id/#/proposal/49) for reference
    */
-  function proposal_configurePUSOConstitutionParameters() private {
+  function proposal_configureCOPConstitutionParameters() private {
     address governanceProxy = contracts.celoRegistry("Governance");
 
     bytes4[] memory constitutionFunctionSelectors = Config.getCeloStableConstitutionSelectors();
@@ -180,7 +180,7 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
           governanceProxy,
           abi.encodeWithSelector(
             ICeloGovernance(0).setConstitution.selector,
-            stableTokenPHPProxy,
+            stableTokenCOPProxy,
             constitutionFunctionSelectors[i],
             constitutionThresholds[i]
           )
@@ -190,31 +190,31 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
   }
 
   /**
-   * @notice adds PUSO token to the main reserve
+   * @notice adds cCOP token to the main reserve
    */
-  function proposal_addPUSOToReserve() private {
-    if (IReserve(reserveProxy).isStableAsset(stableTokenPHPProxy) == false) {
+  function proposal_addCOPToReserve() private {
+    if (IReserve(reserveProxy).isStableAsset(stableTokenCOPProxy) == false) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           reserveProxy,
-          abi.encodeWithSelector(IReserve(0).addToken.selector, stableTokenPHPProxy)
+          abi.encodeWithSelector(IReserve(0).addToken.selector, stableTokenCOPProxy)
         )
       );
     } else {
-      console.log("Token already added to the reserve, skipping: %s", stableTokenPHPProxy);
+      console.log("Token already added to the reserve, skipping: %s", stableTokenCOPProxy);
     }
   }
 
   /**
-   * @notice enable gas payments with PUSO
+   * @notice enable gas payments with cCOP
    */
-  function proposal_enableGasPaymentsWithPUSO() private {
+  function proposal_enableGasPaymentsWithCOP() private {
     address feeCurrencyWhitelistProxy = contracts.celoRegistry("FeeCurrencyWhitelist");
     address[] memory whitelist = IFeeCurrencyWhitelist(feeCurrencyWhitelistProxy).getWhitelist();
     for (uint256 i = 0; i < whitelist.length; i++) {
-      if (whitelist[i] == stableTokenPHPProxy) {
-        console.log("Gas payments with PUSO already enabled, skipping");
+      if (whitelist[i] == stableTokenCOPProxy) {
+        console.log("Gas payments with cCOP already enabled, skipping");
         return;
       }
     }
@@ -222,7 +222,7 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         feeCurrencyWhitelistProxy,
-        abi.encodeWithSelector(IFeeCurrencyWhitelist(0).addToken.selector, stableTokenPHPProxy)
+        abi.encodeWithSelector(IFeeCurrencyWhitelist(0).addToken.selector, stableTokenCOPProxy)
       )
     );
   }
@@ -230,7 +230,7 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
   /**
    * @notice Creates the exchange for the new pool.
    */
-  function proposal_createExchange(PUSOConfig.PUSO memory config) private {
+  function proposal_createExchange(cCOPConfig.cCOP memory config) private {
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
 
@@ -262,9 +262,9 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the trading limits.
    */
-  function proposal_configureTradingLimits(PUSOConfig.PUSO memory config) private {
+  function proposal_configureTradingLimits(cCOPConfig.cCOP memory config) private {
     bytes32 exchangeId = keccak256(
-      abi.encodePacked("cUSD", "PUSO", config.poolConfig.isConstantSum ? "ConstantSum" : "ConstantProduct")
+      abi.encodePacked("cUSD", "cCOP", config.poolConfig.isConstantSum ? "ConstantSum" : "ConstantProduct")
     );
 
     // Set the trading limit for asset0 of the pool
@@ -313,7 +313,7 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the Breakerbox.
    */
-  function proposal_configureBreakerBox(PUSOConfig.PUSO memory config) private {
+  function proposal_configureBreakerBox(cCOPConfig.cCOP memory config) private {
     // Add the new rate feed to breaker box
     transactions.push(
       ICeloGovernance.Transaction(
@@ -350,7 +350,7 @@ contract PUSO is IMentoUpgrade, GovernanceScript {
   /**
    * @notice This function creates the transactions to configure the Median Delta Breaker.
    */
-  function proposal_configureMedianDeltaBreaker(PUSOConfig.PUSO memory config) private {
+  function proposal_configureMedianDeltaBreaker(cCOPConfig.cCOP memory config) private {
     // Set the cooldown time
     transactions.push(
       ICeloGovernance.Transaction(

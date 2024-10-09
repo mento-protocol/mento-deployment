@@ -8,7 +8,7 @@ import { Arrays } from "script/utils/Arrays.sol";
 import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
 import { TradingLimits } from "mento-core-2.3.1/libraries/TradingLimits.sol";
-import { StableTokenPHPProxy } from "mento-core-2.3.1/legacy/proxies/StableTokenPHPProxy.sol";
+import { StableTokenCOPProxy } from "mento-core-2.3.1/legacy/proxies/StableTokenCOPProxy.sol";
 
 import { IRegistry } from "mento-core-2.3.1/common/interfaces/IRegistry.sol";
 import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
@@ -22,8 +22,8 @@ import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 
-import { PUSOChecksBase } from "./PUSOChecks.base.sol";
-import { PUSOConfig, Config } from "./Config.sol";
+import { cCOPChecksBase } from "./PUSOChecks.base.sol";
+import { cCOPConfig, Config } from "./Config.sol";
 
 /**
  * @title IBrokerWithCasts
@@ -35,10 +35,10 @@ interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
-contract PUSOChecksVerify is PUSOChecksBase {
+contract cCOPChecksVerify is cCOPChecksBase {
   using TradingLimits for TradingLimits.Config;
 
-  uint256 constant PRE_EXISTING_POOLS = 14;
+  uint256 constant PRE_EXISTING_POOLS = 15;
 
   ICeloGovernance celoGovernance;
 
@@ -48,77 +48,77 @@ contract PUSOChecksVerify is PUSOChecksBase {
   }
 
   function run() public {
-    PUSOConfig.PUSO memory config = PUSOConfig.get(contracts);
-    console.log("\nStarting PUSO checks:");
+    cCOPConfig.cCOP memory config = cCOPConfig.get(contracts);
+    console.log("\nStarting cCOP checks:");
 
     console.log("\n==  Rate feeds ==");
-    console.log("   PUSOUSD: %s", config.rateFeedConfig.rateFeedID);
+    console.log("   COPUSD: %s", config.rateFeedConfig.rateFeedID);
 
     verifyToken(config);
     verifyExchange(config);
     verifyCircuitBreaker(config);
   }
 
-  function verifyToken(PUSOConfig.PUSO memory config) internal {
+  function verifyToken(cCOPConfig.cCOP memory config) internal {
     console.log("\n== Verifying Token Config Transactions ==");
     verifyOwner();
-    verifyPUSOStableToken(config);
-    verifyPUSOAddedToReserve();
-    verifyPUSOAddedToFeeCurrencyWhitelist();
+    verifyCOPStableToken(config);
+    verifyCOPAddedToReserve();
+    verifyCOPAddedToFeeCurrencyWhitelist();
     verifyConstitution();
   }
 
   function verifyOwner() internal view {
-    require(Proxy(PUSO)._getOwner() == governance, "StableTokenPHP Proxy ownership not transferred to governance");
-    console.log("🟢 PUSO proxy ownership transferred to governance");
+    require(Proxy(cCOP)._getOwner() == governance, "StableTokenCOP Proxy ownership not transferred to governance");
+    console.log("🟢 cCOP proxy ownership transferred to governance");
   }
 
-  function verifyPUSOStableToken(PUSOConfig.PUSO memory config) internal {
-    StableTokenPHPProxy stableTokenPHPProxy = StableTokenPHPProxy(PUSO);
+  function verifyCOPStableToken(cCOPConfig.cCOP memory config) internal {
+    StableTokenCOPProxy stableTokenCOPProxy = StableTokenCOPProxy(cCOP);
     address stableTokenV2 = contracts.deployed("StableTokenV2");
 
-    address PUSOImplementation = stableTokenPHPProxy._getImplementation();
-    if (PUSOImplementation != stableTokenV2) {
+    address cCOPImplementation = stableTokenCOPProxy._getImplementation();
+    if (cCOPImplementation != stableTokenV2) {
       console.log(
-        "The implementation from StableTokenPHPProxy(%s): %s does not match the deployed StableTokenV2 address: %s.",
-        PUSO,
-        PUSOImplementation,
+        "The implementation from StableTokenCOPProxy(%s): %s does not match the deployed StableTokenV2 address: %s.",
+        cCOP,
+        cCOPImplementation,
         stableTokenV2
       );
-      revert("StableTokenPHPProxy does not point to StableTokenV2 deployed implementation. See logs.");
+      revert("StableTokenCOPProxy does not point to StableTokenV2 deployed implementation. See logs.");
     }
-    console.log("🟢 StableTokenPHPProxy has the correct implementation address");
+    console.log("🟢 StableTokenCOPProxy has the correct implementation address");
 
     // ----- verify initialization parameters -----
-    IStableTokenV2 PUSOToken = IStableTokenV2(PUSO);
-    IERC20Metadata PUSOTokenMetadata = IERC20Metadata(PUSO);
+    IStableTokenV2 cCOPToken = IStableTokenV2(cCOP);
+    IERC20Metadata cCOPTokenMetadata = IERC20Metadata(cCOP);
 
-    assertEq(PUSOTokenMetadata.name(), config.stableTokenConfig.name, "❗️❌ PUSO name not set correctly!");
-    assertEq(PUSOTokenMetadata.symbol(), config.stableTokenConfig.symbol, "❗️❌ PUSO symbol not set correctly!");
-    assertEq(PUSOToken.broker(), broker, "❗️❌ PUSO broker not set correctly!");
-    assertEq(PUSOToken.validators(), validators, "❗️❌ PUSO validators not set correctly!");
+    assertEq(cCOPTokenMetadata.name(), config.stableTokenConfig.name, "❗️❌ cCOP name not set correctly!");
+    assertEq(cCOPTokenMetadata.symbol(), config.stableTokenConfig.symbol, "❗️❌ cCOP symbol not set correctly!");
+    assertEq(cCOPToken.broker(), broker, "❗️❌ cCOP broker not set correctly!");
+    assertEq(cCOPToken.validators(), validators, "❗️❌ cCOP validators not set correctly!");
 
     // no pre-mint
-    assertEq(PUSOToken.totalSupply(), 0, "❗️❌ PUSO pre-minted tokens!");
+    assertEq(cCOPToken.totalSupply(), 0, "❗️❌ cCOP pre-minted tokens!");
   }
 
-  function verifyPUSOAddedToReserve() internal view {
-    if (!Reserve(address(uint160(reserve))).isStableAsset(PUSO)) {
-      revert("PUSO has not been added to the reserve.");
+  function verifyCOPAddedToReserve() internal view {
+    if (!Reserve(address(uint160(reserve))).isStableAsset(cCOP)) {
+      revert("cCOP has not been added to the reserve.");
     }
 
-    console.log("🟢 PUSO has been added to the reserve");
+    console.log("🟢 cCOP has been added to the reserve");
   }
 
-  function verifyPUSOAddedToFeeCurrencyWhitelist() internal view {
+  function verifyCOPAddedToFeeCurrencyWhitelist() internal view {
     address[] memory feeCurrencyWhitelist = IFeeCurrencyWhitelist(contracts.celoRegistry("FeeCurrencyWhitelist"))
       .getWhitelist();
 
-    if (!Arrays.contains(feeCurrencyWhitelist, PUSO)) {
-      revert("PUSO has not been added to the fee currency whitelist.");
+    if (!Arrays.contains(feeCurrencyWhitelist, cCOP)) {
+      revert("cCOP has not been added to the fee currency whitelist.");
     }
 
-    console.log("🟢 PUSO has been added to the fee currency whitelist");
+    console.log("🟢 cCOP has been added to the fee currency whitelist");
   }
 
   function verifyConstitution() internal view {
@@ -137,7 +137,7 @@ contract PUSOChecksVerify is PUSOChecksBase {
   }
 
   function checkConstitutionParam(bytes4 functionSelector, uint256 expectedValue) internal view {
-    uint256 actualConstitutionValue = celoGovernance.getConstitution(PUSO, functionSelector);
+    uint256 actualConstitutionValue = celoGovernance.getConstitution(cCOP, functionSelector);
 
     if (actualConstitutionValue != expectedValue) {
       console.log(
@@ -150,7 +150,7 @@ contract PUSOChecksVerify is PUSOChecksBase {
     }
   }
 
-  function verifyExchange(PUSOConfig.PUSO memory config) internal view {
+  function verifyExchange(cCOPConfig.cCOP memory config) internal view {
     console.log("\n== Verifying exchanges ==");
 
     verifyPoolExchange(config);
@@ -158,7 +158,7 @@ contract PUSOChecksVerify is PUSOChecksBase {
     verifyTradingLimits(config);
   }
 
-  function verifyPoolExchange(PUSOConfig.PUSO memory config) internal view {
+  function verifyPoolExchange(cCOPConfig.cCOP memory config) internal view {
     bytes32[] memory exchanges = BiPoolManager(biPoolManagerProxy).getExchangeIds();
 
     // check configured pools against the config
@@ -209,7 +209,7 @@ contract PUSOChecksVerify is PUSOChecksBase {
     console.log("🟢 PoolExchange has correct assets and pricing 🤘🏼");
   }
 
-  function verifyPoolConfig(PUSOConfig.PUSO memory config) internal view {
+  function verifyPoolConfig(cCOPConfig.cCOP memory config) internal view {
     bytes32 exchangeId = getExchangeId(
       config.poolConfig.asset0,
       config.poolConfig.asset1,
@@ -266,7 +266,7 @@ contract PUSOChecksVerify is PUSOChecksBase {
     console.log("🟢 Pool config is correct🤘🏼");
   }
 
-  function verifyTradingLimits(PUSOConfig.PUSO memory config) internal view {
+  function verifyTradingLimits(cCOPConfig.cCOP memory config) internal view {
     IBrokerWithCasts _broker = IBrokerWithCasts(address(broker));
 
     bytes32 exchangeId = getExchangeId(
@@ -325,14 +325,14 @@ contract PUSOChecksVerify is PUSOChecksBase {
   /* ======================== Circuit Breaker ======================= */
   /* ================================================================ */
 
-  function verifyCircuitBreaker(PUSOConfig.PUSO memory config) internal view {
+  function verifyCircuitBreaker(cCOPConfig.cCOP memory config) internal view {
     console.log("\n== Checking circuit breaker ==");
 
     verifyBreakersAreEnabled(config);
     verifyMedianDeltaBreaker(config);
   }
 
-  function verifyBreakersAreEnabled(PUSOConfig.PUSO memory config) internal view {
+  function verifyBreakersAreEnabled(cCOPConfig.cCOP memory config) internal view {
     // verify that MedianDeltaBreaker is enabled
     Config.RateFeed memory expectedRateFeedConfig = config.rateFeedConfig;
 
@@ -349,7 +349,7 @@ contract PUSOChecksVerify is PUSOChecksBase {
     console.log("🟢 Breakers enabled for the rate feed 🗳️");
   }
 
-  function verifyMedianDeltaBreaker(PUSOConfig.PUSO memory config) internal view {
+  function verifyMedianDeltaBreaker(cCOPConfig.cCOP memory config) internal view {
     // verify that cooldown period, rate change threshold and smoothing factor were set correctly
     Config.RateFeed memory expectedRateFeedConfig = config.rateFeedConfig;
 
