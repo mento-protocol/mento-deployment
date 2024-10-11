@@ -22,7 +22,7 @@ import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 
-import { cCOPChecksBase } from "./PUSOChecks.base.sol";
+import { cCOPChecksBase } from "./cCOPChecks.base.sol";
 import { cCOPConfig, Config } from "./Config.sol";
 
 /**

@@ -19,7 +19,7 @@ import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
 import { SortedOracles } from "mento-core-2.3.1/common/SortedOracles.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 
-import { cCOPChecksBase } from "./PUSOChecks.base.sol";
+import { cCOPChecksBase } from "./cCOPChecks.base.sol";
 import { cCOPConfig, Config } from "./Config.sol";
 
 contract cCOPChecksSwap is cCOPChecksBase {
