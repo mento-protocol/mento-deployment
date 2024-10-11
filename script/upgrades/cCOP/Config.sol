@@ -40,7 +40,8 @@ library cCOPConfig {
    * @dev Returns the configuration for the COPUSD rate feed.
    */
   function COPUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
-    // TODO: Get the final circuit breaker configuration values from Roman and update them below.
+    // TODO: Get confirmation for Roman that these are OK
+    // These are the exact same as the $PUSO rate feed config
     rateFeedConfig.rateFeedID = Config.rateFeedID("relayed:COPUSD");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
@@ -58,13 +59,15 @@ library cCOPConfig {
   function cCOPcUSD_PoolConfig(
     Contracts.Cache storage contracts
   ) internal view returns (Config.Pool memory poolConfig) {
-    // TODO: Get the final pool parameters from Roman and update them below.
+    // TODO: Get confirmation from Roman that these are OK
+    // These were taken from the $PUSO pool and adjusted to the COP/USD exchange rate,
+    // which was 0.00023747 at the time of writing
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.deployed("StableTokenCOPProxy"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(3, 1000), // 0.3%, in line with current DT of chainlink feed
-      referenceRateResetFrequency: 5 minutes, // TODO: decide whether to make this 6-7 minutes.
+      referenceRateResetFrequency: 6 minutes,
       minimumReports: 1,
       stablePoolResetSize: 10_000_000 * 1e18,
       referenceRateFeedID: Config.rateFeedID("relayed:COPUSD"),
@@ -81,12 +84,12 @@ library cCOPConfig {
       asset1limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 57 * 200_000,
+        limit0: 4211 * 200_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 57 * 1_000_000,
+        limit1: 4211 * 1_000_000,
         enabledGlobal: true,
-        limitGlobal: 57 * 5_000_000
+        limitGlobal: 4211 * 5_000_000
       })
     });
   }
