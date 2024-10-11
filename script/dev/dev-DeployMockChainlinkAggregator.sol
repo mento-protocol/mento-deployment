@@ -13,8 +13,8 @@ import { MockChainlinkAggregator } from "contracts/MockChainlinkAggregator.sol";
  * Used to deploy mock Chainlink Aggregators to Alfajores and Baklava to be used
  * in testnet relayers to mimic mainnet more closely.
  * ========== IMPORTANT ======================================
- * @dev After deploying the script save the broadcast file as {rateFeed}.json,
- * update the reference in `dependencies.json` to the ne waddress,
+ * @dev After deploying the script save the broadcast file as run-{rateFeed}.json,
+ * update the reference in `dependencies.json` to the new waddress,
  * and update the dev-UpdateMockChainlinkAggregators script if it's a new aggregator
  * ===========================================================
  */
