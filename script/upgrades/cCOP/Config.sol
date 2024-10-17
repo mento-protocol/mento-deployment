@@ -100,7 +100,6 @@ library cCOPConfig {
    * @dev Returns the configuration for the cCOP stable token.
    */
   function stableTokencCOPConfig() internal pure returns (Config.StableTokenV2 memory config) {
-    // TODO: Confirm the name of the currency with the Colombian DAO
-    config = Config.StableTokenV2({ name: "Colombian Peso", symbol: "cCOP" });
+    config = Config.StableTokenV2({ name: "Celo Colombian Peso", symbol: "cCOP" });
   }
 }
