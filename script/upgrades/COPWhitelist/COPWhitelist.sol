@@ -88,7 +88,7 @@ contract COPWhitelist is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "https://TODO", governance); // TODO: Update with final MD file URL
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0150.md", governance);
     }
     vm.stopBroadcast();
   }
