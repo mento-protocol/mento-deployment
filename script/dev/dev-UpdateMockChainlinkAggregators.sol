@@ -34,6 +34,7 @@ contract UpdateMockChainlinkAggregators is Script {
   using Contracts for Contracts.Cache;
   address private constant PHPUSDMainnetAggregator = 0x4ce8e628Bb82Ea5271908816a6C580A71233a66c;
   address private constant CELOUSDMainnetAggregator = 0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e;
+  address private constant COPUSDMainnetAggregator = 0x97b770B0200CCe161907a9cbe0C6B177679f8F7C;
 
   mapping(address => address) private mockForAggregator;
   mapping(address => int256) private aggregatorAnswers;
@@ -54,10 +55,14 @@ contract UpdateMockChainlinkAggregators is Script {
     /// @dev Load additional deployed aggregators here to forward rates
     contracts.loadSilent("dev-DeployMockChainlinkAggregator", "PHPUSD");
     address PHPUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "COPUSD");
+    address COPUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
 
     mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDTestnetMock;
+    mockForAggregator[COPUSDMainnetAggregator] = COPUSDTestnetMock;
 
     aggregatorsToForward.push(PHPUSDMainnetAggregator);
+    aggregatorsToForward.push(COPUSDMainnetAggregator);
   }
 
   function setUp_baklava() internal {
