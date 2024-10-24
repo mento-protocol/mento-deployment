@@ -25,3 +25,6 @@
 [submodule "lib/merkle-distributor"]
 	path = lib/merkle-distributor
 	url = https://github.com/Uniswap/merkle-distributor
+[submodule "lib/mento-core-2.6.0"]
+	path = lib/mento-core-2.6.0
+	url = https://github.com/mento-protocol/mento-core
