@@ -26,15 +26,15 @@ contract MINIDROP_CreateMerkleDistributor is Script {
     bytes32 merkleRootCUSD = readMerkleRoot("cUSD");
     bytes32 merkleRootMENTO = readMerkleRoot("MENTO");
 
-    address cUSDDistributor;
-    address mentoDistributor;
+    MerkleDistributorWithDeadline cUSDDistributor;
+    MerkleDistributorWithDeadline mentoDistributor;
 
-    vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
+    vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
-      cUSDDistributor = new MerkleDistributorWithDeadline(cUSD, merkleRootCUSD, block.timestmap + 31 days);
-      console.log("MerkleDistributor for cUSD deployed at:", cUSDDistributor);
+      cUSDDistributor = new MerkleDistributorWithDeadline(cUSD, merkleRootCUSD, block.timestamp + 31 days);
+      console.log("MerkleDistributor for cUSD deployed at:", address(cUSDDistributor));
       mentoDistributor = new MerkleDistributorWithDeadline(MENTO, merkleRootMENTO, block.timestamp + 121 days);
-      console.log("MerkleDistributor for MENTO deployed at:", mentoDistributor);
+      console.log("MerkleDistributor for MENTO deployed at:", address(mentoDistributor));
 
       cUSDDistributor.transferOwnership(mentoLabsMultisig);
       mentoDistributor.transferOwnership(mentoLabsMultisig);
@@ -48,6 +48,6 @@ contract MINIDROP_CreateMerkleDistributor is Script {
     string memory root = vm.projectRoot();
     string memory path = string(abi.encodePacked(root, "/data/oct2024.minipay.", token, ".root.json"));
     string memory json = vm.readFile(path);
-    return stdJson.readBytes32(json, token);
+    return stdJson.readBytes32(json, ".root");
   }
 }
