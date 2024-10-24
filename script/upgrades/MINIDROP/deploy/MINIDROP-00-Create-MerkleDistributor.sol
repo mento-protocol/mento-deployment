@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.5.13;
+pragma solidity ^0.8.17;
 
-import { console } from "forge-std/console.sol";
-import { Script } from "script/utils/Script.sol";
-import { Chain as ChainLib } from "script/utils/Chain.sol";
-import { Contracts } from "script/utils/Contracts.sol";
-import { IRegistry } from "../../../interfaces/IRegistry.sol";
-import { Contracts } from "../../../utils/Contracts.sol";
-import { IGovernanceFactory } from "../../../interfaces/IGovernanceFactory.sol";
-import { stdJson } from "forge-std/StdJson.sol";
+import { console } from "forge-std-next/console.sol";
+import { stdJson } from "forge-std-next/StdJson.sol";
 
-interface IOwnableLite {
-  function transferOwnership(address newOwner) external;
-}
+import { Script } from "script/utils/mento/Script.sol";
+import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
+import { Contracts } from "script/utils/mento/Contracts.sol";
+
+import { IRegistry } from "script/interfaces/IRegistry.sol";
+import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
+
+import { MerkleDistributorWithDeadline } from "merkle-distributor/MerkleDistributorWithDeadline.sol";
 
 contract MINIDROP_CreateMerkleDistributor is Script {
   using Contracts for Contracts.Cache;
@@ -24,47 +23,31 @@ contract MINIDROP_CreateMerkleDistributor is Script {
     address MENTO = IGovernanceFactory(contracts.deployed("GovernanceFactory")).mentoToken();
     address mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
 
-    // 91 days after the current block timestamp roughly 3 months
-    uint256 endTime = block.timestamp + 91 days;
+    bytes32 merkleRootCUSD = readMerkleRoot("cUSD");
+    bytes32 merkleRootMENTO = readMerkleRoot("MENTO");
 
-    bytes32 merkleRootCUSD = readMerkleRoot(".cUSDRoot");
-    bytes32 merkleRootMENTO = readMerkleRoot(".mentoRoot");
+    MerkleDistributorWithDeadline cUSDDistributor;
+    MerkleDistributorWithDeadline mentoDistributor;
 
-    address cUSDDistributor;
-    address mentoDistributor;
-
-    vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
+    vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
-      cUSDDistributor = deployMerkleDistributor(cUSD, merkleRootCUSD, endTime);
-      console.log("MerkleDistributor for cUSD deployed at:", cUSDDistributor);
-      mentoDistributor = deployMerkleDistributor(MENTO, merkleRootMENTO, endTime);
-      console.log("MerkleDistributor for MENTO deployed at:", mentoDistributor);
+      cUSDDistributor = new MerkleDistributorWithDeadline(cUSD, merkleRootCUSD, block.timestamp + 31 days);
+      console.log("MerkleDistributor for cUSD deployed at:", address(cUSDDistributor));
+      mentoDistributor = new MerkleDistributorWithDeadline(MENTO, merkleRootMENTO, block.timestamp + 121 days);
+      console.log("MerkleDistributor for MENTO deployed at:", address(mentoDistributor));
 
-      IOwnableLite(cUSDDistributor).transferOwnership(mentoLabsMultisig);
-      IOwnableLite(mentoDistributor).transferOwnership(mentoLabsMultisig);
+      cUSDDistributor.transferOwnership(mentoLabsMultisig);
+      mentoDistributor.transferOwnership(mentoLabsMultisig);
       console.log("Transferred ownership of MerkleDistributors to MentoLabs Multisig");
     }
 
     vm.stopBroadcast();
   }
 
-  function deployMerkleDistributor(address token, bytes32 merkleRoot, uint256 endTime) private returns (address) {
-    bytes memory bytecode = abi.encodePacked(
-      vm.getCode("out/MerkleDistributorWithDeadline.sol/MerkleDistributorWithDeadline.json"),
-      abi.encode(token, merkleRoot, endTime)
-    );
-    address deployedAddress;
-    assembly {
-      deployedAddress := create(0, add(bytecode, 0x20), mload(bytecode))
-    }
-    return deployedAddress;
-  }
-
   function readMerkleRoot(string memory token) internal view returns (bytes32) {
-    string memory network = ChainLib.rpcToken(); // celo | alfajores
     string memory root = vm.projectRoot();
-    string memory path = string(abi.encodePacked(root, "/script/upgrades/MINIDROP/data/", network, ".root.json"));
+    string memory path = string(abi.encodePacked(root, "/data/oct2024.minipay.", token, ".root.json"));
     string memory json = vm.readFile(path);
-    return stdJson.readBytes32(json, token);
+    return stdJson.readBytes32(json, ".root");
   }
 }
