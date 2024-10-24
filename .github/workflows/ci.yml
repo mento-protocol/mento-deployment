@@ -38,6 +38,10 @@ jobs:
       - name: "Install the Node.js dependencies"
         run: "yarn install --immutable"
 
+      # XXX: We need a more general solution for this but it's ok for now
+      - name: "Install lib/mento-core-2.6.0 dependencies"
+        run: "cd lib/mento-core-2.6.0 && yarn install --immutable"
+
       - name: "Lint the contracts"
         run: "yarn lint:check"
 
