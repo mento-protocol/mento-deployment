@@ -40,8 +40,6 @@ library cCOPConfig {
    * @dev Returns the configuration for the COPUSD rate feed.
    */
   function COPUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
-    // TODO: Get confirmation for Roman that these are OK
-    // These are the exact same as the $PUSO rate feed config
     rateFeedConfig.rateFeedID = Config.rateFeedID("relayed:COPUSD");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
@@ -59,9 +57,6 @@ library cCOPConfig {
   function cCOPcUSD_PoolConfig(
     Contracts.Cache storage contracts
   ) internal view returns (Config.Pool memory poolConfig) {
-    // TODO: Get confirmation from Roman that these are OK
-    // These were taken from the $PUSO pool and adjusted to the COP/USD exchange rate,
-    // which was 0.00023747 at the time of writing
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.deployed("StableTokenCOPProxy"),
