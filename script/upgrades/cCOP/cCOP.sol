@@ -92,7 +92,7 @@ contract cCOP is IMentoUpgrade, GovernanceScript {
     {
       createProposal(
         _transactions,
-        "https://TODO", // TODO: update with the final proposal MD url
+        "https://github.com/celo-org/governance/blob/797c8ebe91240b641e1b0a9ce2c6ceb24698f0ff/CGPs/cgp-0151.md",
         governance
       );
     }
