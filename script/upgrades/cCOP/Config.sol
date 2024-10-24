@@ -67,7 +67,7 @@ library cCOPConfig {
       asset1: contracts.deployed("StableTokenCOPProxy"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(3, 1000), // 0.3%, in line with current DT of chainlink feed
-      referenceRateResetFrequency: 5 minutes,
+      referenceRateResetFrequency: 6 minutes,
       minimumReports: 1,
       stablePoolResetSize: 10_000_000 * 1e18,
       referenceRateFeedID: Config.rateFeedID("relayed:COPUSD"),
