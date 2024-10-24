@@ -16,9 +16,8 @@ contract cGHS_CreateProxies is Script {
   function run() public {
     contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
     StableTokenGHSProxy stableTokenGHSProxy;
-    address governance = contracts.celoRegistry("Governance");
     address stableTokenV2 = contracts.deployed("StableTokenV2");
-    address MPFLedger = 0x0aa27E23f2cf34d925B387FABEb1fD8ac605C8c5;
+    address MPFLedger = 0xc66C4Ff9CC785F865B3eD48d493d239A3eD2BE9B;
     uint256 MPFAllocation = 1_500_000 * 1e18;
 
     vm.startBroadcast(Chain.deployerPrivateKey());

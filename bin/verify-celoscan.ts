@@ -243,9 +243,7 @@ function makeStandardJson(metadata: Metadata, sources: Sources, libraryMap: Reco
     language: metadata.language,
     sources,
     settings: {
-      viaIR: true,
       metadata: {
-        bytecodeHash: "none",
         useLiteralContent: true,
       },
       optimizer: metadata.settings.optimizer,
