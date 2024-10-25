@@ -44,6 +44,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   address private eXOFProxy;
   address private cKESProxy;
   address private PUSOProxy;
+  address private cCOPProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -78,6 +79,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     contracts.loadSilent("eXOF-00-Create-Proxies", "latest");
     contracts.loadSilent("cKES-00-Create-Proxies", "latest");
     contracts.loadSilent("PUSO-00-Create-Proxies", "latest");
+    contracts.loadSilent("cCOP-00-Create-Proxies", "latest");
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
   }
 
@@ -95,6 +97,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     eXOFProxy = address(uint160(contracts.deployed("StableTokenXOFProxy")));
     cKESProxy = address(uint160(contracts.deployed("StableTokenKESProxy")));
     PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
+    cCOPProxy = address(uint160(contracts.deployed("StableTokenCOPProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -139,7 +142,15 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_transferTokenOwnership() public {
-    address[] memory tokenProxies = Arrays.addresses(cUSDProxy, cEURProxy, cBRLProxy, eXOFProxy, cKESProxy, PUSOProxy);
+    address[] memory tokenProxies = Arrays.addresses(
+      cUSDProxy,
+      cEURProxy,
+      cBRLProxy,
+      eXOFProxy,
+      cKESProxy,
+      PUSOProxy,
+      cCOPProxy
+    );
     for (uint i = 0; i < tokenProxies.length; i++) {
       transferOwnership(tokenProxies[i]);
       transferProxyAdmin(tokenProxies[i]);
