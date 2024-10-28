@@ -145,7 +145,7 @@ async function verify({ contract, initCode }: { contract: string; initCode?: str
   }
 
   const status = await sourcify.check(broadcast.chain, contract);
-  if (!(status == "partial" || status == "full")) {
+  if (!(status == "partial" || status == "full" || status == "perfect")) {
     console.error(`🚨 Contract ${contract} not found on sourcify`);
     return false;
   }
@@ -243,9 +243,7 @@ function makeStandardJson(metadata: Metadata, sources: Sources, libraryMap: Reco
     language: metadata.language,
     sources,
     settings: {
-      viaIR: true,
       metadata: {
-        bytecodeHash: "none",
         useLiteralContent: true,
       },
       optimizer: metadata.settings.optimizer,
