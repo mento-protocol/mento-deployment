@@ -22,6 +22,10 @@ interface IProxyLite {
   function _getOwner() external view returns (address);
 }
 
+interface IReserveLite {
+  function getOtherReserveAddresses() external returns (address[] memory);
+}
+
 contract MU08Checks is GovernanceScript, Test {
   using Contracts for Contracts.Cache;
 
@@ -54,6 +58,9 @@ contract MU08Checks is GovernanceScript, Test {
   // MentoGovernance contracts:
   address private governanceFactory;
   address private timelockProxy;
+
+  // Mento Reserve Multisig address:
+  address private reserveMultisig;
 
   function prepare() public {
     // Load addresses from deployments
@@ -95,16 +102,30 @@ contract MU08Checks is GovernanceScript, Test {
     // MentoGovernance contracts:
     governanceFactory = contracts.deployed("GovernanceFactory");
     timelockProxy = IGovernanceFactory(governanceFactory).governanceTimelock();
+
+    // Mento Reserve Multisig address:
+    reserveMultisig = contracts.dependency("PartialReserveMultisig");
   }
 
   function run() public {
     console.log("\nStarting MU08 checks:");
     prepare();
 
+    verifyOtherReservesAddresses();
     verifyTokenOwnership();
     verifyMentoV2Ownership();
     verifyMentoV1Ownership();
     verifyGovernanceFactoryOwnership();
+  }
+
+  function verifyOtherReservesAddresses() public {
+    console.log("\n== Verifying other reserves addresses of onchain Reserve: ==");
+    address[] memory otherReserves = IReserveLite(reserveProxy).getOtherReserveAddresses();
+
+    require(otherReserves.length == 1, "❗️❌ Wrong number of other reserves addresses");
+    require(otherReserves[0] == reserveMultisig, "❗️❌ Other reserve address is not the Reserve Multisig");
+    console.log("🟢Other reserves address was added successfully: ", reserveMultisig);
+    console.log("🤘🏼Other reserves addresses of onchain Reserve are updated correctly.");
   }
 
   function verifyTokenOwnership() public {

@@ -26,6 +26,14 @@ interface IProxyLite {
   function _transferOwnership(address) external;
 }
 
+interface IReserveLite {
+  function getOtherReserveAddresses() external returns (address[] memory);
+
+  function removeOtherReserveAddress(address, uint256) external returns (bool);
+
+  function addOtherReserveAddress(address) external returns (bool);
+}
+
 contract MU08 is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
 
@@ -63,6 +71,9 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   // MentoGovernance contracts:
   address private governanceFactory;
   address private timelockProxy;
+
+  // Mento Reserve Multisig address:
+  address private reserveMultisig;
 
   function prepare() public {
     loadDeployedContracts();
@@ -116,6 +127,9 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     // MentoGovernance contracts:
     governanceFactory = contracts.deployed("GovernanceFactory");
     timelockProxy = IGovernanceFactory(governanceFactory).governanceTimelock();
+
+    // Mento Reserve Multisig address:
+    reserveMultisig = contracts.dependency("PartialReserveMultisig");
   }
 
   function run() public {
@@ -133,12 +147,36 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
+    proposal_updateOtherReserveAddresses();
     proposal_transferTokenOwnership();
     proposal_transferMentoV2Ownership();
     proposal_transferMentoV1Ownership();
     proposal_transferGovFactoryOwnership();
 
     return transactions;
+  }
+
+  function proposal_updateOtherReserveAddresses() public {
+    // remove anchorage addressess
+    address[] memory otherReserves = IReserveLite(reserveProxy).getOtherReserveAddresses();
+    for (uint256 i = 0; i < otherReserves.length; i++) {
+      transactions.push(
+        ICeloGovernance.Transaction({
+          value: 0,
+          destination: reserveProxy,
+          // we remove the first index(0) in the list for each iteration because the index changes after each removal
+          data: abi.encodeWithSelector(IReserveLite(0).removeOtherReserveAddress.selector, otherReserves[i], 0)
+        })
+      );
+    }
+    // add reserve multisig
+    transactions.push(
+      ICeloGovernance.Transaction({
+        value: 0,
+        destination: reserveProxy,
+        data: abi.encodeWithSelector(IReserveLite(0).addOtherReserveAddress.selector, reserveMultisig)
+      })
+    );
   }
 
   function proposal_transferTokenOwnership() public {
