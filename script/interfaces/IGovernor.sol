@@ -1,14 +1,14 @@
-pragma solidity ^0.8;
+pragma solidity >=0.5.13 <0.9.0;
 
 /**
  * @dev Interface of the Bravo Compatible Governor.
  */
 interface IGovernor {
   function propose(
-    address[] memory targets,
-    uint256[] memory values,
-    bytes[] memory calldatas,
-    string memory description
+    address[] calldata targets,
+    uint256[] calldata values,
+    bytes[] calldata calldatas,
+    string calldata description
   ) external returns (uint256 proposalId);
 
   /**

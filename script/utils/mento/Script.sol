@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8;
+pragma solidity >=0.5.13 <0.9.0;
 
 import { Script as BaseScript } from "forge-std/Script.sol";
 import { FixidityLib } from "../FixidityLib.sol";
@@ -31,6 +31,10 @@ contract Script is BaseScript {
 }
 
 contract GovernanceScript is Script, GovernanceHelper {
+  function toRateFeedId(string memory rateFeedString) internal pure returns (address) {
+    return address(uint160(uint256(keccak256(abi.encodePacked(rateFeedString)))));
+  }
+
   /**
    * @notice Helper function to get the exchange ID for a pool.
    */

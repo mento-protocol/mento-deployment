@@ -516,7 +516,7 @@ contract MU01 is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(
           ValueDeltaBreaker(0).setReferenceValues.selector,
           Arrays.addresses(config.USDCUSD.rateFeedID),
-          Arrays.uints(config.USDCUSD.valueDeltaBreaker0.referenceValue)
+          Arrays.uints(1e24)
         )
       )
     );

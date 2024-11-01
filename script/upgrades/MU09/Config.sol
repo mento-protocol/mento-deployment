@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines, var-name-mixedcase
-pragma solidity >=0.5.13 <0.9.0;
+pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
-// import { Chain } from "script/utils/mento/Chain.sol";
+import { Chain } from "script/utils/Chain.sol";
 import { Config } from "script/utils/Config.sol";
-import { Contracts } from "script/utils/mento/Contracts.sol";
+import { Contracts } from "script/utils/Contracts.sol";
 import { FixidityLib } from "script/utils/FixidityLib.sol";
 
 /**
@@ -29,9 +29,7 @@ library cCOPConfig {
    * @dev Returns the populated configuration object for the cCOP governance proposal.
    */
   function get(Contracts.Cache storage contracts) internal view returns (cCOP memory config) {
-    // function get() internal view returns (cCOP memory config) {
     config.poolConfig = cCOPcUSD_PoolConfig(contracts);
-    // config.poolConfig = cCOPcUSD_PoolConfig();
     config.rateFeedConfig = COPUSD_RateFeedConfig();
     config.stableTokenConfig = stableTokencCOPConfig();
   }
@@ -58,17 +56,8 @@ library cCOPConfig {
    */
   function cCOPcUSD_PoolConfig(
     Contracts.Cache storage contracts
-  )
-    internal
-    view
-    returns (
-      // Contracts.Cache storage contracts
-      Config.Pool memory poolConfig
-    )
-  {
+  ) internal view returns (Config.Pool memory poolConfig) {
     poolConfig = Config.Pool({
-      // asset0: 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1, //contracts.celoRegistry("StableToken"),
-      // asset1: 0xe6A57340f0df6E020c1c0a80bC6E13048601f0d4, //contracts.deployed("StableTokenCOPProxy"),
       asset0: contracts.celoRegistry("StableToken"),
       asset1: contracts.deployed("StableTokenCOPProxy"),
       isConstantSum: true,
