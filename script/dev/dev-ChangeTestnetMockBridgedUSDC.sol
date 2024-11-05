@@ -24,7 +24,7 @@ import { MU01Config, Config } from "../upgrades/MU01/Config.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
 
 /**
- forge script {file} --rpc-url $BAKLAVA_RPC_URL 
+ forge script {file} --rpc-url $ALFAJORES_RPC_URL 
                      --broadcast --legacy 
  * @dev Testnet-only governance script creates new pools with a newly deployed BridgedUSDC 
  * and adds it as a reserve collateral. 

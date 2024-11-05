@@ -4,7 +4,7 @@
 # Build the contracts for a give upgrade
 # Usage: ./bin/build.sh 
 #               -u <upgrade_name>               -- name of the upgrade (MU01)
-# Example: ./bin/clean.sh -n baklava -u MU01
+# Example: ./bin/clean.sh -n alfajores -u MU01
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"

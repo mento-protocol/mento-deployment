@@ -31,7 +31,7 @@ import { MU03Config, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
 /**
- forge script {file} --rpc-url $BAKLAVA_RPC_URL 
+ forge script {file} --rpc-url $ALFAJORES_RPC_URL 
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */

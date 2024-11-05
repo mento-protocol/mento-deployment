@@ -1,14 +1,14 @@
 /*******************************************************************
  * Build the airgrab merkle tree for a given network
  * Usage: yarn merkle-tree:build
- *               -n <baklava|alfajores|celo> -- network to build the tree for
+ *               -n <alfajores|celo> -- network to build the tree for
  *******************************************************************
  */
 
-import { parseArgs } from "node:util";
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
-import * as fs from "fs";
 import { parse } from "csv-parse/sync";
+import * as fs from "fs";
+import { parseArgs } from "node:util";
 
 const {
   values: { network },
@@ -18,7 +18,7 @@ const {
   },
 });
 
-if (network !== "baklava" && network !== "alfajores" && network !== "celo") {
+if (network !== "alfajores" && network !== "celo") {
   throw new Error("Invalid network");
 }
 

@@ -1,11 +1,10 @@
+import { providers } from "ethers";
 import { execSync } from "node:child_process";
 import fs from "node:fs";
-import { parseArgs } from "node:util";
 import process from "node:process";
-import { providers } from "ethers";
+import { parseArgs } from "node:util";
 
 enum Network {
-  Baklava = "baklava",
   Alfajores = "alfajores",
   Celo = "celo",
 }
@@ -28,10 +27,6 @@ type NetworkInfo = {
 };
 
 const networkInfoByName: Record<Network, NetworkInfo> = {
-  [Network.Baklava]: {
-    id: 62320,
-    rpcUrl: "https://baklava-forno.celo-testnet.org",
-  },
   [Network.Alfajores]: {
     id: 44787,
     rpcUrl: "https://alfajores-forno.celo-testnet.org",

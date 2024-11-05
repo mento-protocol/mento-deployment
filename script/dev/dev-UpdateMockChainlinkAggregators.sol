@@ -44,8 +44,6 @@ contract UpdateMockChainlinkAggregators is Script {
   constructor() Script() {
     if (ChainLib.isAlfajores()) {
       setUp_alfajores();
-    } else if (ChainLib.isBaklava()) {
-      setUp_baklava();
     } else {
       console.log("This script is only meant to be run on testnets");
     }
@@ -63,20 +61,6 @@ contract UpdateMockChainlinkAggregators is Script {
 
     aggregatorsToForward.push(PHPUSDMainnetAggregator);
     aggregatorsToForward.push(COPUSDMainnetAggregator);
-  }
-
-  function setUp_baklava() internal {
-    /// @dev Load additional deployed aggregators here to forward rates
-    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "PHPUSD");
-    address PHPUSDMock = contracts.deployed("MockChainlinkAggregator");
-    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "CELOUSD");
-    address CELOUSDMock = contracts.deployed("MockChainlinkAggregator");
-
-    mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDMock;
-    mockForAggregator[CELOUSDMainnetAggregator] = CELOUSDMock;
-
-    aggregatorsToForward.push(PHPUSDMainnetAggregator);
-    aggregatorsToForward.push(CELOUSDMainnetAggregator);
   }
 
   function run() public {

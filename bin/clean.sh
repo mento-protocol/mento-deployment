@@ -3,9 +3,9 @@
 ##############################################################################
 # Script for cleaning the broadcast file for an upgrade + network combo
 # Usage: ./bin/clean.sh 
-#               -n <baklava|alfajores|celo>  -- network to submit the proposal to
+#               -n <alfajores|celo>  -- network to submit the proposal to
 #               -u <upgrade_name>               -- name of the upgrade (MU01)
-# Example: ./bin/clean.sh -n baklava -u MU01
+# Example: ./bin/clean.sh -n alfajores -u MU01
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"

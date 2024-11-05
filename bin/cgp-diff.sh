@@ -3,8 +3,8 @@
 ##############################################################################
 # Script for passing a Celo Governance Proposal on a testnet.
 # Usage: ./bin/cgp-diff.sh <proposal_id_alpha> <proposal_id_beta>
-#               -n <baklava|alfajores>  -- network to pass the proposal on
-# Example: ./bin/cgp-diff.sh -n baklava 78 79
+#               -n <alfajores>  -- network to pass the proposal on
+# Example: ./bin/cgp-diff.sh -n alfajores 78 79
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"

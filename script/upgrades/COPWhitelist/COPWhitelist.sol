@@ -35,7 +35,7 @@ interface ISortedOracles {
 }
 
 /**
- forge script {file} --rpc-url $BAKLAVA_RPC_URL 
+ forge script {file} --rpc-url $ALFAJORES_RPC_URL 
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
@@ -170,8 +170,6 @@ contract COPWhitelist is IMentoUpgrade, GovernanceScript {
    * gas payments.
    */
   function proposal_setEquivalentTokenForCOP() private {
-    require(!Chain.isBaklava(), "Baklava is not suported for this deployment.");
-
     address CELOCOPRateFeedId = toRateFeedId("relayed:CELOCOP");
     transactions.push(
       ICeloGovernance.Transaction({

@@ -3,13 +3,13 @@
 ##############################################################################
 # Script for submitting a Governance Proposal for a protocol upgrade
 # Usage: yarn cgp
-#               -n <baklava|alfajores|celo>  -- network to submit the proposal to
+#               -n <alfajores|celo>  -- network to submit the proposal to
 #               -u <upgrade_name>            -- name of the upgrade (MU01)
 #               -g <celo|mento>              -- governance to use
 #               -s                           -- simulate the proposal (optional)
 #               -r                           -- revert (optional)
 #               -f                           -- use forked network (optional)
-# Example: yarn cgp -n baklava -u MU01 -g mento
+# Example: yarn cgp -n alfajores -u MU01 -g mento
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"

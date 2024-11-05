@@ -3,10 +3,10 @@
 ##############################################################################
 # Script for running all deployment tasks for a protocol upgrade
 # Usage: ./bin/cgp-deploy.sh 
-#               -n <baklava|alfajores|celo>  -- network to submit the proposal to
+#               -n <alfajores|celo>  -- network to submit the proposal to
 #               -u <upgrade_name>               -- name of the upgrade (MU01)
 #               -s                              -- name of the script (optional)
-# Example: ./bin/cgp-deploy.sh -n baklava -u MU01
+# Example: ./bin/cgp-deploy.sh -n alfajores -u MU01
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"

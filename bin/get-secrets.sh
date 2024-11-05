@@ -13,7 +13,7 @@ set -u          # Treat unset variables as an error when substituting
 
 # Set the project ID and the comma-separated list of secret IDs to retrieve
 PROJECT_ID="mento-prod"
-SECRET_IDS="mento-deployer-pk,baklava-approver-pk,baklava-voter-pk,dune-api-key"
+SECRET_IDS="mento-deployer-pk,dune-api-key"
 
 # Set the path to the .env file as the parent directory of the current directory
 ENV_FILE="$(dirname "$0")/../.env"

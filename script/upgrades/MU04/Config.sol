@@ -64,7 +64,7 @@ library MU04Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -92,7 +92,7 @@ library MU04Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -120,7 +120,7 @@ library MU04Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -148,7 +148,7 @@ library MU04Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -176,7 +176,7 @@ library MU04Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -204,7 +204,7 @@ library MU04Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -232,7 +232,7 @@ library MU04Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -271,7 +271,7 @@ library MU04Config {
       })
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       poolConfig.minimumReports = 2;
     }
   }
@@ -307,7 +307,7 @@ library MU04Config {
         limitGlobal: 2_000_000
       })
     });
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       poolConfig.minimumReports = 2;
     }
   }

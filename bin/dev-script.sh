@@ -3,17 +3,17 @@
 ##############################################################################
 # Script for running all deployment tasks for a protocol upgrade
 # Usage: ./bin/dev-script.sh 
-#               -n <baklava|alfajores|celo>  -- network to submit the proposal to
+#               -n <alfajores|celo>  -- network to submit the proposal to
 #               -i <script-index>            -- index of the script (optional)
 #               -s <script-name>             -- name of the script (optional)
 #               -r <run-signature>           -- signature of the run function (optional)
 # Example: 
 # To pick the script:
-# ./bin/deploy.sh -n baklava 
+# ./bin/deploy.sh -n alfajores 
 # To pick the script by index:
-# ./bin/deploy.sh -n baklava -i 1
+# ./bin/deploy.sh -n alfajores -i 1
 # To pick the script by name:
-# ./bin/deploy.sh -n baklava -s CreateMockBridgedUSDC
+# ./bin/deploy.sh -n alfajores -s CreateMockBridgedUSDC
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"

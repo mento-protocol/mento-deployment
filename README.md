@@ -22,7 +22,7 @@ cp .env.example .env
 yarn secrets:get
 
 # Execute scripts using forge script command
-forge script DeployCircuitBreaker --rpc-url $BAKLAVA_RPC_URL --broadcast --legacy --verify --verifier sourcify
+forge script DeployCircuitBreaker --rpc-url $ALFAJORES_RPC_URL --broadcast --legacy --verify --verifier sourcify
 ```
 
 ## Deployment Structure
@@ -45,7 +45,7 @@ The scripts tend to follow a similar structure, and are either simple helpers or
 
 General options will include:
 
-- `-n`: The network to run on, e.g. `baklava` or `alfajores`
+- `-n`: The network to run on, e.g. `celo` or `alfajores`
 - `-u`: The upgrade number, e.g. `MU01`
 - `-g`: The governance that will be used, e.g. `celo` or `mento`
 
@@ -53,10 +53,10 @@ Check the script file for more details on usage but here's a quick overview:
 
 ```bash
 # Clean the broadcast folder, will remove all broadcast files pertaining to that network and upgrade combination
-> yarn clean -n baklava -u MU01
+> yarn clean -n alfajores -u MU01
 
 # Show the list of deployed contracts and their addresses
-> yarn show -n baklava -n MU01
+> yarn show -n alfajores -n MU01
 {"name":"BreakerBoxProxy","address":"0xB881aF21C5A9ff8e8d5E4C900F67F066C6CB7936"}
 {"name":"BiPoolManagerProxy","address":"0xFF9a3da00F42839CD6D33AD7adf50bCc97B41411"}
 {"name":"BrokerProxy","address":"0x6723749339e320E1EFcd9f1B0D997ecb45587208"}
@@ -64,8 +64,8 @@ Check the script file for more details on usage but here's a quick overview:
 # ...
 
 # Run a development script, with no selector
-> yarn script:dev -n baklava
- Network is baklava
+> yarn script:dev -n alfajores
+ Network is alfajores
 ==================================================================
 👇 Pick a script to run
 ------------------------------------------------------------------
@@ -75,25 +75,25 @@ Check the script file for more details on usage but here's a quick overview:
 #?
 
 # Run a development script by index
-> yarn script:dev -n baklava -i 2
-📠 Network is baklava
+> yarn script:dev -n alfajores -i 2
+📠 Network is alfajores
 ==================================================================
 🔥 Running CreateMockBridgedUSDC
 ==================================================================
 
 # Run a development script by name
-> yarn script:dev -n baklava -s CreateMockBridgedUSDC
-📠 Network is baklava
+> yarn script:dev -n alfajores -s CreateMockBridgedUSDC
+📠 Network is alfajores
 ==================================================================
 🔥 Running CreateMockBridgedUSDC
 ==================================================================
 
 # Run an upgrade deployment, will run all deploy scripts in an upgrade
-> yarn deploy -n baklava -u MU01
+> yarn deploy -n alfajores -u MU01
 
 # Submit an upgrade proposal, will output the proposal ID
-> yarn cgp -n baklava -u MU01 -g celo
+> yarn cgp -n alfajores -u MU01 -g celo
 
 # Pass a CGP on testnets
-> yarn cgp:pass -n baklava -g celo -p <proposal-id>
+> yarn cgp:pass -n alfajores -g celo -p <proposal-id>
 ```

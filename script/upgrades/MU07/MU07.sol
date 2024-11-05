@@ -35,7 +35,7 @@ interface ISortedOracles {
 }
 
 /**
- forge script {file} --rpc-url $BAKLAVA_RPC_URL 
+ forge script {file} --rpc-url $ALFAJORES_RPC_URL 
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
  */
@@ -166,10 +166,6 @@ contract MU07 is IMentoUpgrade, GovernanceScript {
    * gas payments.
    */
   function proposal_setEquivalentTokenForPUSO() private {
-    if (Chain.isBaklava()) {
-      /// @dev This SortedOracles feature was not deployed to Baklava. Skipping.
-      return;
-    }
     address CELOPHPRateFeedId = toRateFeedId("relayed:CELOPHP");
     transactions.push(
       ICeloGovernance.Transaction({
