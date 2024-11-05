@@ -13,7 +13,7 @@ git clone git@github.com:mento-protocol/mento-deployment.git
 cd mento-deployment
 
 # Install the project dependencies & build the contracts
-forge install && forge build
+yarn install && forge install && forge build
 
 # Create your .env file (Replace the PK for deployer account)
 cp .env.example .env
@@ -56,7 +56,7 @@ Check the script file for more details on usage but here's a quick overview:
 > yarn clean -n alfajores -u MU01
 
 # Show the list of deployed contracts and their addresses
-> yarn show -n alfajores -n MU01
+> yarn show -n alfajores -u MU01
 {"name":"BreakerBoxProxy","address":"0xB881aF21C5A9ff8e8d5E4C900F67F066C6CB7936"}
 {"name":"BiPoolManagerProxy","address":"0xFF9a3da00F42839CD6D33AD7adf50bCc97B41411"}
 {"name":"BrokerProxy","address":"0x6723749339e320E1EFcd9f1B0D997ecb45587208"}
