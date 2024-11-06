@@ -10,7 +10,7 @@ import { MockChainlinkAggregator } from "contracts/MockChainlinkAggregator.sol";
 
 /**
  * Usage: yarn script:dev -n alfajores -s DeployMockChainlinkAggregator -r "run(string)" PHPUSD
- * Used to deploy mock Chainlink Aggregators to Alfajores and Baklava to be used
+ * Used to deploy mock Chainlink Aggregators to Alfajores to be used
  * in testnet relayers to mimic mainnet more closely.
  * ========== IMPORTANT ======================================
  * @dev After deploying the script save the broadcast file as run-{rateFeed}.json,
