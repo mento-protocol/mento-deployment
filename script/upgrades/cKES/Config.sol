@@ -88,7 +88,7 @@ library cKESConfig {
       })
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       poolConfig.minimumReports = 2;
     }
   }

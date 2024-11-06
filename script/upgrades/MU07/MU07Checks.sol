@@ -71,10 +71,6 @@ contract MU07Checks is GovernanceScript, Test {
   }
 
   function assert_equivalentTokenEq(address token, address expected) internal {
-    if (Chain.isBaklava()) {
-      /// @dev This SortedOracles feature was not deployed to Baklava. Skipping check.
-      console.log("Skipping equivalent token check on Baklava.");
-    }
     address actual = sortedOracles.getEquivalentToken(token);
     if (actual != expected) {
       console.log("Equivalent token mismatch for PUSO (%s).");

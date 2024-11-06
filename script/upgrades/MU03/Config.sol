@@ -75,7 +75,7 @@ library MU03Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -115,7 +115,7 @@ library MU03Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -155,7 +155,7 @@ library MU03Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -195,7 +195,7 @@ library MU03Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -233,7 +233,7 @@ library MU03Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -272,7 +272,7 @@ library MU03Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }
@@ -311,7 +311,7 @@ library MU03Config {
       asset1limits: Config.emptyTradingLimitConfig()
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       config.minimumReports = 2;
     }
   }

@@ -16,11 +16,6 @@ library Chain {
   string public constant NETWORK_CELO_RPC = "celo";
   string public constant NETWORK_CELO_PK_ENV_VAR = "MENTO_DEPLOYER_PK";
 
-  uint256 public constant NETWORK_BAKLAVA_CHAINID = 62320;
-  string public constant NETWORK_BAKLAVA_CHAINID_STRING = "62320";
-  string public constant NETWORK_BAKLAVA_RPC = "baklava";
-  string public constant NETWORK_BAKLAVA_PK_ENV_VAR = "BAKLAVA_DEPLOYER_PK";
-
   uint256 public constant NETWORK_ALFAJORES_CHAINID = 44787;
   string public constant NETWORK_ALFAJORES_CHAINID_STRING = "44787";
   string public constant NETWORK_ALFAJORES_RPC = "alfajores";
@@ -40,7 +35,6 @@ library Chain {
   function idString() internal pure returns (string memory) {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return NETWORK_CELO_CHAINID_STRING;
-    if (_chainId == NETWORK_BAKLAVA_CHAINID) return NETWORK_BAKLAVA_CHAINID_STRING;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return NETWORK_ALFAJORES_CHAINID_STRING;
     revert("unexpected network");
   }
@@ -48,7 +42,6 @@ library Chain {
   function rpcToken() internal pure returns (string memory) {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return NETWORK_CELO_RPC;
-    if (_chainId == NETWORK_BAKLAVA_CHAINID) return NETWORK_BAKLAVA_RPC;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return NETWORK_ALFAJORES_RPC;
     revert("unexpected network");
   }
@@ -56,7 +49,6 @@ library Chain {
   function deployerPrivateKey() internal view returns (uint256) {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return vm.envUint(NETWORK_CELO_PK_ENV_VAR);
-    if (_chainId == NETWORK_BAKLAVA_CHAINID) return vm.envUint(NETWORK_BAKLAVA_PK_ENV_VAR);
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return vm.envUint(NETWORK_ALFAJORES_PK_ENV_VAR);
     revert("unexpected network");
   }
@@ -75,10 +67,6 @@ library Chain {
 
   function isCelo() internal pure returns (bool) {
     return id() == NETWORK_CELO_CHAINID;
-  }
-
-  function isBaklava() internal pure returns (bool) {
-    return id() == NETWORK_BAKLAVA_CHAINID;
   }
 
   function isAlfajores() internal pure returns (bool) {

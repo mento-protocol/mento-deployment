@@ -3,10 +3,10 @@
 ##############################################################################
 # Script for running Governance Proposal Checks on top of a network
 # Usage: yarn cgp:check
-#               -n <baklava|alfajores|celo>  -- network to submit the proposal to
+#               -n <alfajores|celo>  -- network to submit the proposal to
 #               -u <upgrade_name>            -- name of the upgrade (MU01)
 #               -g <celo|mento>              -- governance to use
-# Example: yarn cgp:check -n baklava -u MU03 -g mento
+# Example: yarn cgp:check -n alfajores -u MU03 -g mento
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"

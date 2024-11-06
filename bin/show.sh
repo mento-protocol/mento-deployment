@@ -3,9 +3,9 @@
 ##############################################################################
 # This script will show the addresses of all contracts deployed in a given upgrade
 # Usage: ./bin/show.sh 
-#               -n <baklava|alfajores|celo>  -- network to target
+#               -n <alfajores|celo>  -- network to target
 #               -u <upgrade_name>            -- name of the upgrade (MU01)
-# Example: ./bin/show.sh -n baklava -u MU01
+# Example: ./bin/show.sh -n alfajores -u MU01
 ##############################################################################
 
 source "$(dirname "$0")/setup.sh"

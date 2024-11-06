@@ -1,20 +1,18 @@
 /*******************************************************************
- * Verify contracts deployed from a broadcast file on celoscan
- * Will only work with alfajores or mainnet broadcast files as
- * celoscan doesn't support baklava.
+ * Verify contracts deployed from a broadcast file on celoscan.
  * Command assumes that the contracts are verified on sourcify
  * automatically by foundry.
  * Usage: yarn verify:celoscan <path-to-broadcast-file>
  *******************************************************************/
 
-import { parseArgs } from "node:util";
-import fs from "fs";
-import * as sourcify from "./utils/sourcify";
-import * as etherscan from "./utils/etherscan";
-import { Metadata } from "./utils/sourcify";
-import { VerificationStatus } from "./utils/etherscan";
 import "dotenv/config";
 import { keccak256, toUtf8Bytes } from "ethers";
+import fs from "fs";
+import { parseArgs } from "node:util";
+import * as etherscan from "./utils/etherscan";
+import { VerificationStatus } from "./utils/etherscan";
+import * as sourcify from "./utils/sourcify";
+import { Metadata } from "./utils/sourcify";
 
 type Sources = Record<string, { content: string }>;
 
@@ -29,7 +27,7 @@ interface BroadcastFile {
     }>;
     transaction: {
       data?: string;
-      input?: string
+      input?: string;
     };
   }>;
   chain: number;
@@ -82,7 +80,7 @@ async function run() {
       if (tx.transactionType === "CREATE") {
         createdContracts.push({
           contract: tx.contractAddress,
-          initCode: tx.transaction.data || tx.transaction.input
+          initCode: tx.transaction.data || tx.transaction.input,
         });
       }
       if (tx.additionalContracts && tx.additionalContracts.length > 0) {
@@ -127,8 +125,8 @@ async function run() {
     }
     console.log(
       "Note: Celoscan doesn't allow you to verify conracts that are identified as equivalent " +
-      "bytecode-wise with other contracts. So check the list above on Celoscan to see if they " +
-      "fall under this scenario.",
+        "bytecode-wise with other contracts. So check the list above on Celoscan to see if they " +
+        "fall under this scenario.",
     );
   }
 }
@@ -138,7 +136,7 @@ async function verify({ contract, initCode }: { contract: string; initCode?: str
     api: celoscanApiUrl,
     apiKey: celoscanApiKey,
     contract: contract,
-  })
+  });
   if (isVerified) {
     console.log(`✅ Contract ${contract} verified on celoscan`);
     return true;
@@ -204,8 +202,8 @@ function getConstructorArgs(target: string, contract: string, initCode: string) 
   //   match[2] is the filename without termination
   //   match[3] is the optional contract name which can be empty
   const match = /(([^\/]*).sol):?(.*)?/.exec(target);
-  if (!match) throw Error(`Error extracting filename and contract from: ${target}`)
-  const solidityFile = match[1]
+  if (!match) throw Error(`Error extracting filename and contract from: ${target}`);
+  const solidityFile = match[1];
   const contractName = match[3] || match[2];
 
   try {

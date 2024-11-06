@@ -16,12 +16,6 @@ library Chain {
   string public constant NETWORK_CELO_PK_ENV_VAR = "MENTO_DEPLOYER_PK";
   address public constant GOVERNANCE_FACTORY_CELO = 0xee6CE2dbe788dFC38b8F583Da86cB9caf2C8cF5A;
 
-  uint256 public constant NETWORK_BAKLAVA_CHAINID = 62320;
-  string public constant NETWORK_BAKLAVA_CHAINID_STRING = "62320";
-  string public constant NETWORK_BAKLAVA_RPC = "baklava";
-  string public constant NETWORK_BAKLAVA_PK_ENV_VAR = "BAKLAVA_DEPLOYER_PK";
-  address public constant GOVERNANCE_FACTORY_BAKLAVA = 0xe23A28a92B95c743fC0F09c16a6b2E6D59F234Fa;
-
   uint256 public constant NETWORK_ALFAJORES_CHAINID = 44787;
   string public constant NETWORK_ALFAJORES_CHAINID_STRING = "44787";
   string public constant NETWORK_ALFAJORES_RPC = "alfajores";
@@ -42,7 +36,6 @@ library Chain {
   function idString() internal view returns (string memory) {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return NETWORK_CELO_CHAINID_STRING;
-    if (_chainId == NETWORK_BAKLAVA_CHAINID) return NETWORK_BAKLAVA_CHAINID_STRING;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return NETWORK_ALFAJORES_CHAINID_STRING;
     revert("unexpected network");
   }
@@ -50,7 +43,6 @@ library Chain {
   function rpcToken() internal view returns (string memory) {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return NETWORK_CELO_RPC;
-    if (_chainId == NETWORK_BAKLAVA_CHAINID) return NETWORK_BAKLAVA_RPC;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return NETWORK_ALFAJORES_RPC;
     revert("unexpected network");
   }
@@ -58,7 +50,6 @@ library Chain {
   function deployerPrivateKey() internal view returns (uint256) {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return vm.envUint(NETWORK_CELO_PK_ENV_VAR);
-    if (_chainId == NETWORK_BAKLAVA_CHAINID) return vm.envUint(NETWORK_BAKLAVA_PK_ENV_VAR);
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return vm.envUint(NETWORK_ALFAJORES_PK_ENV_VAR);
     revert("unexpected network");
   }
@@ -66,7 +57,6 @@ library Chain {
   function governanceFactory() internal view returns (address) {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return GOVERNANCE_FACTORY_CELO;
-    if (_chainId == NETWORK_BAKLAVA_CHAINID) return GOVERNANCE_FACTORY_BAKLAVA;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return GOVERNANCE_FACTORY_ALFAJORES;
     revert("unexpected network");
   }
@@ -85,10 +75,6 @@ library Chain {
 
   function isCelo() internal view returns (bool) {
     return id() == NETWORK_CELO_CHAINID;
-  }
-
-  function isBaklava() internal view returns (bool) {
-    return id() == NETWORK_BAKLAVA_CHAINID;
   }
 
   function isAlfajores() internal view returns (bool) {

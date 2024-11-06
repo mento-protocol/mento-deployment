@@ -130,7 +130,7 @@ library eXOFConfig {
       })
     });
 
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       poolConfig.minimumReports = 2;
     }
   }
@@ -169,7 +169,7 @@ library eXOFConfig {
         limitGlobal: 1_000_000
       })
     });
-    if (Chain.isBaklava() || Chain.isAlfajores()) {
+    if (Chain.isAlfajores()) {
       poolConfig.minimumReports = 2;
     }
   }

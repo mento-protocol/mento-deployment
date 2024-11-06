@@ -74,8 +74,6 @@ contract COPWhitelistChecks is GovernanceScript, Test {
   }
 
   function assert_equivalentTokenEq(address token, address expected) internal {
-    require(!Chain.isBaklava(), "Baklava is not suported for this deployment.");
-
     address actual = sortedOracles.getEquivalentToken(token);
     if (actual != expected) {
       console.log("❌ Equivalent token mismatch for $cCOP (%s).");
