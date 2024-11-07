@@ -6,12 +6,13 @@ import { console } from "forge-std-next/console.sol";
 import { Script } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
-import { ProxyDeployerLib } from "mento-core-2.6.0/governance/deployers/ProxyDeployerLib.sol";
+import { ProxyAdmin } from "lib/mento-core-2.6.0/lib/openzeppelin-contracts-next/contracts/proxy/transparent/ProxyAdmin.sol";
 
 interface IOwnableLite {
   function transferOwnership(address newOwner) external;
 }
 
+// yarn cgp:deploy -n celo -u MU09 -f -g mento
 contract MU09_Deploy_LockingProxyAdmin is Script {
   using Contracts for Contracts.Cache;
 
@@ -21,8 +22,7 @@ contract MU09_Deploy_LockingProxyAdmin is Script {
 
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
-      // Check out the name of the contract in the contracts cache. Could clash with other contracts
-      IOwnableLite proxyAdmin = IOwnableLite(address(ProxyDeployerLib.deployAdmin()));
+      IOwnableLite proxyAdmin = IOwnableLite(address(new ProxyAdmin()));
       console.log("Deployed ProxyAdmin for Locking at: %s", address(proxyAdmin));
 
       proxyAdmin.transferOwnership(mentoLabsMultisig);
