@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines, var-name-mixedcase
-pragma solidity ^0.5.13;
+// pragma solidity ^0.5.13;
+pragma solidity >=0.5.13 <0.9.0;
 pragma experimental ABIEncoderV2;
 
-import { GovernanceScript } from "script/utils/Script.sol";
+import { GovernanceScript } from "script/utils/mento/Script.sol";
 import { console } from "forge-std/console.sol";
-import { Contracts } from "script/utils/Contracts.sol";
-import { Chain } from "script/utils/Chain.sol";
+import { Contracts } from "script/utils/mento/Contracts.sol";
+import { Chain } from "script/utils/mento/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
@@ -71,6 +72,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   // MentoGovernance contracts:
   address private governanceFactory;
   address private timelockProxy;
+  address private mentoGovernance;
 
   // Mento Reserve Multisig address:
   address private reserveMultisig;
@@ -102,21 +104,21 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     celoGovernance = contracts.celoRegistry("Governance");
 
     // Tokens:
-    cUSDProxy = address(uint160(contracts.celoRegistry("StableToken")));
-    cEURProxy = address(uint160(contracts.celoRegistry("StableTokenEUR")));
-    cBRLProxy = address(uint160(contracts.celoRegistry("StableTokenBRL")));
-    eXOFProxy = address(uint160(contracts.deployed("StableTokenXOFProxy")));
-    cKESProxy = address(uint160(contracts.deployed("StableTokenKESProxy")));
-    PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
-    cCOPProxy = address(uint160(contracts.deployed("StableTokenCOPProxy")));
+    cUSDProxy = address(contracts.celoRegistry("StableToken"));
+    cEURProxy = address(contracts.celoRegistry("StableTokenEUR"));
+    cBRLProxy = address(contracts.celoRegistry("StableTokenBRL"));
+    eXOFProxy = address(contracts.deployed("StableTokenXOFProxy"));
+    cKESProxy = address(contracts.deployed("StableTokenKESProxy"));
+    PUSOProxy = address(contracts.deployed("StableTokenPHPProxy"));
+    cCOPProxy = address(contracts.deployed("StableTokenCOPProxy"));
 
     // MentoV2 contracts:
-    brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
-    biPoolManagerProxy = address(uint160(contracts.deployed("BiPoolManagerProxy")));
-    reserveProxy = address(uint160(contracts.celoRegistry("Reserve")));
-    breakerBox = address(uint160(contracts.deployed("BreakerBox")));
-    medianDeltaBreaker = address(uint160(contracts.deployed("MedianDeltaBreaker")));
-    valueDeltaBreaker = address(uint160(contracts.deployed("ValueDeltaBreaker")));
+    brokerProxy = address(contracts.deployed("BrokerProxy"));
+    biPoolManagerProxy = address(contracts.deployed("BiPoolManagerProxy"));
+    reserveProxy = address(contracts.celoRegistry("Reserve"));
+    breakerBox = address(contracts.deployed("BreakerBox"));
+    medianDeltaBreaker = address(contracts.deployed("MedianDeltaBreaker"));
+    valueDeltaBreaker = address(contracts.deployed("ValueDeltaBreaker"));
 
     // MentoV1 contracts:
     exchangeProxy = contracts.dependency("Exchange");
@@ -127,6 +129,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     // MentoGovernance contracts:
     governanceFactory = contracts.deployed("GovernanceFactory");
     timelockProxy = IGovernanceFactory(governanceFactory).governanceTimelock();
+    mentoGovernance = IGovernanceFactory(governanceFactory).mentoGovernor();
 
     // Mento Reserve Multisig address:
     reserveMultisig = contracts.dependency("PartialReserveMultisig");
@@ -142,7 +145,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "https://TODO", celoGovernance);
+      createProposal(_transactions, "https://TODO", mentoGovernance);
     }
     vm.stopBroadcast();
   }
@@ -168,7 +171,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
           value: 0,
           destination: reserveProxy,
           // we remove the first index(0) in the list for each iteration because the index changes after each removal
-          data: abi.encodeWithSelector(IReserveLite(0).removeOtherReserveAddress.selector, otherReserves[i], 0)
+          data: abi.encodeWithSelector(IReserveLite(address(0)).removeOtherReserveAddress.selector, otherReserves[i], 0)
         })
       );
     }
@@ -177,7 +180,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
       ICeloGovernance.Transaction({
         value: 0,
         destination: reserveProxy,
-        data: abi.encodeWithSelector(IReserveLite(0).addOtherReserveAddress.selector, reserveMultisig)
+        data: abi.encodeWithSelector(IReserveLite(address(0)).addOtherReserveAddress.selector, reserveMultisig)
       })
     );
   }
@@ -255,7 +258,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
         ICeloGovernance.Transaction({
           value: 0,
           destination: contractAddr,
-          data: abi.encodeWithSelector(IOwnableLite(0).transferOwnership.selector, celoGovernance)
+          data: abi.encodeWithSelector(IOwnableLite(address(0)).transferOwnership.selector, celoGovernance)
         })
       );
     }
@@ -269,7 +272,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
         ICeloGovernance.Transaction({
           value: 0,
           destination: contractAddr,
-          data: abi.encodeWithSelector(IProxyLite(0)._transferOwnership.selector, celoGovernance)
+          data: abi.encodeWithSelector(IProxyLite(address(0))._transferOwnership.selector, celoGovernance)
         })
       );
     }
