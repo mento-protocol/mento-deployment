@@ -1,22 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines, var-name-mixedcase
-pragma solidity ^0.5.13;
+pragma solidity ^0.8;
 pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/mento/Script.sol";
 import { console } from "forge-std/console.sol";
-import { Contracts } from "script/utils/Contracts.sol";
-import { Chain } from "script/utils/Chain.sol";  
+import { Contracts } from "script/utils/mento/Contracts.sol";
+import { Chain } from "script/utils/mento/Chain.sol";
 
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
-interface IOwnableLite { 
+interface IOwnableLite {
   function transferOwnership(address recipient) external;
 }
 
 contract MU09 is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
+
+  bool public hasChecks = true;
 
   address public mentoGovernor;
   address public lockingProxyAdmin;
@@ -76,7 +78,7 @@ contract MU09 is IMentoUpgrade, GovernanceScript {
     _transactions[0] = ICeloGovernance.Transaction(
       0,
       lockingProxy,
-      abi.encodeWithSelector(IOwnableLite(0).transferOwnership.selector, lockingProxyAdmin)
+      abi.encodeWithSelector(IOwnableLite.transferOwnership.selector, lockingProxyAdmin)
     );
 
     return _transactions;

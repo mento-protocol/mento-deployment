@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.5.13;
+pragma solidity ^0.8;
 pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/mento/Script.sol";
 import { console } from "forge-std/console.sol";
-import { Contracts } from "script/utils/Contracts.sol";
+import { Contracts } from "script/utils/mento/Contracts.sol";
 import { Test } from "forge-std/Test.sol";
 
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
@@ -57,7 +57,7 @@ contract MU09Checks is GovernanceScript, Test {
 
     address lockingProxyAdminOwner = IOwnableLite(lockingProxyAdmin).owner();
     require(lockingProxyAdminOwner == mentoLabsMultisig, "LockingProxyAdmin owner is not MentoLabsMultisig");
-    console.log("🟢 LockingProxyAdmin owner is MentoLabsMultisig: %s", lockingProxyAdminOwner);
+    console.log(unicode"🟢 LockingProxyAdmin owner is MentoLabsMultisig: %s", lockingProxyAdminOwner);
   }
 
   function verifyLockingProxyOwnership() public {
@@ -65,6 +65,6 @@ contract MU09Checks is GovernanceScript, Test {
 
     address lockingProxyOwner = IOwnableLite(lockingProxy).owner();
     require(lockingProxyOwner == lockingProxyAdmin, "LockingProxy owner is not LockingProxyAdmin");
-    console.log("🟢 LockingProxy owner is LockingProxyAdmin: %s", lockingProxyOwner);
+    console.log(unicode"🟢 LockingProxy owner is LockingProxyAdmin: %s", lockingProxyOwner);
   }
 }

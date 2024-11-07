@@ -6,16 +6,16 @@ import { console } from "forge-std-next/console.sol";
 import { Script } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
-import { ProxyDeployerLib } from "mento-core-2.5.0/governance/deployers/ProxyDeployerLib.sol";
+import { ProxyDeployerLib } from "mento-core-2.6.0/governance/deployers/ProxyDeployerLib.sol";
 
 interface IOwnableLite {
-    function transferOwnership(address newOwner) external;
+  function transferOwnership(address newOwner) external;
 }
 
 contract MU09_Deploy_LockingProxyAdmin is Script {
   using Contracts for Contracts.Cache;
 
-  function run() public { 
+  function run() public {
     address mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
     require(mentoLabsMultisig != address(0), "MentoLabsMultisig address not found");
 
