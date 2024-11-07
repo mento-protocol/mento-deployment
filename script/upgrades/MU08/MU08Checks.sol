@@ -143,7 +143,7 @@ contract MU08Checks is GovernanceScript, Test {
     for (uint256 i = 0; i < tokenProxies.length; i++) {
       verifyProxyAndImplementationOwnership(tokenProxies[i]);
     }
-    console.log("🤘🏼Token proxies and implementations ownership transferred to Mento Governance🤘🏼");
+    console.log("🤘🏼Token proxies and implementations ownership transferred to Celo Gov");
   }
 
   function verifyMentoV2Ownership() public {
@@ -161,7 +161,7 @@ contract MU08Checks is GovernanceScript, Test {
     for (uint256 i = 0; i < mentoV2NonupgradeableContracts.length; i++) {
       verifyNonupgradeableContractsOwnership(mentoV2NonupgradeableContracts[i]);
     }
-    console.log("🤘🏼MentoV2 contract ownerships transferred to Mento Governance🤘🏼");
+    console.log("🤘🏼MentoV2 contract ownerships transferred to Celo Gov");
   }
 
   function verifyMentoV1Ownership() public {
@@ -175,23 +175,23 @@ contract MU08Checks is GovernanceScript, Test {
     for (uint256 i = 0; i < mentoV1Proxies.length; i++) {
       verifyProxyAndImplementationOwnership(mentoV1Proxies[i]);
     }
-    console.log("🤘🏼MentoV1 contract ownerships transferred to Mento Governance🤘🏼");
+    console.log("🤘🏼MentoV1 contract ownerships transferred to Celo Gov");
   }
 
   function verifyGovernanceFactoryOwnership() public {
     console.log("\n== Verifying GovernanceFactory ownership: ==");
     verifyNonupgradeableContractsOwnership(governanceFactory);
-    console.log("🤘🏼GovernanceFactory ownership transferred to Mento Governance🤘🏼");
+    console.log("🤘🏼GovernanceFactory ownership transferred to Celo Gov");
   }
 
   function verifyProxyAndImplementationOwnership(address proxy) internal {
     address proxyOwner = IOwnableLite(proxy).owner();
-    require(proxyOwner == timelockProxy, "❗️❌ Proxy ownership not transferred to Mento Governance");
-    console.log("🟢 Proxy:[%s] ownership transferred to Mento Governance", proxy);
+    require(proxyOwner == celoGovernance, "❗️❌ Proxy ownership not transferred to Celo Gov");
+    console.log("🟢 Proxy:[%s] ownership transferred to Celo Gov", proxy);
 
     address proxyAdmin = IProxyLite(proxy)._getOwner();
-    require(proxyAdmin == timelockProxy, "❗️❌ Proxy admin ownership not transferred to Mento Governance");
-    console.log("🟢 Proxy:[%s] admin ownership transferred to Mento Governance", proxy);
+    require(proxyAdmin == celoGovernance, "❗️❌ Proxy admin ownership not transferred to Celo Gov");
+    console.log("🟢 Proxy:[%s] admin ownership transferred to Celo Gov", proxy);
 
     address implementation = IProxyLite(proxy)._getImplementation();
     address implementationOwner = IOwnableLite(implementation).owner();
@@ -199,10 +199,10 @@ contract MU08Checks is GovernanceScript, Test {
 
     // Note: Mento V1 contracts are owned by the original deployer address and not by Celo Governance,
     // so we are not able to transfer them. Since they are deprecated anyways we are fine with this.
-    if (implementationOwner != timelockProxy && !isMentoV1Contract(proxy)) {
-      console.log("🟡 Warning Implementation:[%s] ownership not transferred to Mento Governance 🟡 ", implementation);
-    } else if (implementationOwner == timelockProxy) {
-      console.log("🟢 Implementation:[%s] ownership transferred to Mento Governance", implementation);
+    if (implementationOwner != celoGovernance && !isMentoV1Contract(proxy)) {
+      console.log("🟡 Warning Implementation:[%s] ownership not transferred to Celo Gov 🟡 ", implementation);
+    } else if (implementationOwner == celoGovernance) {
+      console.log("🟢 Implementation:[%s] ownership transferred to Celo Gov", implementation);
     }
   }
 
@@ -216,7 +216,7 @@ contract MU08Checks is GovernanceScript, Test {
 
   function verifyNonupgradeableContractsOwnership(address nonupgradeableContract) public {
     address contractOwner = IOwnableLite(nonupgradeableContract).owner();
-    require(contractOwner == timelockProxy, "❗️❌ Contract ownership not transferred to Mento Governance");
-    console.log("🟢 Contract:[%s] ownership transferred to Mento Governance", nonupgradeableContract);
+    require(contractOwner == celoGovernance, "❗️❌ Contract ownership not transferred to Celo Gov");
+    console.log("🟢 Contract:[%s] ownership transferred to Celo Gov", nonupgradeableContract);
   }
 }

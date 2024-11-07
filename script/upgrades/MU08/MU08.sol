@@ -130,6 +130,9 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
 
     // Mento Reserve Multisig address:
     reserveMultisig = contracts.dependency("PartialReserveMultisig");
+
+    console.log("Celo Governance: ", celoGovernance);
+    console.log("Mento Governance", timelockProxy);
   }
 
   function run() public {
@@ -246,12 +249,13 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
 
   function transferOwnership(address contractAddr) internal {
     address contractOwner = IOwnableLite(contractAddr).owner();
-    if (contractOwner != timelockProxy && contractOwner == celoGovernance) {
+    // if (contractOwner != timelockProxy && contractOwner == celoGovernance) {
+    if (contractOwner != celoGovernance && contractOwner == timelockProxy) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,
           destination: contractAddr,
-          data: abi.encodeWithSelector(IOwnableLite(0).transferOwnership.selector, timelockProxy)
+          data: abi.encodeWithSelector(IOwnableLite(0).transferOwnership.selector, celoGovernance)
         })
       );
     }
@@ -259,12 +263,13 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
 
   function transferProxyAdmin(address contractAddr) internal {
     address proxyAdmin = IProxyLite(contractAddr)._getOwner();
-    if (proxyAdmin != timelockProxy && proxyAdmin == celoGovernance) {
+    // if (proxyAdmin != timelockProxy && proxyAdmin == celoGovernance) {
+    if (proxyAdmin != celoGovernance && proxyAdmin == timelockProxy) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,
           destination: contractAddr,
-          data: abi.encodeWithSelector(IProxyLite(0)._transferOwnership.selector, timelockProxy)
+          data: abi.encodeWithSelector(IProxyLite(0)._transferOwnership.selector, celoGovernance)
         })
       );
     }
