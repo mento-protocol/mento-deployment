@@ -21,7 +21,8 @@ contract MU09_Deploy_LockingProxyAdmin is Script {
 
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
-      IOwnableLite proxyAdmin = ProxyDeployerLib.deployAdmin();
+      // Check out the name of the contract in the contracts cache. Could clash with other contracts
+      IOwnableLite proxyAdmin = IOwnableLite(address(ProxyDeployerLib.deployAdmin()));
       console.log("Deployed ProxyAdmin for Locking at: %s", address(proxyAdmin));
 
       proxyAdmin.transferOwnership(mentoLabsMultisig);
