@@ -6,7 +6,7 @@ import { console } from "forge-std-next/console.sol";
 import { Script } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
-import { ProxyAdmin } from "lib/mento-core-2.6.0/lib/openzeppelin-contracts-next/contracts/proxy/transparent/ProxyAdmin.sol";
+import { ProxyAdmin } from "mento-core-2.6.0-oz/contracts/proxy/transparent/ProxyAdmin.sol";
 
 interface IOwnableLite {
   function transferOwnership(address newOwner) external;
