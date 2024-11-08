@@ -11,8 +11,10 @@ import { Chain } from "script/utils/mento/Chain.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
-interface IOwnableLite {
-  function transferOwnership(address recipient) external;
+interface IProxyAdminLite {
+  function getProxyAdmin(address proxy) external view returns (address);
+
+  function changeProxyAdmin(address proxy, address newAdmin) external;
 }
 
 contract MU09 is IMentoUpgrade, GovernanceScript {
@@ -23,6 +25,8 @@ contract MU09 is IMentoUpgrade, GovernanceScript {
   address public mentoGovernor;
   address public lockingProxyAdmin;
   address public lockingProxy;
+
+  address public oldLockingProxyAdmin;
 
   IGovernanceFactory public governanceFactory;
 
@@ -56,6 +60,10 @@ contract MU09 is IMentoUpgrade, GovernanceScript {
     // Get the locking proxy address
     lockingProxy = governanceFactory.locking();
     require(lockingProxy != address(0), "LockingProxy address not found");
+
+    // Get the old locking proxy admin address
+    oldLockingProxyAdmin = governanceFactory.proxyAdmin();
+    require(oldLockingProxyAdmin != address(0), "Old LockingProxyAdmin address not found");
   }
 
   function run() public {
@@ -74,11 +82,18 @@ contract MU09 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     ICeloGovernance.Transaction[] memory _transactions = new ICeloGovernance.Transaction[](1);
 
-    // Create transaction to transfer proxy ownership
+    // Check that the proxy admin of locking is the proxy admin from the governance factory
+    address proxyAdminOfLocking = IProxyAdminLite(oldLockingProxyAdmin).getProxyAdmin(lockingProxy);
+    require(
+      proxyAdminOfLocking == oldLockingProxyAdmin,
+      "Proxy admin of locking is not `governanceFactory.proxyAdmin()`"
+    );
+
+    // Send tx to the old proxy admin to change the proxy admin of locking to the new locking proxy admin
     _transactions[0] = ICeloGovernance.Transaction(
       0,
-      lockingProxy,
-      abi.encodeWithSelector(IOwnableLite.transferOwnership.selector, lockingProxyAdmin)
+      oldLockingProxyAdmin,
+      abi.encodeWithSelector(IProxyAdminLite.changeProxyAdmin.selector, lockingProxy, lockingProxyAdmin)
     );
 
     return _transactions;
