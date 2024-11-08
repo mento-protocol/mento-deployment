@@ -12,7 +12,6 @@ interface IOwnableLite {
   function transferOwnership(address newOwner) external;
 }
 
-// yarn cgp:deploy -n celo -u MU09 -f -g mento
 contract MU09_Deploy_LockingProxyAdmin is Script {
   using Contracts for Contracts.Cache;
 
