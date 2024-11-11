@@ -8,9 +8,11 @@ import { console } from "forge-std/console.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
+import { FixidityLib } from "script/utils/FixidityLib.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
+import { IReserve } from "mento-core-2.6.0/interfaces/IReserve.sol";
 
 interface IOwnableLite {
   function owner() external view returns (address);
@@ -24,14 +26,8 @@ interface IProxyLite {
   function _getOwner() external view returns (address);
 
   function _transferOwnership(address) external;
-}
 
-interface IReserveLite {
-  function getOtherReserveAddresses() external returns (address[] memory);
-
-  function removeOtherReserveAddress(address, uint256) external returns (bool);
-
-  function addOtherReserveAddress(address) external returns (bool);
+  function _setAndInitializeImplementation(address, bytes calldata) external payable;
 }
 
 contract MU08 is IMentoUpgrade, GovernanceScript {
@@ -42,6 +38,9 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
 
   // Celo Governance:
   address private celoGovernance;
+
+  // Celo Registry:
+  address private celoRegistry;
 
   // Mento contracts:
 
@@ -75,6 +74,9 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   // Mento Reserve Multisig address:
   address private reserveMultisig;
 
+  // Celo Custody Reserve address:
+  address private celoCustodyReserve;
+
   function prepare() public {
     loadDeployedContracts();
     setAddresses();
@@ -92,6 +94,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     contracts.loadSilent("PUSO-00-Create-Proxies", "latest");
     contracts.loadSilent("cCOP-00-Create-Proxies", "latest");
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
+    contracts.loadSilent("MU08-00-Create-Proxies", "latest");
   }
 
   /**
@@ -100,6 +103,9 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   function setAddresses() public {
     // Celo Governance:
     celoGovernance = contracts.celoRegistry("Governance");
+
+    // Celo Registry:
+    celoRegistry = 0x000000000000000000000000000000000000ce10;
 
     // Tokens:
     cUSDProxy = address(uint160(contracts.celoRegistry("StableToken")));
@@ -130,6 +136,9 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
 
     // Mento Reserve Multisig address:
     reserveMultisig = contracts.dependency("PartialReserveMultisig");
+
+    // Celo Custody Reserve address:
+    celoCustodyReserve = address(uint160(contracts.deployed("ReserveProxy")));
   }
 
   function run() public {
@@ -147,6 +156,13 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
+    proposal_initializeCustodyReserve();
+    proposal_configureCustodyReserve();
+    proposal_configureMentoReserve();
+    proposal_transferCeloToCustodyReserve();
+    proposal_updateReserveSpenders();
+    proposal_transferCustodyReserveOwnership();
+
     proposal_updateOtherReserveAddresses();
     proposal_transferTokenOwnership();
     proposal_transferMentoV2Ownership();
@@ -156,16 +172,170 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     return transactions;
   }
 
+  function proposal_initializeCustodyReserve() public {
+    address reserveImplementation = IProxyLite(reserveProxy)._getImplementation();
+
+    if (IProxyLite(celoCustodyReserve)._getImplementation() == address(0)) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          celoCustodyReserve,
+          abi.encodeWithSelector(
+            IProxyLite(0)._setAndInitializeImplementation.selector,
+            reserveImplementation,
+            abi.encodeWithSelector(
+              IReserve(0).initialize.selector,
+              celoRegistry, // celo registry address
+              3153600000, // 100 years non relevant copied from main reserve config
+              FixidityLib.fixed1().unwrap(), // 100% CELO spending
+              0, // no frozen gold
+              0, // no frozen days
+              Arrays.bytes32s(bytes32("cGLD")), // only celo collateral asset
+              Arrays.uints(FixidityLib.fixed1().unwrap()), // 100% weight
+              FixidityLib.newFixed(0).unwrap(), // disabled tobin tax
+              FixidityLib.newFixed(0).unwrap(), // disabled tobin tax reserve ratio
+              Arrays.addresses(contracts.celoRegistry("GoldToken")), // Celo only collateral asset
+              Arrays.uints(FixidityLib.fixed1().unwrap()) // 100% daily spending ratio
+            )
+          )
+        )
+      );
+    }
+  }
+
+  function proposal_configureCustodyReserve() public {
+    // set celo gov as spender on custody reserve
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        celoCustodyReserve,
+        abi.encodeWithSelector(IReserve(0).addSpender.selector, celoGovernance)
+      )
+    );
+
+    // set celo gov as other reserve address on custody reserve
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        celoCustodyReserve,
+        abi.encodeWithSelector(IReserve(0).addOtherReserveAddress.selector, celoGovernance)
+      )
+    );
+  }
+
+  function proposal_configureMentoReserve() public {
+    // set celo gov as spender on mento reserve
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        reserveProxy,
+        abi.encodeWithSelector(IReserve(0).addSpender.selector, celoGovernance)
+      )
+    );
+
+    // set custody reserve as other reserve address on mento reserve
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        reserveProxy,
+        abi.encodeWithSelector(IReserve(0).addOtherReserveAddress.selector, celoCustodyReserve)
+      )
+    );
+
+    // set celo spending ratio to 100% on mento reserve
+    if (
+      IReserve(reserveProxy).getDailySpendingRatioForCollateralAsset(contracts.celoRegistry("GoldToken")) !=
+      FixidityLib.fixed1().unwrap()
+    ) {
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          reserveProxy,
+          abi.encodeWithSelector(
+            IReserve(0).setDailySpendingRatioForCollateralAssets.selector,
+            Arrays.addresses(contracts.celoRegistry("GoldToken")),
+            Arrays.uints(FixidityLib.fixed1().unwrap())
+          )
+        )
+      );
+    }
+  }
+
+  function proposal_transferCeloToCustodyReserve() public {
+    require(80_000_000 * 1e18 <= IReserve(reserveProxy).getUnfrozenBalance(), "Not enough CELO in main reserve");
+
+    // transfer 80 mio CELO to custody reserve from main reserve
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        reserveProxy,
+        abi.encodeWithSelector(
+          IReserve(0).transferCollateralAsset.selector,
+          contracts.celoRegistry("GoldToken"),
+          celoCustodyReserve,
+          80_000_000 * 1e18
+        )
+      )
+    );
+
+    // transfer 20 mio CELO to celo gov from custody reserve;
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        celoCustodyReserve,
+        abi.encodeWithSelector(
+          IReserve(0).transferCollateralAsset.selector,
+          contracts.celoRegistry("GoldToken"),
+          celoGovernance,
+          20_000_000 * 1e18
+        )
+      )
+    );
+  }
+
+  function proposal_updateReserveSpenders() public {
+    // remove celo gov as spender on mento reserve
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        reserveProxy,
+        abi.encodeWithSelector(IReserve(0).removeSpender.selector, celoGovernance)
+      )
+    );
+
+    // remove custody reserve as other reserve address on mento reserve
+    address[] memory otherReserves = IReserve(reserveProxy).getOtherReserveAddresses();
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        reserveProxy,
+        abi.encodeWithSelector(IReserve(0).removeOtherReserveAddress.selector, celoCustodyReserve, otherReserves.length)
+      )
+    );
+  }
+
+  function proposal_transferCustodyReserveOwnership() public {
+    // transfer ownership of celo custody reserve to mento gov
+    transactions.push(
+      ICeloGovernance.Transaction({
+        value: 0,
+        destination: celoCustodyReserve,
+        data: abi.encodeWithSelector(IOwnableLite(0).transferOwnership.selector, timelockProxy)
+      })
+    );
+  }
+
   function proposal_updateOtherReserveAddresses() public {
     // remove anchorage addressess
-    address[] memory otherReserves = IReserveLite(reserveProxy).getOtherReserveAddresses();
+    address[] memory otherReserves = IReserve(reserveProxy).getOtherReserveAddresses();
     for (uint256 i = 0; i < otherReserves.length; i++) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,
           destination: reserveProxy,
           // we remove the first index(0) in the list for each iteration because the index changes after each removal
-          data: abi.encodeWithSelector(IReserveLite(0).removeOtherReserveAddress.selector, otherReserves[i], 0)
+          data: abi.encodeWithSelector(IReserve(0).removeOtherReserveAddress.selector, otherReserves[i], 0)
         })
       );
     }
@@ -174,7 +344,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
       ICeloGovernance.Transaction({
         value: 0,
         destination: reserveProxy,
-        data: abi.encodeWithSelector(IReserveLite(0).addOtherReserveAddress.selector, reserveMultisig)
+        data: abi.encodeWithSelector(IReserve(0).addOtherReserveAddress.selector, reserveMultisig)
       })
     );
   }

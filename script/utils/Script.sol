@@ -8,6 +8,7 @@ import { Chain } from "./Chain.sol";
 import { Contracts } from "./Contracts.sol";
 import { GovernanceHelper } from "./GovernanceHelper.sol";
 import { Factory } from "./Factory.sol";
+import { PrecompileHandler } from "celo-foundry/PrecompileHandler.sol";
 
 import { IERC20Lite } from "../interfaces/IERC20Lite.sol";
 
@@ -19,8 +20,10 @@ contract Script is BaseScript {
 
   Contracts.Cache public contracts;
   Factory public factory;
+  PrecompileHandler public ph;
 
   constructor() public {
+    ph = new PrecompileHandler();
     _init();
   }
 
