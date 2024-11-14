@@ -45,6 +45,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   // Mento contracts:
 
   //Tokens:
+  address private CELOProxy;
   address private cUSDProxy;
   address private cEURProxy;
   address private cBRLProxy;
@@ -108,6 +109,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     celoRegistry = 0x000000000000000000000000000000000000ce10;
 
     // Tokens:
+    CELOProxy = address(uint160(contracts.celoRegistry("GoldToken")));
     cUSDProxy = address(uint160(contracts.celoRegistry("StableToken")));
     cEURProxy = address(uint160(contracts.celoRegistry("StableTokenEUR")));
     cBRLProxy = address(uint160(contracts.celoRegistry("StableTokenBRL")));
@@ -190,11 +192,11 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
               FixidityLib.fixed1().unwrap(), // 100% CELO spending
               0, // no frozen gold
               0, // no frozen days
-              Arrays.bytes32s(bytes32("cGLD")), // only celo collateral asset
+              Arrays.bytes32s(bytes32("cGLD")), // only CELO collateral asset
               Arrays.uints(FixidityLib.fixed1().unwrap()), // 100% weight
               FixidityLib.newFixed(0).unwrap(), // disabled tobin tax
               FixidityLib.newFixed(0).unwrap(), // disabled tobin tax reserve ratio
-              Arrays.addresses(contracts.celoRegistry("GoldToken")), // Celo only collateral asset
+              Arrays.addresses(CELOProxy), // CELO only collateral asset
               Arrays.uints(FixidityLib.fixed1().unwrap()) // 100% daily spending ratio
             )
           )
@@ -242,18 +244,15 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
       )
     );
 
-    // set celo spending ratio to 100% on mento reserve
-    if (
-      IReserve(reserveProxy).getDailySpendingRatioForCollateralAsset(contracts.celoRegistry("GoldToken")) !=
-      FixidityLib.fixed1().unwrap()
-    ) {
+    // set CELO spending ratio to 100% on mento reserve
+    if (IReserve(reserveProxy).getDailySpendingRatioForCollateralAsset(CELOProxy) != FixidityLib.fixed1().unwrap()) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           reserveProxy,
           abi.encodeWithSelector(
             IReserve(0).setDailySpendingRatioForCollateralAssets.selector,
-            Arrays.addresses(contracts.celoRegistry("GoldToken")),
+            Arrays.addresses(CELOProxy),
             Arrays.uints(FixidityLib.fixed1().unwrap())
           )
         )
@@ -264,28 +263,28 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   function proposal_transferCeloToCustodyReserve() public {
     require(80_000_000 * 1e18 <= IReserve(reserveProxy).getUnfrozenBalance(), "Not enough CELO in main reserve");
 
-    // transfer 80 mio CELO to custody reserve from main reserve
+    // transfer 80M CELO to custody reserve from main reserve
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         reserveProxy,
         abi.encodeWithSelector(
           IReserve(0).transferCollateralAsset.selector,
-          contracts.celoRegistry("GoldToken"),
+          CELOProxy,
           celoCustodyReserve,
           80_000_000 * 1e18
         )
       )
     );
 
-    // transfer 20 mio CELO to celo gov from custody reserve;
+    // transfer 20M CELO to celo gov from custody reserve;
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         celoCustodyReserve,
         abi.encodeWithSelector(
           IReserve(0).transferCollateralAsset.selector,
-          contracts.celoRegistry("GoldToken"),
+          CELOProxy,
           celoGovernance,
           20_000_000 * 1e18
         )

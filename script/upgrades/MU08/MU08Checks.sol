@@ -31,6 +31,7 @@ contract MU08Checks is GovernanceScript, Test {
   address private celoGovernance;
 
   //Tokens:
+  address private CELOProxy;
   address private cUSDProxy;
   address private cEURProxy;
   address private cBRLProxy;
@@ -79,6 +80,7 @@ contract MU08Checks is GovernanceScript, Test {
     celoGovernance = contracts.celoRegistry("Governance");
 
     // Tokens:
+    CELOProxy = address(uint160(contracts.celoRegistry("GoldToken")));
     cUSDProxy = address(uint160(contracts.celoRegistry("StableToken")));
     cEURProxy = address(uint160(contracts.celoRegistry("StableTokenEUR")));
     cBRLProxy = address(uint160(contracts.celoRegistry("StableTokenBRL")));
@@ -170,15 +172,15 @@ contract MU08Checks is GovernanceScript, Test {
 
     // Verify custody reserve collateral assets
     address collateralAsset = IReserve(celoCustodyReserve).collateralAssets(0);
-    require(collateralAsset == contracts.celoRegistry("GoldToken"), "❗️❌ Collateral asset is not Celo");
+    require(collateralAsset == CELOProxy, "❗️❌ Collateral asset is not CELO");
     vm.expectRevert();
     IReserve(celoCustodyReserve).collateralAssets(1);
-    console.log("🟢 Custody reserve collateral asset is only Celo");
+    console.log("🟢 Custody reserve collateral asset is only CELO");
 
     // Verify custody reserve spending limits
     uint256 dailySpendingLimit = IReserve(celoCustodyReserve).getDailySpendingRatioForCollateralAsset(collateralAsset);
     require(dailySpendingLimit == 1e24, "❗️❌ Daily spending limit is not 100%");
-    console.log("🟢 Custody reserve daily spending limit on celo is 100%");
+    console.log("🟢 Custody reserve daily spending limit on CELO is 100%");
 
     // Verify custody reserve spender is Celo Governance
     require(
@@ -189,33 +191,32 @@ contract MU08Checks is GovernanceScript, Test {
   }
 
   function verifyReturnOfCelo() public {
-    address celoToken = contracts.celoRegistry("GoldToken");
-    console.log("\n== Verifying return of 80 mio Celo: ==");
+    console.log("\n== Verifying return of 80M Celo: ==");
 
-    // Verify custody reserve balance is 60_000_000 Celo
-    uint256 balance = IERC20(celoToken).balanceOf(celoCustodyReserve);
-    require(balance == 60_000_000e18, "❗️❌ Custody reserve balance is not 60_000_000 Celo");
+    // Verify custody reserve balance is 60_000_000 CELO
+    uint256 balance = IERC20(CELOProxy).balanceOf(celoCustodyReserve);
+    require(balance == 60_000_000e18, "❗️❌ Custody reserve balance is not 60_000_000 CELO");
     console.log("🟢 Custody reserve balance is 60_000_000 Celo");
 
-    // Verify initial Celo amount was transferred to Celo Governance
-    uint256 celoGovernanceBalance = IERC20(celoToken).balanceOf(celoGovernance);
-    // @dev can't do an exact check because Celo Governance already has some Celo.
-    require(20_000_000e18 <= celoGovernanceBalance, "❗️❌ Celo Governance balance is less than 20_000_000 Celo");
-    console.log("🟢 Celo Governance balance is larger than 20_000_000 Celo");
+    // Verify initial CELO amount was transferred to Celo Governance
+    uint256 celoGovernanceBalance = IERC20(CELOProxy).balanceOf(celoGovernance);
+    // @dev can't do an exact check because Celo Governance already has some CELO
+    require(20_000_000e18 <= celoGovernanceBalance, "❗️❌ Celo Governance balance is less than 20_000_000 CELO");
+    console.log("🟢 Celo Governance balance is larger than 20_000_000 CELO");
 
     // Verify custody reserve last spending day on collateral asset
-    uint256 lastSpend = IReserve(celoCustodyReserve).collateralAssetLastSpendingDay(celoToken);
+    uint256 lastSpend = IReserve(celoCustodyReserve).collateralAssetLastSpendingDay(CELOProxy);
     require(lastSpend == now / 1 days, "❗️❌ Last spend day is not today");
 
-    // Verify Celo governance can pull remaining Celo from custody reserve
+    // Verify Celo governance can pull remaining CELO from custody reserve
     vm.prank(celoGovernance);
-    IReserve(celoCustodyReserve).transferCollateralAsset(celoToken, address(uint160(celoGovernance)), 60_000_000e18);
-    uint256 celoGovernanceBalanceAfter = IERC20(celoToken).balanceOf(celoGovernance);
+    IReserve(celoCustodyReserve).transferCollateralAsset(CELOProxy, address(uint160(celoGovernance)), 60_000_000e18);
+    uint256 celoGovernanceBalanceAfter = IERC20(CELOProxy).balanceOf(celoGovernance);
     require(
       celoGovernanceBalanceAfter == celoGovernanceBalance + 60_000_000e18,
-      "❗️❌ Celo Governance can't pull remaining Celo from custody reserve"
+      "❗️❌ Celo Governance can't pull remaining CELO from custody reserve"
     );
-    console.log("🟢 Celo Governance can pull remaining Celo from custody reserve");
+    console.log("🟢 Celo Governance can pull remaining CELO from custody reserve");
   }
 
   function verifyOtherReservesAddresses() public {
