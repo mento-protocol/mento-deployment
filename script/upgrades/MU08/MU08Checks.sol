@@ -121,7 +121,7 @@ contract MU08Checks is GovernanceScript, Test {
     verifyCustodyReserveSetup();
     verifyReturnOfCelo();
 
-    verifyOtherReservesAddresses();
+    verifyMentoReserveFinalSetup();
     verifyTokenOwnership();
     verifyMentoV2Ownership();
     verifyMentoV1Ownership();
@@ -219,14 +219,33 @@ contract MU08Checks is GovernanceScript, Test {
     console.log("🟢 Celo Governance can pull remaining CELO from custody reserve");
   }
 
-  function verifyOtherReservesAddresses() public {
-    console.log("\n== Verifying other reserves addresses of onchain Reserve: ==");
+  function verifyMentoReserveFinalSetup() public {
+    console.log("\n== Verifying Mento Reserve final setup: ==");
+    // 1. There should only be one other reserve address, which is the Reserve Multisig
+    // console.log("\n== Verifying other reserves addresses of onchain Reserve: ==");
     address[] memory otherReserves = IReserve(reserveProxy).getOtherReserveAddresses();
 
     require(otherReserves.length == 1, "❗️❌ Wrong number of other reserves addresses");
     require(otherReserves[0] == reserveMultisig, "❗️❌ Other reserve address is not the Reserve Multisig");
     console.log("🟢Other reserves address was added successfully: ", reserveMultisig);
     console.log("🤘🏼Other reserves addresses of onchain Reserve are updated correctly.");
+
+    // 2. Mento Reserve multisig can pull the remaining CELO from the Reserve
+    uint256 multisigBalanceBefore = IERC20(CELOProxy).balanceOf(reserveMultisig);
+    uint256 reserveBalanceBefore = IERC20(CELOProxy).balanceOf(reserveProxy);
+
+    vm.prank(reserveMultisig);
+    IReserve(reserveProxy).transferCollateralAsset(CELOProxy, address(uint160(reserveMultisig)), reserveBalanceBefore);
+
+    require(
+      IERC20(CELOProxy).balanceOf(reserveMultisig) == multisigBalanceBefore + reserveBalanceBefore,
+      "❗️❌ Mento Governance can't pull remaining CELO from Reserve"
+    );
+    require(
+      IERC20(CELOProxy).balanceOf(reserveProxy) == 0,
+      "❗️❌ Reserve balance is not 0 after pulling remaining CELO"
+    );
+    console.log("🟢 Mento Governance can pull remaining CELO from Mento reserve");
   }
 
   function verifyTokenOwnership() public {
