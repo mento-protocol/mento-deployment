@@ -8,7 +8,7 @@ import { Contracts } from "script/utils/mento/Contracts.sol";
 import { Test } from "forge-std/Test.sol";
 
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
-import { ITransparentUpgradeableProxy } from "mento-core-2.6.0-oz/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import { ITransparentUpgradeableProxy } from "mento-core-2.6.0-tp/TransparentUpgradeableProxy.sol";
 
 interface IProxyAdminLite {
   function getProxyAdmin(address proxy) external view returns (address);
