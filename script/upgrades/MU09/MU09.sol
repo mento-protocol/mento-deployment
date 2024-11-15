@@ -46,11 +46,9 @@ contract MU09 is IMentoUpgrade, GovernanceScript {
 
     // Get newly deployed LockingProxyAdmin address
     lockingProxyAdmin = contracts.deployed("ProxyAdmin");
-    require(lockingProxyAdmin != address(0), "LockingProxyAdmin address not found");
 
     // Get and set the governance factory
     address governanceFactoryAddress = contracts.deployed("GovernanceFactory");
-    require(governanceFactoryAddress != address(0), "GovernanceFactory address not found");
     governanceFactory = IGovernanceFactory(governanceFactoryAddress);
 
     // Get the mento governor address
