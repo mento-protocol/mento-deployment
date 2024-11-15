@@ -8,9 +8,12 @@ import { Contracts } from "script/utils/mento/Contracts.sol";
 import { Test } from "forge-std/Test.sol";
 
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
+import { ITransparentUpgradeableProxy } from "mento-core-2.6.0-oz/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 interface IProxyAdminLite {
   function getProxyAdmin(address proxy) external view returns (address);
+
+  function upgrade(ITransparentUpgradeableProxy proxy, address implementation) external;
 }
 
 interface IOwnableLite {
@@ -23,6 +26,8 @@ contract MU09Checks is GovernanceScript, Test {
   address public newLockingProxyAdmin;
   address public lockingProxy;
   address public mentoLabsMultisig;
+
+  event Upgraded(address indexed newImplementation);
 
   function prepare() public {
     // Load addresses from deployments
@@ -52,6 +57,7 @@ contract MU09Checks is GovernanceScript, Test {
 
     verifyLockingProxyAdminOwnership();
     verifyLockingProxyAdminIsNewLockingProxyAdmin();
+    verifyMultisigCanUpgrade();
   }
 
   function verifyLockingProxyAdminOwnership() public {
@@ -68,5 +74,18 @@ contract MU09Checks is GovernanceScript, Test {
     address lockingProxyAdmin = IProxyAdminLite(newLockingProxyAdmin).getProxyAdmin(lockingProxy);
     require(lockingProxyAdmin == newLockingProxyAdmin, "LockingProxyAdmin is not the new LockingProxyAdmin");
     console.log(unicode"🟢 LockingProxyAdmin is new LockingProxyAdmin: %s", lockingProxyAdmin);
+  }
+
+  function verifyMultisigCanUpgrade() public {
+    console.log("\n== Verifying the multisig can successfuly upgrade implementation: ==");
+
+    address fakeImplementation = mentoLabsMultisig;
+    vm.startPrank(mentoLabsMultisig);
+
+    // Verify that the upgrade event is emitted with the fake implementation
+    vm.expectEmit(true, true, true, true);
+    emit Upgraded(fakeImplementation);
+
+    IProxyAdminLite(newLockingProxyAdmin).upgrade(ITransparentUpgradeableProxy(lockingProxy), fakeImplementation);
   }
 }
