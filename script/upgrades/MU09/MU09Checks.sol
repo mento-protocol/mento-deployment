@@ -9,16 +9,7 @@ import { Test } from "forge-std/Test.sol";
 
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 import { ITransparentUpgradeableProxy } from "mento-core-2.6.0-tp/TransparentUpgradeableProxy.sol";
-
-interface IProxyAdminLite {
-  function getProxyAdmin(address proxy) external view returns (address);
-
-  function upgrade(ITransparentUpgradeableProxy proxy, address implementation) external;
-}
-
-interface IOwnableLite {
-  function owner() external view returns (address);
-}
+import { ProxyAdmin } from "mento-core-2.6.0-tp/ProxyAdmin.sol";
 
 contract MU09Checks is GovernanceScript, Test {
   using Contracts for Contracts.Cache;
@@ -63,7 +54,7 @@ contract MU09Checks is GovernanceScript, Test {
   function verifyLockingProxyAdminOwnership() public {
     console.log("\n== Verifying locking proxy admin ownership: ==");
 
-    address lockingProxyAdminOwner = IOwnableLite(newLockingProxyAdmin).owner();
+    address lockingProxyAdminOwner = ProxyAdmin(newLockingProxyAdmin).owner();
     require(lockingProxyAdminOwner == mentoLabsMultisig, "LockingProxyAdmin owner is not MentoLabsMultisig");
     console.log(unicode"🟢 LockingProxyAdmin owner is MentoLabsMultisig: %s", lockingProxyAdminOwner);
   }
@@ -71,7 +62,9 @@ contract MU09Checks is GovernanceScript, Test {
   function verifyLockingProxyAdminIsNewLockingProxyAdmin() public {
     console.log("\n== Verifying locking proxy admin is new locking proxy admin: ==");
 
-    address lockingProxyAdmin = IProxyAdminLite(newLockingProxyAdmin).getProxyAdmin(lockingProxy);
+    address lockingProxyAdmin = ProxyAdmin(newLockingProxyAdmin).getProxyAdmin(
+      ITransparentUpgradeableProxy(lockingProxy)
+    );
     require(lockingProxyAdmin == newLockingProxyAdmin, "LockingProxyAdmin is not the new LockingProxyAdmin");
     console.log(unicode"🟢 LockingProxyAdmin is new LockingProxyAdmin: %s", lockingProxyAdmin);
   }
@@ -86,6 +79,8 @@ contract MU09Checks is GovernanceScript, Test {
     vm.expectEmit(true, true, true, true);
     emit Upgraded(fakeImplementation);
 
-    IProxyAdminLite(newLockingProxyAdmin).upgrade(ITransparentUpgradeableProxy(lockingProxy), fakeImplementation);
+    ProxyAdmin(newLockingProxyAdmin).upgrade(ITransparentUpgradeableProxy(lockingProxy), fakeImplementation);
+
+    console.log(unicode"🟢 Multisig can upgrade implementation");
   }
 }
