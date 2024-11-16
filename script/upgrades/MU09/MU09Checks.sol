@@ -11,6 +11,8 @@ import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 import { ITransparentUpgradeableProxy } from "mento-core-2.6.0-tp/TransparentUpgradeableProxy.sol";
 import { ProxyAdmin } from "mento-core-2.6.0-tp/ProxyAdmin.sol";
 
+contract MockImplementation {}
+
 contract MU09Checks is GovernanceScript, Test {
   using Contracts for Contracts.Cache;
 
@@ -72,14 +74,15 @@ contract MU09Checks is GovernanceScript, Test {
   function verifyMultisigCanUpgrade() public {
     console.log("\n== Verifying the multisig can successfuly upgrade implementation: ==");
 
-    address fakeImplementation = mentoLabsMultisig;
+    // Deploy a mock implementation
+    MockImplementation mockImplementation = new MockImplementation();
     vm.startPrank(mentoLabsMultisig);
 
     // Verify that the upgrade event is emitted with the fake implementation
     vm.expectEmit(true, true, true, true);
-    emit Upgraded(fakeImplementation);
+    emit Upgraded(address(mockImplementation));
 
-    ProxyAdmin(newLockingProxyAdmin).upgrade(ITransparentUpgradeableProxy(lockingProxy), fakeImplementation);
+    ProxyAdmin(newLockingProxyAdmin).upgrade(ITransparentUpgradeableProxy(lockingProxy), address(mockImplementation));
 
     console.log(unicode"🟢 Multisig can upgrade implementation");
   }
