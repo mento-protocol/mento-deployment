@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8;
 pragma experimental ABIEncoderV2;
+/* solhint-disable max-line-length */
 
 import { GovernanceScript } from "script/utils/mento/Script.sol";
 import { console } from "forge-std/console.sol";
@@ -8,9 +9,8 @@ import { Contracts } from "script/utils/mento/Contracts.sol";
 import { Test } from "forge-std/Test.sol";
 
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
-/* solhint-disable-next-line max-line-length */
-import { ITransparentUpgradeableProxy } from "mento-core-2.6.0-oz/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
-import { ProxyAdmin } from "mento-core-2.6.0-oz/contracts/proxy/transparent/ProxyAdmin.sol";
+import { ITransparentUpgradeableProxy } from "mento-core-2.6.0/../lib/openzeppelin-contracts-next/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import { ProxyAdmin } from "mento-core-2.6.0/../lib/openzeppelin-contracts-next/contracts/proxy/transparent/ProxyAdmin.sol";
 
 contract MockImplementation {}
 
