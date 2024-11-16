@@ -8,8 +8,9 @@ import { Contracts } from "script/utils/mento/Contracts.sol";
 import { Test } from "forge-std/Test.sol";
 
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
-import { ITransparentUpgradeableProxy } from "mento-core-2.6.0-tp/TransparentUpgradeableProxy.sol";
-import { ProxyAdmin } from "mento-core-2.6.0-tp/ProxyAdmin.sol";
+/* solhint-disable-next-line max-line-length */
+import { ITransparentUpgradeableProxy } from "mento-core-2.6.0-oz/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import { ProxyAdmin } from "mento-core-2.6.0-oz/contracts/proxy/transparent/ProxyAdmin.sol";
 
 contract MockImplementation {}
 
