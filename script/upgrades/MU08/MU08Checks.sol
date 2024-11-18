@@ -7,6 +7,8 @@ import { Test } from "forge-std/Test.sol";
 import { GovernanceScript } from "script/utils/Script.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 import { Contracts } from "script/utils/Contracts.sol";
+import { IReserve } from "mento-core-2.6.0/interfaces/IReserve.sol";
+import { IERC20 } from "mento-core-2.6.0/interfaces/IERC20.sol";
 
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 
@@ -22,10 +24,6 @@ interface IProxyLite {
   function _getOwner() external view returns (address);
 }
 
-interface IReserveLite {
-  function getOtherReserveAddresses() external returns (address[] memory);
-}
-
 contract MU08Checks is GovernanceScript, Test {
   using Contracts for Contracts.Cache;
 
@@ -33,6 +31,7 @@ contract MU08Checks is GovernanceScript, Test {
   address private celoGovernance;
 
   //Tokens:
+  address private CELOProxy;
   address private cUSDProxy;
   address private cEURProxy;
   address private cBRLProxy;
@@ -62,6 +61,9 @@ contract MU08Checks is GovernanceScript, Test {
   // Mento Reserve Multisig address:
   address private reserveMultisig;
 
+  // Celo Custody Reserve address:
+  address private celoCustodyReserve;
+
   function prepare() public {
     // Load addresses from deployments
     contracts.loadSilent("MU01-00-Create-Proxies", "latest");
@@ -72,11 +74,13 @@ contract MU08Checks is GovernanceScript, Test {
     contracts.loadSilent("PUSO-00-Create-Proxies", "latest");
     contracts.loadSilent("cCOP-00-Create-Proxies", "latest");
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
+    contracts.loadSilent("MU08-00-Create-Proxies", "latest");
 
     // Celo Governance:
     celoGovernance = contracts.celoRegistry("Governance");
 
     // Tokens:
+    CELOProxy = address(uint160(contracts.celoRegistry("GoldToken")));
     cUSDProxy = address(uint160(contracts.celoRegistry("StableToken")));
     cEURProxy = address(uint160(contracts.celoRegistry("StableTokenEUR")));
     cBRLProxy = address(uint160(contracts.celoRegistry("StableTokenBRL")));
@@ -105,27 +109,143 @@ contract MU08Checks is GovernanceScript, Test {
 
     // Mento Reserve Multisig address:
     reserveMultisig = contracts.dependency("PartialReserveMultisig");
+
+    // Celo Custody Reserve address:
+    celoCustodyReserve = address(uint160(contracts.deployed("ReserveProxy")));
   }
 
   function run() public {
     console.log("\nStarting MU08 checks:");
     prepare();
 
-    verifyOtherReservesAddresses();
+    verifyCustodyReserveSetup();
+    verifyReturnOfCelo();
+
+    verifyMentoReserveFinalSetup();
     verifyTokenOwnership();
     verifyMentoV2Ownership();
     verifyMentoV1Ownership();
     verifyGovernanceFactoryOwnership();
   }
 
-  function verifyOtherReservesAddresses() public {
-    console.log("\n== Verifying other reserves addresses of onchain Reserve: ==");
-    address[] memory otherReserves = IReserveLite(reserveProxy).getOtherReserveAddresses();
+  function verifyCustodyReserveSetup() public {
+    console.log("\n== Verifying custody reserve setup: ==");
+
+    // Verify Mento Governance is owner of custody reserve
+    address custodyReserveOwner = IOwnableLite(celoCustodyReserve).owner();
+    require(
+      custodyReserveOwner == timelockProxy,
+      "❗️❌ Custody reserve ownership not transferred to Mento Governance"
+    );
+    console.log("🟢 Custody reserve ownership transferred to Mento Governance");
+
+    // Verify custody reserve implementation
+    address custodyReserveImplementation = IProxyLite(celoCustodyReserve)._getImplementation();
+    require(
+      custodyReserveImplementation == IProxyLite(reserveProxy)._getImplementation(),
+      "❗️❌ Custody reserve implementation not set correctly"
+    );
+    console.log("🟢 Custody reserve implementation set to Reserve implementation");
+
+    // Verify Custody Reserve can't be reinitialized
+    vm.expectRevert();
+    IReserve(celoCustodyReserve).initialize(
+      address(0),
+      0,
+      0,
+      0,
+      0,
+      new bytes32[](0),
+      new uint256[](0),
+      0,
+      0,
+      new address[](0),
+      new uint256[](0)
+    );
+    console.log("🟢 Custody Reserve can't be reinitialized");
+
+    // Verify custody reserve other reserve addresses
+    address[] memory otherReserves = IReserve(celoCustodyReserve).getOtherReserveAddresses();
+    require(otherReserves.length == 1, "❗️❌ Wrong number of other reserves addresses");
+    require(otherReserves[0] == celoGovernance, "❗️❌ Other reserve address is not Celo Governance");
+    console.log("🟢 Custody reserve only other reserve address is Celo Governance");
+
+    // Verify custody reserve collateral assets
+    address collateralAsset = IReserve(celoCustodyReserve).collateralAssets(0);
+    require(collateralAsset == CELOProxy, "❗️❌ Collateral asset is not CELO");
+    vm.expectRevert();
+    IReserve(celoCustodyReserve).collateralAssets(1);
+    console.log("🟢 Custody reserve collateral asset is only CELO");
+
+    // Verify custody reserve spending limits
+    uint256 dailySpendingLimit = IReserve(celoCustodyReserve).getDailySpendingRatioForCollateralAsset(collateralAsset);
+    require(dailySpendingLimit == 1e24, "❗️❌ Daily spending limit is not 100%");
+    console.log("🟢 Custody reserve daily spending limit on CELO is 100%");
+
+    // Verify custody reserve spender is Celo Governance
+    require(
+      IReserve(celoCustodyReserve).isSpender(celoGovernance),
+      "❗️❌ Celo Governance is not a spender on custody reserve"
+    );
+    console.log("🟢 Celo Governance is a spender on custody reserve");
+  }
+
+  function verifyReturnOfCelo() public {
+    console.log("\n== Verifying return of 80M Celo: ==");
+
+    // Verify custody reserve balance is 60_000_000 CELO
+    uint256 balance = IERC20(CELOProxy).balanceOf(celoCustodyReserve);
+    require(balance == 60_000_000e18, "❗️❌ Custody reserve balance is not 60_000_000 CELO");
+    console.log("🟢 Custody reserve balance is 60_000_000 Celo");
+
+    // Verify initial CELO amount was transferred to Celo Governance
+    uint256 celoGovernanceBalance = IERC20(CELOProxy).balanceOf(celoGovernance);
+    // @dev can't do an exact check because Celo Governance already has some CELO
+    require(20_000_000e18 <= celoGovernanceBalance, "❗️❌ Celo Governance balance is less than 20_000_000 CELO");
+    console.log("🟢 Celo Governance balance is larger than 20_000_000 CELO");
+
+    // Verify custody reserve last spending day on collateral asset
+    uint256 lastSpend = IReserve(celoCustodyReserve).collateralAssetLastSpendingDay(CELOProxy);
+    require(lastSpend == now / 1 days, "❗️❌ Last spend day is not today");
+
+    // Verify Celo governance can pull remaining CELO from custody reserve
+    vm.prank(celoGovernance);
+    IReserve(celoCustodyReserve).transferCollateralAsset(CELOProxy, address(uint160(celoGovernance)), 60_000_000e18);
+    uint256 celoGovernanceBalanceAfter = IERC20(CELOProxy).balanceOf(celoGovernance);
+    require(
+      celoGovernanceBalanceAfter == celoGovernanceBalance + 60_000_000e18,
+      "❗️❌ Celo Governance can't pull remaining CELO from custody reserve"
+    );
+    console.log("🟢 Celo Governance can pull remaining CELO from custody reserve");
+  }
+
+  function verifyMentoReserveFinalSetup() public {
+    console.log("\n== Verifying Mento Reserve final setup: ==");
+    // 1. There should only be one other reserve address, which is the Reserve Multisig
+    // console.log("\n== Verifying other reserves addresses of onchain Reserve: ==");
+    address[] memory otherReserves = IReserve(reserveProxy).getOtherReserveAddresses();
 
     require(otherReserves.length == 1, "❗️❌ Wrong number of other reserves addresses");
     require(otherReserves[0] == reserveMultisig, "❗️❌ Other reserve address is not the Reserve Multisig");
     console.log("🟢Other reserves address was added successfully: ", reserveMultisig);
     console.log("🤘🏼Other reserves addresses of onchain Reserve are updated correctly.");
+
+    // 2. Mento Reserve multisig can pull the remaining CELO from the Reserve
+    uint256 multisigBalanceBefore = IERC20(CELOProxy).balanceOf(reserveMultisig);
+    uint256 reserveBalanceBefore = IERC20(CELOProxy).balanceOf(reserveProxy);
+
+    vm.prank(reserveMultisig);
+    IReserve(reserveProxy).transferCollateralAsset(CELOProxy, address(uint160(reserveMultisig)), reserveBalanceBefore);
+
+    require(
+      IERC20(CELOProxy).balanceOf(reserveMultisig) == multisigBalanceBefore + reserveBalanceBefore,
+      "❗️❌ Mento Governance can't pull remaining CELO from Reserve"
+    );
+    require(
+      IERC20(CELOProxy).balanceOf(reserveProxy) == 0,
+      "❗️❌ Reserve balance is not 0 after pulling remaining CELO"
+    );
+    console.log("🟢 Mento Governance can pull remaining CELO from Mento reserve");
   }
 
   function verifyTokenOwnership() public {
