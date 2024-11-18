@@ -29,4 +29,6 @@ interface IGovernanceFactory {
   function mentoGovernor() external view returns (address);
 
   function locking() external view returns (address);
+
+  function proxyAdmin() external view returns (address);
 }
