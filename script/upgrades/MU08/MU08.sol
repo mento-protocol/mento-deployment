@@ -261,9 +261,12 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_transferCeloToCustodyReserve() public {
-    require(80_000_000 * 1e18 <= IReserve(reserveProxy).getUnfrozenBalance(), "Not enough CELO in main reserve");
+    uint256 fullReturnAmount = 82_406_987 * 1e18;
+    uint256 firstReturnAmount = 20_000_000 * 1e18;
 
-    // transfer 80M CELO to custody reserve from main reserve
+    require(fullReturnAmount <= IReserve(reserveProxy).getUnfrozenBalance(), "Not enough CELO in main reserve");
+
+    // transfer ~82M CELO to custody reserve from main reserve
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -272,7 +275,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
           IReserve(0).transferCollateralAsset.selector,
           CELOProxy,
           celoCustodyReserve,
-          80_000_000 * 1e18
+          fullReturnAmount
         )
       )
     );
@@ -286,7 +289,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
           IReserve(0).transferCollateralAsset.selector,
           CELOProxy,
           celoGovernance,
-          20_000_000 * 1e18
+          firstReturnAmount
         )
       )
     );
