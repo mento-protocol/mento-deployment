@@ -266,7 +266,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
 
     require(fullReturnAmount <= IReserve(reserveProxy).getUnfrozenBalance(), "Not enough CELO in main reserve");
 
-    // transfer ~82M CELO to custody reserve from main reserve
+    // transfer ~82.4M CELO to custody reserve from main reserve
     transactions.push(
       ICeloGovernance.Transaction(
         0,
