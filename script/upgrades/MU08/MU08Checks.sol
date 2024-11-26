@@ -254,6 +254,21 @@ contract MU08Checks is GovernanceScript, Test {
       "❗️❌ Reserve balance is not 0 after pulling remaining CELO"
     );
     console.log("🟢 Mento Governance can pull remaining CELO from Mento reserve");
+
+    // 3. Mento Governance can act on Custody Reserve if needed.
+    require(
+      !IReserve(celoCustodyReserve).isSpender(timelockProxy),
+      "❗️❌ Mento Governance is a spender on custody reserve before adding it"
+    );
+    vm.prank(timelockProxy);
+    IReserve(celoCustodyReserve).addSpender(timelockProxy);
+    require(
+      IReserve(celoCustodyReserve).isSpender(timelockProxy),
+      "❗️❌ Mento Governance is not a spender on custody reserve after adding it"
+    );
+    vm.prank(timelockProxy);
+
+    console.log("🟢 Mento Governance can act on custody reserve if needed");
   }
 
   function verifyTokenOwnership() public {
