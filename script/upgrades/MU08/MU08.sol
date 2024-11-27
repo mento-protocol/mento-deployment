@@ -150,7 +150,11 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "https://TODO", celoGovernance);
+      createProposal(
+        _transactions,
+        "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0156.md",
+        celoGovernance
+      );
     }
     vm.stopBroadcast();
   }
