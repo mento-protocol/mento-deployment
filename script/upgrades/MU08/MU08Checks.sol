@@ -266,7 +266,6 @@ contract MU08Checks is GovernanceScript, Test {
       IReserve(celoCustodyReserve).isSpender(timelockProxy),
       "❗️❌ Mento Governance is not a spender on custody reserve after adding it"
     );
-    vm.prank(timelockProxy);
 
     console.log("🟢 Mento Governance can act on custody reserve if needed");
   }
