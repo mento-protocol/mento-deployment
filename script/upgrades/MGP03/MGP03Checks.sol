@@ -14,6 +14,12 @@ import { IGovernor } from "script/interfaces/IGovernor.sol";
 
 interface ILockingLite {
   function mentoLabsMultisig() external view returns (address);
+
+  function setL2TransitionBlock(uint256 l2TransitionBlock_) external;
+
+  function l2TransitionBlock() external view returns (uint256);
+
+  function paused() external view returns (bool);
 }
 
 contract MGP03Checks is GovernanceScript, Test {
@@ -47,6 +53,7 @@ contract MGP03Checks is GovernanceScript, Test {
 
     verifyVotingPeriod();
     verifyMentoLabsMultisig();
+    verifyMentoLabsMultisigPriviliges();
   }
 
   function verifyVotingPeriod() public {
@@ -63,5 +70,17 @@ contract MGP03Checks is GovernanceScript, Test {
 
     require(ILockingLite(locking).mentoLabsMultisig() == mentoLabsMultisig, "Mento Labs multisig is not correct");
     console.log(unicode"🟢 Mento Labs multisig is correct: %s", mentoLabsMultisig);
+  }
+
+  function verifyMentoLabsMultisigPriviliges() public {
+    console.log("\n== Verifying mento labs multisig priviliges: ==");
+
+    vm.prank(mentoLabsMultisig);
+    ILockingLite(locking).setL2TransitionBlock(block.number);
+
+    require(ILockingLite(locking).paused(), "Locking contract is not paused");
+    require(ILockingLite(locking).l2TransitionBlock() == block.number, "L2 transition block is not set");
+
+    console.log(unicode"🟢 Mento Labs multisig priviliges are set correctly");
   }
 }
