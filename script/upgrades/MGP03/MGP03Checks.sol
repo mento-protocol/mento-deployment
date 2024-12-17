@@ -30,7 +30,6 @@ contract MGP03Checks is GovernanceScript, Test {
   address public locking;
 
   function prepare() public {
-    // Load addresses from deployments
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
 
     mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
@@ -56,7 +55,7 @@ contract MGP03Checks is GovernanceScript, Test {
     verifyMentoLabsMultisigPriviliges();
   }
 
-  function verifyVotingPeriod() public {
+  function verifyVotingPeriod() public view {
     console.log("\n== Verifying voting period: ==");
 
     uint256 expectedVotingPeriod = Chain.isCelo() ? 604800 : 300;
@@ -65,7 +64,7 @@ contract MGP03Checks is GovernanceScript, Test {
     console.log(unicode"🟢 Voting period is correct: %s", expectedVotingPeriod);
   }
 
-  function verifyMentoLabsMultisig() public {
+  function verifyMentoLabsMultisig() public view {
     console.log("\n== Verifying mento labs multisig: ==");
 
     require(ILockingLite(locking).mentoLabsMultisig() == mentoLabsMultisig, "Mento Labs multisig is not correct");

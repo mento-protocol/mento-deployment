@@ -27,11 +27,7 @@ contract MGP03 is IMentoUpgrade, GovernanceScript {
 
   IGovernanceFactory public governanceFactory;
 
-  /**
-   * @dev Loads the contracts from previous deployments
-   */
   function loadDeployedContracts() public {
-    // Load load deployment with governance factory
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
   }
 
@@ -65,15 +61,7 @@ contract MGP03 is IMentoUpgrade, GovernanceScript {
 
     address mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
 
-    uint256 currentVotingPeriod;
-    uint256 newVotingPeriod;
-    if (Chain.isCelo()) {
-      currentVotingPeriod = 120960;
-      newVotingPeriod = 604800;
-    } else {
-      currentVotingPeriod = 60;
-      newVotingPeriod = 300;
-    }
+    (uint256 currentVotingPeriod, uint256 newVotingPeriod) = Chain.isCelo() ? (120960, 604800) : (60, 300);
 
     require(IGovernor(mentoGovernor).votingPeriod() == currentVotingPeriod, "Current voting period is not correct");
 
