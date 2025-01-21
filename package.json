@@ -15,6 +15,7 @@
     "@commitlint/config-conventional": "^17.0.3",
     "@openzeppelin/merkle-tree": "^1.0.5",
     "@types/decimal.js": "^7.4.0",
+    "commander": "^11.1.0",
     "commitizen": "^4.2.4",
     "csv-parse": "^5.5.3",
     "csv-writer": "^1.6.0",
@@ -61,7 +62,8 @@
     "secrets:get": "./bin/get-secrets.sh",
     "merkle-tree:build": "yarn ts-node ./bin/merkle-tree.ts",
     "generate-airdrop-csv": "yarn ts-node ./script/upgrades/MINIDROP/data/generate-airdrop-csv.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "governance:coordinate-vote": "yarn ts-node ./script/governance/coordinateVote.ts"
   },
   "dependencies": {
     "@quicknode/sdk": "^2.3.0"

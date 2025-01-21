@@ -1,7 +1,7 @@
 # Mento Deployment
 
 This repo contains scripts for deploying & proposing upgrades to the Mento protocol. It can be used for both Mento and Celo governance proposals.
-Deployments for the core contracts are done using [Foundry solidity scripting](https://book.getfoundry.sh/tutorials/solidity-scripting).
+Deployments for the core contracts are done using [Foundry solidity scripting](https://book.getfoundry.sh/tutorials/solidity-scripting).
 
 ## Getting Started
 
@@ -97,3 +97,73 @@ Check the script file for more details on usage but here's a quick overview:
 # Pass a CGP on testnets
 > yarn cgp:pass -n alfajores -g celo -p <proposal-id>
 ```
+
+## Governance Coordination
+
+The repository includes a script for coordinating voting between Celo Governance Proposals (CGPs) and Mento Governance Proposals (MGPs). This script ensures that the Celo Community's votes on MGPs through their 50M mento allocation are properly reflected based on CGP outcomes.
+
+### Prerequisites
+
+Before using the coordination script, you need to have:
+
+1. An existing Mento Governance Proposal (MGP)
+   - Created through the [Mento Governance UI](https://governance.mento.org)
+   - Must follow the [Mento governance process](https://docs.mento.org/mento/protocol/governance)
+2. A corresponding Celo Governance Proposal (CGP)
+   - Created through the [Celo Governance UI](https://celo.stake.id/#/governance)
+   - Must follow the [Celo governance process](https://docs.celo.org/protocol/governance)
+3. The Celo CLI tool installed and configured
+   - Install: `npm install -g @celo/celocli`
+   - Configure: Follow the [Celo CLI setup guide](https://docs.celo.org/cli)
+
+### Usage
+
+```bash
+yarn governance:coordinate-vote \
+  --mento-proposal <MGP-ID> \
+  --celo-proposal <CGP-ID> \
+  --celo-governance <CELO-GOV-ADDRESS> \
+  --mento-governor <MENTO-GOV-ADDRESS> \
+  --address <MULTISIG-ADDRESS> \
+  --derivation-path <PATH>
+```
+
+Options:
+
+- `-m, --mento-proposal`: Mento Governance Proposal ID
+- `-c, --celo-proposal`: Celo Governance Proposal ID
+- `-g, --celo-governance`: Celo Governance contract address
+- `-v, --mento-governor`: Mento Governor contract address
+- `-r, --rpc-url`: RPC URL (defaults to https://forno.celo.org)
+- `-a, --address`: Multisig address
+- `-d, --derivation-path`: Derivation path for Celo CLI compatibility
+
+The script will:
+
+1. Verify the CGP result
+2. If the CGP is executed:
+   - Queue a YES vote on the MGP if CGP passed
+   - Queue a NO vote on the MGP if CGP failed
+3. The queued vote requires 2 additional approvers within 24 hours using:
+   ```bash
+   celocli multisig:approve --tx-id <id>
+   ```
+
+### For Approvers
+
+When reviewing a transaction queued by this script, verify:
+
+1. The target address matches the Mento Governor contract
+2. The vote (YES/NO) matches the corresponding CGP result
+3. The MGP ID is correct
+4. Approve within 24 hours to prevent transaction expiration
+
+### Governance Process Flow
+
+1. Create MGP first through the Mento Governance UI
+2. Create corresponding CGP through the Celo Governance UI
+   - Include MGP ID in the title/description
+   - Set CGP duration to 5 days
+   - MGP duration should be 6 days
+3. After CGP execution, use this script to coordinate the MGP vote
+4. Ensure multisig approvers are ready to review and sign within 24 hours
