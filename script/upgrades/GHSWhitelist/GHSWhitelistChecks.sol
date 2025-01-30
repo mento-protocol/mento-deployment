@@ -26,7 +26,7 @@ contract GHSWhitelistChecks is GovernanceScript, Test {
 
   function prepare() public {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
-    contracts.loadSilent("cGHS-00-Create-Proxies", "latest");
+    contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
 
     relayerFactory = IChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));

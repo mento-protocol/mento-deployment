@@ -63,7 +63,7 @@ contract GHSWhitelist is IMentoUpgrade, GovernanceScript {
    */
   function loadDeployedContracts() public {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
-    contracts.loadSilent("cGHS-00-Create-Proxies", "latest");
+    contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
   }
 
   /**
@@ -91,8 +91,7 @@ contract GHSWhitelist is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      // TODO: UPDATE ME ;(
-      createProposal(_transactions, "UPDATE ME ;(", governance);
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0159.md", governance);
     }
     vm.stopBroadcast();
   }
