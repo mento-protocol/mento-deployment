@@ -59,7 +59,7 @@ library cGHSConfig {
   ) internal view returns (Config.Pool memory poolConfig) {
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
-      asset1: contracts.deployed("StableTokenGHSProxy"), // TODO: Make sure this is the latest deployed version
+      asset1: contracts.deployed("StableTokenGHSProxy"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(1, 100), // 1%, in line with current DT of chainlink feed
       referenceRateResetFrequency: 5 minutes,
