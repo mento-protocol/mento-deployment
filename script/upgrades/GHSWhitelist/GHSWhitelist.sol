@@ -74,8 +74,6 @@ contract GHSWhitelist is IMentoUpgrade, GovernanceScript {
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
     cGHS = contracts.deployed("StableTokenGHSProxy");
 
-    // TODO: Maybe confirm this is not the pilot address
-
     address[] memory relayers = relayerFactory.getRelayers();
     for (uint i = 0; i < relayers.length; i++) {
       IChainlinkRelayer relayer = IChainlinkRelayer(relayers[i]);
