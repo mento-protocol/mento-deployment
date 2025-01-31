@@ -35,6 +35,11 @@
   dependencies:
     regenerator-runtime "^0.14.0"
 
+"@celo/contracts@^11.0.0":
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/@celo/contracts/-/contracts-11.0.0.tgz#0a7e85b4582badde7791b18b6ee2dd4ee24323ef"
+  integrity sha512-SNdWU+KU+2CMpGf/GdP79tXXBDQvNwrp7G6CqZjvdu5bG6eUq4tKwO7osMNxzrxWiDaV0tEhEY04VJayrhH2Pw==
+
 "@commitlint/cli@^17.0.3":
   version "17.4.2"
   resolved "https://registry.yarnpkg.com/@commitlint/cli/-/cli-17.4.2.tgz#8600c83abb7e84191fd59528fc14f436496fb00b"
