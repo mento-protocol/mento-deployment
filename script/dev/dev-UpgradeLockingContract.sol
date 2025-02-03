@@ -6,33 +6,32 @@ import { Script } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
 import { IRegistry } from "script/interfaces/IRegistry.sol";
-import { LockingContract } from "src/contracts/LockingContract.sol";
+import { Locking } from "contracts/locking/Locking.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
+import { IERC20Upgradeable } from "openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
 
 /**
- * Usage: yarn script:dev -n alfajores -s DeployUpgradeLockingContract -r "run()"
+ * Usage: yarn script:dev -n alfajores -s UpgradeLockingContract -r "run()"
  * Used to deploy the Locking V2 implementation
  * ===========================================================
  */
-contract DeployUpgradeLockingContract is Script {
+contract UpgradeLockingContract is Script {
+  using Contracts for Contracts.Cache;
+
   function run() public {
+    contracts.load("MUGOV-00-Create-Factory", "latest");
     address lockingV2;
-    IRegistry registry = IRegistry(0x000000000000000000000000000000000000ce10);
     address mentoToken = IGovernanceFactory(contracts.deployed("GovernanceFactory")).mentoToken();
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
-      lockingV2 = address(new LockingContract());
+      lockingV2 = address(new Locking());
       console2.log("----------");
       console2.log("LockingV2 deployed at: ", lockingV2);
       console2.log("----------");
-      lockingV2.__Locking_init(mentoToken, 212, 0, 1);
+      Locking(lockingV2).__Locking_init(IERC20Upgradeable(mentoToken), 212, 0, 1);
       console2.log("LockingV2 initialized");
       console2.log("----------");
     }
     vm.stopBroadcast();
-
-    console2.log("----------");
-    console2.log("LockingV2 deployed at: ", LockingV2);
-    console2.log("----------");
   }
 }
