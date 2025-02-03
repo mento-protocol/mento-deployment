@@ -35,6 +35,7 @@ contract UpdateMockChainlinkAggregators is Script {
   address private constant PHPUSDMainnetAggregator = 0x4ce8e628Bb82Ea5271908816a6C580A71233a66c;
   address private constant CELOUSDMainnetAggregator = 0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e;
   address private constant COPUSDMainnetAggregator = 0x97b770B0200CCe161907a9cbe0C6B177679f8F7C;
+  address private constant GHSUSDMainnetAggregator = 0x2719B648DB57C5601Bd4cB2ea934Dec6F4262cD8;
 
   mapping(address => address) private mockForAggregator;
   mapping(address => int256) private aggregatorAnswers;
@@ -53,14 +54,20 @@ contract UpdateMockChainlinkAggregators is Script {
     /// @dev Load additional deployed aggregators here to forward rates
     contracts.loadSilent("dev-DeployMockChainlinkAggregator", "PHPUSD");
     address PHPUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
     contracts.loadSilent("dev-DeployMockChainlinkAggregator", "COPUSD");
     address COPUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
 
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "GHSUSD");
+    address GHSUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
     mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDTestnetMock;
     mockForAggregator[COPUSDMainnetAggregator] = COPUSDTestnetMock;
+    mockForAggregator[GHSUSDMainnetAggregator] = GHSUSDTestnetMock;
 
     aggregatorsToForward.push(PHPUSDMainnetAggregator);
     aggregatorsToForward.push(COPUSDMainnetAggregator);
+    aggregatorsToForward.push(GHSUSDMainnetAggregator);
   }
 
   function run() public {
