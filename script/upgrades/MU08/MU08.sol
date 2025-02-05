@@ -53,6 +53,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   address private cKESProxy;
   address private PUSOProxy;
   address private cCOPProxy;
+  address private cGHSProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -96,6 +97,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     contracts.loadSilent("cCOP-00-Create-Proxies", "latest");
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
     contracts.loadSilent("MU08-00-Create-Proxies", "latest");
+    contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
   }
 
   /**
@@ -117,6 +119,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     cKESProxy = address(uint160(contracts.deployed("StableTokenKESProxy")));
     PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
     cCOPProxy = address(uint160(contracts.deployed("StableTokenCOPProxy")));
+    cGHSProxy = address(uint160(contracts.deployed("StableTokenGHSProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -363,7 +366,8 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
       eXOFProxy,
       cKESProxy,
       PUSOProxy,
-      cCOPProxy
+      cCOPProxy,
+      cGHSProxy
     );
     for (uint i = 0; i < tokenProxies.length; i++) {
       transferOwnership(tokenProxies[i]);
