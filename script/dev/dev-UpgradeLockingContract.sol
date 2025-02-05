@@ -28,7 +28,19 @@ contract UpgradeLockingContract is Script {
       console2.log("----------");
       console2.log("LockingV2 deployed at: ", lockingV2);
       console2.log("----------");
-      Locking(lockingV2).__Locking_init(IERC20Upgradeable(mentoToken), 212, 0, 1);
+
+      // These values are taken from mainnet and initialized the proxy initially
+      uint32 startingPointWeek = 212;
+      uint32 minCliffPeriod = 0;
+      uint32 minSlopePeriod = 1;
+
+      Locking(lockingV2).__Locking_init(
+        IERC20Upgradeable(mentoToken),
+        startingPointWeek,
+        minCliffPeriod,
+        minSlopePeriod
+      );
+
       console2.log("LockingV2 initialized");
       console2.log("----------");
     }
