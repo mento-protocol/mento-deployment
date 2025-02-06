@@ -13,6 +13,7 @@ import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
 import { IPricingModule } from "mento-core-2.3.1/interfaces/IPricingModule.sol";
 import { IReserve } from "mento-core-2.3.1/interfaces/IReserve.sol";
 import { IFeeCurrencyWhitelist } from "../../interfaces/IFeeCurrencyWhitelist.sol";
+import { IFeeCurrencyDirectory } from "../../interfaces/IFeeCurrencyDirectory.sol";
 import { IStableTokenV2 } from "mento-core-2.3.1/interfaces/IStableTokenV2.sol";
 import { IERC20Metadata } from "mento-core-2.3.1/common/interfaces/IERC20Metadata.sol";
 
@@ -44,6 +45,7 @@ contract cGHS is IMentoUpgrade, GovernanceScript {
   address private biPoolManagerProxy;
   address private reserveProxy;
   address private validators;
+  address private sortedOraclesProxy;
 
   bool public hasChecks = true;
 
@@ -80,6 +82,7 @@ contract cGHS is IMentoUpgrade, GovernanceScript {
     reserveProxy = contracts.celoRegistry("Reserve");
 
     validators = contracts.celoRegistry("Validators");
+    sortedOraclesProxy = address(uint160(contracts.celoRegistry("SortedOracles")));
   }
 
   function run() public {
@@ -210,21 +213,52 @@ contract cGHS is IMentoUpgrade, GovernanceScript {
    * @notice enable gas payments with cGHS
    */
   function proposal_enableGasPaymentsWithGHS() private {
-    address feeCurrencyWhitelistProxy = contracts.celoRegistry("FeeCurrencyWhitelist");
-    address[] memory whitelist = IFeeCurrencyWhitelist(feeCurrencyWhitelistProxy).getWhitelist();
-    for (uint256 i = 0; i < whitelist.length; i++) {
-      if (whitelist[i] == stableTokenGHSProxy) {
-        console.log("Gas payments with cGHS already enabled, skipping");
-        return;
+    // We're currently in an in-between state where Alfajores has been migrated to an L2
+    // but mainnet has not. The process of adding a token to the whitelist is currently
+    // not the same as it is on mainnet. So for this proposal, we will determine how
+    // to whitelist the token based on the network.
+
+    if (Chain.id() == 44787) {
+      // On Alfajores, we need to use the FeeCurrencyDirectory contract
+      address feeCurrencyDirectory = contracts.celoRegistry("FeeCurrencyDirectory");
+      address[] memory feeCurrencies = IFeeCurrencyDirectory(feeCurrencyDirectory).getCurrencies();
+      for (uint256 i = 0; i < feeCurrencies.length; i++) {
+        if (feeCurrencies[i] == stableTokenGHSProxy) {
+          console.log("Gas payments with cGHS already enabled, skipping");
+          return;
+        }
       }
+
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          feeCurrencyDirectory,
+          abi.encodeWithSelector(
+            IFeeCurrencyDirectory(0).setCurrencyConfig.selector,
+            stableTokenGHSProxy,
+            sortedOraclesProxy,
+            60000
+          )
+        )
+      );
+    } else if (Chain.id() == 42220) {
+      // On Mainnet, we need to use the FeeCurrencyWhitelist contract
+      address feeCurrencyWhitelistProxy = contracts.celoRegistry("FeeCurrencyWhitelist");
+      address[] memory whitelist = IFeeCurrencyWhitelist(feeCurrencyWhitelistProxy).getWhitelist();
+      for (uint256 i = 0; i < whitelist.length; i++) {
+        if (whitelist[i] == stableTokenGHSProxy) {
+          console.log("Gas payments with cGHS already enabled, skipping");
+          return;
+        }
+      }
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          feeCurrencyWhitelistProxy,
+          abi.encodeWithSelector(IFeeCurrencyWhitelist(0).addToken.selector, stableTokenGHSProxy)
+        )
+      );
     }
-    transactions.push(
-      ICeloGovernance.Transaction(
-        0,
-        feeCurrencyWhitelistProxy,
-        abi.encodeWithSelector(IFeeCurrencyWhitelist(0).addToken.selector, stableTokenGHSProxy)
-      )
-    );
   }
 
   /**
