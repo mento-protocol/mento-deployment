@@ -6,7 +6,7 @@ import { Script } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
 import { IRegistry } from "script/interfaces/IRegistry.sol";
-import { Locking } from "contracts/locking/Locking.sol";
+import { Locking } from "mento-core-2.6.1/governance/locking/Locking.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 import { IERC20Upgradeable } from "openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
 
