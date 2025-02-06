@@ -5,7 +5,6 @@ import { console2 } from "forge-std/Script.sol";
 import { Script } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
-import { IRegistry } from "script/interfaces/IRegistry.sol";
 import { Locking } from "mento-core-2.6.1/governance/locking/Locking.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 import { IERC20Upgradeable } from "openzeppelin-contracts-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
@@ -24,7 +23,7 @@ contract UpgradeLockingContract is Script {
     address mentoToken = IGovernanceFactory(contracts.deployed("GovernanceFactory")).mentoToken();
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
-      lockingV2 = address(new Locking());
+      lockingV2 = address(new Locking()); // TODO: Update once V2.6.2 is out
       console2.log("----------");
       console2.log("LockingV2 deployed at: ", lockingV2);
       console2.log("----------");
