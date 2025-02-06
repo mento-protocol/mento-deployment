@@ -14,6 +14,7 @@ import { IRegistry } from "mento-core-2.3.1/common/interfaces/IRegistry.sol";
 import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
 import { IERC20Metadata } from "mento-core-2.3.1/common/interfaces/IERC20Metadata.sol";
 import { IStableTokenV2 } from "mento-core-2.3.1/interfaces/IStableTokenV2.sol";
+import { IFeeCurrencyDirectory } from "../../interfaces/IFeeCurrencyDirectory.sol";
 
 import { Reserve } from "mento-core-2.3.1/swap/Reserve.sol";
 import { Ownable } from "openzeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -24,6 +25,8 @@ import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDelt
 
 import { cGHSChecksBase } from "./cGHSChecks.base.sol";
 import { cGHSConfig, Config } from "./Config.sol";
+
+import { Chain } from "script/utils/Chain.sol";
 
 /**
  * @title IBrokerWithCasts
@@ -111,11 +114,21 @@ contract cGHSChecksVerify is cGHSChecksBase {
   }
 
   function verifyGHSAddedToFeeCurrencyWhitelist() internal view {
-    address[] memory feeCurrencyWhitelist = IFeeCurrencyWhitelist(contracts.celoRegistry("FeeCurrencyWhitelist"))
-      .getWhitelist();
+    if (Chain.id() == 44787) {
+      // On Alfajores, we need to use the FeeCurrencyDirectory contract
+      address feeCurrencyDirectory = contracts.celoRegistry("FeeCurrencyDirectory");
+      address[] memory feeCurrencies = IFeeCurrencyDirectory(feeCurrencyDirectory).getCurrencies();
+      if (!Arrays.contains(feeCurrencies, cGHS)) {
+        revert("cGHS has not been added to the fee currency directory.");
+      }
+    } else if (Chain.id() == 42220) {
+      // On Mainnet, we need to use the FeeCurrencyWhitelist contract
+      address[] memory feeCurrencyWhitelist = IFeeCurrencyWhitelist(contracts.celoRegistry("FeeCurrencyWhitelist"))
+        .getWhitelist();
 
-    if (!Arrays.contains(feeCurrencyWhitelist, cGHS)) {
-      revert("cGHS has not been added to the fee currency whitelist.");
+      if (!Arrays.contains(feeCurrencyWhitelist, cGHS)) {
+        revert("cGHS has not been added to the fee currency whitelist.");
+      }
     }
 
     console.log("🟢 cGHS has been added to the fee currency whitelist");
