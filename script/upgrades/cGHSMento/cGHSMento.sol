@@ -7,6 +7,7 @@ import { GovernanceScript } from "script/utils/Script.sol";
 import { console2 as console } from "forge-std/Script.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
+import { Contracts } from "script/utils/Contracts.sol";
 
 import { FixidityLib } from "mento-core-2.3.1/common/FixidityLib.sol";
 import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
@@ -23,15 +24,19 @@ import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 import { StableTokenGHSProxy } from "mento-core-2.6.0/tokens/StableTokenGHSProxy.sol";
 
-import { cGHSConfig, Config } from "./Config.sol";
+import { cGHSConfig, Config } from "../cGHS/Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
 /**
- forge script {file} --rpc-url $ALFAJORES_RPC_URL 
-                     --broadcast --legacy 
+ * @notice This script is use to create the proposal containing the MENTO
+ *         governance transactions needed to deploy the cGHS token on Celo.
+ *         This script only neeeds to be run on Alfajores, as the Mento contracts
+ *         have already been transferred to Mento Governance.
  * @dev depends on: ../deploy/*.sol
  */
-contract cGHS is IMentoUpgrade, GovernanceScript {
+contract cGHSMento is IMentoUpgrade, GovernanceScript {
+  using Contracts for Contracts.Cache;
+
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
 
@@ -106,16 +111,14 @@ contract cGHS is IMentoUpgrade, GovernanceScript {
     require(transactions.length == 0, "buildProposal() should only be called once");
     cGHSConfig.cGHS memory config = cGHSConfig.get(contracts);
 
-    proposal_initializeGHSToken(config);
-    proposal_configureGHSConstitutionParameters();
-    proposal_addGHSToReserve();
-
-    proposal_enableGasPaymentsWithGHS();
-
-    proposal_createExchange(config);
-    proposal_configureTradingLimits(config);
-    proposal_configureBreakerBox(config);
-    proposal_configureMedianDeltaBreaker(config);
+    if (Chain.id() == 44787) {
+      proposal_initializeGHSToken(config);
+      proposal_addGHSToReserve();
+      proposal_createExchange(config);
+      proposal_configureTradingLimits(config);
+      proposal_configureBreakerBox(config);
+      proposal_configureMedianDeltaBreaker(config);
+    }
 
     return transactions;
   }
@@ -167,32 +170,6 @@ contract cGHS is IMentoUpgrade, GovernanceScript {
   }
 
   /**
-   * @notice configure cGHS constitution parameters
-   * @dev see cBRl GCP(https://celo.stake.id/#/proposal/49) for reference
-   */
-  function proposal_configureGHSConstitutionParameters() private {
-    address governanceProxy = contracts.celoRegistry("Governance");
-
-    bytes4[] memory constitutionFunctionSelectors = Config.getCeloStableConstitutionSelectors();
-    uint256[] memory constitutionThresholds = Config.getCeloStableConstitutionThresholds();
-
-    for (uint256 i = 0; i < constitutionFunctionSelectors.length; i++) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          governanceProxy,
-          abi.encodeWithSelector(
-            ICeloGovernance(0).setConstitution.selector,
-            stableTokenGHSProxy,
-            constitutionFunctionSelectors[i],
-            constitutionThresholds[i]
-          )
-        )
-      );
-    }
-  }
-
-  /**
    * @notice adds cGHS token to the main reserve
    */
   function proposal_addGHSToReserve() private {
@@ -206,58 +183,6 @@ contract cGHS is IMentoUpgrade, GovernanceScript {
       );
     } else {
       console.log("Token already added to the reserve, skipping: %s", stableTokenGHSProxy);
-    }
-  }
-
-  /**
-   * @notice enable gas payments with cGHS
-   */
-  function proposal_enableGasPaymentsWithGHS() private {
-    // We're currently in an in-between state where Alfajores has been migrated to an L2
-    // but mainnet has not. The process of adding a token to the whitelist is currently
-    // not the same as it is on mainnet. So for this proposal, we will determine how
-    // to whitelist the token based on the network.
-
-    if (Chain.id() == 44787) {
-      // On Alfajores, we need to use the FeeCurrencyDirectory contract
-      address feeCurrencyDirectory = contracts.celoRegistry("FeeCurrencyDirectory");
-      address[] memory feeCurrencies = IFeeCurrencyDirectory(feeCurrencyDirectory).getCurrencies();
-      for (uint256 i = 0; i < feeCurrencies.length; i++) {
-        if (feeCurrencies[i] == stableTokenGHSProxy) {
-          console.log("Gas payments with cGHS already enabled, skipping");
-          return;
-        }
-      }
-
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          feeCurrencyDirectory,
-          abi.encodeWithSelector(
-            IFeeCurrencyDirectory(0).setCurrencyConfig.selector,
-            stableTokenGHSProxy,
-            sortedOraclesProxy,
-            60000
-          )
-        )
-      );
-    } else if (Chain.id() == 42220) {
-      // On Mainnet, we need to use the FeeCurrencyWhitelist contract
-      address feeCurrencyWhitelistProxy = contracts.celoRegistry("FeeCurrencyWhitelist");
-      address[] memory whitelist = IFeeCurrencyWhitelist(feeCurrencyWhitelistProxy).getWhitelist();
-      for (uint256 i = 0; i < whitelist.length; i++) {
-        if (whitelist[i] == stableTokenGHSProxy) {
-          console.log("Gas payments with cGHS already enabled, skipping");
-          return;
-        }
-      }
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          feeCurrencyWhitelistProxy,
-          abi.encodeWithSelector(IFeeCurrencyWhitelist(0).addToken.selector, stableTokenGHSProxy)
-        )
-      );
     }
   }
 

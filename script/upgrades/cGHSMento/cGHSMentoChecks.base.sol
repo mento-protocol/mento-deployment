@@ -34,9 +34,9 @@ import { ConstantSumPricingModule } from "mento-core-2.3.1/swap/ConstantSumPrici
 import { SafeMath } from "celo-foundry/test/SafeMath.sol";
 import { Proxy } from "mento-core-2.3.1/common/Proxy.sol";
 
-import { cGHSConfig, Config } from "./Config.sol";
+import { cGHSConfig, Config } from "../cGHS/Config.sol";
 
-contract cGHSChecksBase is GovernanceScript, Test {
+contract cGHSMentoChecksBase is GovernanceScript, Test {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
   using SafeMath for uint256;

@@ -23,8 +23,8 @@ import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 
-import { cGHSChecksBase } from "./cGHSChecks.base.sol";
-import { cGHSConfig, Config } from "./Config.sol";
+import { cGHSCeloChecksBase } from "./cGHSCeloChecks.base.sol";
+import { cGHSConfig, Config } from "../cGHS/Config.sol";
 
 import { Chain } from "script/utils/Chain.sol";
 
@@ -38,7 +38,7 @@ interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
-contract cGHSChecksVerify is cGHSChecksBase {
+contract cGHSCeloChecksVerify is cGHSCeloChecksBase {
   using TradingLimits for TradingLimits.Config;
 
   uint256 constant PRE_EXISTING_POOLS = 15;
@@ -57,18 +57,23 @@ contract cGHSChecksVerify is cGHSChecksBase {
     console.log("\n==  Rate feeds ==");
     console.log("   GHSUSD: %s", config.rateFeedConfig.rateFeedID);
 
-    verifyToken(config);
-    verifyExchange(config);
-    verifyCircuitBreaker(config);
-  }
+    if (Chain.id() == 44787) {
+      console.log("\nStarting cGHS checks on Alfajores:");
 
-  function verifyToken(cGHSConfig.cGHS memory config) internal {
-    console.log("\n== Verifying Token Config Transactions ==");
-    verifyOwner();
-    verifyGHSStableToken(config);
-    verifyGHSAddedToReserve();
-    verifyGHSAddedToFeeCurrencyWhitelist();
-    verifyConstitution();
+      verifyConstitution();
+      verifyGHSAddedToFeeCurrencyWhitelist();
+    } else if (Chain.id() == 42220) {
+      console.log("\nStarting cGHS checks on Mainnet:");
+
+      console.log("\n== Verifying Token Config Transactions ==");
+      verifyOwner();
+      verifyGHSStableToken(config);
+      verifyConstitution();
+      verifyGHSAddedToReserve();
+      verifyGHSAddedToFeeCurrencyWhitelist();
+      verifyExchange(config);
+      verifyCircuitBreaker(config);
+    }
   }
 
   function verifyOwner() internal view {
