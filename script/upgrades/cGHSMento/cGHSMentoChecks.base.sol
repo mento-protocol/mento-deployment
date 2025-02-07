@@ -57,7 +57,7 @@ contract cGHSMentoChecksBase is GovernanceScript, Test {
     // Load addresses from deployments
     contracts.loadSilent("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
     contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
-    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
+    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
     contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
 
