@@ -191,16 +191,16 @@ contract MU08Checks is GovernanceScript, Test {
   }
 
   function verifyReturnOfCelo() public {
-    uint256 fullReturnAmount = 82_406_987 * 1e18;
+    uint256 fullReturnAmount = 85941499340972869827370586; // 85.9M CELO
     uint256 firstReturnAmount = 20_000_000 * 1e18;
-    uint256 remainingReturnAmount = 62_406_987 * 1e18;
+    uint256 remainingReturnAmount = 65941499340972869827370586; // 65.9M CELO
 
-    console.log("\n== Verifying return of 82.4M Celo: ==");
+    console.log("\n== Verifying return of 85.9M Celo: ==");
 
-    // Verify custody reserve balance is 62_406_987 CELO
+    // Verify custody reserve balance is ~65.9M CELO
     uint256 balance = IERC20(CELOProxy).balanceOf(celoCustodyReserve);
-    require(balance == remainingReturnAmount, "❗️❌ Custody reserve balance is not 62.4M CELO");
-    console.log("🟢 Custody reserve balance is 62.4M Celo");
+    require(balance == remainingReturnAmount, "❗️❌ Custody reserve balance is not 65.9M CELO");
+    console.log("🟢 Custody reserve balance is 65.9M Celo");
 
     // Verify initial CELO amount was transferred to Celo Governance
     uint256 celoGovernanceBalance = IERC20(CELOProxy).balanceOf(celoGovernance);
