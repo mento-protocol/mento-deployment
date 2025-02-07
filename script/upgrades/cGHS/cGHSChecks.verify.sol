@@ -23,8 +23,8 @@ import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 
-import { cGHSMentoChecksBase } from "./cGHSMentoChecks.base.sol";
-import { cGHSConfig, Config } from "../cGHS/Config.sol";
+import { cGHSChecksBase } from "./cGHSChecks.base.sol";
+import { cGHSConfig, Config } from "./Config.sol";
 
 import { Chain } from "script/utils/Chain.sol";
 
@@ -38,7 +38,7 @@ interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
-contract cGHSMentoChecksVerify is cGHSMentoChecksBase {
+contract cGHSChecksVerify is cGHSChecksBase {
   using TradingLimits for TradingLimits.Config;
 
   uint256 constant PRE_EXISTING_POOLS = 15;
@@ -52,25 +52,19 @@ contract cGHSMentoChecksVerify is cGHSMentoChecksBase {
 
   function run() public {
     cGHSConfig.cGHS memory config = cGHSConfig.get(contracts);
-    console.log("\nStarting cGHS checks for Mento Governance Proposal:");
+    console.log("\nStarting cGHS Checks for Celo Governance Proposal:");
 
     console.log("\n==  Rate feeds ==");
     console.log("   GHSUSD: %s", config.rateFeedConfig.rateFeedID);
 
-    if (Chain.id() == 44787) {
-      console.log("\nStarting cGHS checks on Alfajores:");
-
-      verifyToken(config);
-      verifyExchange(config);
-      verifyCircuitBreaker(config);
-    } else if (Chain.id() == 42220) {
-      console.log("\n 🟢 No checks to perform on Mainnet 🟢");
-    }
-  }
-
-  function verifyToken(cGHSConfig.cGHS memory config) internal {
     console.log("\n== Verifying Token Config Transactions ==");
+    verifyOwner();
+    verifyGHSStableToken(config);
+    verifyConstitution();
     verifyGHSAddedToReserve();
+    verifyGHSAddedToFeeCurrencyWhitelist();
+    verifyExchange(config);
+    verifyCircuitBreaker(config);
   }
 
   function verifyOwner() internal view {
@@ -113,6 +107,56 @@ contract cGHSMentoChecksVerify is cGHSMentoChecksBase {
     }
 
     console.log("🟢 cGHS has been added to the reserve");
+  }
+
+  function verifyGHSAddedToFeeCurrencyWhitelist() internal view {
+    if (Chain.id() == 44787) {
+      // On Alfajores, we need to use the FeeCurrencyDirectory contract
+      address feeCurrencyDirectory = contracts.celoRegistry("FeeCurrencyDirectory");
+      address[] memory feeCurrencies = IFeeCurrencyDirectory(feeCurrencyDirectory).getCurrencies();
+      if (!Arrays.contains(feeCurrencies, cGHS)) {
+        revert("cGHS has not been added to the fee currency directory.");
+      }
+    } else if (Chain.id() == 42220) {
+      // On Mainnet, we need to use the FeeCurrencyWhitelist contract
+      address[] memory feeCurrencyWhitelist = IFeeCurrencyWhitelist(contracts.celoRegistry("FeeCurrencyWhitelist"))
+        .getWhitelist();
+
+      if (!Arrays.contains(feeCurrencyWhitelist, cGHS)) {
+        revert("cGHS has not been added to the fee currency whitelist.");
+      }
+    }
+
+    console.log("🟢 cGHS has been added to the fee currency whitelist");
+  }
+
+  function verifyConstitution() internal view {
+    // These are now non config static values, but we can still check them to make sure they are set correctly
+    bytes4[] memory constitutionFunctionSelectors = Config.getCeloStableConstitutionSelectors();
+    uint256[] memory constitutionThresholds = Config.getCeloStableConstitutionThresholds();
+
+    for (uint256 i = 0; i < constitutionFunctionSelectors.length; i++) {
+      bytes4 selector = constitutionFunctionSelectors[i];
+      uint256 expectedValue = constitutionThresholds[i];
+
+      checkConstitutionParam(selector, expectedValue);
+    }
+
+    console.log("🟢 Constitution params configured correctly");
+  }
+
+  function checkConstitutionParam(bytes4 functionSelector, uint256 expectedValue) internal view {
+    uint256 actualConstitutionValue = celoGovernance.getConstitution(cGHS, functionSelector);
+
+    if (actualConstitutionValue != expectedValue) {
+      console.log(
+        "The constitution value for function selector: %s is not set correctly. Expected: %s, Actual: %s",
+        bytes4ToStr(functionSelector),
+        expectedValue,
+        actualConstitutionValue
+      );
+      revert("Constitution value not set correctly. See logs.");
+    }
   }
 
   function verifyExchange(cGHSConfig.cGHS memory config) internal view {

@@ -19,12 +19,12 @@ import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
 import { SortedOracles } from "mento-core-2.3.1/common/SortedOracles.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 
-import { cGHSMentoChecksBase } from "./cGHSMentoChecks.base.sol";
-import { cGHSConfig, Config } from "../cGHS/Config.sol";
+import { cGHSChecksBase } from "./cGHSChecks.base.sol";
+import { cGHSConfig, Config } from "./Config.sol";
 
 import { Chain } from "script/utils/Chain.sol";
 
-contract cGHSMentoChecksSwap is cGHSMentoChecksBase {
+contract cGHSChecksSwap is cGHSChecksBase {
   using FixidityLib for FixidityLib.Fraction;
   using Contracts for Contracts.Cache;
 
@@ -39,6 +39,10 @@ contract cGHSMentoChecksSwap is cGHSMentoChecksBase {
     console.log("\n== Starting cGHS test swaps: ==");
 
     if (Chain.id() == 44787) {
+      console.log("\n 🟢 No swap checks to perform on Alfajores 🟢");
+    } else if (Chain.id() == 42220) {
+      console.log("\nStarting cGHS checks on Mainnet:");
+
       console.log(
         "GHSUSD tradingMode: ",
         BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID)
@@ -46,8 +50,6 @@ contract cGHSMentoChecksSwap is cGHSMentoChecksBase {
 
       swapcGHStoCUSD(config);
       swapCUSDTocGHS(config);
-    } else if (Chain.id() == 42220) {
-      console.log("\n 🟢 No checks to perform on Mainnet 🟢");
     }
   }
 

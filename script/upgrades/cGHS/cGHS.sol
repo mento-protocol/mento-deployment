@@ -23,7 +23,7 @@ import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 import { StableTokenGHSProxy } from "mento-core-2.6.0/tokens/StableTokenGHSProxy.sol";
 
-import { cGHSConfig, Config } from "../cGHS/Config.sol";
+import { cGHSConfig, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
 /**
@@ -31,7 +31,7 @@ import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.
  *         governance transactions needed to deploy the cGHS token on Celo
  * @dev depends on: ../deploy/*.sol
  */
-contract cGHSCelo is IMentoUpgrade, GovernanceScript {
+contract cGHS is IMentoUpgrade, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
 
@@ -106,20 +106,14 @@ contract cGHSCelo is IMentoUpgrade, GovernanceScript {
     require(transactions.length == 0, "buildProposal() should only be called once");
     cGHSConfig.cGHS memory config = cGHSConfig.get(contracts);
 
-    if (Chain.id() == 44787) {
-      proposal_initializeGHSToken(config);
-      proposal_configureGHSConstitutionParameters();
-      proposal_enableGasPaymentsWithGHS();
-    } else if (Chain.id() == 42220) {
-      proposal_initializeGHSToken(config);
-      proposal_configureGHSConstitutionParameters();
-      proposal_addGHSToReserve();
-      proposal_enableGasPaymentsWithGHS();
-      proposal_createExchange(config);
-      proposal_configureTradingLimits(config);
-      proposal_configureBreakerBox(config);
-      proposal_configureMedianDeltaBreaker(config);
-    }
+    proposal_initializeGHSToken(config);
+    proposal_configureGHSConstitutionParameters();
+    proposal_addGHSToReserve();
+    proposal_enableGasPaymentsWithGHS();
+    proposal_createExchange(config);
+    proposal_configureTradingLimits(config);
+    proposal_configureBreakerBox(config);
+    proposal_configureMedianDeltaBreaker(config);
 
     return transactions;
   }
