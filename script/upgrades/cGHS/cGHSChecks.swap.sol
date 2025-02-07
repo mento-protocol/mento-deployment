@@ -37,20 +37,13 @@ contract cGHSChecksSwap is cGHSChecksBase {
     cGHSConfig.cGHS memory config = cGHSConfig.get(contracts);
 
     console.log("\n== Starting cGHS test swaps: ==");
+    console.log(
+      "GHSUSD tradingMode: ",
+      BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID)
+    );
 
-    if (Chain.id() == 44787) {
-      console.log("\n 🟢 No swap checks to perform on Alfajores 🟢");
-    } else if (Chain.id() == 42220) {
-      console.log("\nStarting cGHS checks on Mainnet:");
-
-      console.log(
-        "GHSUSD tradingMode: ",
-        BreakerBox(breakerBox).getRateFeedTradingMode(config.rateFeedConfig.rateFeedID)
-      );
-
-      swapcGHStoCUSD(config);
-      swapCUSDTocGHS(config);
-    }
+    swapCUSDTocGHS(config);
+    swapcGHStoCUSD(config);
   }
 
   // *** Swap Checks *** //

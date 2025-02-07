@@ -41,7 +41,7 @@ interface IBrokerWithCasts {
 contract cGHSChecksVerify is cGHSChecksBase {
   using TradingLimits for TradingLimits.Config;
 
-  uint256 constant PRE_EXISTING_POOLS = 15;
+  uint256 constant PRE_EXISTING_POOLS = 16;
 
   ICeloGovernance celoGovernance;
 
@@ -169,7 +169,6 @@ contract cGHSChecksVerify is cGHSChecksBase {
 
   function verifyPoolExchange(cGHSConfig.cGHS memory config) internal view {
     bytes32[] memory exchanges = BiPoolManager(biPoolManagerProxy).getExchangeIds();
-
     // check configured pools against the config
     require(
       exchanges.length == PRE_EXISTING_POOLS + 1,
