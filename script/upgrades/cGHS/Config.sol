@@ -62,7 +62,7 @@ library cGHSConfig {
       asset1: contracts.deployed("StableTokenGHSProxy"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(1, 100), // 1%, in line with current DT of chainlink feed
-      referenceRateResetFrequency: 5 minutes,
+      referenceRateResetFrequency: 6 minutes,
       minimumReports: 1,
       stablePoolResetSize: 10_000_000 * 1e18,
       referenceRateFeedID: Config.rateFeedID("relayed:GHSUSD"),
