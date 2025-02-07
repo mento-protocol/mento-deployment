@@ -55,11 +55,11 @@ contract cGHSMentoChecksBase is GovernanceScript, Test {
 
   function setUp() public {
     // Load addresses from deployments
-    contracts.load("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
-    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
-    contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
-    contracts.load("cGHS-00-Deploy-Proxy", "latest");
+    contracts.loadSilent("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
+    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
+    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest"); // Latest BreakerBox and MedianDeltaBreaker
+    contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
+    contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
 
     // Get proxy addresses
     cGHS = contracts.deployed("StableTokenGHSProxy");

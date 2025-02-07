@@ -52,7 +52,7 @@ contract cGHSCeloChecksVerify is cGHSCeloChecksBase {
 
   function run() public {
     cGHSConfig.cGHS memory config = cGHSConfig.get(contracts);
-    console.log("\nStarting cGHS checks:");
+    console.log("\nStarting cGHS Checks for Celo Governance Proposal:");
 
     console.log("\n==  Rate feeds ==");
     console.log("   GHSUSD: %s", config.rateFeedConfig.rateFeedID);
@@ -60,6 +60,8 @@ contract cGHSCeloChecksVerify is cGHSCeloChecksBase {
     if (Chain.id() == 44787) {
       console.log("\nStarting cGHS checks on Alfajores:");
 
+      verifyOwner();
+      verifyGHSStableToken(config);
       verifyConstitution();
       verifyGHSAddedToFeeCurrencyWhitelist();
     } else if (Chain.id() == 42220) {

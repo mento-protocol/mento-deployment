@@ -63,11 +63,11 @@ contract cGHSMento is IMentoUpgrade, GovernanceScript {
    * @dev Loads the deployed contracts from previous deployments
    */
   function loadDeployedContracts() public {
-    contracts.load("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
-    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
-    contracts.load("cGHS-00-Deploy-Proxy", "latest");
+    contracts.loadSilent("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
+    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
+    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
+    contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
   }
 
   /**
@@ -112,7 +112,7 @@ contract cGHSMento is IMentoUpgrade, GovernanceScript {
     cGHSConfig.cGHS memory config = cGHSConfig.get(contracts);
 
     if (Chain.id() == 44787) {
-      proposal_initializeGHSToken(config);
+      // TODO: Ownership needs to be transferred to Mento. Then token needs to be initialized
       proposal_addGHSToReserve();
       proposal_createExchange(config);
       proposal_configureTradingLimits(config);
@@ -121,52 +121,6 @@ contract cGHSMento is IMentoUpgrade, GovernanceScript {
     }
 
     return transactions;
-  }
-
-  /**
-   * @notice Configures the cGHS token
-   */
-  function proposal_initializeGHSToken(cGHSConfig.cGHS memory config) private {
-    StableTokenGHSProxy _cGHSProxy = StableTokenGHSProxy(stableTokenGHSProxy);
-    if (_cGHSProxy._getImplementation() == address(0)) {
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          stableTokenGHSProxy,
-          abi.encodeWithSelector(
-            _cGHSProxy._setAndInitializeImplementation.selector,
-            contracts.deployed("StableTokenV2"),
-            abi.encodeWithSelector(
-              IStableTokenV2(0).initialize.selector,
-              config.stableTokenConfig.name,
-              config.stableTokenConfig.symbol,
-              0,
-              address(0),
-              0,
-              0,
-              new address[](0),
-              new uint256[](0),
-              ""
-            )
-          )
-        )
-      );
-
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          stableTokenGHSProxy,
-          abi.encodeWithSelector(
-            IStableTokenV2(0).initializeV2.selector,
-            brokerProxy,
-            validators,
-            address(0) // Exchange address (not used)
-          )
-        )
-      );
-    } else {
-      console.log("StableTokenGHSProxy is already initialized, skipping initialization.");
-    }
   }
 
   /**

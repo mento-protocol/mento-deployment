@@ -58,11 +58,11 @@ contract cGHSCelo is IMentoUpgrade, GovernanceScript {
    * @dev Loads the deployed contracts from previous deployments
    */
   function loadDeployedContracts() public {
-    contracts.load("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
-    contracts.load("MU03-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.load("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
-    contracts.load("cGHS-00-Deploy-Proxy", "latest");
+    contracts.loadSilent("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
+    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
+    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
+    contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
   }
 
   /**
@@ -107,6 +107,7 @@ contract cGHSCelo is IMentoUpgrade, GovernanceScript {
     cGHSConfig.cGHS memory config = cGHSConfig.get(contracts);
 
     if (Chain.id() == 44787) {
+      proposal_initializeGHSToken(config);
       proposal_configureGHSConstitutionParameters();
       proposal_enableGasPaymentsWithGHS();
     } else if (Chain.id() == 42220) {
@@ -240,7 +241,7 @@ contract cGHSCelo is IMentoUpgrade, GovernanceScript {
             IFeeCurrencyDirectory(0).setCurrencyConfig.selector,
             stableTokenGHSProxy,
             sortedOraclesProxy,
-            60000
+            60000 // This is the value that's been set for existing mento stable tokens on alfajores
           )
         )
       );

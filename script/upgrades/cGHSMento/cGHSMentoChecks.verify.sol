@@ -52,7 +52,7 @@ contract cGHSMentoChecksVerify is cGHSMentoChecksBase {
 
   function run() public {
     cGHSConfig.cGHS memory config = cGHSConfig.get(contracts);
-    console.log("\nStarting cGHS checks:");
+    console.log("\nStarting cGHS checks for Mento Governance Proposal:");
 
     console.log("\n==  Rate feeds ==");
     console.log("   GHSUSD: %s", config.rateFeedConfig.rateFeedID);
@@ -70,8 +70,6 @@ contract cGHSMentoChecksVerify is cGHSMentoChecksBase {
 
   function verifyToken(cGHSConfig.cGHS memory config) internal {
     console.log("\n== Verifying Token Config Transactions ==");
-    verifyOwner();
-    verifyGHSStableToken(config);
     verifyGHSAddedToReserve();
   }
 
