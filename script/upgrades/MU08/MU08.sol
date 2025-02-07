@@ -265,12 +265,12 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_transferCeloToCustodyReserve() public {
-    uint256 fullReturnAmount = 82_406_987 * 1e18;
+    uint256 fullReturnAmount = 85941499340972869827370586; // 85.9M CELO
     uint256 firstReturnAmount = 20_000_000 * 1e18;
 
     require(fullReturnAmount <= IReserve(reserveProxy).getUnfrozenBalance(), "Not enough CELO in main reserve");
 
-    // transfer ~82.4M CELO to custody reserve from main reserve
+    // transfer ~85.9M CELO to custody reserve from main reserve
     transactions.push(
       ICeloGovernance.Transaction(
         0,
