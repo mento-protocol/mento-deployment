@@ -95,7 +95,7 @@ contract cGHS is IMentoUpgrade, GovernanceScript {
     {
       createProposal(
         _transactions,
-        "https://github.com/celo-org/governance/blob/797c8ebe91240b641e1b0a9ce2c6ceb24698f0ff/CGPs/cgp-0160.md",
+        "https://github.com/celo-org/governance/blob/797c8ebe91240b641e1b0a9ce2c6ceb24698f0ff/CGPs/cgp-0163.md",
         governance
       );
     }
