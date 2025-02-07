@@ -79,12 +79,12 @@ library cGHSConfig {
       asset1limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 57 * 200_000,
+        limit0: 15 * 200_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 57 * 1_000_000,
+        limit1: 15 * 1_000_000,
         enabledGlobal: true,
-        limitGlobal: 57 * 5_000_000
+        limitGlobal: 15 * 5_000_000
       })
     });
   }
