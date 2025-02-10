@@ -95,6 +95,6 @@ library cGHSConfig {
    * @dev Returns the configuration for the cGHS stable token.
    */
   function stableTokencGHSConfig() internal pure returns (Config.StableTokenV2 memory config) {
-    config = Config.StableTokenV2({ name: "cGHS", symbol: "cGHS" });
+    config = Config.StableTokenV2({ name: "Celo Ghanaian Cedi", symbol: "cGHS" });
   }
 }
