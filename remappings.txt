@@ -3,12 +3,12 @@ celo-foundry/=lib/celo-foundry/src/
 forge-std/=lib/celo-foundry/lib/forge-std/src/
 ds-test/=lib/celo-foundry/lib/forge-std/lib/ds-test/src/
 contracts/=contracts/
-
 mento-core-2.0.0/=lib/mento-core-2.0.0/contracts/
 mento-core-2.1.0/=lib/mento-core-2.1.0/contracts/
 mento-core-2.2.0/=lib/mento-core-2.2.0/contracts/
 mento-core-2.3.1/=lib/mento-core-2.3.1/contracts/
 mento-core-2.5.0/=lib/mento-core-2.5.0/contracts/
 merkle-distributor/=lib/merkle-distributor/contracts/
-mento-core-2.6.0-oz/=lib/mento-core-2.6.0/lib/openzeppelin-contracts-next
+mento-core-2.6.0-oz/=lib/mento-core-2.6.0/lib/openzeppelin-contracts-next/
 mento-core-2.6.0/=lib/mento-core-2.6.0/contracts/
+celo/=node_modules/@celo/

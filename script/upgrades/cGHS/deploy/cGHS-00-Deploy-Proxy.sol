@@ -13,6 +13,7 @@ import { StableTokenGHSProxy } from "mento-core-2.6.0/tokens/StableTokenGHSProxy
 contract cGHS_DeployProxy is Script {
   function run() public {
     address payable stableTokenGHSProxy;
+
     address governance = contracts.celoRegistry("Governance");
 
     vm.startBroadcast(Chain.deployerPrivateKey());
