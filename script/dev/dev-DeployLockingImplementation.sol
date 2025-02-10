@@ -8,7 +8,7 @@ import { Contracts } from "script/utils/mento/Contracts.sol";
 import { Locking } from "mento-core-2.6.2/governance/locking/Locking.sol";
 
 /**
- * Usage: yarn script:dev -n alfajores -s DeployNewLockingImplementation -r "run()"
+ * Usage: yarn script:dev -n celo -s DeployNewLockingImplementation
  * Used to deploy the Locking V2 implementation
  * ===========================================================
  */
