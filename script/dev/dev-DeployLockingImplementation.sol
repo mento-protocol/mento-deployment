@@ -8,15 +8,14 @@ import { Contracts } from "script/utils/mento/Contracts.sol";
 import { Locking } from "mento-core-2.6.2/governance/locking/Locking.sol";
 
 /**
- * Usage: yarn script:dev -n alfajores -s UpgradeLockingContract -r "run()"
+ * Usage: yarn script:dev -n alfajores -s DeployNewLockingImplementation -r "run()"
  * Used to deploy the Locking V2 implementation
  * ===========================================================
  */
-contract UpgradeLockingContract is Script {
+contract DeployNewLockingImplementation is Script {
   using Contracts for Contracts.Cache;
 
   function run() public {
-    contracts.load("MUGOV-00-Create-Factory", "latest");
     address lockingV2;
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
