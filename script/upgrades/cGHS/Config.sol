@@ -62,7 +62,7 @@ library cGHSConfig {
       asset1: contracts.deployed("StableTokenGHSProxy"),
       isConstantSum: true,
       spread: FixidityLib.newFixedFraction(1, 100), // 1%, in line with current DT of chainlink feed
-      referenceRateResetFrequency: 5 minutes,
+      referenceRateResetFrequency: 6 minutes,
       minimumReports: 1,
       stablePoolResetSize: 10_000_000 * 1e18,
       referenceRateFeedID: Config.rateFeedID("relayed:GHSUSD"),
@@ -79,12 +79,12 @@ library cGHSConfig {
       asset1limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 57 * 200_000,
+        limit0: 15 * 200_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 57 * 1_000_000,
+        limit1: 15 * 1_000_000,
         enabledGlobal: true,
-        limitGlobal: 57 * 5_000_000
+        limitGlobal: 15 * 5_000_000
       })
     });
   }
