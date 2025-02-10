@@ -39,6 +39,7 @@ contract MU08Checks is GovernanceScript, Test {
   address private cKESProxy;
   address private PUSOProxy;
   address private cCOPProxy;
+  address private cGHSProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -75,6 +76,7 @@ contract MU08Checks is GovernanceScript, Test {
     contracts.loadSilent("cCOP-00-Create-Proxies", "latest");
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
     contracts.loadSilent("MU08-00-Create-Proxies", "latest");
+    contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
 
     // Celo Governance:
     celoGovernance = contracts.celoRegistry("Governance");
@@ -88,6 +90,7 @@ contract MU08Checks is GovernanceScript, Test {
     cKESProxy = address(uint160(contracts.deployed("StableTokenKESProxy")));
     PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
     cCOPProxy = address(uint160(contracts.deployed("StableTokenCOPProxy")));
+    cGHSProxy = address(uint160(contracts.deployed("StableTokenGHSProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -279,7 +282,8 @@ contract MU08Checks is GovernanceScript, Test {
       eXOFProxy,
       cKESProxy,
       PUSOProxy,
-      cCOPProxy
+      cCOPProxy,
+      cGHSProxy
     );
 
     for (uint256 i = 0; i < tokenProxies.length; i++) {
