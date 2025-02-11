@@ -53,6 +53,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   address private cKESProxy;
   address private PUSOProxy;
   address private cCOPProxy;
+  address private cGHSProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -96,6 +97,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     contracts.loadSilent("cCOP-00-Create-Proxies", "latest");
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
     contracts.loadSilent("MU08-00-Create-Proxies", "latest");
+    contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
   }
 
   /**
@@ -117,6 +119,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     cKESProxy = address(uint160(contracts.deployed("StableTokenKESProxy")));
     PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
     cCOPProxy = address(uint160(contracts.deployed("StableTokenCOPProxy")));
+    cGHSProxy = address(uint160(contracts.deployed("StableTokenGHSProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -265,12 +268,12 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_transferCeloToCustodyReserve() public {
-    uint256 fullReturnAmount = 82_406_987 * 1e18;
+    uint256 fullReturnAmount = 85941499340972869827370586; // 85.9M CELO
     uint256 firstReturnAmount = 20_000_000 * 1e18;
 
     require(fullReturnAmount <= IReserve(reserveProxy).getUnfrozenBalance(), "Not enough CELO in main reserve");
 
-    // transfer ~82.4M CELO to custody reserve from main reserve
+    // transfer ~85.9M CELO to custody reserve from main reserve
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -363,7 +366,8 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
       eXOFProxy,
       cKESProxy,
       PUSOProxy,
-      cCOPProxy
+      cCOPProxy,
+      cGHSProxy
     );
     for (uint i = 0; i < tokenProxies.length; i++) {
       transferOwnership(tokenProxies[i]);
@@ -374,6 +378,11 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     // so we only need to transfer ownership of that single contract.
     address sharedImplementation = IProxyLite(cUSDProxy)._getImplementation();
     for (uint i = 0; i < tokenProxies.length; i++) {
+      if (tokenProxies[i] == cGHSProxy) {
+        // cGHS is not yet initialized, so it doesn't have an implementation
+        continue;
+      }
+
       require(
         IProxyLite(tokenProxies[i])._getImplementation() == sharedImplementation,
         "Token proxies not poiting to cUSD implementation"
@@ -421,8 +430,12 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function transferOwnership(address contractAddr) internal {
-    address contractOwner = IOwnableLite(contractAddr).owner();
-    if (contractOwner != timelockProxy && contractOwner == celoGovernance) {
+    bool isGHS = contractAddr == cGHSProxy;
+
+    if (
+      isGHS ||
+      (IOwnableLite(contractAddr).owner() != timelockProxy && IOwnableLite(contractAddr).owner() == celoGovernance)
+    ) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,
@@ -434,8 +447,12 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function transferProxyAdmin(address contractAddr) internal {
-    address proxyAdmin = IProxyLite(contractAddr)._getOwner();
-    if (proxyAdmin != timelockProxy && proxyAdmin == celoGovernance) {
+    bool isGHS = contractAddr == cGHSProxy;
+
+    if (
+      isGHS ||
+      (IProxyLite(contractAddr)._getOwner() != timelockProxy && IProxyLite(contractAddr)._getOwner() == celoGovernance)
+    ) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,

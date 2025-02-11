@@ -39,6 +39,7 @@ contract MU08Checks is GovernanceScript, Test {
   address private cKESProxy;
   address private PUSOProxy;
   address private cCOPProxy;
+  address private cGHSProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -75,6 +76,7 @@ contract MU08Checks is GovernanceScript, Test {
     contracts.loadSilent("cCOP-00-Create-Proxies", "latest");
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
     contracts.loadSilent("MU08-00-Create-Proxies", "latest");
+    contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
 
     // Celo Governance:
     celoGovernance = contracts.celoRegistry("Governance");
@@ -88,6 +90,7 @@ contract MU08Checks is GovernanceScript, Test {
     cKESProxy = address(uint160(contracts.deployed("StableTokenKESProxy")));
     PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
     cCOPProxy = address(uint160(contracts.deployed("StableTokenCOPProxy")));
+    cGHSProxy = address(uint160(contracts.deployed("StableTokenGHSProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -191,16 +194,16 @@ contract MU08Checks is GovernanceScript, Test {
   }
 
   function verifyReturnOfCelo() public {
-    uint256 fullReturnAmount = 82_406_987 * 1e18;
+    uint256 fullReturnAmount = 85941499340972869827370586; // 85.9M CELO
     uint256 firstReturnAmount = 20_000_000 * 1e18;
-    uint256 remainingReturnAmount = 62_406_987 * 1e18;
+    uint256 remainingReturnAmount = 65941499340972869827370586; // 65.9M CELO
 
-    console.log("\n== Verifying return of 82.4M Celo: ==");
+    console.log("\n== Verifying return of 85.9M Celo: ==");
 
-    // Verify custody reserve balance is 62_406_987 CELO
+    // Verify custody reserve balance is ~65.9M CELO
     uint256 balance = IERC20(CELOProxy).balanceOf(celoCustodyReserve);
-    require(balance == remainingReturnAmount, "❗️❌ Custody reserve balance is not 62.4M CELO");
-    console.log("🟢 Custody reserve balance is 62.4M Celo");
+    require(balance == remainingReturnAmount, "❗️❌ Custody reserve balance is not 65.9M CELO");
+    console.log("🟢 Custody reserve balance is 65.9M Celo");
 
     // Verify initial CELO amount was transferred to Celo Governance
     uint256 celoGovernanceBalance = IERC20(CELOProxy).balanceOf(celoGovernance);
@@ -279,7 +282,8 @@ contract MU08Checks is GovernanceScript, Test {
       eXOFProxy,
       cKESProxy,
       PUSOProxy,
-      cCOPProxy
+      cCOPProxy,
+      cGHSProxy
     );
 
     for (uint256 i = 0; i < tokenProxies.length; i++) {
