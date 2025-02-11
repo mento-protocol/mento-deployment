@@ -378,6 +378,11 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     // so we only need to transfer ownership of that single contract.
     address sharedImplementation = IProxyLite(cUSDProxy)._getImplementation();
     for (uint i = 0; i < tokenProxies.length; i++) {
+      if (tokenProxies[i] == cGHSProxy) {
+        // cGHS is not yet initialized, so it doesn't have an implementation
+        continue;
+      }
+
       require(
         IProxyLite(tokenProxies[i])._getImplementation() == sharedImplementation,
         "Token proxies not poiting to cUSD implementation"
@@ -425,8 +430,12 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function transferOwnership(address contractAddr) internal {
-    address contractOwner = IOwnableLite(contractAddr).owner();
-    if (contractOwner != timelockProxy && contractOwner == celoGovernance) {
+    bool isGHS = contractAddr == cGHSProxy;
+
+    if (
+      isGHS ||
+      (IOwnableLite(contractAddr).owner() != timelockProxy && IOwnableLite(contractAddr).owner() == celoGovernance)
+    ) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,
@@ -438,8 +447,12 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function transferProxyAdmin(address contractAddr) internal {
-    address proxyAdmin = IProxyLite(contractAddr)._getOwner();
-    if (proxyAdmin != timelockProxy && proxyAdmin == celoGovernance) {
+    bool isGHS = contractAddr == cGHSProxy;
+
+    if (
+      isGHS ||
+      (IProxyLite(contractAddr)._getOwner() != timelockProxy && IProxyLite(contractAddr)._getOwner() == celoGovernance)
+    ) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,
