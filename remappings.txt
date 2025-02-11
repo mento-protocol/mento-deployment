@@ -11,4 +11,5 @@ mento-core-2.5.0/=lib/mento-core-2.5.0/contracts/
 merkle-distributor/=lib/merkle-distributor/contracts/
 mento-core-2.6.0-oz/=lib/mento-core-2.6.0/lib/openzeppelin-contracts-next/
 mento-core-2.6.0/=lib/mento-core-2.6.0/contracts/
+mento-core-2.6.2/=lib/mento-core-2.6.2/contracts/
 celo/=node_modules/@celo/
