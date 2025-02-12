@@ -50,18 +50,8 @@ contract MGP03Checks is GovernanceScript, Test {
     console.log("\nStarting MGP03 checks:");
     prepare();
 
-    verifyVotingPeriod();
     verifyMentoLabsMultisig();
-    verifyMentoLabsMultisigPriviliges();
-  }
-
-  function verifyVotingPeriod() public view {
-    console.log("\n== Verifying voting period: ==");
-
-    uint256 expectedVotingPeriod = Chain.isCelo() ? 604800 : 300;
-
-    require(IGovernor(mentoGovernor).votingPeriod() == expectedVotingPeriod, "Voting period is not correct");
-    console.log(unicode"🟢 Voting period is correct: %s", expectedVotingPeriod);
+    verifyMentoLabsMultisigPrivileges();
   }
 
   function verifyMentoLabsMultisig() public view {
@@ -71,8 +61,8 @@ contract MGP03Checks is GovernanceScript, Test {
     console.log(unicode"🟢 Mento Labs multisig is correct: %s", mentoLabsMultisig);
   }
 
-  function verifyMentoLabsMultisigPriviliges() public {
-    console.log("\n== Verifying mento labs multisig priviliges: ==");
+  function verifyMentoLabsMultisigPrivileges() public {
+    console.log("\n== Verifying mento labs multisig privileges: ==");
 
     vm.prank(mentoLabsMultisig);
     ILockingLite(locking).setL2TransitionBlock(block.number);
@@ -80,6 +70,6 @@ contract MGP03Checks is GovernanceScript, Test {
     require(ILockingLite(locking).paused(), "Locking contract is not paused");
     require(ILockingLite(locking).l2TransitionBlock() == block.number, "L2 transition block is not set");
 
-    console.log(unicode"🟢 Mento Labs multisig priviliges are set correctly");
+    console.log(unicode"🟢 Mento Labs multisig privileges are set correctly");
   }
 }

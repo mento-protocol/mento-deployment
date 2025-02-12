@@ -11,19 +11,12 @@ import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 import { IGovernor } from "script/interfaces/IGovernor.sol";
 
-interface ILockingLite {
-  function setMentoLabsMultisig(address mentoLabsMultisig_) external;
-
-  function mentoLabsMultisig() external view returns (address);
-}
-
-contract MGP03 is IMentoUpgrade, GovernanceScript {
+contract MGP04 is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
 
   bool public hasChecks = true;
 
   address public mentoGovernor;
-  address public locking;
 
   IGovernanceFactory public governanceFactory;
 
@@ -38,9 +31,6 @@ contract MGP03 is IMentoUpgrade, GovernanceScript {
 
     mentoGovernor = governanceFactory.mentoGovernor();
     require(mentoGovernor != address(0), "MentoGovernor address not found");
-
-    locking = governanceFactory.locking();
-    require(locking != address(0), "Locking address not found");
   }
 
   function run() public {
@@ -59,14 +49,14 @@ contract MGP03 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     ICeloGovernance.Transaction[] memory _transactions = new ICeloGovernance.Transaction[](1);
 
-    address mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
+    (uint256 currentVotingPeriod, uint256 newVotingPeriod) = Chain.isCelo() ? (120960, 604800) : (60, 300);
 
-    require(ILockingLite(locking).mentoLabsMultisig() == address(0), "Mento Labs multisig is already set");
+    require(IGovernor(mentoGovernor).votingPeriod() == currentVotingPeriod, "Current voting period is not correct");
 
     _transactions[0] = ICeloGovernance.Transaction(
       0,
-      locking,
-      abi.encodeWithSelector(ILockingLite.setMentoLabsMultisig.selector, mentoLabsMultisig)
+      mentoGovernor,
+      abi.encodeWithSelector(IGovernor.setVotingPeriod.selector, newVotingPeriod)
     );
 
     return _transactions;
