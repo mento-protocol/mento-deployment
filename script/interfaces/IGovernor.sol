@@ -59,4 +59,14 @@ interface IGovernor {
    * @dev Returns the state of a proposal
    */
   function state(uint256 proposalId) external view returns (uint8);
+
+  /**
+   * @dev Set the voting period
+   */
+  function setVotingPeriod(uint256 newVotingPeriod) external;
+
+  /**
+   * @dev Get the voting period
+   */
+  function votingPeriod() external view returns (uint256);
 }
