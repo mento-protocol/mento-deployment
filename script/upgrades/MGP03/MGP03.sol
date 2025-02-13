@@ -51,7 +51,7 @@ contract MGP03 is IMentoUpgrade, GovernanceScript {
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       // TODO: Change this to the forum post URL
-      createProposal(_transactions, "https://CHANGE-ME-PLEASE", mentoGovernor);
+      createProposal(_transactions, "updateWithUrl", mentoGovernor);
     }
     vm.stopBroadcast();
   }
