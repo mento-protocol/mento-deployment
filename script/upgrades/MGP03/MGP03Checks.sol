@@ -26,7 +26,6 @@ contract MGP03Checks is GovernanceScript, Test {
   using Contracts for Contracts.Cache;
 
   address public mentoLabsMultisig;
-  address public mentoGovernor;
   address public locking;
 
   function prepare() public {
@@ -41,9 +40,6 @@ contract MGP03Checks is GovernanceScript, Test {
 
     locking = governanceFactory.locking();
     require(locking != address(0), "LockingProxy address not found");
-
-    mentoGovernor = governanceFactory.mentoGovernor();
-    require(mentoGovernor != address(0), "MentoGovernor address not found");
   }
 
   function run() public {
