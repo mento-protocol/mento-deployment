@@ -38,6 +38,7 @@ contract MGP04Checks is GovernanceScript, Test {
   function verifyVotingPeriod() public view {
     console.log("\n== Verifying voting period: ==");
 
+    // TODO: before submitting, update this to 8 days (691200) if MU08 already executed
     uint256 expectedVotingPeriod = Chain.isCelo() ? 604800 : 300;
 
     require(IGovernor(mentoGovernor).votingPeriod() == expectedVotingPeriod, "Voting period is not correct");
