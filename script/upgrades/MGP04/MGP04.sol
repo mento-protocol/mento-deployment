@@ -14,7 +14,7 @@ import { IGovernor } from "script/interfaces/IGovernor.sol";
 contract MGP04 is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
 
-  bool public hasChecks = true;
+  bool public hasChecks = false;
 
   address public mentoGovernor;
 
