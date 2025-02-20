@@ -49,8 +49,7 @@ contract MGP04 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     ICeloGovernance.Transaction[] memory _transactions = new ICeloGovernance.Transaction[](1);
 
-    // TODO: before submitting, update this to 8 days (691200) if MU08 already executed
-    (uint256 currentVotingPeriod, uint256 newVotingPeriod) = Chain.isCelo() ? (120960, 604800) : (60, 300);
+    (uint256 currentVotingPeriod, uint256 newVotingPeriod) = Chain.isCelo() ? (138240, 691200) : (60, 300);
 
     require(IGovernor(mentoGovernor).votingPeriod() == currentVotingPeriod, "Current voting period is not correct");
 
