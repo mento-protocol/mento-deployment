@@ -60,7 +60,7 @@ contract MGP03 is IMentoUpgrade, GovernanceScript {
     ICeloGovernance.Transaction[] memory _transactions = new ICeloGovernance.Transaction[](2);
 
     address mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
-    // require(ILockingLite(locking).mentoLabsMultisig() == address(0), "Mento Labs multisig is already set");
+    require(ILockingLite(locking).mentoLabsMultisig() == address(0), "Mento Labs multisig is already set");
     _transactions[0] = ICeloGovernance.Transaction(
       0,
       locking,
