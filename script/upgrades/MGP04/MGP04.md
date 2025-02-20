@@ -2,12 +2,12 @@
 
 #### Description
 
-With Celo's transition to an L2, the block time will be reduced from 5 seconds to 1 second. This proposal ensures that the governance voting period remains consistent after the upgrade, at approximately one week.
+With Celo's transition to an L2, the block time will be reduced from 5 seconds to 1 second. This proposal ensures that the governance voting period remains consistent after the upgrade, at 8 days.
 
 #### Changes
 
-1. Adjust voting period to maintain one week duration:
-   - On Celo mainnet, increase from 120,960 blocks to 604,800 blocks
+1. Adjust voting period to maintain 8 day duration:
+   - On Celo mainnet, increase from 138240 blocks to 691200 blocks
    - Accounting for reduced block time (1s instead of 5s)
 
 #### Motivation
@@ -17,8 +17,8 @@ With Celo's transition to an L2, the block time will be reduced from 5 seconds t
 #### Technical Rationale
 
 - Celo block time reduction from 5s to 1s necessitates voting period block count adjustment
-- Current: 120,960 blocks at 5s per block ≈ 1 week
-- Proposed: 604,800 blocks at 1s per block ≈ 1 week
+- Current: 138240 blocks at 5s per block ≈ 8 days
+- Proposed: 691200 blocks at 1s per block ≈ 8 days
 
 #### Implementation Details
 
