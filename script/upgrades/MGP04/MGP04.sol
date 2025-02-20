@@ -51,7 +51,7 @@ contract MGP04 is IMentoUpgrade, GovernanceScript {
 
     (uint256 currentVotingPeriod, uint256 newVotingPeriod) = Chain.isCelo() ? (138240, 691200) : (300, 300);
 
-    if (!Chain.isCelo()) {
+    if (Chain.isCelo()) {
       // MGP04 was already executed on Alfajores in order to fix the voting period after the L2 transition
       // so the voting period is already set correctly there.
       require(IGovernor(mentoGovernor).votingPeriod() == currentVotingPeriod, "Current voting period is not correct");
