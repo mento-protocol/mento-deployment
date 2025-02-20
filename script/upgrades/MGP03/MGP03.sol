@@ -57,16 +57,24 @@ contract MGP03 is IMentoUpgrade, GovernanceScript {
   }
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
-    ICeloGovernance.Transaction[] memory _transactions = new ICeloGovernance.Transaction[](1);
+    ICeloGovernance.Transaction[] memory _transactions = new ICeloGovernance.Transaction[](2);
 
     address mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
-
-    require(ILockingLite(locking).mentoLabsMultisig() == address(0), "Mento Labs multisig is already set");
-
+    // require(ILockingLite(locking).mentoLabsMultisig() == address(0), "Mento Labs multisig is already set");
     _transactions[0] = ICeloGovernance.Transaction(
       0,
       locking,
       abi.encodeWithSelector(ILockingLite.setMentoLabsMultisig.selector, mentoLabsMultisig)
+    );
+
+    // Alfajores is fully transitioned to L2, so we just keep the same 5 minutes voting period there
+    (uint256 currentVotingPeriod, uint256 newVotingPeriod) = Chain.isCelo() ? (120960, 138240) : (300, 300);
+    require(IGovernor(mentoGovernor).votingPeriod() == currentVotingPeriod, "Current voting period is not correct");
+
+    _transactions[0] = ICeloGovernance.Transaction(
+      0,
+      mentoGovernor,
+      abi.encodeWithSelector(IGovernor.setVotingPeriod.selector, newVotingPeriod)
     );
 
     return _transactions;
