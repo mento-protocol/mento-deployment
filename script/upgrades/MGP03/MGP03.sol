@@ -71,7 +71,7 @@ contract MGP03 is IMentoUpgrade, GovernanceScript {
     (uint256 currentVotingPeriod, uint256 newVotingPeriod) = Chain.isCelo() ? (120960, 138240) : (300, 300);
     require(IGovernor(mentoGovernor).votingPeriod() == currentVotingPeriod, "Current voting period is not correct");
 
-    _transactions[0] = ICeloGovernance.Transaction(
+    _transactions[1] = ICeloGovernance.Transaction(
       0,
       mentoGovernor,
       abi.encodeWithSelector(IGovernor.setVotingPeriod.selector, newVotingPeriod)
