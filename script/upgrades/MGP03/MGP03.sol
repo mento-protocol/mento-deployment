@@ -50,8 +50,12 @@ contract MGP03 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      // TODO: Change this to the forum post URL
-      createProposal(_transactions, "updateWithUrl", mentoGovernor);
+      createStructuredProposal(
+        "MGP-3: Set Mento Labs multisig and extend governance voting period",
+        "./script/upgrades/MGP03/MGP03.md",
+        _transactions,
+        mentoGovernor
+      );
     }
     vm.stopBroadcast();
   }
@@ -60,14 +64,16 @@ contract MGP03 is IMentoUpgrade, GovernanceScript {
     ICeloGovernance.Transaction[] memory _transactions = new ICeloGovernance.Transaction[](2);
 
     address mentoLabsMultisig = contracts.dependency("MentoLabsMultisig");
-    require(ILockingLite(locking).mentoLabsMultisig() == address(0), "Mento Labs multisig is already set");
+    if (Chain.isCelo()) {
+      require(ILockingLite(locking).mentoLabsMultisig() == address(0), "Mento Labs multisig is already set");
+    }
     _transactions[0] = ICeloGovernance.Transaction(
       0,
       locking,
       abi.encodeWithSelector(ILockingLite.setMentoLabsMultisig.selector, mentoLabsMultisig)
     );
 
-    // Alfajores is fully transitioned to L2, so we just keep the same 5 minutes voting period there
+    // Alfajores is fully transitioned to L2, so we keep the same 5 minutes voting period there
     (uint256 currentVotingPeriod, uint256 newVotingPeriod) = Chain.isCelo() ? (120960, 138240) : (300, 300);
     require(IGovernor(mentoGovernor).votingPeriod() == currentVotingPeriod, "Current voting period is not correct");
 

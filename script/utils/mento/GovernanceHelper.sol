@@ -20,16 +20,30 @@ contract GovernanceHelper is Script {
     string memory descriptionURL,
     address governance
   ) internal {
-    if (Chain.isCelo()) {
-      verifyDescription(descriptionURL);
-    } else {
-      // Add timestamp to the description URL on testnets to avoid proposalId conflicts
-      descriptionURL = string(abi.encodePacked(descriptionURL, "-", Contracts.uint2str(block.timestamp)));
+    require(false, "createProposal() is deprecated for MGPs. Use createStructuredProposal() instead.");
+  }
+
+  function createStructuredProposal(
+    string memory title,
+    string memory mdFilePath,
+    ICeloGovernance.Transaction[] memory transactions,
+    address governance
+  ) internal {
+    if (!Chain.isCelo()) {
+      // Add timestamp to the title on Alfajores to avoid proposalId conflicts
+      title = string(abi.encodePacked(title, "-", Contracts.uint2str(block.timestamp)));
     }
+
+    // Assumes that there are permissions to read this md file in foundry.toml
+    string memory description = vm.readFile(mdFilePath);
+
+    string memory metadata = "";
+    vm.serializeString(metadata, "title", title);
+    string memory finalJson = vm.serializeString(metadata, "description", description);
 
     MentoGovernanceTransaction memory govTx;
 
-    govTx.description = descriptionURL;
+    govTx.description = finalJson;
     govTx.targets = new address[](transactions.length);
     govTx.values = new uint256[](transactions.length);
     govTx.calldatas = new bytes[](transactions.length);
@@ -42,7 +56,8 @@ contract GovernanceHelper is Script {
 
     uint256 proposalId = IGovernor(governance).propose(govTx.targets, govTx.values, govTx.calldatas, govTx.description);
 
-    console2.log("Proposal was successfully created. ID: ", proposalId);
+    console2.log("Proposal '%s' was successfully created", title);
+    console2.log("Proposal ID: ", proposalId);
   }
 
   function simulateProposal(ICeloGovernance.Transaction[] memory transactions, address governance) internal {
@@ -63,15 +78,5 @@ contract GovernanceHelper is Script {
     }
     console2.log("Proposal was simulated successfully.");
     vm.stopPrank();
-  }
-
-  function verifyDescription(string memory descriptionURL) internal pure {
-    bytes memory descriptionPrefix = new bytes(8);
-    require(bytes(descriptionURL).length > 8, "Description URL must start with https://");
-    for (uint i = 0; i < 8; i++) {
-      descriptionPrefix[i] = bytes(descriptionURL)[i];
-    }
-
-    require(keccak256(descriptionPrefix) == keccak256("https://"), "Description URL must start with https://");
   }
 }

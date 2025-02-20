@@ -1,8 +1,6 @@
-### MGP03: Set Mento Labs multisig and extend governance voting period
-
 ## TL;DR
 
-This proposal grants the Mento Labs multisig temporary permissions to pause and adjust the Locking contract parameters during Celo's L2 transition, and extends the governance voting period to 8 days to ensure the Celo community can participate in future Mento Governance proposals. The multisig permissions will be revoked via a follow-up proposal after the transition completes.
+This proposal grants the Mento Labs multisig temporary permissions to pause and adjust the Locking contract parameters during Celo's L2 transition, and extends the governance voting period to 8 days to ensure the Celo community can participate in future Mento Governance proposals.
 
 ### Summary
 
@@ -12,32 +10,32 @@ As outlined in MGP02, a new Locking contract implementation has been [deployed a
 
 With the Locking contract upgrade complete, the next step is setting the Mento Labs multisig address in the contract. This multisig will have permission to pause the contract during the transition and adjust parameters to accommodate the new block time while maintaining compatibility with existing locks. The upgrade process was already tested and successfully executed on Alfajores. After completing the L2 upgrade and resuming the Locking contract, a follow-up proposal will be issued to return the Proxy admin rights granted in MGP02 and remove the Mento Labs multisig address established in this proposal.
 
-In addition to the above, this proposal also increases the current 7 day governance voting period to 8 days, in order to enable the Celo community to vote in future Mento Governance proposals after the Mento protocol is fully transitioned into it’s own governance. How the voting process will look like has been described in the post in the Celo forum: [Empowering the Celo Community with Mento Governance Rights](https://forum.celo.org/t/empowering-the-celo-community-with-mento-governance-rights/10122).
+Additionally, this proposal extends the governance voting period from 7 to 8 days, allowing the Celo community to participate in future Mento Governance proposals after the Mento protocol transitions to its own governance. The voting process is detailed in the Celo forum post: [Empowering the Celo Community with Mento Governance Rights](https://forum.celo.org/t/empowering-the-celo-community-with-mento-governance-rights/10122).
 
 ### Transaction Details
 
 This proposal consists of two transactions:
 
-**TX#0:** call the `setMentoLabsMultisig(address mentoLabsMultisig_)` function
+**TX#0:** call the _setMentoLabsMultisig(address \_mentoLabsMultisig)_ function
 
 - Verify the **Locking** address
 - Verify the **Mento Labs Multisig** address
 
-**TX#1:** call the `setVotingPeriod(uint256 newVotingPeriod)` function in Governor
+**TX#1:** call the _setVotingPeriod(uint256 newVotingPeriod)_ function in Governor
 
 - Verify the **Governor** address
-- Verify the **newVotingPeriod** parameter is 8 days (`138240`)
+- Verify the **newVotingPeriod** parameter is 8 days (_138240_)
   - Parameter is configured in number of blocks based on the current 5s block time:
-    `60 * 60 * 24 * 8 / 5`
+    _60 * 60 * 24 \* 8 / 5_
 
 **Relevant Addresses for verification**
 
 - Locking Proxy
-  - [`0x001Bb66636dCd149A1A2bA8C50E408BdDd80279C`](https://celoscan.io/address/0x001Bb66636dCd149A1A2bA8C50E408BdDd80279C)
+  - [_0x001Bb66636dCd149A1A2bA8C50E408BdDd80279C_](https://celoscan.io/address/0x001Bb66636dCd149A1A2bA8C50E408BdDd80279C)
 - Governor Proxy
-  - [`0x47036d78bB3169b4F5560dD77BF93f4412A59852`](https://celoscan.io/address/0x47036d78bB3169b4F5560dD77BF93f4412A59852)
+  - [_0x47036d78bB3169b4F5560dD77BF93f4412A59852_](https://celoscan.io/address/0x47036d78bB3169b4F5560dD77BF93f4412A59852)
 - Mento Labs Multisig (3/7 Multisig with Mento Labs employees)
-  - [`0x655133d8E90F8190ed5c1F0f3710F602800C0150`](https://celoscan.io/address/0x655133d8E90F8190ed5c1F0f3710F602800C0150)
+  - [_0x655133d8E90F8190ed5c1F0f3710F602800C0150_](https://celoscan.io/address/0x655133d8E90F8190ed5c1F0f3710F602800C0150)
 
 ### Future Steps
 
