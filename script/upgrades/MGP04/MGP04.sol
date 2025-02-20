@@ -40,8 +40,12 @@ contract MGP04 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      // TODO: Change this to the forum post URL
-      createProposal(_transactions, "updateWithUrl", mentoGovernor);
+      createStructuredProposal(
+        "MGP-4: Update voting period ahead of L2 transition",
+        "updateWithMDFileOnceReady",
+        _transactions,
+        mentoGovernor
+      );
     }
     vm.stopBroadcast();
   }
