@@ -8,7 +8,7 @@ import { console2 } from "forge-std/Script.sol";
 import { StableTokenNGNProxy } from "mento-core-2.6.3/tokens/StableTokenNGNProxy.sol";
 
 /*
- yarn cgp:deploy -n <network> -u cJPY-cNGN -s cNGN-00-Deploy-Proxy.sol
+ yarn cgp:deploy -n <network> -u cJPYxNGN -s cNGN-00-Deploy-Proxy.sol
 */
 contract cNGN_DeployProxy is Script {
   function run() public {
