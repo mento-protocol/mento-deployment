@@ -16,6 +16,7 @@ fs_permissions = [
     { access = "read", path = "./data" },
     { access = "read", path = "./script/upgrades/dependencies.json" },
     { access = "read", path = "./script/upgrades/MINIDROP/data/" },
+    { access = "read", path = "./script/upgrades/MU08Revert/MU08Revert.md" }
 ]
 via_ir = true
 
@@ -57,4 +58,3 @@ match_contract = "Integration"
 [rpc_endpoints]
 celo = "${CELO_RPC_URL}"
 alfajores = "${ALFAJORES_RPC_URL}"
-

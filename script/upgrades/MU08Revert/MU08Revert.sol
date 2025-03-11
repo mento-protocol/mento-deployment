@@ -134,6 +134,7 @@ contract MU08Revert is IMentoUpgrade, GovernanceScript {
   }
 
   function run() public {
+    prepare();
     if (!Chain.isAlfajores()) {
       console.log("MU08Revert can only be run on Alfajores");
       return;
@@ -143,7 +144,12 @@ contract MU08Revert is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "TODO", mentoGovernance);
+      createStructuredProposal(
+        "Revert MU08: Revert ownership transfer for testing purposes",
+        "./script/upgrades/MU08Revert/MU08Revert.md",
+        _transactions,
+        mentoGovernance
+      );
     }
     vm.stopBroadcast();
   }
