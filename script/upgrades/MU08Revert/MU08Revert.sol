@@ -70,6 +70,7 @@ contract MU08Revert is IMentoUpgrade, GovernanceScript {
   // MentoGovernance contracts:
   address private governanceFactory;
   address private timelockProxy;
+  address private mentoGovernance;
 
   function prepare() public {
     loadDeployedContracts();
@@ -129,6 +130,7 @@ contract MU08Revert is IMentoUpgrade, GovernanceScript {
     // MentoGovernance contracts:
     governanceFactory = contracts.deployed("GovernanceFactory");
     timelockProxy = IGovernanceFactory(governanceFactory).governanceTimelock();
+    mentoGovernance = IGovernanceFactory(governanceFactory).mentoGovernor();
   }
 
   function run() public {
@@ -141,7 +143,7 @@ contract MU08Revert is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "TODO", celoGovernance);
+      createProposal(_transactions, "TODO", mentoGovernance);
     }
     vm.stopBroadcast();
   }
