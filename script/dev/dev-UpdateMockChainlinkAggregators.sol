@@ -2,7 +2,7 @@
 // solhint-disable var-name-mixedcase, const-name-snakecase
 pragma solidity ^0.8.18;
 
-import { console } from "forge-std-next/console.sol";
+import { console2 as console } from "forge-std/Script.sol";
 import { Script } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
@@ -36,6 +36,7 @@ contract UpdateMockChainlinkAggregators is Script {
   address private constant CELOUSDMainnetAggregator = 0x0568fD19986748cEfF3301e55c0eb1E729E0Ab7e;
   address private constant COPUSDMainnetAggregator = 0x97b770B0200CCe161907a9cbe0C6B177679f8F7C;
   address private constant GHSUSDMainnetAggregator = 0x2719B648DB57C5601Bd4cB2ea934Dec6F4262cD8;
+  address private constant ETHUSDMainnetAggregator = 0x1FcD30A73D67639c1cD89ff5746E7585731c083B;
 
   mapping(address => address) private mockForAggregator;
   mapping(address => int256) private aggregatorAnswers;
@@ -61,13 +62,18 @@ contract UpdateMockChainlinkAggregators is Script {
     contracts.loadSilent("dev-DeployMockChainlinkAggregator", "GHSUSD");
     address GHSUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
 
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "ETHUSD");
+    address ETHUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
     mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDTestnetMock;
     mockForAggregator[COPUSDMainnetAggregator] = COPUSDTestnetMock;
     mockForAggregator[GHSUSDMainnetAggregator] = GHSUSDTestnetMock;
+    mockForAggregator[ETHUSDMainnetAggregator] = ETHUSDTestnetMock;
 
     aggregatorsToForward.push(PHPUSDMainnetAggregator);
     aggregatorsToForward.push(COPUSDMainnetAggregator);
     aggregatorsToForward.push(GHSUSDMainnetAggregator);
+    aggregatorsToForward.push(ETHUSDMainnetAggregator);
   }
 
   function run() public {
@@ -94,6 +100,7 @@ contract UpdateMockChainlinkAggregators is Script {
         console.log("Update %s mock aggregator with value: %d", IMockAggregator(mock).description(), uint256(answer));
         console.log("       From mainnet aggregator: %s (%s)", aggregatorDescription[agg], address(agg));
         console.log("       Testnet mock aggregator: %s", mock);
+        console.log("\n");
       }
     }
     vm.stopBroadcast();
