@@ -5,12 +5,9 @@ pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
 import { console2 as console } from "forge-std/Script.sol";
+import { Chain } from "script/utils/Chain.sol";
 
-import { IERC20Metadata } from "mento-core-2.3.1/common/interfaces/IERC20Metadata.sol";
 import { StableTokenGHSProxy } from "mento-core-2.6.0/tokens/StableTokenGHSProxy.sol";
-
-import { TempStable } from "mento-core-2.6.4/tokens/TempStable.sol";
-
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
 /**
@@ -18,15 +15,18 @@ import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.
  *         governance transactions needed to update the cGHS token name
  * @dev depends on: ../deploy/*.sol
  */
-contract cGHS is IMentoUpgrade, GovernanceScript {
-  using TradingLimits for TradingLimits.Config;
-  using FixidityLib for FixidityLib.Fraction;
-
-  address private stableTokenGHSProxyAddress;
+contract cGHSRename is IMentoUpgrade, GovernanceScript {
+  address payable private stableTokenGHSProxyAddress;
   address private stableTokenV2ImplementationAddress;
   address private tempImplementationAddress;
 
   ICeloGovernance.Transaction[] private transactions;
+
+  // Note: TempStable uses a newer version of Solidity, so cannot be imported without compiler issues.
+  // Due to compiler limitations in 0.5.13, we cannot use .selector on an interface with a matching signature.
+  // Updating TempStable to an older version would require cascading changes in Mento Core, fork tests, etc.
+  // Hardcoding the selector is the simplest solution given the straightforward function signature.
+  bytes4 setNameSelector = bytes4(keccak256("setName(string)"));
 
   bool public hasChecks = true;
 
@@ -50,9 +50,9 @@ contract cGHS is IMentoUpgrade, GovernanceScript {
    * @dev Sets the addresses of the various contracts needed for the proposal.
    */
   function setAddresses() public {
-    stableTokenGHSProxy = contracts.deployed("StableTokenGHSProxy");
-    stableTokenV2Implementation = contracts.deployed("StableTokenV2");
-    tempImplementation = contracts.deployed("TempStable");
+    stableTokenGHSProxyAddress = contracts.deployed("StableTokenGHSProxy");
+    stableTokenV2ImplementationAddress = contracts.deployed("StableTokenV2");
+    tempImplementationAddress = contracts.deployed("TempStable");
   }
 
   function run() public {
@@ -70,27 +70,27 @@ contract cGHS is IMentoUpgrade, GovernanceScript {
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
-    StableTokenGHSProxy _cGHSProxy = StableTokenGHSProxy(stableTokenGHSProxy);
+    StableTokenGHSProxy _cGHSProxy = StableTokenGHSProxy(stableTokenGHSProxyAddress);
 
     // Set the implementation to the temp implementation
     transactions.push(
       ICeloGovernance.Transaction(
         0,
-        stableTokenGHSProxy,
+        stableTokenGHSProxyAddress,
         abi.encodeWithSelector(_cGHSProxy._setImplementation.selector, tempImplementationAddress)
       )
     );
 
     // Update the name of the token
     transactions.push(
-      ICeloGovernance.Transaction(0, stableTokenGHSProxy, abi.encodeWithSelector(TempStable.setName.selector, GHS_NAME))
+      ICeloGovernance.Transaction(0, stableTokenGHSProxyAddress, abi.encodeWithSelector(setNameSelector, GHS_NAME))
     );
 
     // Switch the implementation back to the stableTokenV2 implementation
     transactions.push(
       ICeloGovernance.Transaction(
         0,
-        stableTokenGHSProxy,
+        stableTokenGHSProxyAddress,
         abi.encodeWithSelector(_cGHSProxy._setImplementation.selector, stableTokenV2ImplementationAddress)
       )
     );
