@@ -12,7 +12,7 @@ With Celo's transition to an L2, the block time will be reduced from 5 seconds t
 
 #### Motivation
 
-- Preserve the one week voting period duration after the Celo blockchain's L2 transition
+- Preserve the 8 days voting period duration after the Celo blockchain's L2 transition
 
 #### Technical Rationale
 

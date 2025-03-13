@@ -42,7 +42,7 @@ contract MGP04 is IMentoUpgrade, GovernanceScript {
     {
       createStructuredProposal(
         "MGP-4: Update voting period ahead of L2 transition",
-        "updateWithMDFileOnceReady",
+        "./script/upgrades/MGP04/MGP04.md",
         _transactions,
         mentoGovernor
       );
