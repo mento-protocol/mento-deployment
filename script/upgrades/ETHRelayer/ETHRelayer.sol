@@ -67,7 +67,7 @@ contract ETHRelayer is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "TODO", governance);
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0172.md", governance);
     }
     vm.stopBroadcast();
   }
