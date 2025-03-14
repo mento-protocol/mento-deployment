@@ -1,4 +1,4 @@
-### MGP04: Update governance voting period ahead of Celo L2 Transition
+### MGP05: Update governance voting period ahead of Celo L2 Transition
 
 #### Description
 

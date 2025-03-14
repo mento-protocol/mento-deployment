@@ -11,7 +11,7 @@ import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 import { IGovernor } from "script/interfaces/IGovernor.sol";
 
-contract MGP04 is IMentoUpgrade, GovernanceScript {
+contract MGP05 is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
 
   bool public hasChecks = false;
@@ -41,8 +41,8 @@ contract MGP04 is IMentoUpgrade, GovernanceScript {
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       createStructuredProposal(
-        "MGP-4: Update voting period ahead of L2 transition",
-        "./script/upgrades/MGP04/MGP04.md",
+        "MGP-5: Update voting period ahead of L2 transition",
+        "./script/upgrades/MGP05/MGP05.md",
         _transactions,
         mentoGovernor
       );
@@ -56,7 +56,7 @@ contract MGP04 is IMentoUpgrade, GovernanceScript {
     (uint256 currentVotingPeriod, uint256 newVotingPeriod) = Chain.isCelo() ? (138240, 691200) : (300, 300);
 
     if (Chain.isCelo()) {
-      // MGP04 was already executed on Alfajores in order to fix the voting period after the L2 transition
+      // MGP05 was already executed on Alfajores in order to fix the voting period after the L2 transition
       // so the voting period is already set correctly there.
       require(IGovernor(mentoGovernor).votingPeriod() == currentVotingPeriod, "Current voting period is not correct");
     }
