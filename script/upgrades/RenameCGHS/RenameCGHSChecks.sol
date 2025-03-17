@@ -7,7 +7,7 @@ import { IERC20Lite } from "script/interfaces/IERC20Lite.sol";
 import { Script } from "script/utils/Script.sol";
 import { console2 as console } from "forge-std/Script.sol";
 
-contract cGHSRenameChecks is Script, Test {
+contract RenameCGHSChecks is Script, Test {
   string public constant GHS_NAME = "Celo Ghanaian Cedi";
 
   address payable public stableTokenGHSProxy;

@@ -15,7 +15,7 @@ import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.
  *         governance transactions needed to update the cGHS token name
  * @dev depends on: ../deploy/*.sol
  */
-contract cGHSRename is IMentoUpgrade, GovernanceScript {
+contract RenameCGHS is IMentoUpgrade, GovernanceScript {
   address payable private stableTokenGHSProxyAddress;
   address private stableTokenV2ImplementationAddress;
   address private tempImplementationAddress;
