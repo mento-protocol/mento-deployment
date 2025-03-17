@@ -38,8 +38,16 @@ library Contracts {
     _load(self, script, timestamp, false);
   }
 
+  function load(Cache storage self, string memory script) internal {
+    _load(self, script, "latest", false);
+  }
+
   function loadSilent(Cache storage self, string memory script, string memory timestamp) internal {
     _load(self, script, timestamp, true);
+  }
+
+  function loadSilent(Cache storage self, string memory script) internal {
+    _load(self, script, "latest", true);
   }
 
   function _load(Cache storage self, string memory script, string memory timestamp, bool silent) internal {
