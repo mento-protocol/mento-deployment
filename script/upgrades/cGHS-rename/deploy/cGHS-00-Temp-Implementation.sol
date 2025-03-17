@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.5.13;
+pragma solidity ^0.8.18;
 
-import { Script } from "script/utils/Script.sol";
-import { Chain } from "script/utils/Chain.sol";
-import { console2 } from "forge-std/Script.sol";
+import { Script, console2 } from "forge-std-next/Script.sol";
+import { TempStable } from "mento-core-2.6.4/tokens/TempStable.sol";
+import { IRegistry } from "../../../interfaces/IRegistry.sol";
 
 /**
  yarn deploy -n <network> -u cGHS-rename -s cGHS-Rename-Deploy-Implementation.sol
@@ -16,16 +16,13 @@ interface IOwnableLite {
 contract cGHS_TempImplementation is Script {
   function run() public {
     address tempImplementation;
-    address governance = contracts.celoRegistry("Governance");
 
-    string memory path = string(abi.encodePacked("out/TempStable.sol/TempStable.json"));
-    bytes memory bytecode = abi.encodePacked(vm.getCode(path), abi.encode(true));
+    IRegistry registry = IRegistry(0x000000000000000000000000000000000000ce10);
+    address governance = registry.getAddressForStringOrDie("Governance");
 
-    vm.startBroadcast(Chain.deployerPrivateKey());
+    vm.startBroadcast(vm.envUint("MENTO_DEPLOYER_PK"));
     {
-      assembly {
-        tempImplementation := create(0, add(bytecode, 0x20), mload(bytecode))
-      }
+      tempImplementation = address(new TempStable());
       IOwnableLite(tempImplementation).transferOwnership(governance);
     }
     vm.stopBroadcast();
