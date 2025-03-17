@@ -43,7 +43,7 @@ contract cGHSRename is IMentoUpgrade, GovernanceScript {
   function loadDeployedContracts() public {
     contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
     contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
-    contracts.loadSilent("cGHS-Rename-Deploy-Implementation", "latest");
+    contracts.loadSilent("cGHS-00-Temp-Implementation", "latest");
   }
 
   /**
