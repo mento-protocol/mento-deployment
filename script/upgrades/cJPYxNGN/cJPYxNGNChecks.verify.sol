@@ -8,16 +8,12 @@ import { Arrays } from "script/utils/Arrays.sol";
 import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
 import { TradingLimits } from "mento-core-2.3.1/libraries/TradingLimits.sol";
-import { ICeloProxy } from "mento-core-2.6.3/interfaces/ICeloProxy.sol";
 
-import { IRegistry } from "mento-core-2.3.1/common/interfaces/IRegistry.sol";
 import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
 import { IERC20Metadata } from "mento-core-2.3.1/common/interfaces/IERC20Metadata.sol";
 import { IStableTokenV2 } from "mento-core-2.3.1/interfaces/IStableTokenV2.sol";
-import { IFeeCurrencyDirectory } from "../../interfaces/IFeeCurrencyDirectory.sol";
 
 import { Reserve } from "mento-core-2.3.1/swap/Reserve.sol";
-import { Ownable } from "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import { Proxy } from "mento-core-2.3.1/common/Proxy.sol";
 import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
@@ -85,7 +81,7 @@ contract cJPYxNGNChecksVerify is cJPYxNGNChecksBase {
   }
 
   function verifyStableToken(address tokenAddress, Config.StableTokenV2 memory config) internal {
-    ICeloProxy stableTokenProxy = ICeloProxy(tokenAddress);
+    Proxy stableTokenProxy = Proxy(tokenAddress);
 
     address implementation = stableTokenProxy._getImplementation();
     if (implementation != stableTokenV2) {
