@@ -11,7 +11,6 @@ import { Arrays } from "script/utils/Arrays.sol";
 
 import { FixidityLib } from "celo/contracts/common/FixidityLib.sol";
 import { IRegistry } from "celo/contracts/common/interfaces/IRegistry.sol";
-import { IFreezer } from "celo/contracts/common/interfaces/IFreezer.sol";
 
 import { ICeloProxy } from "mento-core-2.6.3/interfaces/ICeloProxy.sol";
 import { IReserve } from "mento-core-2.6.3/interfaces/IReserve.sol";
