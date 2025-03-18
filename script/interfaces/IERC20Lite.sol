@@ -6,4 +6,9 @@ interface IERC20Lite {
    * @dev Returns the symbol of the token.
    */
   function symbol() external view returns (string memory);
+
+  /**
+   * @dev Returns the name of the token.
+   */
+  function name() external view returns (string memory);
 }
