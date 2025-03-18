@@ -7,6 +7,7 @@ import { Chain } from "script/utils/Chain.sol";
 import { Config } from "script/utils/Config.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { FixidityLib } from "script/utils/FixidityLib.sol";
+import { Arrays } from "script/utils/Arrays.sol";
 
 // TODO: Confirm symbol for the NGN and update accordingly
 // TODO: Confirm pool and ratefeed configuratinos for both and update
@@ -37,6 +38,7 @@ library cJPYxNGNConfig {
     Config.StableTokenV2 cJPYConfig;
     Config.StableTokenV2 cNGNConfig;
     Config.StableTokenV2[] stableTokenConfigs;
+    address[] stableTokenAddresses;
   }
 
   /**
@@ -45,7 +47,7 @@ library cJPYxNGNConfig {
   function get(Contracts.Cache storage contracts) internal view returns (cJPYxNGN memory config) {
     config.pools = new Config.Pool[](2);
     config.pools[0] = cJPYcUSD_PoolConfig(contracts);
-    config.pools[0] = cNGNcUSD_PoolConfig(contracts);
+    config.pools[1] = cNGNcUSD_PoolConfig(contracts);
 
     config.rateFeeds = new Config.RateFeed[](2);
     config.rateFeeds[0] = JPYUSD_RateFeedConfig();
@@ -54,6 +56,11 @@ library cJPYxNGNConfig {
     config.stableTokenConfigs = new Config.StableTokenV2[](2);
     config.stableTokenConfigs[0] = stableTokenJPYConfig();
     config.stableTokenConfigs[1] = stableTokenNGNConfig();
+
+    config.stableTokenAddresses = Arrays.addresses(
+      contracts.deployed("StableTokenJPYProxy"),
+      contracts.deployed("StableTokenNGNProxy")
+    );
   }
 
   /* ==================== Rate Feed Configurations ==================== */
