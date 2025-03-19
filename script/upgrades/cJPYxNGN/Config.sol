@@ -38,7 +38,7 @@ library cJPYxNGNConfig {
     Config.StableTokenV2 cJPYConfig;
     Config.StableTokenV2 cNGNConfig;
     Config.StableTokenV2[] stableTokenConfigs;
-    address[] stableTokenAddresses;
+    address payable[] stableTokenAddresses;
   }
 
   /**
@@ -57,10 +57,9 @@ library cJPYxNGNConfig {
     config.stableTokenConfigs[0] = stableTokenJPYConfig();
     config.stableTokenConfigs[1] = stableTokenNGNConfig();
 
-    config.stableTokenAddresses = Arrays.addresses(
-      contracts.deployed("StableTokenJPYProxy"),
-      contracts.deployed("StableTokenNGNProxy")
-    );
+    config.stableTokenAddresses = new address payable[](2);
+    config.stableTokenAddresses[0] = contracts.deployed("StableTokenJPYProxy");
+    config.stableTokenAddresses[1] = contracts.deployed("StableTokenNGNProxy");
   }
 
   /* ==================== Rate Feed Configurations ==================== */
@@ -69,7 +68,7 @@ library cJPYxNGNConfig {
    * @dev Returns the configuration for the JPYUSD rate feed.
    */
   function JPYUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
-    rateFeedConfig.rateFeedID = Config.rateFeedID("JPYUSD");
+    rateFeedConfig.rateFeedID = Config.rateFeedID("relayed:JPYUSD");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
       threshold: FixidityLib.newFixedFraction(4, 100), // 4%
@@ -82,7 +81,7 @@ library cJPYxNGNConfig {
    * @dev Returns the configuration for the NGNUSD rate feed.
    */
   function NGNUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory rateFeedConfig) {
-    rateFeedConfig.rateFeedID = Config.rateFeedID("NGNUSD");
+    rateFeedConfig.rateFeedID = Config.rateFeedID("relayed:NGNUSD");
     rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
       enabled: true,
       threshold: FixidityLib.newFixedFraction(4, 100), // 4%
