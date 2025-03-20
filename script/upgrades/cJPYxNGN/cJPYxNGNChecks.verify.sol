@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 import { console2 as console } from "forge-std/Script.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-import { IFeeCurrencyWhitelist } from "script/interfaces/IFeeCurrencyWhitelist.sol";
+import { IFeeCurrencyDirectory } from "script/interfaces/IFeeCurrencyDirectory.sol";
 import { ICeloGovernance } from "script/interfaces/ICeloGovernance.sol";
 import { TradingLimits } from "mento-core-2.3.1/libraries/TradingLimits.sol";
 
@@ -121,15 +121,15 @@ contract cJPYxNGNChecksVerify is cJPYxNGNChecksBase {
   }
 
   function verifyTokensAddedToFeeCurrencyWhitelist() internal view {
-    address[] memory feeCurrencyWhitelist = IFeeCurrencyWhitelist(contracts.celoRegistry("FeeCurrencyWhitelist"))
-      .getWhitelist();
+    address feeCurrencyDirectory = contracts.celoRegistry("FeeCurrencyDirectory");
+    address[] memory feeCurrencies = IFeeCurrencyDirectory(feeCurrencyDirectory).getCurrencies();
 
-    if (!Arrays.contains(feeCurrencyWhitelist, cJPY)) {
+    if (!Arrays.contains(feeCurrencies, cJPY)) {
       revert("cJPY has not been added to the fee currency whitelist.");
     }
     console.log("🟢 cJPY has been added to the fee currency whitelist");
 
-    if (!Arrays.contains(feeCurrencyWhitelist, cNGN)) {
+    if (!Arrays.contains(feeCurrencies, cNGN)) {
       revert("cNGN has not been added to the fee currency whitelist.");
     }
     console.log("🟢 cNGN has been added to the fee currency whitelist");

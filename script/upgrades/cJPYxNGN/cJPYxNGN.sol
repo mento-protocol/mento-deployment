@@ -9,6 +9,8 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
+import { IFeeCurrencyDirectory } from "../../interfaces/IFeeCurrencyDirectory.sol";
+
 import { FixidityLib } from "mento-core-2.3.1/common/FixidityLib.sol";
 import { IRegistry } from "celo/contracts/common/interfaces/IRegistry.sol";
 
@@ -16,7 +18,6 @@ import { Proxy } from "mento-core-2.3.1/common/Proxy.sol";
 import { IReserve } from "mento-core-2.3.1/interfaces/IReserve.sol";
 import { IERC20Metadata } from "mento-core-2.3.1/common/interfaces/IERC20Metadata.sol";
 import { IStableTokenV2 } from "mento-core-2.3.1/interfaces/IStableTokenV2.sol";
-import { IFeeCurrencyWhitelist } from "../../interfaces/IFeeCurrencyWhitelist.sol";
 import { IPricingModule } from "mento-core-2.3.1/interfaces/IPricingModule.sol";
 
 import { Broker } from "mento-core-2.3.1/swap/Broker.sol";
@@ -44,6 +45,7 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
   address private biPoolManagerProxy;
   address private reserveProxy;
   address private validators;
+  address private sortedOraclesProxy;
 
   bool public hasChecks = true;
 
@@ -78,6 +80,7 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
     // Oracles
     breakerBox = contracts.deployed("BreakerBox");
     medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
+    sortedOraclesProxy = contracts.celoRegistry("SortedOracles");
 
     // Swaps
     brokerProxy = contracts.deployed("BrokerProxy");
@@ -99,7 +102,7 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
     for (uint i = 0; i < config.pools.length; i++) {
       referenceRateFeedIDToExchangeId[config.pools[i].referenceRateFeedID] = getExchangeId(
         config.pools[i].asset0,
-        config.pools[i].asset1,
+        config.stableTokenConfigs[i].symbol,
         config.pools[i].isConstantSum
       );
     }
@@ -239,19 +242,29 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
    * @notice enable gas payments with the specified token
    */
   function proposal_enableGasPayments(address stableTokenAddress) private {
-    address feeCurrencyWhitelistProxy = contracts.celoRegistry("FeeCurrencyWhitelist");
-    address[] memory whitelist = IFeeCurrencyWhitelist(feeCurrencyWhitelistProxy).getWhitelist();
-    for (uint256 i = 0; i < whitelist.length; i++) {
-      if (whitelist[i] == stableTokenAddress) {
-        console.log("Gas payments with %s already enabled, skipping", stableTokenAddress);
+    // On Alfajores, we need to use the FeeCurrencyDirectory contract
+    address feeCurrencyDirectory = contracts.celoRegistry("FeeCurrencyDirectory");
+    address[] memory feeCurrencies = IFeeCurrencyDirectory(feeCurrencyDirectory).getCurrencies();
+    for (uint256 i = 0; i < feeCurrencies.length; i++) {
+      if (feeCurrencies[i] == stableTokenAddress) {
+        console.log("Gas payments with this token %s already enabled, skipping", stableTokenAddress);
         return;
       }
     }
+
+    // TODO: confirm intrinsic gas value for this
+    //       The value is set to 60000 for existing mento stable tokens on alfajores
+
     transactions.push(
       ICeloGovernance.Transaction(
         0,
-        feeCurrencyWhitelistProxy,
-        abi.encodeWithSelector(IFeeCurrencyWhitelist(0).addToken.selector, stableTokenAddress)
+        feeCurrencyDirectory,
+        abi.encodeWithSelector(
+          IFeeCurrencyDirectory(0).setCurrencyConfig.selector,
+          stableTokenAddress,
+          sortedOraclesProxy,
+          60000
+        )
       )
     );
   }
@@ -419,12 +432,16 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
   /**
    * @notice Helper function to get the exchange ID for a pool.
    */
-  function getExchangeId(address asset0, address asset1, bool isConstantSum) internal view returns (bytes32) {
+  function getExchangeId(
+    address asset0,
+    string memory asset1Symbol,
+    bool isConstantSum
+  ) internal view returns (bytes32) {
     return
       keccak256(
         abi.encodePacked(
           IERC20Metadata(asset0).symbol(),
-          IERC20Metadata(asset1).symbol(),
+          asset1Symbol,
           isConstantSum ? "ConstantSum" : "ConstantProduct"
         )
       );
