@@ -80,7 +80,7 @@ contract cJPYxNGNChecksVerify is cJPYxNGNChecksBase {
     console.log("🟢 cJPY proxy ownership transferred to governance");
   }
 
-  function verifyStableToken(address tokenAddress, Config.StableTokenV2 memory config) internal {
+  function verifyStableToken(address payable tokenAddress, Config.StableTokenV2 memory config) internal {
     Proxy stableTokenProxy = Proxy(tokenAddress);
 
     address implementation = stableTokenProxy._getImplementation();

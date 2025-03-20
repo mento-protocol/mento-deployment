@@ -9,18 +9,21 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-import { FixidityLib } from "celo/contracts/common/FixidityLib.sol";
+import { FixidityLib } from "mento-core-2.3.1/common/FixidityLib.sol";
 import { IRegistry } from "celo/contracts/common/interfaces/IRegistry.sol";
 
-import { ICeloProxy } from "mento-core-2.6.3/interfaces/ICeloProxy.sol";
-import { IReserve } from "mento-core-2.6.3/interfaces/IReserve.sol";
-import { IERC20 } from "mento-core-2.6.3/interfaces/IERC20.sol";
-import { IStableTokenV2 } from "mento-core-2.6.3/interfaces/IStableTokenV2.sol";
+import { Proxy } from "mento-core-2.3.1/common/Proxy.sol";
+import { IReserve } from "mento-core-2.3.1/interfaces/IReserve.sol";
+import { IERC20Metadata } from "mento-core-2.3.1/common/interfaces/IERC20Metadata.sol";
+import { IStableTokenV2 } from "mento-core-2.3.1/interfaces/IStableTokenV2.sol";
+import { IFeeCurrencyWhitelist } from "../../interfaces/IFeeCurrencyWhitelist.sol";
+import { IPricingModule } from "mento-core-2.3.1/interfaces/IPricingModule.sol";
 
 import { Broker } from "mento-core-2.3.1/swap/Broker.sol";
-import { BiPoolManager } from "mento-core-2.6.3/swap/BiPoolManager.sol";
-import { Reserve } from "mento-core-2.6.3/swap/Reserve.sol";
+import { IBiPoolManager } from "mento-core-2.3.1/interfaces/IBiPoolManager.sol";
 import { TradingLimits } from "mento-core-2.3.1/libraries/TradingLimits.sol";
+import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
+import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 
 import { cJPYxNGNConfig, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
@@ -46,8 +49,6 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
 
   // Helper mapping to store the exchange IDs for the reference rate feeds
   mapping(address => bytes32) public referenceRateFeedIDToExchangeId;
-
-  bool public hasChecks = true;
 
   function prepare() public {
     loadDeployedContracts();
@@ -140,7 +141,7 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
     }
 
     for (uint256 i = 0; i < config.rateFeeds.length; i++) {
-      proposal_configureBreakerBox(config.rateFeeds[i]);
+      proosal_configureBreakerBox(config.rateFeeds[i]);
       proposal_configureMedianDeltaBreaker(config.rateFeeds[i]);
     }
 
@@ -155,13 +156,13 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
     string memory name,
     string memory symbol
   ) private {
-    if (ICeloProxy(stableTokenAddress)._getImplementation() == address(0)) {
+    if (Proxy(stableTokenAddress)._getImplementation() == address(0)) {
       transactions.push(
         ICeloGovernance.Transaction(
           0,
           stableTokenAddress,
           abi.encodeWithSelector(
-            IProxy(0)._setAndInitializeImplementation.selector,
+            Proxy(0)._setAndInitializeImplementation.selector,
             stableTokenV2,
             abi.encodeWithSelector(
               IStableTokenV2(0).initialize.selector,

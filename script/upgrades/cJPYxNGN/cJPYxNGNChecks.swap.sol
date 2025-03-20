@@ -94,7 +94,7 @@ contract cJPYxNGNChecksSwap is cJPYxNGNChecksBase {
   ) internal {
     uint256 amountOut = Broker(broker).getAmountOut(biPoolManagerProxy, exchangeID, tokenIn, tokenOut, amountIn);
 
-    // This is the GHS to USD rate
+    // This is the asset 1 to USD rate
     (uint256 numerator, uint256 denominator) = SortedOracles(sortedOraclesProxy).medianRate(rateFeedID);
     uint256 estimatedAmountOut;
 
