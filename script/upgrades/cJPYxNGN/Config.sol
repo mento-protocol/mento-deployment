@@ -120,12 +120,12 @@ library cJPYxNGNConfig {
       asset1limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 133 * 100_000,
+        limit0: 148 * 200_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 133 * 500_000,
+        limit1: 148 * 1_000_000,
         enabledGlobal: true,
-        limitGlobal: 133 * 2_500_000
+        limitGlobal: 148 * 5_000_000
       })
     });
   }
@@ -158,12 +158,12 @@ library cJPYxNGNConfig {
       asset1limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 133 * 100_000,
+        limit0: 1_535 * 200_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 133 * 500_000,
+        limit1: 1_535 * 1_000_000,
         enabledGlobal: true,
-        limitGlobal: 133 * 2_500_000
+        limitGlobal: 1_535 * 5_000_000
       })
     });
   }
@@ -174,13 +174,13 @@ library cJPYxNGNConfig {
    * @dev Returns the configuration for the cJPY stable token.
    */
   function stableTokenJPYConfig() internal pure returns (Config.StableTokenV2 memory config) {
-    config = Config.StableTokenV2({ name: "Celo Japanese Yen", symbol: "cJPY" });
+    config = Config.StableTokenV2({ name: "Celo Japanese Yen", symbol: "mJPY" });
   }
 
   /**
    * @dev Returns the configuration for the cNGN stable token.
    */
   function stableTokenNGNConfig() internal pure returns (Config.StableTokenV2 memory config) {
-    config = Config.StableTokenV2({ name: "Celo Nigerian Naira", symbol: "cNGN" });
+    config = Config.StableTokenV2({ name: "Celo Nigerian Naira", symbol: "mNGN" });
   }
 }
