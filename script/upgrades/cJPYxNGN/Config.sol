@@ -9,16 +9,14 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { FixidityLib } from "script/utils/FixidityLib.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-// TODO: Confirm symbol for the NGN and update accordingly
-// TODO: Confirm pool and ratefeed configuratinos for both and update
 // TODO: Confirm name for both tokens e.g. Celo... or Mento...
 
 /**
- * @dev This library contains the configuration required for the cJPYxNGN governance proposal.
+ * @dev This library contains the configuration required for the mJPYmNGN governance proposal.
  *      The following configuration is used:
  *     - 2 pools:
- *              - cJPY<->cUSD
- *              - cNGN<->cUSD
+ *              - mJPY<->cUSD
+ *              - mNGN<->cUSD
  *     - 2 rate feeds:
  *              - JPYUSD
  *              - NGNUSD
