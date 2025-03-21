@@ -9,7 +9,7 @@ import { Contracts } from "script/utils/mento/Contracts.sol";
 import { MockChainlinkAggregator } from "contracts/MockChainlinkAggregator.sol";
 
 /**
- * Usage: yarn script:dev -n alfajores -s DeployMockChainlinkAggregator -r "run(string)" PHPUSD
+ * Usage: yarn script:dev -n alfajores -s DeployMockChainlinkAggregator -r "run(string, uint8)" PHPUSD 8
  * Used to deploy mock Chainlink Aggregators to Alfajores to be used
  * in testnet relayers to mimic mainnet more closely.
  * ========== IMPORTANT ======================================
@@ -19,10 +19,10 @@ import { MockChainlinkAggregator } from "contracts/MockChainlinkAggregator.sol";
  * ===========================================================
  */
 contract DeployMockChainlinkAggregator is Script {
-  function run(string memory rateFeed) public {
+  function run(string memory rateFeed, uint8 decimals) public {
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
-      new MockChainlinkAggregator(rateFeed);
+      new MockChainlinkAggregator(rateFeed, decimals);
     }
     vm.stopBroadcast();
   }
