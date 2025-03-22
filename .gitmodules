@@ -37,3 +37,6 @@
 [submodule "lib/mento-core-2.6.4"]
 	path = lib/mento-core-2.6.4
 	url = https://github.com/mento-protocol/mento-core
+[submodule "lib/mento-core-2.6.5"]
+	path = lib/mento-core-2.6.5
+	url = https://github.com/mento-protocol/mento-core
