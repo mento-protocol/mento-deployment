@@ -31,10 +31,6 @@ library FX01Config {
   using Contracts for Contracts.Cache;
 
   struct FX01 {
-    Config.Pool cGBPcUSD;
-    Config.Pool cZARcUSD;
-    Config.Pool cCADcUSD;
-    Config.Pool cAUDcUSD;
     Config.Pool[] pools;
     Config.RateFeed GBPUSD;
     Config.RateFeed ZARUSD;
@@ -76,6 +72,16 @@ library FX01Config {
     config.stableTokenAddresses[1] = contracts.deployed("StableTokenZARProxy");
     config.stableTokenAddresses[2] = contracts.deployed("StableTokenCADProxy");
     config.stableTokenAddresses[3] = contracts.deployed("StableTokenAUDProxy");
+
+    config.GBPUSD = GBPUSD_RateFeedConfig();
+    config.ZARUSD = ZARUSD_RateFeedConfig();
+    config.CADUSD = CADUSD_RateFeedConfig();
+    config.AUDUSD = AUDUSD_RateFeedConfig();
+
+    config.cGBPConfig = stableTokenGBPConfig();
+    config.cZARConfig = stableTokenZARConfig();
+    config.cCADConfig = stableTokenCADConfig();
+    config.cAUDConfig = stableTokenAUDConfig();
   }
 
   /* ==================== Rate Feed Configurations ==================== */
@@ -99,7 +105,7 @@ library FX01Config {
   function createRateFeedConfig(
     string memory rateFeedName
   ) internal pure returns (Config.RateFeed memory rateFeedConfig) {
-    rateFeedConfig.rateFeedID = Config.rateFeedID(string(abi.encodePacked("relayed:", rateFeedName)));
+    rateFeedConfig.rateFeedID = Config.rateFeedID(rateFeedName);
     rateFeedConfig.medianDeltaBreaker0 = getDefaultMedianDeltaBreakerConfig();
   }
 
@@ -107,28 +113,28 @@ library FX01Config {
    * @dev Returns the configuration for the GBPUSD rate feed.
    */
   function GBPUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory) {
-    return createRateFeedConfig("GBPUSD");
+    return createRateFeedConfig("relayed:GBPUSD");
   }
 
   /**
    * @dev Returns the configuration for the ZARUSD rate feed.
    */
   function ZARUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory) {
-    return createRateFeedConfig("ZARUSD");
+    return createRateFeedConfig("relayed:ZARUSD");
   }
 
   /**
    * @dev Returns the configuration for the CADUSD rate feed.
    */
   function CADUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory) {
-    return createRateFeedConfig("CADUSD");
+    return createRateFeedConfig("relayed:CADUSD");
   }
 
   /**
    * @dev Returns the configuration for the AUDUSD rate feed.
    */
   function AUDUSD_RateFeedConfig() internal pure returns (Config.RateFeed memory) {
-    return createRateFeedConfig("AUDUSD");
+    return createRateFeedConfig("relayed:AUDUSD");
   }
 
   /* ==================== Pool Configurations ==================== */
