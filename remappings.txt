@@ -14,4 +14,5 @@ mento-core-2.6.0/=lib/mento-core-2.6.0/contracts/
 mento-core-2.6.2/=lib/mento-core-2.6.2/contracts/
 mento-core-2.6.3/=lib/mento-core-2.6.3/contracts/
 mento-core-2.6.4/=lib/mento-core-2.6.4/contracts/
+mento-core-2.6.5/=lib/mento-core-2.6.5/contracts/
 celo/=node_modules/@celo/
