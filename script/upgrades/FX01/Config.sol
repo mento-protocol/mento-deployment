@@ -151,32 +151,36 @@ library FX01Config {
   }
 
   /**
-   * @dev Returns trading limits for asset1 with rate calculated using FixidityLib
+   * @dev Returns trading limits for asset1 with explicit limit values
    */
-  function getAsset1LimitsWithFixidity(
-    FixidityLib.Fraction memory rate
+  function getAsset1Limits(
+    int48 asset1Limit0,
+    int48 asset1Limit1,
+    int48 asset1LimitGlobal
   ) internal pure returns (Config.TradingLimit memory) {
     return
       Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: uint256(FixidityLib.newFixed(200_000).multiply(rate).fromFixed()),
+        limit0: asset1Limit0,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: uint256(FixidityLib.newFixed(1_000_000).multiply(rate).fromFixed()),
+        limit1: asset1Limit1,
         enabledGlobal: true,
-        limitGlobal: uint256(FixidityLib.newFixed(5_000_000).multiply(rate).fromFixed())
+        limitGlobal: asset1LimitGlobal
       });
   }
 
   /**
-   * @dev Creates a base pool configuration with rates handled by FixidityLib
+   * @dev Creates a base pool configuration with explicit limit values
    */
-  function createBasePoolConfigWithFixidity(
+  function createBasePoolConfig(
     Contracts.Cache storage contracts,
     address payable asset1,
     string memory rateFeedName,
-    FixidityLib.Fraction memory rate
+    int48 asset1Limit0,
+    int48 asset1Limit1,
+    int48 asset1LimitGlobal
   ) internal view returns (Config.Pool memory poolConfig) {
     poolConfig = Config.Pool({
       asset0: contracts.celoRegistry("StableToken"),
@@ -188,7 +192,7 @@ library FX01Config {
       stablePoolResetSize: 10_000_000 * 1e18,
       referenceRateFeedID: Config.rateFeedID(string(abi.encodePacked("relayed:", rateFeedName))),
       asset0limits: getDefaultAsset0Limits(),
-      asset1limits: getAsset1LimitsWithFixidity(rate)
+      asset1limits: getAsset1Limits(asset1Limit0, asset1Limit1, asset1LimitGlobal)
     });
   }
 
@@ -197,11 +201,13 @@ library FX01Config {
    */
   function cGBPcUSD_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory) {
     return
-      createBasePoolConfigWithFixidity(
+      createBasePoolConfig(
         contracts,
         contracts.deployed("StableTokenGBPProxy"),
         "GBPUSD",
-        FixidityLib.newFixedFraction(77, 1000) // 0.77
+        77 * 2_000,
+        77 * 10_000,
+        77 * 50_000
       );
   }
 
@@ -210,11 +216,13 @@ library FX01Config {
    */
   function cZARcUSD_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory) {
     return
-      createBasePoolConfigWithFixidity(
+      createBasePoolConfig(
         contracts,
         contracts.deployed("StableTokenZARProxy"),
         "ZARUSD",
-        FixidityLib.newFixedFraction(18, 100) // 18
+        18 * 200_000,
+        18 * 1_000_000,
+        18 * 5_000_000
       );
   }
 
@@ -223,11 +231,13 @@ library FX01Config {
    */
   function cCADcUSD_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory) {
     return
-      createBasePoolConfigWithFixidity(
+      createBasePoolConfig(
         contracts,
         contracts.deployed("StableTokenCADProxy"),
         "CADUSD",
-        FixidityLib.newFixedFraction(143, 10000) // 1.43
+        14 * 20_000,
+        14 * 100_000,
+        14 * 500_000
       );
   }
 
@@ -236,11 +246,13 @@ library FX01Config {
    */
   function cAUDcUSD_PoolConfig(Contracts.Cache storage contracts) internal view returns (Config.Pool memory) {
     return
-      createBasePoolConfigWithFixidity(
+      createBasePoolConfig(
         contracts,
         contracts.deployed("StableTokenAUDProxy"),
         "AUDUSD",
-        FixidityLib.newFixedFraction(159, 10000) // 1.59
+        16 * 20_000,
+        16 * 100_000,
+        16 * 500_000
       );
   }
 
