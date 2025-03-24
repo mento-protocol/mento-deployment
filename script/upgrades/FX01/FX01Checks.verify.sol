@@ -77,11 +77,17 @@ contract FX01ChecksVerify is FX01ChecksBase {
   }
 
   function verifyOwner() internal view {
-    require(Proxy(cJPY)._getOwner() == governance, "StableTokenJPY Proxy ownership not transferred to governance");
-    console.log("🟢 cJPY proxy ownership transferred to governance");
+    require(Proxy(cGBP)._getOwner() == governance, "StableTokenGBP Proxy ownership not transferred to governance");
+    console.log("🟢 cGBP proxy ownership transferred to governance");
 
-    require(Proxy(cNGN)._getOwner() == governance, "StableTokenJPY Proxy ownership not transferred to governance");
-    console.log("🟢 cJPY proxy ownership transferred to governance");
+    require(Proxy(cZAR)._getOwner() == governance, "StableTokenZAR Proxy ownership not transferred to governance");
+    console.log("🟢 cZAR proxy ownership transferred to governance");
+
+    require(Proxy(cCAD)._getOwner() == governance, "StableTokenCAD Proxy ownership not transferred to governance");
+    console.log("🟢 cCAD proxy ownership transferred to governance");
+
+    require(Proxy(cAUD)._getOwner() == governance, "StableTokenAUD Proxy ownership not transferred to governance");
+    console.log("🟢 cAUD proxy ownership transferred to governance");
   }
 
   function verifyStableToken(address payable tokenAddress, Config.StableTokenV2 memory config) internal {
