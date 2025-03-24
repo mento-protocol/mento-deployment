@@ -19,8 +19,8 @@ import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 
-import { cJPYxNGNChecksBase } from "./cJPYxNGNChecks.base.sol";
-import { cJPYxNGNConfig, Config } from "./Config.sol";
+import { FX01ChecksBase } from "./FX01Checks.base.sol";
+import { FX01Config, Config } from "./Config.sol";
 
 import { Chain } from "script/utils/Chain.sol";
 
@@ -34,7 +34,7 @@ interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
 }
 
-contract cJPYxNGNChecksVerify is cJPYxNGNChecksBase {
+contract FX01ChecksVerify is FX01ChecksBase {
   using TradingLimits for TradingLimits.Config;
 
   uint256 constant PRE_EXISTING_POOLS = 17;
@@ -47,22 +47,26 @@ contract cJPYxNGNChecksVerify is cJPYxNGNChecksBase {
   }
 
   function run() public {
-    cJPYxNGNConfig.cJPYxNGN memory config = cJPYxNGNConfig.get(contracts);
-    console.log("\nStarting cJPY & cNGN Checks for Celo Governance Proposal:");
+    FX01Config.FX01 memory config = FX01Config.get(contracts);
+    console.log("\nStarting FX01 Checks for Celo Governance Proposal:");
 
     console.log("\n==  Rate feeds ==");
-    console.log("   JPYUSD: %s", config.JPYUSD.rateFeedID);
-    console.log("   NGNUSD: %s", config.NGNUSD.rateFeedID);
+    console.log("   GBPUSD: %s", config.GBPUSD.rateFeedID);
+    console.log("   ZARUSD: %s", config.ZARUSD.rateFeedID);
+    console.log("   CADUSD: %s", config.CADUSD.rateFeedID);
+    console.log("   AUDUSD: %s", config.AUDUSD.rateFeedID);
 
     console.log("\n== Verifying Token Config Transactions ==");
     verifyOwner();
 
     // Verify each token with its specific config
-    verifyStableToken(cJPY, config.cJPYConfig);
-    verifyStableToken(cNGN, config.cNGNConfig);
+    verifyStableToken(cGBP, config.cGBPConfig);
+    verifyStableToken(cZAR, config.cZARConfig);
+    verifyStableToken(cCAD, config.cCADConfig);
+    verifyStableToken(cAUD, config.cAUDConfig);
 
     verifyTokensAddedToReserve();
-    verifyTokensAddedToFeeCurrencyWhitelist();
+    verifyTokensAddedToFeeCurrencyDirectory();
     verifyConstitution();
 
     // Verify exchanges for each token
@@ -109,30 +113,50 @@ contract cJPYxNGNChecksVerify is cJPYxNGNChecksBase {
   }
 
   function verifyTokensAddedToReserve() internal view {
-    if (!Reserve(address(uint160(reserve))).isStableAsset(cJPY)) {
-      revert("cJPY has not been added to the reserve.");
+    if (!Reserve(address(uint160(reserve))).isStableAsset(cGBP)) {
+      revert("cGBP has not been added to the reserve.");
     }
-    console.log("🟢 cJPY has been added to the reserve");
+    console.log("🟢 cGBP has been added to the reserve");
 
-    if (!Reserve(address(uint160(reserve))).isStableAsset(cNGN)) {
-      revert("cNGN has not been added to the reserve.");
+    if (!Reserve(address(uint160(reserve))).isStableAsset(cZAR)) {
+      revert("cZAR has not been added to the reserve.");
     }
-    console.log("🟢 cNGN has been added to the reserve");
+    console.log("🟢 cZAR has been added to the reserve");
+
+    if (!Reserve(address(uint160(reserve))).isStableAsset(cCAD)) {
+      revert("cCAD has not been added to the reserve.");
+    }
+    console.log("🟢 cCAD has been added to the reserve");
+
+    if (!Reserve(address(uint160(reserve))).isStableAsset(cAUD)) {
+      revert("cAUD has not been added to the reserve.");
+    }
+    console.log("🟢 cAUD has been added to the reserve");
   }
 
-  function verifyTokensAddedToFeeCurrencyWhitelist() internal view {
+  function verifyTokensAddedToFeeCurrencyDirectory() internal view {
     address feeCurrencyDirectory = contracts.celoRegistry("FeeCurrencyDirectory");
     address[] memory feeCurrencies = IFeeCurrencyDirectory(feeCurrencyDirectory).getCurrencies();
 
-    if (!Arrays.contains(feeCurrencies, cJPY)) {
-      revert("cJPY has not been added to the fee currency whitelist.");
+    if (!Arrays.contains(feeCurrencies, cGBP)) {
+      revert("cGBP has not been added to the fee currency whitelist.");
     }
-    console.log("🟢 cJPY has been added to the fee currency whitelist");
+    console.log("🟢 cGBP has been added to the fee currency whitelist");
 
-    if (!Arrays.contains(feeCurrencies, cNGN)) {
-      revert("cNGN has not been added to the fee currency whitelist.");
+    if (!Arrays.contains(feeCurrencies, cZAR)) {
+      revert("cZAR has not been added to the fee currency whitelist.");
     }
-    console.log("🟢 cNGN has been added to the fee currency whitelist");
+    console.log("🟢 cZAR has been added to the fee currency whitelist");
+
+    if (!Arrays.contains(feeCurrencies, cCAD)) {
+      revert("cCAD has not been added to the fee currency whitelist.");
+    }
+    console.log("🟢 cCAD has been added to the fee currency whitelist");
+
+    if (!Arrays.contains(feeCurrencies, cAUD)) {
+      revert("cAUD has not been added to the fee currency whitelist.");
+    }
+    console.log("🟢 cAUD has been added to the fee currency whitelist");
   }
 
   function verifyConstitution() internal view {
@@ -144,8 +168,10 @@ contract cJPYxNGNChecksVerify is cJPYxNGNChecksBase {
       bytes4 selector = constitutionFunctionSelectors[i];
       uint256 expectedValue = constitutionThresholds[i];
 
-      checkConstitutionParam(cJPY, selector, expectedValue);
-      checkConstitutionParam(cNGN, selector, expectedValue);
+      checkConstitutionParam(cGBP, selector, expectedValue);
+      checkConstitutionParam(cZAR, selector, expectedValue);
+      checkConstitutionParam(cCAD, selector, expectedValue);
+      checkConstitutionParam(cAUD, selector, expectedValue);
     }
 
     console.log("🟢 Constitution params configured correctly");

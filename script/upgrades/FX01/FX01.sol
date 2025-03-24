@@ -26,10 +26,10 @@ import { TradingLimits } from "mento-core-2.3.1/libraries/TradingLimits.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 import { MedianDeltaBreaker } from "mento-core-2.3.1/oracles/breakers/MedianDeltaBreaker.sol";
 
-import { cJPYxNGNConfig, Config } from "./Config.sol";
+import { FX01Config, Config } from "./Config.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
-contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
+contract FX01 is IMentoUpgrade, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
 
@@ -66,8 +66,7 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts"); // Pricing Modules
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts");
     contracts.load("MU04-00-Create-Implementations"); // First StableTokenV2 deployment
-    contracts.load("cJPY-00-Deploy-Proxy");
-    contracts.load("cNGN-00-Deploy-Proxy");
+    contracts.load("FX01-00-Create-Proxies");
   }
 
   /**
@@ -96,7 +95,7 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
    */
   function setUpConfigs() public {
     // Create pool configurations
-    cJPYxNGNConfig.cJPYxNGN memory config = cJPYxNGNConfig.get(contracts);
+    FX01Config.FX01 memory config = FX01Config.get(contracts);
 
     // Set the exchange ID for the reference rate feed
     for (uint i = 0; i < config.pools.length; i++) {
@@ -116,18 +115,18 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       // TODO: confirm proposal github link
-      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0175.md", governance);
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0179.md", governance);
     }
     vm.stopBroadcast();
   }
 
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
-    cJPYxNGNConfig.cJPYxNGN memory config = cJPYxNGNConfig.get(contracts);
+    FX01Config.FX01 memory config = FX01Config.get(contracts);
 
     for (uint256 i = 0; i < config.stableTokenAddresses.length; i++) {
       // Note: Config arrays all follow the same order for elements
-      // JPY == [0], NGN == [1]
+      // GBP == [0], ZAR == [1], CAD == [2], AUD == [3]
       proposal_initializeToken(
         config.stableTokenAddresses[i],
         config.stableTokenConfigs[i].name,
@@ -242,7 +241,6 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
    * @notice enable gas payments with the specified token
    */
   function proposal_enableGasPayments(address stableTokenAddress) private {
-    // On Alfajores, we need to use the FeeCurrencyDirectory contract
     address feeCurrencyDirectory = contracts.celoRegistry("FeeCurrencyDirectory");
     address[] memory feeCurrencies = IFeeCurrencyDirectory(feeCurrencyDirectory).getCurrencies();
     for (uint256 i = 0; i < feeCurrencies.length; i++) {
@@ -365,7 +363,7 @@ contract cJPYxNGN is IMentoUpgrade, GovernanceScript {
 
     // Enable Median Delta Breaker for rate feed
     if (rateFeed.medianDeltaBreaker0.enabled) {
-      // Reset ther median value for this rateFeed, if we somehow have one set
+      // Reset the median value for this rateFeed, if we somehow have one set
       if (MedianDeltaBreaker(medianDeltaBreaker).medianRatesEMA(rateFeed.rateFeedID) != 0) {
         transactions.push(
           ICeloGovernance.Transaction(

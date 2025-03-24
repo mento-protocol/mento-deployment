@@ -20,12 +20,12 @@ import { BiPoolManager } from "mento-core-2.3.1/swap/BiPoolManager.sol";
 import { SortedOracles } from "mento-core-2.3.1/common/SortedOracles.sol";
 import { BreakerBox } from "mento-core-2.3.1/oracles/BreakerBox.sol";
 
-import { cJPYxNGNChecksBase } from "./cJPYxNGNChecks.base.sol";
-import { cJPYxNGNConfig, Config } from "./Config.sol";
+import { FX01ChecksBase } from "./FX01Checks.base.sol";
+import { FX01Config, Config } from "./Config.sol";
 
 import { Chain } from "script/utils/Chain.sol";
 
-contract cJPYxNGNChecksSwap is cJPYxNGNChecksBase {
+contract FX01ChecksSwap is FX01ChecksBase {
   using FixidityLib for FixidityLib.Fraction;
   using Contracts for Contracts.Cache;
 
@@ -35,9 +35,9 @@ contract cJPYxNGNChecksSwap is cJPYxNGNChecksBase {
   }
 
   function run() public {
-    cJPYxNGNConfig.cJPYxNGN memory config = cJPYxNGNConfig.get(contracts);
+    FX01Config.FX01 memory config = FX01Config.get(contracts);
 
-    console.log("\n== Starting cJPY & cNGN  test swaps: ==");
+    console.log("\n== Starting cGBP, cZAR, cCAD & cAUD test swaps: ==");
 
     for (uint256 i = 0; i < config.pools.length; i++) {
       Config.Pool memory pool = config.pools[i];

@@ -34,16 +34,19 @@ import { ConstantSumPricingModule } from "mento-core-2.3.1/swap/ConstantSumPrici
 import { SafeMath } from "celo-foundry/test/SafeMath.sol";
 import { Proxy } from "mento-core-2.3.1/common/Proxy.sol";
 
-import { cJPYxNGNConfig, Config } from "./Config.sol";
+import { FX01Config, Config } from "./Config.sol";
 
-contract cJPYxNGNChecksBase is GovernanceScript, Test {
+contract FX01ChecksBase is GovernanceScript, Test {
   using TradingLimits for TradingLimits.Config;
   using FixidityLib for FixidityLib.Fraction;
   using SafeMath for uint256;
 
   address public cUSD;
-  address payable public cJPY;
-  address payable public cNGN;
+  address payable public cGBP;
+  address payable public cZAR;
+  address payable public cCAD;
+  address payable public cAUD;
+
   address public stableTokenV2;
 
   address public governance;
@@ -62,12 +65,13 @@ contract cJPYxNGNChecksBase is GovernanceScript, Test {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts"); // Pricing Modules
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts");
     contracts.load("MU04-00-Create-Implementations"); // First StableTokenV2 deployment
-    contracts.load("cJPY-00-Deploy-Proxy");
-    contracts.load("cNGN-00-Deploy-Proxy");
+    contracts.load("FX01-00-Create-Proxies");
 
     // Get proxy addresses
-    cJPY = contracts.deployed("StableTokenJPYProxy");
-    cNGN = contracts.deployed("StableTokenNGNProxy");
+    cGBP = contracts.deployed("StableTokenGBPProxy");
+    cZAR = contracts.deployed("StableTokenZARProxy");
+    cCAD = contracts.deployed("StableTokenCADProxy");
+    cAUD = contracts.deployed("StableTokenAUDProxy");
     stableTokenV2 = contracts.deployed("StableTokenV2");
 
     cUSD = contracts.celoRegistry("StableToken");
