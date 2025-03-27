@@ -4,15 +4,17 @@ pragma solidity 0.8.18;
 import { Ownable } from "openzeppelin-contracts-next/contracts/access/Ownable.sol";
 
 contract MockChainlinkAggregator is Ownable {
+  uint8 public decimals;
   int256 public savedAnswer;
   string public description;
 
-  constructor(string memory _description) {
+  constructor(string memory _description, uint8 _decimals) {
     description = _description;
+    decimals = _decimals;
   }
 
-  function decimals() external pure returns (uint8) {
-    return 8;
+  function setDecimals(uint8 _decimals) external onlyOwner {
+    decimals = _decimals;
   }
 
   function setAnswer(int256 _answer) external onlyOwner {
