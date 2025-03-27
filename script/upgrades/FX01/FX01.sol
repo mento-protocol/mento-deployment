@@ -66,7 +66,7 @@ contract FX01 is IMentoUpgrade, GovernanceScript {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts"); // Pricing Modules
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts");
     contracts.load("MU04-00-Create-Implementations"); // First StableTokenV2 deployment
-    contracts.load("FX01-00-Create-Proxies");
+    contracts.load("FX00-00-Create-Proxies");
   }
 
   /**
@@ -250,9 +250,6 @@ contract FX01 is IMentoUpgrade, GovernanceScript {
       }
     }
 
-    // TODO: confirm intrinsic gas value for this
-    //       The value is set to 60000 for existing mento stable tokens on alfajores
-
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -261,7 +258,7 @@ contract FX01 is IMentoUpgrade, GovernanceScript {
           IFeeCurrencyDirectory(0).setCurrencyConfig.selector,
           stableTokenAddress,
           sortedOraclesProxy,
-          60000
+          50000
         )
       )
     );

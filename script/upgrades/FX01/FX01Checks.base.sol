@@ -65,7 +65,7 @@ contract FX01ChecksBase is GovernanceScript, Test {
     contracts.load("MU01-01-Create-Nonupgradeable-Contracts"); // Pricing Modules
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts");
     contracts.load("MU04-00-Create-Implementations"); // First StableTokenV2 deployment
-    contracts.load("FX01-00-Create-Proxies");
+    contracts.load("FX00-00-Create-Proxies");
 
     // Get proxy addresses
     cGBP = contracts.deployed("StableTokenGBPProxy");
