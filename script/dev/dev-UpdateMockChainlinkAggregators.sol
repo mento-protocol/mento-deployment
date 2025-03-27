@@ -37,6 +37,11 @@ contract UpdateMockChainlinkAggregators is Script {
   address private constant COPUSDMainnetAggregator = 0x97b770B0200CCe161907a9cbe0C6B177679f8F7C;
   address private constant GHSUSDMainnetAggregator = 0x2719B648DB57C5601Bd4cB2ea934Dec6F4262cD8;
   address private constant ETHUSDMainnetAggregator = 0x1FcD30A73D67639c1cD89ff5746E7585731c083B;
+  address private constant CHFUSDMainnetAggregator = 0xfd49bFcb3dc4aAa713c25e7d23B14BB39C4B8857;
+  address private constant GBPUSDMainnetAggregator = 0xe76FE54dfeD2ce8B4d1AC63c982DfF7CFc92bf82;
+  address private constant ZARUSDMainnetAggregator = 0x11b7221a0DD025778A95e9E0B87b477522C32E02;
+  address private constant CADUSDMainnetAggregator = 0x2f6d6cB9e01d63e1a1873BACc5BfD4e7d4e461d1;
+  address private constant AUDUSDMainnetAggregator = 0xf2Bd4FAa89f5A360cDf118bccD183307fDBcB6F5;
 
   mapping(address => address) private mockForAggregator;
   mapping(address => int256) private aggregatorAnswers;
@@ -65,15 +70,40 @@ contract UpdateMockChainlinkAggregators is Script {
     contracts.loadSilent("dev-DeployMockChainlinkAggregator", "ETHUSD");
     address ETHUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
 
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "CHFUSD");
+    address CHFUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "GBPUSD");
+    address GBPUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "ZARUSD");
+    address ZARUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "CADUSD");
+    address CADUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "AUDUSD");
+    address AUDUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
     mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDTestnetMock;
     mockForAggregator[COPUSDMainnetAggregator] = COPUSDTestnetMock;
     mockForAggregator[GHSUSDMainnetAggregator] = GHSUSDTestnetMock;
     mockForAggregator[ETHUSDMainnetAggregator] = ETHUSDTestnetMock;
+    mockForAggregator[CHFUSDMainnetAggregator] = CHFUSDTestnetMock;
+    mockForAggregator[GBPUSDMainnetAggregator] = GBPUSDTestnetMock;
+    mockForAggregator[ZARUSDMainnetAggregator] = ZARUSDTestnetMock;
+    mockForAggregator[CADUSDMainnetAggregator] = CADUSDTestnetMock;
+    mockForAggregator[AUDUSDMainnetAggregator] = AUDUSDTestnetMock;
 
     aggregatorsToForward.push(PHPUSDMainnetAggregator);
     aggregatorsToForward.push(COPUSDMainnetAggregator);
     aggregatorsToForward.push(GHSUSDMainnetAggregator);
     aggregatorsToForward.push(ETHUSDMainnetAggregator);
+    aggregatorsToForward.push(CHFUSDMainnetAggregator);
+    aggregatorsToForward.push(GBPUSDMainnetAggregator);
+    aggregatorsToForward.push(ZARUSDMainnetAggregator);
+    aggregatorsToForward.push(CADUSDMainnetAggregator);
+    aggregatorsToForward.push(AUDUSDMainnetAggregator);
   }
 
   function run() public {
