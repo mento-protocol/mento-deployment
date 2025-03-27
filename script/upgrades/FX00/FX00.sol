@@ -38,9 +38,9 @@ interface ISortedOracles {
  forge script {file} --rpc-url $ALFAJORES_RPC_URL 
                      --broadcast --legacy 
  * @dev depends on: ../deploy/*.sol
- * @dev Script to whitelist the G7 stable tokens relayers via Celo Governance
+ * @dev Script to whitelist the FX stable tokens relayers via Celo Governance
  */
-contract G7Whitelist is IMentoUpgrade, GovernanceScript {
+contract FX00 is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
 
   bool public hasChecks = true;
@@ -66,7 +66,7 @@ contract G7Whitelist is IMentoUpgrade, GovernanceScript {
    */
   function loadDeployedContracts() public {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
-    contracts.loadSilent("G7-00-Deploy-Proxys", "latest");
+    contracts.loadSilent("FX00-00-Deploy-Proxys", "latest");
   }
 
   /**

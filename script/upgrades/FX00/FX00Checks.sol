@@ -13,9 +13,9 @@ import { GovernanceScript } from "script/utils/Script.sol";
 import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
 
-import { ISortedOracles } from "./G7Whitelist.sol";
+import { ISortedOracles } from "./FX00.sol";
 
-contract G7WhitelistChecks is GovernanceScript, Test {
+contract FX00Checks is GovernanceScript, Test {
   using Contracts for Contracts.Cache;
 
   IChainlinkRelayerFactory private relayerFactory;
@@ -48,7 +48,7 @@ contract G7WhitelistChecks is GovernanceScript, Test {
 
   function prepare() public {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
-    contracts.loadSilent("G7-00-Deploy-Proxys", "latest");
+    contracts.loadSilent("FX00-00-Deploy-Proxys", "latest");
 
     relayerFactory = IChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
@@ -75,7 +75,7 @@ contract G7WhitelistChecks is GovernanceScript, Test {
   }
 
   function run() public {
-    console.log("\n=== Running G7WhitelistChecks ===\n");
+    console.log("\n=== Running FX00Checks ===\n");
 
     prepare();
     assert_relayersAreWhitelisted();
@@ -110,7 +110,7 @@ contract G7WhitelistChecks is GovernanceScript, Test {
       emit log_named_decimal_uint(relayer.rateFeedDescription(), rate, 24);
     }
 
-    console.log("👏 All G7 token relayers relayed successfully\n");
+    console.log("👏 All FX token relayers relayed successfully\n");
   }
 
   function assert_relayersAreWhitelisted() internal {
@@ -131,7 +131,7 @@ contract G7WhitelistChecks is GovernanceScript, Test {
     assert_relayerIsWhitelisted(CELOZARRateFeed, "CELO/ZAR");
     assert_relayerIsWhitelisted(ZARUSDRateFeed, "ZAR/USD");
 
-    console.log("👏 All G7 token relayers whitelisted correctly\n");
+    console.log("👏 All FX token relayers whitelisted correctly\n");
   }
 
   function assert_relayerIsWhitelisted(address rateFeedId, string memory pairName) internal {

@@ -13,7 +13,7 @@ import { ChainlinkRelayerFactoryProxyAdmin } from "mento-core-2.5.0/oracles/Chai
 import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
 import { toRateFeedId, aggregators } from "script/utils/mento/Oracles.sol";
 
-contract G7Whitelist_Deploy_ChainlinkRelayers is Script {
+contract FX00_Deploy_ChainlinkRelayers is Script {
   using Contracts for Contracts.Cache;
   using { toRateFeedId } for string;
 

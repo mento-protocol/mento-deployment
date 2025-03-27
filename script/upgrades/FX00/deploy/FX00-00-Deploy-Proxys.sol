@@ -12,9 +12,9 @@ import { StableTokenCHFProxy } from "mento-core-2.6.5/tokens/StableTokenCHFProxy
 import { StableTokenZARProxy } from "mento-core-2.6.5/tokens/StableTokenZARProxy.sol";
 
 /*
-  yarn cgp:deploy -n <network> -u G7Whitelist -s G7-00-Deploy-Proxys.sol
+  yarn cgp:deploy -n <network> -u FX00 -s FX00-00-Deploy-Proxys.sol
 */
-contract G7_DeployProxys is Script {
+contract FX00_DeployProxys is Script {
   function run() public {
     address payable stableTokenGBPProxy;
     address payable stableTokenAUDProxy;
