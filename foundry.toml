@@ -16,6 +16,7 @@ fs_permissions = [
     { access = "read", path = "./data" },
     { access = "read", path = "./script/upgrades/dependencies.json" },
     { access = "read", path = "./script/upgrades/MINIDROP/data/" },
+    { access = "read", path = "./script/upgrades/MGP06/" },
 ]
 via_ir = true
 
