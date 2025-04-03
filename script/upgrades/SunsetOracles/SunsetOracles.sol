@@ -11,6 +11,7 @@ import { Arrays } from "script/utils/Arrays.sol";
 
 import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
+import { IBiPoolManager } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
@@ -34,8 +35,12 @@ interface ISortedOracles {
   function tokenReportExpirySeconds(address) external returns (uint256);
 }
 
-contract SunsetOraclesCGP01 is IMentoUpgrade, GovernanceScript {
+contract SunsetOracles is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
+
+  address payable private cUSDProxy;
+  address payable private cEURProxy;
+  address payable private cBRLProxy;
 
   address payable private cKESProxy;
   address payable private eXOFProxy;
@@ -60,6 +65,11 @@ contract SunsetOraclesCGP01 is IMentoUpgrade, GovernanceScript {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
     contracts.load("cKES-00-Create-Proxies", "latest");
     contracts.load("eXOF-00-Create-Proxies", "latest");
+
+    contracts.loadSilent("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
+    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
+    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
   }
 
   /**
@@ -74,6 +84,11 @@ contract SunsetOraclesCGP01 is IMentoUpgrade, GovernanceScript {
       IChainlinkRelayer relayer = IChainlinkRelayer(relayers[i]);
       relayersByRateFeedId[relayer.rateFeedId()] = relayer;
     }
+
+    biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
+    cUSDProxy = contracts.deployed("StableTokenUSDProxy");
+    cEURProxy = contracts.deployed("StableTokenEURProxy");
+    cBRLProxy = contracts.deployed("StableTokenBRLProxy");
   }
 
   function run() public {
@@ -148,28 +163,58 @@ contract SunsetOraclesCGP01 is IMentoUpgrade, GovernanceScript {
     }
   }
 
-  function proposal_removeDTOracles() internal {
-    // TODO: get the addresses based on the chain: i.e. celo vs Alfajores
-    // q: does DT even reports on Alfajores? I think not.
-    address[] memory dtAddresses = Arrays.addresses(address(0), address(0));
-    address[] memory whitelistedFeeds = Arrays.addresses(address(0), address(0));
+  function recreateExchangeWithSingleReport(address asset0, address asset1) internal {
+    IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
+    bytes32[] memory exchangeIds = biPoolManager.getExchangeIds();
 
-    for (uint i = 0; i < whitelistedFeeds.length; i++) {
-      address feed = whitelistedFeeds[i];
-      address[] memory whitelistedOracles = ISortedOracles(sortedOracles).getOracles(feed);
-
-      for (uint j = 0; j < dtAddresses.length; ++j) {
-        address dtOracle = dtAddresses[j];
-        if (Arrays.contains(whitelistedOracles, dtOracle)) {
-          transactions.push(
-            ICeloGovernance.Transaction({
-              value: 0,
-              destination: address(sortedOracles),
-              data: abi.encodeWithSelector(ISortedOracles(0).removeOracle.selector, feed, dtOracle, j)
-            })
-          );
-        }
+    for (uint256 i = exchangeIds.length - 1; i >= 0; i--) {
+      bytes32 exchangeId = exchangeIds[i];
+      IBiPoolManager.PoolExchange memory currentExchange = biPoolManager.getPoolExchange(exchangeId);
+      if (currentExchange.asset0 != asset0 || currentExchange.asset1 != asset1) {
+        continue;
       }
+
+      // Delete the exchange
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          biPoolManagerProxy,
+          abi.encodeWithSelector(IBiPoolManager(0).destroyExchange.selector, exchangeId, i)
+        )
+      );
+
+      // Re-create the exchange
+      IBiPoolManager.PoolExchange memory newExchange = currentExchange;
+      newExchange.bucket0 = 0;
+      newExchange.bucket1 = 0;
+      newExchange.lastBucketUpdate = 0;
+      newExchange.config.minimumReports = 1;
+      newExchange.config.referenceRateResetFrequency = 6 minutes;
+
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          biPoolManagerProxy,
+          abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, newExchange)
+        )
+      );
+
+      if (i == 0) break;
+    }
+  }
+
+  function removeAllOracles(string memory rateFeed) internal {
+    address[] memory oracles = ISortedOracles(sortedOracles).getOracles(toRateFeedId(rateFeed));
+    for (uint i = oracles.length - 1; i >= 0; i--) {
+      transactions.push(
+        ICeloGovernance.Transaction({
+          value: 0,
+          destination: address(sortedOracles),
+          data: abi.encodeWithSelector(ISortedOracles(0).removeOracle.selector, rateFeed, oracles[i], i)
+        })
+      );
+
+      if (i == 0) break;
     }
   }
 }

@@ -13,9 +13,9 @@ import { GovernanceScript } from "script/utils/Script.sol";
 import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
 
-import { ISortedOracles } from "./SunsetOraclesCGP01.sol";
+import { ISortedOracles } from "./SunsetOracles.sol";
 
-contract SunsetOraclesCGP01Checks is GovernanceScript, Test {
+contract SunsetOraclesChecks is GovernanceScript, Test {
   using Contracts for Contracts.Cache;
 
   IChainlinkRelayerFactory private relayerFactory;
