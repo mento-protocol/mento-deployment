@@ -42,6 +42,8 @@ contract UpdateMockChainlinkAggregators is Script {
   address private constant ZARUSDMainnetAggregator = 0x11b7221a0DD025778A95e9E0B87b477522C32E02;
   address private constant CADUSDMainnetAggregator = 0x2f6d6cB9e01d63e1a1873BACc5BfD4e7d4e461d1;
   address private constant AUDUSDMainnetAggregator = 0xf2Bd4FAa89f5A360cDf118bccD183307fDBcB6F5;
+  address private constant XOFUSDMainnetAggregator = 0x1626095f9548291cA67A6Aa743c30A1BB9380c9d;
+  address private constant EURCUSDMainnetAggregator = 0x9a48d9b0AF457eF040281A9Af3867bc65522Fecd;
 
   mapping(address => address) private mockForAggregator;
   mapping(address => int256) private aggregatorAnswers;
@@ -85,6 +87,12 @@ contract UpdateMockChainlinkAggregators is Script {
     contracts.loadSilent("dev-DeployMockChainlinkAggregator", "AUDUSD");
     address AUDUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
 
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "XOFUSD");
+    address XOFUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "EURCUSD");
+    address EURCUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
     mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDTestnetMock;
     mockForAggregator[COPUSDMainnetAggregator] = COPUSDTestnetMock;
     mockForAggregator[GHSUSDMainnetAggregator] = GHSUSDTestnetMock;
@@ -94,6 +102,8 @@ contract UpdateMockChainlinkAggregators is Script {
     mockForAggregator[ZARUSDMainnetAggregator] = ZARUSDTestnetMock;
     mockForAggregator[CADUSDMainnetAggregator] = CADUSDTestnetMock;
     mockForAggregator[AUDUSDMainnetAggregator] = AUDUSDTestnetMock;
+    mockForAggregator[XOFUSDMainnetAggregator] = XOFUSDTestnetMock;
+    mockForAggregator[EURCUSDMainnetAggregator] = EURCUSDTestnetMock;
 
     aggregatorsToForward.push(PHPUSDMainnetAggregator);
     aggregatorsToForward.push(COPUSDMainnetAggregator);
@@ -104,6 +114,8 @@ contract UpdateMockChainlinkAggregators is Script {
     aggregatorsToForward.push(ZARUSDMainnetAggregator);
     aggregatorsToForward.push(CADUSDMainnetAggregator);
     aggregatorsToForward.push(AUDUSDMainnetAggregator);
+    aggregatorsToForward.push(XOFUSDMainnetAggregator);
+    aggregatorsToForward.push(EURCUSDMainnetAggregator);
   }
 
   function run() public {
