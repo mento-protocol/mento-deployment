@@ -4,7 +4,8 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
-import { console } from "forge-std/console.sol";
+// import { console } from "forge-std/console.sol";
+import { console2 as console } from "celo-foundry/Test.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
@@ -38,12 +39,13 @@ interface ISortedOracles {
 contract SunsetOracles is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
 
-  address payable private cUSDProxy;
-  address payable private cEURProxy;
-  address payable private cBRLProxy;
+  address private biPoolManagerProxy;
 
-  address payable private cKESProxy;
+  address private cUSDProxy;
+  address private cEURProxy;
+  address private cBRLProxy;
   address payable private eXOFProxy;
+  address payable private cKESProxy;
 
   bool public hasChecks = true;
   ICeloGovernance.Transaction[] private transactions;
@@ -53,9 +55,12 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
 
   mapping(address => IChainlinkRelayer) private relayersByRateFeedId;
 
+  address[] private feedsToMigrate;
+
   function prepare() public {
     loadDeployedContracts();
     setAddresses();
+    addFeedsToMigrate();
   }
 
   /**
@@ -86,9 +91,32 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
     }
 
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
-    cUSDProxy = contracts.deployed("StableTokenUSDProxy");
-    cEURProxy = contracts.deployed("StableTokenEURProxy");
-    cBRLProxy = contracts.deployed("StableTokenBRLProxy");
+    cUSDProxy = contracts.celoRegistry("StableToken");
+    cEURProxy = contracts.celoRegistry("StableTokenEUR");
+    cBRLProxy = contracts.celoRegistry("StableTokenBRL");
+    eXOFProxy = contracts.deployed("StableTokenXOFProxy");
+    cKESProxy = contracts.deployed("StableTokenKESProxy");
+  }
+
+  function addFeedsToMigrate() public {
+    feedsToMigrate.push(cUSDProxy); // CELO/USD
+    feedsToMigrate.push(cEURProxy); // CELO/EUR
+    feedsToMigrate.push(cBRLProxy); // CELO/BRL
+    feedsToMigrate.push(cKESProxy); // CELO/KES
+    feedsToMigrate.push(eXOFProxy); // CELO/XOF
+
+    feedsToMigrate.push(toRateFeedId("USDCUSD"));
+    feedsToMigrate.push(toRateFeedId("USDCEUR"));
+    feedsToMigrate.push(toRateFeedId("USDCBRL"));
+
+    feedsToMigrate.push(toRateFeedId("USDTUSD"));
+
+    feedsToMigrate.push(toRateFeedId("EUROCEUR"));
+    feedsToMigrate.push(toRateFeedId("EUROCXOF"));
+    feedsToMigrate.push(toRateFeedId("EURXOF"));
+
+    feedsToMigrate.push(toRateFeedId("KESUSD"));
+    feedsToMigrate.push(toRateFeedId("relayed:PHPUSD"));
   }
 
   function run() public {
@@ -107,23 +135,18 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    // 6 minutes to be consistent with other Chainlink relayers because of the time in between
-    // Chainlink reporting a new price and us relaying it to SortedOracles.
-    uint256 tokenReportExpiry = 6 minutes;
-
-    address[] memory feeds = Arrays.addresses(
-      cKESProxy, // CELO/KES relayer
-      toRateFeedId("KESUSD"),
-      eXOFProxy, // CELO/XOF relayer
-      toRateFeedId("EURCXOF"),
-      toRateFeedId("EURXOF"),
-      toRateFeedId("USDTUSD")
-    );
-
-    for (uint i = 0; i < feeds.length; i++) {
-      proposal_whitelistRelayerFor(feeds[i], tokenReportExpiry);
-      proposal_removeDTOracles();
+    for (uint i = 0; i < feedsToMigrate.length; i++) {
+      address identifier = feedsToMigrate[i];
+      removeAllOracles(identifier);
     }
+
+    uint256 tokenReportExpiry = 6 minutes;
+    for (uint i = 0; i < feedsToMigrate.length; i++) {
+      address identifier = feedsToMigrate[i];
+      proposal_whitelistRelayerFor(identifier, tokenReportExpiry);
+    }
+
+    recreateExchangesWithSingleReport();
 
     return transactions;
   }
@@ -139,13 +162,17 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
       string(abi.encodePacked("Relayer for rateFeed=", rateFeedIdentifier, " not deployed"))
     );
 
-    transactions.push(
-      ICeloGovernance.Transaction({
-        value: 0,
-        destination: address(sortedOracles),
-        data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, address(relayer))
-      })
-    );
+    // The PHP/USD relayer is already whitelisted, so we don't need to add it again.
+    // We only want to set the token report expiry time to 6 minutes, which happens in the next step.
+    if (rateFeedIdentifier != toRateFeedId("relayed:PHPUSD")) {
+      transactions.push(
+        ICeloGovernance.Transaction({
+          value: 0,
+          destination: address(sortedOracles),
+          data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, address(relayer))
+        })
+      );
+    }
 
     uint256 currentExpiry = sortedOracles.tokenReportExpirySeconds(rateFeedIdentifier);
     if (currentExpiry != tokenReportExpiry) {
@@ -163,14 +190,19 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
     }
   }
 
-  function recreateExchangeWithSingleReport(address asset0, address asset1) internal {
+  function shouldBeMigrated(address rateFeedIdentifier) internal returns (bool) {
+    return Arrays.contains(feedsToMigrate, rateFeedIdentifier);
+  }
+
+  function recreateExchangesWithSingleReport() internal {
     IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
     bytes32[] memory exchangeIds = biPoolManager.getExchangeIds();
 
     for (uint256 i = exchangeIds.length - 1; i >= 0; i--) {
       bytes32 exchangeId = exchangeIds[i];
       IBiPoolManager.PoolExchange memory currentExchange = biPoolManager.getPoolExchange(exchangeId);
-      if (currentExchange.asset0 != asset0 || currentExchange.asset1 != asset1) {
+
+      if (!shouldBeMigrated(currentExchange.config.referenceRateFeedID)) {
         continue;
       }
 
@@ -203,14 +235,20 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
     }
   }
 
-  function removeAllOracles(string memory rateFeed) internal {
-    address[] memory oracles = ISortedOracles(sortedOracles).getOracles(toRateFeedId(rateFeed));
+  function removeAllOracles(address rateFeedIdentifier) internal {
+    // PHP/USD is already using Chainlink, so there's no need to remove and re-add the oracle.
+    // We just want to update the pool to have a 6min reset frequency,
+    if (rateFeedIdentifier == toRateFeedId("relayed:PHPUSD")) {
+      return;
+    }
+
+    address[] memory oracles = ISortedOracles(sortedOracles).getOracles(rateFeedIdentifier);
     for (uint i = oracles.length - 1; i >= 0; i--) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,
           destination: address(sortedOracles),
-          data: abi.encodeWithSelector(ISortedOracles(0).removeOracle.selector, rateFeed, oracles[i], i)
+          data: abi.encodeWithSelector(ISortedOracles(0).removeOracle.selector, rateFeedIdentifier, oracles[i], i)
         })
       );
 
