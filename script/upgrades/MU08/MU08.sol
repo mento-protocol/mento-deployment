@@ -174,14 +174,14 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    // proposal_initializeCustodyReserve();
-    // proposal_configureCustodyReserve();
-    // proposal_configureMentoReserve();
-    // proposal_transferCeloToCustodyReserve();
-    // proposal_updateReserveSpenders();
-    // proposal_transferCustodyReserveOwnership();
+    proposal_initializeCustodyReserve();
+    proposal_configureCustodyReserve();
+    proposal_configureMentoReserve();
+    proposal_transferCeloToCustodyReserve();
+    proposal_updateReserveSpenders();
+    proposal_transferCustodyReserveOwnership();
 
-    // proposal_updateOtherReserveAddresses();
+    proposal_updateOtherReserveAddresses();
     proposal_transferTokenOwnership();
     proposal_transferMentoV2Ownership();
     proposal_transferMentoV1Ownership();

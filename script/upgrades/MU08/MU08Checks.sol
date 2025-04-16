@@ -130,10 +130,10 @@ contract MU08Checks is GovernanceScript, Test {
     console.log("\nStarting MU08 checks:");
     prepare();
 
-    // verifyCustodyReserveSetup();
-    // verifyReturnOfCelo();
+    verifyCustodyReserveSetup();
+    verifyReturnOfCelo();
 
-    // verifyMentoReserveFinalSetup();
+    verifyMentoReserveFinalSetup();
     verifyTokenOwnership();
     verifyMentoV2Ownership();
     verifyMentoV1Ownership();
