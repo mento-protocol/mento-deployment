@@ -54,6 +54,10 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   address private PUSOProxy;
   address private cCOPProxy;
   address private cGHSProxy;
+  address private cGBPProxy;
+  address private cAUDProxy;
+  address private cCADProxy;
+  address private cZARProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -98,6 +102,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
     contracts.loadSilent("MU08-00-Create-Proxies", "latest");
     contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
+    contracts.loadSilent("FX00-00-Deploy-Proxys", "latest");
   }
 
   /**
@@ -120,6 +125,10 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
     cCOPProxy = address(uint160(contracts.deployed("StableTokenCOPProxy")));
     cGHSProxy = address(uint160(contracts.deployed("StableTokenGHSProxy")));
+    cGBPProxy = address(uint160(contracts.deployed("StableTokenGBPProxy")));
+    cAUDProxy = address(uint160(contracts.deployed("StableTokenAUDProxy")));
+    cCADProxy = address(uint160(contracts.deployed("StableTokenCADProxy")));
+    cZARProxy = address(uint160(contracts.deployed("StableTokenZARProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -165,14 +174,14 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    proposal_initializeCustodyReserve();
-    proposal_configureCustodyReserve();
-    proposal_configureMentoReserve();
-    proposal_transferCeloToCustodyReserve();
-    proposal_updateReserveSpenders();
-    proposal_transferCustodyReserveOwnership();
+    // proposal_initializeCustodyReserve();
+    // proposal_configureCustodyReserve();
+    // proposal_configureMentoReserve();
+    // proposal_transferCeloToCustodyReserve();
+    // proposal_updateReserveSpenders();
+    // proposal_transferCustodyReserveOwnership();
 
-    proposal_updateOtherReserveAddresses();
+    // proposal_updateOtherReserveAddresses();
     proposal_transferTokenOwnership();
     proposal_transferMentoV2Ownership();
     proposal_transferMentoV1Ownership();
@@ -367,7 +376,11 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
       cKESProxy,
       PUSOProxy,
       cCOPProxy,
-      cGHSProxy
+      cGHSProxy,
+      cGBPProxy,
+      cAUDProxy,
+      cCADProxy,
+      cZARProxy
     );
     for (uint i = 0; i < tokenProxies.length; i++) {
       transferOwnership(tokenProxies[i]);

@@ -40,6 +40,10 @@ contract MU08Checks is GovernanceScript, Test {
   address private PUSOProxy;
   address private cCOPProxy;
   address private cGHSProxy;
+  address private cGBPProxy;
+  address private cAUDProxy;
+  address private cCADProxy;
+  address private cZARProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -77,6 +81,7 @@ contract MU08Checks is GovernanceScript, Test {
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
     contracts.loadSilent("MU08-00-Create-Proxies", "latest");
     contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
+    contracts.loadSilent("FX00-00-Deploy-Proxys", "latest");
 
     // Celo Governance:
     celoGovernance = contracts.celoRegistry("Governance");
@@ -91,6 +96,10 @@ contract MU08Checks is GovernanceScript, Test {
     PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
     cCOPProxy = address(uint160(contracts.deployed("StableTokenCOPProxy")));
     cGHSProxy = address(uint160(contracts.deployed("StableTokenGHSProxy")));
+    cGBPProxy = address(uint160(contracts.deployed("StableTokenGBPProxy")));
+    cAUDProxy = address(uint160(contracts.deployed("StableTokenAUDProxy")));
+    cCADProxy = address(uint160(contracts.deployed("StableTokenCADProxy")));
+    cZARProxy = address(uint160(contracts.deployed("StableTokenZARProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -121,10 +130,10 @@ contract MU08Checks is GovernanceScript, Test {
     console.log("\nStarting MU08 checks:");
     prepare();
 
-    verifyCustodyReserveSetup();
-    verifyReturnOfCelo();
+    // verifyCustodyReserveSetup();
+    // verifyReturnOfCelo();
 
-    verifyMentoReserveFinalSetup();
+    // verifyMentoReserveFinalSetup();
     verifyTokenOwnership();
     verifyMentoV2Ownership();
     verifyMentoV1Ownership();
@@ -283,7 +292,11 @@ contract MU08Checks is GovernanceScript, Test {
       cKESProxy,
       PUSOProxy,
       cCOPProxy,
-      cGHSProxy
+      cGHSProxy,
+      cGBPProxy,
+      cAUDProxy,
+      cCADProxy,
+      cZARProxy
     );
 
     for (uint256 i = 0; i < tokenProxies.length; i++) {
