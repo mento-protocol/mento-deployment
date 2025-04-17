@@ -40,6 +40,10 @@ contract MU08Checks is GovernanceScript, Test {
   address private PUSOProxy;
   address private cCOPProxy;
   address private cGHSProxy;
+  address private cGBPProxy;
+  address private cAUDProxy;
+  address private cCADProxy;
+  address private cZARProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -77,6 +81,7 @@ contract MU08Checks is GovernanceScript, Test {
     contracts.loadSilent("MUGOV-00-Create-Factory", "latest");
     contracts.loadSilent("MU08-00-Create-Proxies", "latest");
     contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
+    contracts.loadSilent("FX00-00-Deploy-Proxys", "latest");
 
     // Celo Governance:
     celoGovernance = contracts.celoRegistry("Governance");
@@ -91,6 +96,10 @@ contract MU08Checks is GovernanceScript, Test {
     PUSOProxy = address(uint160(contracts.deployed("StableTokenPHPProxy")));
     cCOPProxy = address(uint160(contracts.deployed("StableTokenCOPProxy")));
     cGHSProxy = address(uint160(contracts.deployed("StableTokenGHSProxy")));
+    cGBPProxy = address(uint160(contracts.deployed("StableTokenGBPProxy")));
+    cAUDProxy = address(uint160(contracts.deployed("StableTokenAUDProxy")));
+    cCADProxy = address(uint160(contracts.deployed("StableTokenCADProxy")));
+    cZARProxy = address(uint160(contracts.deployed("StableTokenZARProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -194,7 +203,6 @@ contract MU08Checks is GovernanceScript, Test {
   }
 
   function verifyReturnOfCelo() public {
-    uint256 fullReturnAmount = 85941499340972869827370586; // 85.9M CELO
     uint256 firstReturnAmount = 20_000_000 * 1e18;
     uint256 remainingReturnAmount = 65941499340972869827370586; // 65.9M CELO
 
@@ -275,16 +283,7 @@ contract MU08Checks is GovernanceScript, Test {
 
   function verifyTokenOwnership() public {
     console.log("\n== Verifying token proxy and implementation ownership: ==");
-    address[] memory tokenProxies = Arrays.addresses(
-      cUSDProxy,
-      cEURProxy,
-      cBRLProxy,
-      eXOFProxy,
-      cKESProxy,
-      PUSOProxy,
-      cCOPProxy,
-      cGHSProxy
-    );
+    address[] memory tokenProxies = getStableTokenProxies();
 
     for (uint256 i = 0; i < tokenProxies.length; i++) {
       verifyProxyAndImplementationOwnership(tokenProxies[i]);
@@ -364,5 +363,22 @@ contract MU08Checks is GovernanceScript, Test {
     address contractOwner = IOwnableLite(nonupgradeableContract).owner();
     require(contractOwner == timelockProxy, "❗️❌ Contract ownership not transferred to Mento Governance");
     console.log("🟢 Contract:[%s] ownership transferred to Mento Governance", nonupgradeableContract);
+  }
+
+  function getStableTokenProxies() internal view returns (address[] memory arr) {
+    arr = new address[](12);
+    arr[0] = cUSDProxy;
+    arr[1] = cEURProxy;
+    arr[2] = cBRLProxy;
+    arr[3] = eXOFProxy;
+    arr[4] = cKESProxy;
+    arr[5] = PUSOProxy;
+    arr[6] = cCOPProxy;
+    arr[7] = cGHSProxy;
+    arr[8] = cGBPProxy;
+    arr[9] = cAUDProxy;
+    arr[10] = cCADProxy;
+    arr[11] = cZARProxy;
+    return arr;
   }
 }
