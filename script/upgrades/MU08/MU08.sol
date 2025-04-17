@@ -368,20 +368,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_transferTokenOwnership() public {
-    address[] memory tokenProxies = Arrays.addresses(
-      cUSDProxy,
-      cEURProxy,
-      cBRLProxy,
-      eXOFProxy,
-      cKESProxy,
-      PUSOProxy,
-      cCOPProxy,
-      cGHSProxy,
-      cGBPProxy,
-      cAUDProxy,
-      cCADProxy,
-      cZARProxy
-    );
+    address[] memory tokenProxies = getStableTokenProxies();
     for (uint i = 0; i < tokenProxies.length; i++) {
       transferOwnership(tokenProxies[i]);
       transferProxyAdmin(tokenProxies[i]);
@@ -474,5 +461,22 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
         })
       );
     }
+  }
+
+  function getStableTokenProxies() internal view returns (address[] memory arr) {
+    arr = new address[](12);
+    arr[0] = cUSDProxy;
+    arr[1] = cEURProxy;
+    arr[2] = cBRLProxy;
+    arr[3] = eXOFProxy;
+    arr[4] = cKESProxy;
+    arr[5] = PUSOProxy;
+    arr[6] = cCOPProxy;
+    arr[7] = cGHSProxy;
+    arr[8] = cGBPProxy;
+    arr[9] = cAUDProxy;
+    arr[10] = cCADProxy;
+    arr[11] = cZARProxy;
+    return arr;
   }
 }
