@@ -44,7 +44,7 @@ contract FX02Checks is GovernanceScript, Test {
     relayerFactory = IChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
 
-    // CHF were whitelisted as part of FX00, but as they are a pre-requisite for FX04, we double check
+    // CHF were whitelisted as part of FX00, but as they are a pre-requisite for FX03, we double check
     // that they were configured correctly.
     cCHF = contracts.deployed("StableTokenCHFProxy");
     CELOCHFRateFeed = toRateFeedId("relayed:CELOCHF");
