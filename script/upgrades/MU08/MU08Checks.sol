@@ -31,6 +31,7 @@ contract MU08Checks is GovernanceScript, Test {
   address private celoGovernance;
 
   //Tokens:
+  address[] private stableTokenProxies;
   address private CELOProxy;
   address private cUSDProxy;
   address private cEURProxy;
@@ -100,6 +101,7 @@ contract MU08Checks is GovernanceScript, Test {
     cAUDProxy = address(uint160(contracts.deployed("StableTokenAUDProxy")));
     cCADProxy = address(uint160(contracts.deployed("StableTokenCADProxy")));
     cZARProxy = address(uint160(contracts.deployed("StableTokenZARProxy")));
+    setStableTokenProxiesAddresses();
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -284,23 +286,8 @@ contract MU08Checks is GovernanceScript, Test {
 
   function verifyTokenOwnership() public {
     console.log("\n== Verifying token proxy and implementation ownership: ==");
-    address[] memory tokenProxies = Arrays.addresses(
-      cUSDProxy,
-      cEURProxy,
-      cBRLProxy,
-      eXOFProxy,
-      cKESProxy,
-      PUSOProxy,
-      cCOPProxy,
-      cGHSProxy,
-      cGBPProxy,
-      cAUDProxy,
-      cCADProxy,
-      cZARProxy
-    );
-
-    for (uint256 i = 0; i < tokenProxies.length; i++) {
-      verifyProxyAndImplementationOwnership(tokenProxies[i]);
+    for (uint256 i = 0; i < stableTokenProxies.length; i++) {
+      verifyProxyAndImplementationOwnership(stableTokenProxies[i]);
     }
     console.log("🤘🏼Token proxies and implementations ownership transferred to Mento Governance🤘🏼");
   }
@@ -377,5 +364,20 @@ contract MU08Checks is GovernanceScript, Test {
     address contractOwner = IOwnableLite(nonupgradeableContract).owner();
     require(contractOwner == timelockProxy, "❗️❌ Contract ownership not transferred to Mento Governance");
     console.log("🟢 Contract:[%s] ownership transferred to Mento Governance", nonupgradeableContract);
+  }
+
+  function setStableTokenProxiesAddresses() public {
+    stableTokenProxies.push(cUSDProxy);
+    stableTokenProxies.push(cEURProxy);
+    stableTokenProxies.push(cBRLProxy);
+    stableTokenProxies.push(eXOFProxy);
+    stableTokenProxies.push(cKESProxy);
+    stableTokenProxies.push(PUSOProxy);
+    stableTokenProxies.push(cCOPProxy);
+    stableTokenProxies.push(cGHSProxy);
+    stableTokenProxies.push(cGBPProxy);
+    stableTokenProxies.push(cAUDProxy);
+    stableTokenProxies.push(cCADProxy);
+    stableTokenProxies.push(cZARProxy);
   }
 }

@@ -45,6 +45,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   // Mento contracts:
 
   //Tokens:
+  address[] private stableTokenProxies;
   address private CELOProxy;
   address private cUSDProxy;
   address private cEURProxy;
@@ -129,6 +130,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     cAUDProxy = address(uint160(contracts.deployed("StableTokenAUDProxy")));
     cCADProxy = address(uint160(contracts.deployed("StableTokenCADProxy")));
     cZARProxy = address(uint160(contracts.deployed("StableTokenZARProxy")));
+    setStableTokenProxiesAddresses();
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -368,36 +370,22 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_transferTokenOwnership() public {
-    address[] memory tokenProxies = Arrays.addresses(
-      cUSDProxy,
-      cEURProxy,
-      cBRLProxy,
-      eXOFProxy,
-      cKESProxy,
-      PUSOProxy,
-      cCOPProxy,
-      cGHSProxy,
-      cGBPProxy,
-      cAUDProxy,
-      cCADProxy,
-      cZARProxy
-    );
-    for (uint i = 0; i < tokenProxies.length; i++) {
-      transferOwnership(tokenProxies[i]);
-      transferProxyAdmin(tokenProxies[i]);
+    for (uint i = 0; i < stableTokenProxies.length; i++) {
+      transferOwnership(stableTokenProxies[i]);
+      transferProxyAdmin(stableTokenProxies[i]);
     }
 
     // All the token proxies are pointing to the same StableTokenV2 implementation (cUSD)
     // so we only need to transfer ownership of that single contract.
     address sharedImplementation = IProxyLite(cUSDProxy)._getImplementation();
-    for (uint i = 0; i < tokenProxies.length; i++) {
-      if (tokenProxies[i] == cGHSProxy) {
+    for (uint i = 0; i < stableTokenProxies.length; i++) {
+      if (stableTokenProxies[i] == cGHSProxy) {
         // cGHS is not yet initialized, so it doesn't have an implementation
         continue;
       }
 
       require(
-        IProxyLite(tokenProxies[i])._getImplementation() == sharedImplementation,
+        IProxyLite(stableTokenProxies[i])._getImplementation() == sharedImplementation,
         "Token proxies not poiting to cUSD implementation"
       );
     }
@@ -474,5 +462,20 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
         })
       );
     }
+  }
+
+  function setStableTokenProxiesAddresses() public {
+    stableTokenProxies.push(cUSDProxy);
+    stableTokenProxies.push(cEURProxy);
+    stableTokenProxies.push(cBRLProxy);
+    stableTokenProxies.push(eXOFProxy);
+    stableTokenProxies.push(cKESProxy);
+    stableTokenProxies.push(PUSOProxy);
+    stableTokenProxies.push(cCOPProxy);
+    stableTokenProxies.push(cGHSProxy);
+    stableTokenProxies.push(cGBPProxy);
+    stableTokenProxies.push(cAUDProxy);
+    stableTokenProxies.push(cCADProxy);
+    stableTokenProxies.push(cZARProxy);
   }
 }

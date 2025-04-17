@@ -214,36 +214,6 @@ library Arrays {
     return arr;
   }
 
-  function addresses(
-    address e0,
-    address e1,
-    address e2,
-    address e3,
-    address e4,
-    address e5,
-    address e6,
-    address e7,
-    address e8,
-    address e9,
-    address e10,
-    address e11
-  ) internal pure returns (address[] memory arr) {
-    arr = new address[](12);
-    arr[0] = e0;
-    arr[1] = e1;
-    arr[2] = e2;
-    arr[3] = e3;
-    arr[4] = e4;
-    arr[5] = e5;
-    arr[6] = e6;
-    arr[7] = e7;
-    arr[8] = e8;
-    arr[9] = e9;
-    arr[10] = e10;
-    arr[11] = e11;
-    return arr;
-  }
-
   function bytes4s(bytes4 e0, bytes4 e1, bytes4 e2) internal pure returns (bytes4[] memory arr) {
     arr = new bytes4[](3);
     arr[0] = bytes4(e0);
