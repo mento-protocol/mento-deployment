@@ -37,7 +37,7 @@ interface IBrokerWithCasts {
 contract FX03ChecksVerify is FX03ChecksBase {
   using TradingLimits for TradingLimits.Config;
 
-  uint256 constant PRE_EXISTING_POOLS = 17;
+  uint256 constant PRE_EXISTING_POOLS = 21;
 
   ICeloGovernance celoGovernance;
 

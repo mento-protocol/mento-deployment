@@ -67,7 +67,7 @@ contract FX03 is IMentoUpgrade, GovernanceScript {
     contracts.load("MU03-01-Create-Nonupgradeable-Contracts");
     contracts.load("MU04-00-Create-Implementations"); // First StableTokenV2 deployment
 
-    // TODO: To be created, confirm name and update
+    contracts.load("FX00-00-Deploy-Proxys");
     contracts.load("FX02-00-Deploy-Proxys");
   }
 
