@@ -10,7 +10,7 @@ import { FixidityLib } from "script/utils/FixidityLib.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
 /**
- * @dev This library contains the configuration required for the FX01 governance proposal.
+ * @dev This library contains the configuration required for the FX03 governance proposal.
  *      The following configuration is used:
  *     - 3 pools:
  *              - cCHF<->cUSD
@@ -24,11 +24,11 @@ import { Arrays } from "script/utils/Arrays.sol";
  *
  *     - Configuration params needed to initialize all four tokens
  */
-library FX01Config {
+library FX03Config {
   using FixidityLib for FixidityLib.Fraction;
   using Contracts for Contracts.Cache;
 
-  struct FX01 {
+  struct FX03 {
     Config.Pool[] pools;
     Config.RateFeed CHFUSD;
     Config.RateFeed NGNUSD;
@@ -42,9 +42,9 @@ library FX01Config {
   }
 
   /**
-   * @dev Returns the populated configuration object for the FX01 governance proposal.
+   * @dev Returns the populated configuration object for the FX03 governance proposal.
    */
-  function get(Contracts.Cache storage contracts) internal view returns (FX01 memory config) {
+  function get(Contracts.Cache storage contracts) internal view returns (FX03 memory config) {
     config.pools = new Config.Pool[](3);
     config.pools[0] = cCHFcUSD_PoolConfig(contracts);
     config.pools[1] = cNGNcUSD_PoolConfig(contracts);
