@@ -114,8 +114,7 @@ contract FX01 is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      // TODO: confirm proposal github link
-      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0179.md", governance);
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0178.md", governance);
     }
     vm.stopBroadcast();
   }
