@@ -167,6 +167,7 @@ library FX03Config {
     Contracts.Cache storage contracts,
     address payable asset1,
     string memory rateFeedName,
+    FixidityLib.Fraction memory spread,
     int48 asset1Limit0,
     int48 asset1Limit1,
     int48 asset1LimitGlobal
@@ -175,7 +176,7 @@ library FX03Config {
       asset0: contracts.celoRegistry("StableToken"),
       asset1: asset1,
       isConstantSum: true,
-      spread: FixidityLib.newFixedFraction(3, 1000), // TODO: Confirm spread.
+      spread: spread,
       referenceRateResetFrequency: 6 minutes,
       minimumReports: 1,
       stablePoolResetSize: 10_000_000 * 1e18,
@@ -194,9 +195,10 @@ library FX03Config {
         contracts,
         contracts.deployed("StableTokenCHFProxy"),
         "CHFUSD",
-        88 * 2_000,
-        88 * 10_000,
-        88 * 50_000
+        FixidityLib.newFixedFraction(3, 1000), // 0.3%
+        83 * 2_000, // 1 USD = ~0.83 CHF
+        83 * 10_000,
+        83 * 50_000
       );
   }
 
@@ -209,9 +211,10 @@ library FX03Config {
         contracts,
         contracts.deployed("StableTokenNGNProxy"),
         "NGNUSD",
-        1532 * 200_000,
-        1532 * 1_000_000,
-        1532 * 5_000_000
+        FixidityLib.newFixedFraction(1, 100), // 1%
+        1612 * 200_000, // 1 USD = ~1612 NGN
+        1612 * 1_000_000,
+        1612 * 5_000_000
       );
   }
 
@@ -224,9 +227,10 @@ library FX03Config {
         contracts,
         contracts.deployed("StableTokenJPYProxy"),
         "JPYUSD",
-        149 * 200_000,
-        149 * 1_000_000,
-        149 * 5_000_000
+        FixidityLib.newFixedFraction(3, 1000), // 0.3%
+        142 * 200_000, // 1 USD = ~142 JPY
+        142 * 1_000_000,
+        142 * 5_000_000
       );
   }
 
