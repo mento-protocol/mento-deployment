@@ -42,6 +42,7 @@ contract UpdateMockChainlinkAggregators is Script {
   address private constant ZARUSDMainnetAggregator = 0x11b7221a0DD025778A95e9E0B87b477522C32E02;
   address private constant CADUSDMainnetAggregator = 0x2f6d6cB9e01d63e1a1873BACc5BfD4e7d4e461d1;
   address private constant AUDUSDMainnetAggregator = 0xf2Bd4FAa89f5A360cDf118bccD183307fDBcB6F5;
+  address private constant NGNUSDMainnetAggregator = 0x235e5c8697177931459fA7D19fba7256d29F17DA;
 
   mapping(address => address) private mockForAggregator;
   mapping(address => int256) private aggregatorAnswers;
@@ -85,6 +86,9 @@ contract UpdateMockChainlinkAggregators is Script {
     contracts.loadSilent("dev-DeployMockChainlinkAggregator", "AUDUSD");
     address AUDUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
 
+    contracts.loadSilent("dev-DeployMockChainlinkAggregator", "NGNUSD");
+    address NGNUSDTestnetMock = contracts.deployed("MockChainlinkAggregator");
+
     mockForAggregator[PHPUSDMainnetAggregator] = PHPUSDTestnetMock;
     mockForAggregator[COPUSDMainnetAggregator] = COPUSDTestnetMock;
     mockForAggregator[GHSUSDMainnetAggregator] = GHSUSDTestnetMock;
@@ -94,6 +98,7 @@ contract UpdateMockChainlinkAggregators is Script {
     mockForAggregator[ZARUSDMainnetAggregator] = ZARUSDTestnetMock;
     mockForAggregator[CADUSDMainnetAggregator] = CADUSDTestnetMock;
     mockForAggregator[AUDUSDMainnetAggregator] = AUDUSDTestnetMock;
+    mockForAggregator[NGNUSDMainnetAggregator] = NGNUSDTestnetMock;
 
     aggregatorsToForward.push(PHPUSDMainnetAggregator);
     aggregatorsToForward.push(COPUSDMainnetAggregator);
@@ -104,6 +109,7 @@ contract UpdateMockChainlinkAggregators is Script {
     aggregatorsToForward.push(ZARUSDMainnetAggregator);
     aggregatorsToForward.push(CADUSDMainnetAggregator);
     aggregatorsToForward.push(AUDUSDMainnetAggregator);
+    aggregatorsToForward.push(NGNUSDMainnetAggregator);
   }
 
   function run() public {
