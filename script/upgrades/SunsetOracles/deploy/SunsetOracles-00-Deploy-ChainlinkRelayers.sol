@@ -89,6 +89,7 @@ contract SunsetOracles_Deploy_ChainlinkRelayers is Script {
     }
   }
 
+  /* solhint-disable */
   function getRelayersConfigs() internal returns (Relayer[] memory relayers) {
     relayers = new Relayer[](13);
 
@@ -239,4 +240,5 @@ contract SunsetOracles_Deploy_ChainlinkRelayers is Script {
 
     return relayers;
   }
+  /* solhint-enable */
 }
