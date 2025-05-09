@@ -58,6 +58,9 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   address private cAUDProxy;
   address private cCADProxy;
   address private cZARProxy;
+  address private cNGNProxy;
+  address private cJPYProxy;
+  address private cCHFProxy;
 
   // MentoV2 contracts:
   address private brokerProxy;
@@ -103,6 +106,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     contracts.loadSilent("MU08-00-Create-Proxies", "latest");
     contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
     contracts.loadSilent("FX00-00-Deploy-Proxys", "latest");
+    contracts.loadSilent("FX02-00-Deploy-Proxys", "latest");
   }
 
   /**
@@ -129,6 +133,9 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     cAUDProxy = address(uint160(contracts.deployed("StableTokenAUDProxy")));
     cCADProxy = address(uint160(contracts.deployed("StableTokenCADProxy")));
     cZARProxy = address(uint160(contracts.deployed("StableTokenZARProxy")));
+    cCHFProxy = address(uint160(contracts.deployed("StableTokenCHFProxy")));
+    cNGNProxy = address(uint160(contracts.deployed("StableTokenNGNProxy")));
+    cJPYProxy = address(uint160(contracts.deployed("StableTokenJPYProxy")));
 
     // MentoV2 contracts:
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
@@ -464,7 +471,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function getStableTokenProxies() internal view returns (address[] memory arr) {
-    arr = new address[](12);
+    arr = new address[](15);
     arr[0] = cUSDProxy;
     arr[1] = cEURProxy;
     arr[2] = cBRLProxy;
@@ -477,6 +484,9 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     arr[9] = cAUDProxy;
     arr[10] = cCADProxy;
     arr[11] = cZARProxy;
+    arr[12] = cCHFProxy;
+    arr[13] = cNGNProxy;
+    arr[14] = cJPYProxy;
     return arr;
   }
 }
