@@ -471,7 +471,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function getStableTokenProxies() internal view returns (address[] memory arr) {
-    arr = new address[](14);
+    arr = new address[](15);
     arr[0] = cUSDProxy;
     arr[1] = cEURProxy;
     arr[2] = cBRLProxy;
