@@ -6,7 +6,7 @@ import { Ownable } from "openzeppelin-contracts-next/contracts/access/Ownable.so
 contract MockChainlinkAggregator is Ownable {
   string public description;
   uint8 public decimals;
-  int256 public answer;
+  int256 public savedAnswer;
   uint256 public lastUpdated;
 
   // An external address that can set the answer and lastUpdated of the aggregator
@@ -30,8 +30,12 @@ contract MockChainlinkAggregator is Ownable {
     externalProvider = _externalProvider;
   }
 
+  function setDecimals(uint8 _decimals) external onlyOwner {
+    decimals = _decimals;
+  }
+
   function setAnswer(int256 _answer) external onlyOwnerOrExternalProvider {
-    answer = _answer;
+    savedAnswer = _answer;
   }
 
   function setLastUpdated(uint256 _lastUpdated) external onlyOwnerOrExternalProvider {
@@ -39,7 +43,7 @@ contract MockChainlinkAggregator is Ownable {
   }
 
   function report(int256 _answer, uint256 _lastUpdated) external onlyOwnerOrExternalProvider {
-    answer = _answer;
+    savedAnswer = _answer;
     lastUpdated = _lastUpdated;
   }
 
@@ -48,6 +52,6 @@ contract MockChainlinkAggregator is Ownable {
     view
     returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
   {
-    return (uint80(0), answer, uint256(0), lastUpdated, uint80(0));
+    return (uint80(0), savedAnswer, uint256(0), lastUpdated, uint80(0));
   }
 }
