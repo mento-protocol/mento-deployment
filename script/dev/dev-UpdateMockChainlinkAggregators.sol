@@ -192,7 +192,7 @@ contract UpdateMockChainlinkAggregators is Script {
 
     vm.selectFork(testnetFork);
 
-    vm.startBroadcast(ChainLib.deployerPrivateKey());
+    vm.startBroadcast(vm.envUint("MOCK_CHAINLINK_PROVIDER_PK"));
     {
       for (uint i = 0; i < aggregatorsToForward.length; i++) {
         address agg = aggregatorsToForward[i];
