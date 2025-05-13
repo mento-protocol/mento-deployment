@@ -22,6 +22,8 @@ interface IMockAggregator {
   function report(int256 answer, uint256 updatedAt) external;
 
   function description() external view returns (string memory);
+
+  function setExternalProvider(address _externalProvider) external;
 }
 
 /**
@@ -45,9 +47,9 @@ contract UpdateMockChainlinkAggregators is Script {
   address public constant EURUSDMainnetAggregator = 0x3D207061Dbe8E2473527611BFecB87Ff12b28dDa;
   address public constant GBPUSDMainnetAggregator = 0xe76FE54dfeD2ce8B4d1AC63c982DfF7CFc92bf82;
   address public constant GHSUSDMainnetAggregator = 0x2719B648DB57C5601Bd4cB2ea934Dec6F4262cD8;
-  address public constant JPYUSDMainnetAggregator = 0x6312034F70390d09bb03F789F84f00215a444AEa;
+  address public constant JPYUSDMainnetAggregator = 0xf323563241BF8B77a2979e9edC1181788A98EcB2;
   address public constant KESUSDMainnetAggregator = 0x8e1f834ca4B8Efd81D9c557426C70ed5F67e87B1;
-  address public constant NGNUSDMainnetAggregator = 0x235e5c8697177931459fA7D19fba7256d29F17DA;
+  address public constant NGNUSDMainnetAggregator = 0xc17cBE2dB40e53F4984C46F608DA6DA1fF074c11;
   address public constant PHPUSDMainnetAggregator = 0x4ce8e628Bb82Ea5271908816a6C580A71233a66c;
   address public constant USDCUSDMainnetAggregator = 0xc7A353BaE210aed958a1A2928b654938EC59DaB2;
   address public constant USDTUSDMainnetAggregator = 0x5e37AF40A7A344ec9b03CCD34a250F3dA9a20B02;
@@ -163,16 +165,15 @@ contract UpdateMockChainlinkAggregators is Script {
       mockForAggregator[XOFUSDMainnetAggregator] = XOFUSDTestnetMock;
       mockForAggregator[ZARUSDMainnetAggregator] = ZARUSDTestnetMock;
 
-      aggregatorsToForward.push(AUDUSDMainnetAggregator);
-      aggregatorsToForward.push(BRLUSDMainnetAggregator);
-      aggregatorsToForward.push(CADUSDMainnetAggregator);
-      aggregatorsToForward.push(CELOUSDMainnetAggregator);
-      aggregatorsToForward.push(CHFUSDMainnetAggregator);
-      aggregatorsToForward.push(COPUSDMainnetAggregator);
-      aggregatorsToForward.push(ETHUSDMainnetAggregator);
-      aggregatorsToForward.push(EURCUSDMainnetAggregator);
-      aggregatorsToForward.push(EURUSDMainnetAggregator);
-      aggregatorsToForward.push(GBPUSDMainnetAggregator);
+      aggregatorsToForward.push(GHSUSDMainnetAggregator);
+      aggregatorsToForward.push(JPYUSDMainnetAggregator);
+      aggregatorsToForward.push(KESUSDMainnetAggregator);
+      aggregatorsToForward.push(NGNUSDMainnetAggregator);
+      aggregatorsToForward.push(PHPUSDMainnetAggregator);
+      aggregatorsToForward.push(USDCUSDMainnetAggregator);
+      aggregatorsToForward.push(USDTUSDMainnetAggregator);
+      aggregatorsToForward.push(XOFUSDMainnetAggregator);
+      aggregatorsToForward.push(ZARUSDMainnetAggregator);
     }
   }
 
