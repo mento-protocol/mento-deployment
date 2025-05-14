@@ -67,6 +67,7 @@ contract UpdateMockRedstoneAdapter is Script {
     {
       MockRedstoneAdapter mockAdapter = MockRedstoneAdapter(mockAdapterAddress);
       mockAdapter.update(getDataFeedsAddresses(dataFeeds), values, dataTimestamp, blockTimestamp);
+      mockAdapter.relay();
     }
     vm.stopBroadcast();
 
