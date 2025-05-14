@@ -16,6 +16,10 @@ import { IBiPoolManager } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
 
 import { ISortedOracles } from "./SunsetOracles.sol";
 
+interface IMockRedstoneAdapter {
+  function relay() external;
+}
+
 contract SunsetOraclesChecks is GovernanceScript, Test {
   using Contracts for Contracts.Cache;
 
@@ -54,21 +58,70 @@ contract SunsetOraclesChecks is GovernanceScript, Test {
     feedsToMigrate.push(cUSDProxy); // CELO/USD
     feedsToMigrate.push(cEURProxy); // CELO/EUR
     feedsToMigrate.push(cBRLProxy); // CELO/BRL
-    feedsToMigrate.push(cKESProxy); // CELO/KES
-    feedsToMigrate.push(eXOFProxy); // CELO/XOF
-
     feedsToMigrate.push(toRateFeedId("USDCUSD"));
     feedsToMigrate.push(toRateFeedId("USDCEUR"));
     feedsToMigrate.push(toRateFeedId("USDCBRL"));
-
-    feedsToMigrate.push(toRateFeedId("USDTUSD"));
-
     feedsToMigrate.push(toRateFeedId("EUROCEUR"));
-    feedsToMigrate.push(toRateFeedId("EUROCXOF"));
-    feedsToMigrate.push(toRateFeedId("EURXOF"));
 
-    feedsToMigrate.push(toRateFeedId("KESUSD"));
-    feedsToMigrate.push(toRateFeedId("relayed:PHPUSD"));
+    // feedsToMigrate.push(cUSDProxy); // CELO/USD
+    // feedsToMigrate.push(cEURProxy); // CELO/EUR
+    // feedsToMigrate.push(cBRLProxy); // CELO/BRL
+    // feedsToMigrate.push(cKESProxy); // CELO/KES
+    // feedsToMigrate.push(eXOFProxy); // CELO/XOF
+
+    // feedsToMigrate.push(toRateFeedId("USDCUSD"));
+    // feedsToMigrate.push(toRateFeedId("USDCEUR"));
+    // feedsToMigrate.push(toRateFeedId("USDCBRL"));
+
+    // feedsToMigrate.push(toRateFeedId("USDTUSD"));
+
+    // feedsToMigrate.push(toRateFeedId("EUROCEUR"));
+    // feedsToMigrate.push(toRateFeedId("EUROCXOF"));
+    // feedsToMigrate.push(toRateFeedId("EURXOF"));
+
+    // feedsToMigrate.push(toRateFeedId("KESUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:PHPUSD"));
+
+    // ====== ALFAJORES
+    // CELO/XXX
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOPHP"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOCOP"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOGHS"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOETH"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOGBP"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOZAR"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOCHF"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOCAD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOAUD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELONGN"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOJPY"));
+    // feedsToMigrate.push(cUSDProxy); // CELO/USD
+    // feedsToMigrate.push(cEURProxy); // CELO/EUR
+    // feedsToMigrate.push(cBRLProxy); // CELO/BRL
+    // feedsToMigrate.push(eXOFProxy); // CELO/XOF
+    // feedsToMigrate.push(cKESProxy); // CELO/KES
+
+    // // // XXX/USD
+    // feedsToMigrate.push(toRateFeedId("KESUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:PHPUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:COPUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:GHSUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:GBPUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:ZARUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CHFUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CADUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:AUDUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:JPYUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:NGNUSD"));
+    // feedsToMigrate.push(toRateFeedId("USDCUSD"));
+    // feedsToMigrate.push(toRateFeedId("USDTUSD"));
+
+    // // // // Others
+    // feedsToMigrate.push(toRateFeedId("USDCEUR"));
+    // feedsToMigrate.push(toRateFeedId("USDCBRL"));
+    // feedsToMigrate.push(toRateFeedId("EUROCEUR"));
+    // feedsToMigrate.push(toRateFeedId("EUROCXOF"));
+    // feedsToMigrate.push(toRateFeedId("EURXOF"));
   }
 
   function run() public {
@@ -77,8 +130,21 @@ contract SunsetOraclesChecks is GovernanceScript, Test {
     console2.log("\n");
 
     assert_relayersAreWhitelisted();
-    assert_relayersReport();
-    checkExchangesAreProperlyConfigured();
+    assert_redstoneCanReport();
+    // assert_relayersReport();
+    // checkExchangesAreProperlyConfigured();
+  }
+
+  function assert_redstoneCanReport() internal {
+    vm.startPrank(0xdcbaC3971fd86f7bc70FA25E4C434041efdBb27e);
+
+    address redstoneAdapter = 0x854A01c7b8431bF23b707b134EF3f99fe5C48CED;
+    IMockRedstoneAdapter adapter = IMockRedstoneAdapter(redstoneAdapter);
+
+    adapter.relay();
+    vm.stopPrank();
+
+    console2.log("✅ Redstone can report\n");
   }
 
   function assert_relayersReport() internal {
@@ -111,7 +177,17 @@ contract SunsetOraclesChecks is GovernanceScript, Test {
 
       address[] memory whitelisted = sortedOracles.getOracles(rateFeedIdentifier);
       require(whitelisted.length == 1, "❌ Expected 1 oracle on feed");
-      require(whitelisted[0] == relayer, "❌ Expected relayer to be whitelisted");
+      // if (whitelisted[0] != relayer) {
+      address redstoneAdapter = 0x854A01c7b8431bF23b707b134EF3f99fe5C48CED;
+      if (whitelisted[0] != redstoneAdapter) {
+        console2.log(
+          "Relayer %s is not whitelisted for feed %s, instead %s is whitelisted",
+          relayer,
+          rateFeedIdentifier,
+          whitelisted[0]
+        );
+        require(whitelisted[0] == relayer, "❌ Expected relayer to be whitelisted");
+      }
 
       uint256 actualExpiry = sortedOracles.tokenReportExpirySeconds(feedsToMigrate[i]);
       if (actualExpiry != expectedTokenExpiry) {

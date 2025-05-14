@@ -99,24 +99,66 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
   }
 
   function addFeedsToMigrate() public {
+    // Redstone powered feeds
     feedsToMigrate.push(cUSDProxy); // CELO/USD
     feedsToMigrate.push(cEURProxy); // CELO/EUR
     feedsToMigrate.push(cBRLProxy); // CELO/BRL
-    feedsToMigrate.push(cKESProxy); // CELO/KES
-    feedsToMigrate.push(eXOFProxy); // CELO/XOF
-
     feedsToMigrate.push(toRateFeedId("USDCUSD"));
     feedsToMigrate.push(toRateFeedId("USDCEUR"));
     feedsToMigrate.push(toRateFeedId("USDCBRL"));
-
-    feedsToMigrate.push(toRateFeedId("USDTUSD"));
-
     feedsToMigrate.push(toRateFeedId("EUROCEUR"));
-    feedsToMigrate.push(toRateFeedId("EUROCXOF"));
-    feedsToMigrate.push(toRateFeedId("EURXOF"));
 
-    feedsToMigrate.push(toRateFeedId("KESUSD"));
-    feedsToMigrate.push(toRateFeedId("relayed:PHPUSD"));
+    // Chainlink powered feeds
+
+    // feedsToMigrate.push(cKESProxy); // CELO/KES
+    // feedsToMigrate.push(eXOFProxy); // CELO/XOF
+    // feedsToMigrate.push(toRateFeedId("USDCUSD"));
+    // feedsToMigrate.push(toRateFeedId("USDCEUR"));
+    // feedsToMigrate.push(toRateFeedId("USDCBRL"));
+    // feedsToMigrate.push(toRateFeedId("USDTUSD"));
+    // feedsToMigrate.push(toRateFeedId("EUROCEUR"));
+    // feedsToMigrate.push(toRateFeedId("EUROCXOF"));
+    // feedsToMigrate.push(toRateFeedId("EURXOF"));
+    // feedsToMigrate.push(toRateFeedId("KESUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:PHPUSD"));
+    // // ====== ALFAJORES
+    // // CELO/XXX
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOPHP"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOCOP"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOGHS"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOETH"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOGBP"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOZAR"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOCHF"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOCAD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOAUD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELONGN"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CELOJPY"));
+    // feedsToMigrate.push(cUSDProxy); // CELO/USD
+    // feedsToMigrate.push(cEURProxy); // CELO/EUR
+    // feedsToMigrate.push(cBRLProxy); // CELO/BRL
+    // feedsToMigrate.push(eXOFProxy); // CELO/XOF
+    // feedsToMigrate.push(cKESProxy); // CELO/KES
+    // // // XXX/USD
+    // feedsToMigrate.push(toRateFeedId("KESUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:PHPUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:COPUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:GHSUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:GBPUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:ZARUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CHFUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:CADUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:AUDUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:JPYUSD"));
+    // feedsToMigrate.push(toRateFeedId("relayed:NGNUSD"));
+    // feedsToMigrate.push(toRateFeedId("USDCUSD"));
+    // feedsToMigrate.push(toRateFeedId("USDTUSD"));
+    // // // // Others
+    // feedsToMigrate.push(toRateFeedId("USDCEUR"));
+    // feedsToMigrate.push(toRateFeedId("USDCBRL"));
+    // feedsToMigrate.push(toRateFeedId("EUROCEUR"));
+    // feedsToMigrate.push(toRateFeedId("EUROCXOF"));
+    // feedsToMigrate.push(toRateFeedId("EURXOF"));
   }
 
   function run() public {
@@ -135,10 +177,10 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    for (uint i = 0; i < feedsToMigrate.length; i++) {
-      address identifier = feedsToMigrate[i];
-      removeAllOracles(identifier);
-    }
+    // for (uint i = 0; i < feedsToMigrate.length; i++) {
+    //   address identifier = feedsToMigrate[i];
+    //   removeAllOracles(identifier);
+    // }
 
     uint256 tokenReportExpiry = 6 minutes;
     for (uint i = 0; i < feedsToMigrate.length; i++) {
@@ -146,7 +188,7 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
       proposal_whitelistRelayerFor(identifier, tokenReportExpiry);
     }
 
-    recreateExchangesWithSingleReport();
+    // recreateExchangesWithSingleReport();
 
     return transactions;
   }
@@ -164,15 +206,38 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
 
     // The PHP/USD relayer is already whitelisted, so we don't need to add it again.
     // We only want to set the token report expiry time to 6 minutes, which happens in the next step.
-    if (rateFeedIdentifier != toRateFeedId("relayed:PHPUSD")) {
-      transactions.push(
-        ICeloGovernance.Transaction({
-          value: 0,
-          destination: address(sortedOracles),
-          data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, address(relayer))
-        })
-      );
-    }
+
+    // if (rateFeedIdentifier != toRateFeedId("relayed:PHPUSD")) {
+    //   transactions.push(
+    //     ICeloGovernance.Transaction({
+    //       value: 0,
+    //       destination: address(sortedOracles),
+    //       data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, address(relayer))
+    //     })
+    //   );
+    // }
+
+    // ALFAJORES CODE
+    address[] memory oracles = sortedOracles.getOracles(rateFeedIdentifier);
+    require(oracles.length == 1, "Expected 1 oracle for rateFeedIdentifier");
+    transactions.push(
+      ICeloGovernance.Transaction({
+        value: 0,
+        destination: address(sortedOracles),
+        data: abi.encodeWithSelector(ISortedOracles(0).removeOracle.selector, rateFeedIdentifier, oracles[0], 0)
+      })
+    );
+
+    // redstone adapter
+    address redstoneAdapter = 0x854A01c7b8431bF23b707b134EF3f99fe5C48CED;
+    transactions.push(
+      ICeloGovernance.Transaction({
+        value: 0,
+        destination: address(sortedOracles),
+        data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, redstoneAdapter)
+        // data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, address(relayer))
+      })
+    );
 
     uint256 currentExpiry = sortedOracles.tokenReportExpirySeconds(rateFeedIdentifier);
     if (currentExpiry != tokenReportExpiry) {
@@ -238,6 +303,7 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
   function removeAllOracles(address rateFeedIdentifier) internal {
     // PHP/USD is already using Chainlink, so there's no need to remove and re-add the oracle.
     // We just want to update the pool to have a 6min reset frequency,
+
     if (rateFeedIdentifier == toRateFeedId("relayed:PHPUSD")) {
       return;
     }
