@@ -5,6 +5,10 @@ import { Ownable } from "openzeppelin-contracts-next/contracts/access/Ownable.so
 
 interface ISortedOraclesMin {
   function report(address rateFeedId, uint256 value, address lesserKey, address greaterKey) external;
+
+  function getRates(address rateFeedId) external returns (address[] memory, uint256[] memory, uint256[] memory);
+
+  function removeExpiredReports(address rateFeedId, uint256 n) external;
 }
 
 contract MockRedstoneAdapter is Ownable {
@@ -56,16 +60,57 @@ contract MockRedstoneAdapter is Ownable {
   }
 
   function relay() external onlyOwnerOrExternalProvider {
-    ISortedOraclesMin _sortedOracles = ISortedOraclesMin(sortedOracles);
     for (uint256 i = 0; i < mainnetRateFeeds.length; i++) {
       address mainnetRateFeed = mainnetRateFeeds[i];
       address alfajoresRateFeed = alfajoresRateFeeds[i];
       uint256 lastMainnetPrice = lastMainnetPricePerFeed[mainnetRateFeed];
       uint256 scaled = lastMainnetPrice * (10 ** 16); // Redstone uses 8 decimals and sortedOracles expects 24
 
-      // Assume there is only one report per feed
-      ISortedOraclesMin(sortedOracles).report(alfajoresRateFeed, scaled, address(0), address(0));
+      reportRate(alfajoresRateFeed, scaled);
     }
+  }
+
+  function reportRate(address rateFeedId, uint256 rate) internal {
+    // Copied from ChainlinkRelayerV1.reportRate()
+    (address[] memory oracles, uint256[] memory rates, ) = ISortedOraclesMin(sortedOracles).getRates(rateFeedId);
+    uint256 numRates = oracles.length;
+
+    if (numRates == 0 || (numRates == 1 && oracles[0] == address(this))) {
+      // Happy path: SortedOracles is empty, or there is a single report from this relayer.
+      ISortedOraclesMin(sortedOracles).report(rateFeedId, rate, address(0), address(0));
+      return;
+    }
+
+    if (numRates > 2 || (numRates == 2 && oracles[0] != address(this) && oracles[1] != address(this))) {
+      require(false, "More than 2 reports from other oracles");
+    }
+
+    // At this point we have ensured that either:
+    // - There is a single report from another oracle.
+    // - There are two reports and one is from this relayer.
+
+    address otherOracle;
+    uint256 otherRate;
+
+    if (numRates == 1 || oracles[0] != address(this)) {
+      otherOracle = oracles[0];
+      otherRate = rates[0];
+    } else {
+      otherOracle = oracles[1];
+      otherRate = rates[1];
+    }
+
+    address lesserKey;
+    address greaterKey;
+
+    if (otherRate < rate) {
+      lesserKey = otherOracle;
+    } else {
+      greaterKey = otherOracle;
+    }
+
+    ISortedOraclesMin(sortedOracles).report(rateFeedId, rate, lesserKey, greaterKey);
+    ISortedOraclesMin(sortedOracles).removeExpiredReports(rateFeedId, 1);
   }
 
   function getMainnetRateFeeds() external view returns (address[] memory) {
