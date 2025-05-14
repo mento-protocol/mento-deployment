@@ -52,10 +52,10 @@ contract OracleMigrationChecks is GovernanceScript, Test {
     prepare();
     console2.log("\n");
 
-    assert_relayersAreWhitelisted();
+    assert_sortedOraclesIsCorrectlyConfigured();
     // assert_redstoneCanReport();
     // assert_relayersReport();
-    // checkExchangesAreProperlyConfigured();
+    checkExchangesAreProperlyConfigured();
     // printWhitelisted();
     console2.log("✅ All checks passed\n");
   }
@@ -106,35 +106,50 @@ contract OracleMigrationChecks is GovernanceScript, Test {
     console2.log("✅ All relayers can report\n");
   }
 
-  function assert_relayersAreWhitelisted() internal {
-    console2.log("====🔍 Checking if all relayers are whitelisted...====");
+  function assert_sortedOraclesIsCorrectlyConfigured() internal {
+    console2.log("====🔍 Checking if sortedOracles is correctly configured...====");
     uint256 expectedTokenExpiry = 6 minutes;
 
-    address[] memory feedsToMigrate = config.redstonePoweredFeeds();
+    // address[] memory feedsToMigrate = config.redstonePoweredFeeds();
+    address[] memory feedsToMigrate = config.feedsToMigrate();
 
     for (uint i = 0; i < feedsToMigrate.length; i++) {
-      address rateFeedIdentifier = feedsToMigrate[i];
-      address[] memory whitelisted = sortedOracles.getOracles(rateFeedIdentifier);
-      require(whitelisted.length == 1, "❌ Expected 1 oracle on feed");
+      address identifier = feedsToMigrate[i];
+      address[] memory whitelisted = sortedOracles.getOracles(identifier);
 
-      if (config.isRedstonePowered(rateFeedIdentifier)) {
-        require(
-          whitelisted[0] == redstoneAdapter,
-          "❌ Expected redstone adapter to be whitelisted on redstone powered feed"
-        );
+      require(whitelisted.length == 1, "❌ Expected exactly 1 oracle to be whitelisted");
+
+      if (config.isRedstonePowered(identifier)) {
+        if (whitelisted[0] != redstoneAdapter) {
+          console2.log("❌ Expected redstone adapter to be whitelisted on feed %s", identifier);
+          require(
+            whitelisted[0] == redstoneAdapter,
+            "❌ Expected redstone adapter to be whitelisted on redstone powered feed"
+          );
+        } else {
+          console2.log("✅ Redstone adapter is whitelisted on feed %s", identifier);
+        }
       } else {
-        address relayer = relayerFactory.getRelayer(rateFeedIdentifier);
-        require(whitelisted[0] == relayer, "❌ Expected chainlink relayer to be whitelisted on chainlink powered feed");
+        address relayer = relayerFactory.getRelayer(identifier);
+        if (whitelisted[0] != relayer) {
+          console2.log("❌ Expected chainlink relayer to be whitelisted on feed %s", identifier);
+          require(
+            whitelisted[0] == relayer,
+            "❌ Expected chainlink relayer to be whitelisted on chainlink powered feed"
+          );
+        } else {
+          console2.log("✅ Chainlink relayer is whitelisted on feed %s", identifier);
+        }
       }
 
-      // uint256 actualExpiry = sortedOracles.tokenReportExpirySeconds(feedsToMigrate[i]);
-      // if (actualExpiry != expectedTokenExpiry) {
-      //   console2.log("Relayer %s doesnt have the correct expiry time (%d)", relayer, actualExpiry);
-      //   require(actualExpiry == expectedTokenExpiry, "Not all relayers were set to 6 minutes tokenReportExpiry");
-      // }
+      uint256 actualExpiry = sortedOracles.tokenReportExpirySeconds(identifier);
+      if (actualExpiry != expectedTokenExpiry) {
+        console2.log("❌ Expected token report expiry to be %d seconds on feed %s", expectedTokenExpiry, identifier);
+        require(actualExpiry == expectedTokenExpiry, "❌ Expected token report expiry to be 6 minutes");
+      }
     }
 
-    console2.log("✅ All %d Chainlink Relayers were whitelisted and configured correctly\n", feedsToMigrate.length);
+    console2.log("✅ All %d feeds were configured correctly\n", feedsToMigrate.length);
   }
 
   function checkExchangesAreProperlyConfigured() internal {

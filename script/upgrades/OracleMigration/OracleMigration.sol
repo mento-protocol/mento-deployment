@@ -54,8 +54,6 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
 
   mapping(address => IChainlinkRelayer) private relayersByRateFeedId;
 
-  address[] private feedsToMigrate;
-
   function prepare() public {
     loadDeployedContracts();
     setAddresses();
@@ -109,14 +107,15 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    address[] memory feedsToMigrate = config.redstonePoweredFeeds();
-    // address[] memory feedsToMigrate = config.getFeedsToMigrate();
+    address[] memory feedsToMigrate = config.feedsToMigrate();
 
+    // 1. Remove all oracles from the feeds, except for the redstone adapter
     for (uint i = 0; i < feedsToMigrate.length; i++) {
       address identifier = feedsToMigrate[i];
       removeAllOracles(identifier);
     }
 
+    // 2. Whitelist the chainlink relayer for the chainlink powered feeds
     for (uint i = 0; i < feedsToMigrate.length; i++) {
       address identifier = feedsToMigrate[i];
       if (config.isChainlinkPowered(identifier)) {
@@ -124,6 +123,7 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
       }
     }
 
+    // 3. Set the token report expiry time to 6 minutes for all the feeds
     uint256 tokenReportExpiry = 6 minutes;
     for (uint i = 0; i < feedsToMigrate.length; i++) {
       address identifier = feedsToMigrate[i];
@@ -134,6 +134,7 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
     // We set it to 6 minutes to keep the same frequency as the other feeds.
     setTokenReportExpiry(config.PHPUSDIdentifier(), tokenReportExpiry);
 
+    // 4. Re-create the exchanges with a single report
     // recreateExchangesWithSingleReport();
 
     return transactions;
@@ -178,7 +179,7 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
   }
 
   function shouldBeMigrated(address rateFeedIdentifier) internal returns (bool) {
-    return Arrays.contains(feedsToMigrate, rateFeedIdentifier);
+    return Arrays.contains(config.feedsToMigrate(), rateFeedIdentifier);
   }
 
   function recreateExchangesWithSingleReport() internal {
@@ -190,8 +191,7 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
       IBiPoolManager.PoolExchange memory currentExchange = biPoolManager.getPoolExchange(exchangeId);
 
       if (!shouldBeMigrated(currentExchange.config.referenceRateFeedID)) {
-        // if not it means that minimumreports is alraedy 1
-        // assert it
+        require(currentExchange.config.minimumReports == 1, "❌ Expected minimum reports to be 1 on non-migrated feed");
         continue;
       }
 
@@ -204,13 +204,15 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
         )
       );
 
-      // Re-create the exchange
-      IBiPoolManager.PoolExchange memory newExchange = currentExchange;
-      newExchange.bucket0 = 0;
-      newExchange.bucket1 = 0;
-      newExchange.lastBucketUpdate = 0;
-      newExchange.config.minimumReports = 1;
-      newExchange.config.referenceRateResetFrequency = 6 minutes;
+      // // Re-create the exchange
+      // IBiPoolManager.PoolExchange memory newExchange = currentExchange;
+      // newExchange.bucket0 = 0;
+      // newExchange.bucket1 = 0;
+      // newExchange.lastBucketUpdate = 0;
+      // newExchange.config.minimumReports = 1;
+      // newExchange.config.referenceRateResetFrequency = 6 minutes;
+
+      IBiPoolManager.PoolExchange memory newExchange = config.getNewExchangeCfg(currentExchange);
 
       transactions.push(
         ICeloGovernance.Transaction(
