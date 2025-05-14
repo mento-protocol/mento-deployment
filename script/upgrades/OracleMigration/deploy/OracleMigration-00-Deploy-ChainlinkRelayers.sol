@@ -14,7 +14,7 @@ import { ChainlinkRelayerFactoryProxyAdmin } from "mento-core-2.5.0/oracles/Chai
 import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
 import { toRateFeedId, aggregators } from "script/utils/mento/Oracles.sol";
 
-contract SunsetOracles_Deploy_ChainlinkRelayers is Script {
+contract OracleMigration_Deploy_ChainlinkRelayers is Script {
   using Contracts for Contracts.Cache;
 
   address payable private eXOFProxy;

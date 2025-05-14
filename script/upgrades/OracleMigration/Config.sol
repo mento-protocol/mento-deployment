@@ -3,10 +3,11 @@
 pragma solidity ^0.5.13;
 import { Arrays } from "script/utils/Arrays.sol";
 
-import { Contracts } from "script/utils/Contracts.sol";
+import { GovernanceScript } from "script/utils/Script.sol";
+// import { Contracts } from "script/utils/Contracts.sol";
 import { FixidityLib } from "script/utils/FixidityLib.sol";
 
-contract OracleMigrationConfig {
+contract OracleMigrationConfig is GovernanceScript {
   struct SpreadOverride {
     address asset0;
     address asset1;
@@ -21,7 +22,7 @@ contract OracleMigrationConfig {
     FixidityLib.Fraction targetResetSize;
   }
 
-  using Contracts for Contracts.Cache;
+  // using Contracts for Contracts.Cache;
 
   address private cUSDProxy;
   address private cEURProxy;
@@ -29,7 +30,7 @@ contract OracleMigrationConfig {
   address payable private eXOFProxy;
   address payable private cKESProxy;
 
-  constructor() {
+  constructor() public {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
     contracts.load("cKES-00-Create-Proxies", "latest");
     contracts.load("eXOF-00-Create-Proxies", "latest");
@@ -46,33 +47,33 @@ contract OracleMigrationConfig {
     cKESProxy = contracts.deployed("StableTokenKESProxy");
   }
 
-  function redstonePoweredFeeds() public pure returns (address[] memory) {
+  function redstonePoweredFeeds() public view returns (address[] memory) {
     address[] memory feeds = new address[](7);
     feeds[0] = cUSDProxy; // CELO/USD
     feeds[1] = cEURProxy; // CELO/EUR
     feeds[2] = cBRLProxy; // CELO/BRL
-    feeds[3] = _toRateFeedId("USDCUSD");
-    feeds[4] = _toRateFeedId("USDCEUR");
-    feeds[5] = _toRateFeedId("USDCBRL");
-    feeds[6] = _toRateFeedId("EUROCEUR");
+    feeds[3] = toRateFeedId("USDCUSD");
+    feeds[4] = toRateFeedId("USDCEUR");
+    feeds[5] = toRateFeedId("USDCBRL");
+    feeds[6] = toRateFeedId("EUROCEUR");
 
     return feeds;
   }
 
-  function chainlinkPoweredFeeds() public pure returns (address[] memory) {
-    address[] memory feeds = new address[](7);
+  function chainlinkPoweredFeeds() public view returns (address[] memory) {
+    address[] memory feeds = new address[](6);
     feeds[0] = eXOFProxy; // CELO/XOF
-    feeds[1] = _toRateFeedId("EUROCXOF");
-    feeds[2] = _toRateFeedId("EURXOF");
+    feeds[1] = toRateFeedId("EUROCXOF");
+    feeds[2] = toRateFeedId("EURXOF");
     feeds[3] = cKESProxy; // CELO/KES
-    feeds[4] = _toRateFeedId("KESUSD");
-    feeds[5] = _toRateFeedId("USDTUSD");
-    feeds[6] = _toRateFeedId("relayed:PHPUSD"); // Won't be migrated, but we'll set the bucket reset freq to 6 minutes
+    feeds[4] = toRateFeedId("KESUSD");
+    feeds[5] = toRateFeedId("USDTUSD");
+    // feeds[6] = toRateFeedId("relayed:PHPUSD"); // Won't be migrated, but we'll set the bucket reset freq to 6 minutes
 
     return feeds;
   }
 
-  function getFeedsToMigrate() public pure returns (address[] memory) {
+  function getFeedsToMigrate() public view returns (address[] memory) {
     address[] memory redstone = redstonePoweredFeeds();
     address[] memory chainlink = chainlinkPoweredFeeds();
 
@@ -87,15 +88,15 @@ contract OracleMigrationConfig {
     return combined;
   }
 
-  function isRedstonePowered(address rateFeedIdentifier) public pure returns (bool) {
+  function isRedstonePowered(address rateFeedIdentifier) public view returns (bool) {
     return Arrays.contains(redstonePoweredFeeds(), rateFeedIdentifier);
   }
 
-  function isChainlinkPowered(address rateFeedIdentifier) public pure returns (bool) {
+  function isChainlinkPowered(address rateFeedIdentifier) public view returns (bool) {
     return Arrays.contains(chainlinkPoweredFeeds(), rateFeedIdentifier);
   }
 
-  function _toRateFeedId(string memory rateFeedString) internal pure returns (address) {
-    return address(uint160(uint256(keccak256(abi.encodePacked(rateFeedString)))));
+  function PHPUSDIdentifier() public pure returns (address) {
+    return toRateFeedId("relayed:PHPUSD");
   }
 }

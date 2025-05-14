@@ -16,6 +16,8 @@ import { IBiPoolManager } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
+import { OracleMigrationConfig } from "./Config.sol";
+
 interface ISortedOracles {
   function addOracle(address, address) external;
 
@@ -36,16 +38,13 @@ interface ISortedOracles {
   function tokenReportExpirySeconds(address) external returns (uint256);
 }
 
-contract SunsetOracles is IMentoUpgrade, GovernanceScript {
+contract OracleMigration is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
 
-  address private biPoolManagerProxy;
+  OracleMigrationConfig private config;
 
-  address private cUSDProxy;
-  address private cEURProxy;
-  address private cBRLProxy;
-  address payable private eXOFProxy;
-  address payable private cKESProxy;
+  address private redstoneAdapter;
+  address private biPoolManagerProxy;
 
   bool public hasChecks = true;
   ICeloGovernance.Transaction[] private transactions;
@@ -60,7 +59,6 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
   function prepare() public {
     loadDeployedContracts();
     setAddresses();
-    addFeedsToMigrate();
   }
 
   /**
@@ -90,75 +88,9 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
       relayersByRateFeedId[relayer.rateFeedId()] = relayer;
     }
 
+    config = new OracleMigrationConfig();
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
-    cUSDProxy = contracts.celoRegistry("StableToken");
-    cEURProxy = contracts.celoRegistry("StableTokenEUR");
-    cBRLProxy = contracts.celoRegistry("StableTokenBRL");
-    eXOFProxy = contracts.deployed("StableTokenXOFProxy");
-    cKESProxy = contracts.deployed("StableTokenKESProxy");
-  }
-
-  function addFeedsToMigrate() public {
-    // Redstone powered feeds
-    feedsToMigrate.push(cUSDProxy); // CELO/USD
-    feedsToMigrate.push(cEURProxy); // CELO/EUR
-    feedsToMigrate.push(cBRLProxy); // CELO/BRL
-    feedsToMigrate.push(toRateFeedId("USDCUSD"));
-    feedsToMigrate.push(toRateFeedId("USDCEUR"));
-    feedsToMigrate.push(toRateFeedId("USDCBRL"));
-    feedsToMigrate.push(toRateFeedId("EUROCEUR"));
-
-    // Chainlink powered feeds
-
-    // feedsToMigrate.push(cKESProxy); // CELO/KES
-    // feedsToMigrate.push(eXOFProxy); // CELO/XOF
-    // feedsToMigrate.push(toRateFeedId("USDCUSD"));
-    // feedsToMigrate.push(toRateFeedId("USDCEUR"));
-    // feedsToMigrate.push(toRateFeedId("USDCBRL"));
-    // feedsToMigrate.push(toRateFeedId("USDTUSD"));
-    // feedsToMigrate.push(toRateFeedId("EUROCEUR"));
-    // feedsToMigrate.push(toRateFeedId("EUROCXOF"));
-    // feedsToMigrate.push(toRateFeedId("EURXOF"));
-    // feedsToMigrate.push(toRateFeedId("KESUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:PHPUSD"));
-    // // ====== ALFAJORES
-    // // CELO/XXX
-    // feedsToMigrate.push(toRateFeedId("relayed:CELOPHP"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CELOCOP"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CELOGHS"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CELOETH"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CELOGBP"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CELOZAR"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CELOCHF"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CELOCAD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CELOAUD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CELONGN"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CELOJPY"));
-    // feedsToMigrate.push(cUSDProxy); // CELO/USD
-    // feedsToMigrate.push(cEURProxy); // CELO/EUR
-    // feedsToMigrate.push(cBRLProxy); // CELO/BRL
-    // feedsToMigrate.push(eXOFProxy); // CELO/XOF
-    // feedsToMigrate.push(cKESProxy); // CELO/KES
-    // // // XXX/USD
-    // feedsToMigrate.push(toRateFeedId("KESUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:PHPUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:COPUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:GHSUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:GBPUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:ZARUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CHFUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:CADUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:AUDUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:JPYUSD"));
-    // feedsToMigrate.push(toRateFeedId("relayed:NGNUSD"));
-    // feedsToMigrate.push(toRateFeedId("USDCUSD"));
-    // feedsToMigrate.push(toRateFeedId("USDTUSD"));
-    // // // // Others
-    // feedsToMigrate.push(toRateFeedId("USDCEUR"));
-    // feedsToMigrate.push(toRateFeedId("USDCBRL"));
-    // feedsToMigrate.push(toRateFeedId("EUROCEUR"));
-    // feedsToMigrate.push(toRateFeedId("EUROCXOF"));
-    // feedsToMigrate.push(toRateFeedId("EURXOF"));
+    redstoneAdapter = contracts.dependency("RedstoneAdapter");
   }
 
   function run() public {
@@ -177,16 +109,30 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    // for (uint i = 0; i < feedsToMigrate.length; i++) {
-    //   address identifier = feedsToMigrate[i];
-    //   removeAllOracles(identifier);
-    // }
+    address[] memory feedsToMigrate = config.redstonePoweredFeeds();
+    // address[] memory feedsToMigrate = config.getFeedsToMigrate();
+
+    for (uint i = 0; i < feedsToMigrate.length; i++) {
+      address identifier = feedsToMigrate[i];
+      removeAllOracles(identifier);
+    }
+
+    for (uint i = 0; i < feedsToMigrate.length; i++) {
+      address identifier = feedsToMigrate[i];
+      if (config.isChainlinkPowered(identifier)) {
+        whitelistRelayerFor(identifier);
+      }
+    }
 
     uint256 tokenReportExpiry = 6 minutes;
     for (uint i = 0; i < feedsToMigrate.length; i++) {
       address identifier = feedsToMigrate[i];
-      proposal_whitelistRelayerFor(identifier, tokenReportExpiry);
+      setTokenReportExpiry(identifier, tokenReportExpiry);
     }
+
+    // PHP/USD was the first feed to use Chainlink, but we set the token report expiry time to 5 minutes back then.
+    // We set it to 6 minutes to keep the same frequency as the other feeds.
+    setTokenReportExpiry(config.PHPUSDIdentifier(), tokenReportExpiry);
 
     // recreateExchangesWithSingleReport();
 
@@ -197,50 +143,26 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
    * @notice For a give rateFeed identifier, see if there's a register deployed relayer
    * and whitelist if so. Additionally, set the report expiry time if needed.
    */
-  function proposal_whitelistRelayerFor(address rateFeedIdentifier, uint256 tokenReportExpiry) internal {
+  function whitelistRelayerFor(address rateFeedIdentifier) internal {
     IChainlinkRelayer relayer = relayersByRateFeedId[rateFeedIdentifier];
     require(
       address(relayer) != address(0),
       string(abi.encodePacked("Relayer for rateFeed=", rateFeedIdentifier, " not deployed"))
     );
 
-    // The PHP/USD relayer is already whitelisted, so we don't need to add it again.
-    // We only want to set the token report expiry time to 6 minutes, which happens in the next step.
-
-    // if (rateFeedIdentifier != toRateFeedId("relayed:PHPUSD")) {
-    //   transactions.push(
-    //     ICeloGovernance.Transaction({
-    //       value: 0,
-    //       destination: address(sortedOracles),
-    //       data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, address(relayer))
-    //     })
-    //   );
+    transactions.push(
+      ICeloGovernance.Transaction({
+        value: 0,
+        destination: address(sortedOracles),
+        data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, address(relayer))
+      })
+    );
     // }
+  }
 
-    // ALFAJORES CODE
-    address[] memory oracles = sortedOracles.getOracles(rateFeedIdentifier);
-    require(oracles.length == 1, "Expected 1 oracle for rateFeedIdentifier");
-    transactions.push(
-      ICeloGovernance.Transaction({
-        value: 0,
-        destination: address(sortedOracles),
-        data: abi.encodeWithSelector(ISortedOracles(0).removeOracle.selector, rateFeedIdentifier, oracles[0], 0)
-      })
-    );
-
-    // redstone adapter
-    address redstoneAdapter = 0x854A01c7b8431bF23b707b134EF3f99fe5C48CED;
-    transactions.push(
-      ICeloGovernance.Transaction({
-        value: 0,
-        destination: address(sortedOracles),
-        data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, redstoneAdapter)
-        // data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, address(relayer))
-      })
-    );
-
+  function setTokenReportExpiry(address rateFeedIdentifier, uint256 expectedExpiry) internal {
     uint256 currentExpiry = sortedOracles.tokenReportExpirySeconds(rateFeedIdentifier);
-    if (currentExpiry != tokenReportExpiry) {
+    if (currentExpiry != expectedExpiry) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,
@@ -248,7 +170,7 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
           data: abi.encodeWithSelector(
             ISortedOracles(0).setTokenReportExpiry.selector,
             rateFeedIdentifier,
-            tokenReportExpiry
+            expectedExpiry
           )
         })
       );
@@ -268,6 +190,8 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
       IBiPoolManager.PoolExchange memory currentExchange = biPoolManager.getPoolExchange(exchangeId);
 
       if (!shouldBeMigrated(currentExchange.config.referenceRateFeedID)) {
+        // if not it means that minimumreports is alraedy 1
+        // assert it
         continue;
       }
 
@@ -301,22 +225,23 @@ contract SunsetOracles is IMentoUpgrade, GovernanceScript {
   }
 
   function removeAllOracles(address rateFeedIdentifier) internal {
-    // PHP/USD is already using Chainlink, so there's no need to remove and re-add the oracle.
-    // We just want to update the pool to have a 6min reset frequency,
+    address[] memory oracles = ISortedOracles(sortedOracles).getOracles(rateFeedIdentifier);
+    bool isRedstonePowered = config.isRedstonePowered(rateFeedIdentifier);
 
-    if (rateFeedIdentifier == toRateFeedId("relayed:PHPUSD")) {
-      return;
+    if (isRedstonePowered) {
+      require(Arrays.contains(oracles, redstoneAdapter), "Redstone adapter not found on redstone powered feed");
     }
 
-    address[] memory oracles = ISortedOracles(sortedOracles).getOracles(rateFeedIdentifier);
     for (uint i = oracles.length - 1; i >= 0; i--) {
-      transactions.push(
-        ICeloGovernance.Transaction({
-          value: 0,
-          destination: address(sortedOracles),
-          data: abi.encodeWithSelector(ISortedOracles(0).removeOracle.selector, rateFeedIdentifier, oracles[i], i)
-        })
-      );
+      if (oracles[i] != redstoneAdapter) {
+        transactions.push(
+          ICeloGovernance.Transaction({
+            value: 0,
+            destination: address(sortedOracles),
+            data: abi.encodeWithSelector(ISortedOracles(0).removeOracle.selector, rateFeedIdentifier, oracles[i], i)
+          })
+        );
+      }
 
       if (i == 0) break;
     }

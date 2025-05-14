@@ -17,7 +17,7 @@ interface IChainlinkAggregator {
   function description() external view returns (string memory);
 }
 
-contract SunsetOracles_Deploy_CheckExistingRelayers is Script {
+contract OracleMigration_Deploy_CheckExistingRelayers is Script {
   using Contracts for Contracts.Cache;
 
   address private cUSDProxy;
