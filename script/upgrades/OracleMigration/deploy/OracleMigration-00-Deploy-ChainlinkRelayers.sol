@@ -91,7 +91,7 @@ contract OracleMigration_Deploy_ChainlinkRelayers is Script {
   }
 
   function getRelayersConfigs() internal returns (Relayer[] memory relayers) {
-    relayers = new Relayer[](6);
+    relayers = new Relayer[](9);
 
     // ==================== eXOF ====================
     relayers[0] = Relayer({
@@ -154,6 +154,38 @@ contract OracleMigration_Deploy_ChainlinkRelayers is Script {
       maxTimestampSpread: 0,
       aggregators: aggregators(
         IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.USDTUSD"), invert: false })
+      )
+    });
+
+    // ================= New relayers that will be used in future restructuring proposal =================
+    // EUR/USD
+    relayers[6] = Relayer({
+      rateFeed: "EUR/USD",
+      rateFeedIdentifier: toRateFeedId("relayed:EURUSD"),
+      rateFeedDescription: "EUR/USD",
+      maxTimestampSpread: 0,
+      aggregators: aggregators(
+        IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.EURUSD"), invert: false })
+      )
+    });
+    // BRL/USD
+    relayers[7] = Relayer({
+      rateFeed: "BRL/USD",
+      rateFeedIdentifier: toRateFeedId("relayed:BRLUSD"),
+      rateFeedDescription: "BRL/USD",
+      maxTimestampSpread: 0,
+      aggregators: aggregators(
+        IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.BRLUSD"), invert: false })
+      )
+    });
+    // XOF/USD
+    relayers[8] = Relayer({
+      rateFeed: "XOF/USD",
+      rateFeedIdentifier: toRateFeedId("relayed:XOFUSD"),
+      rateFeedDescription: "XOF/USD",
+      maxTimestampSpread: 0,
+      aggregators: aggregators(
+        IChainlinkRelayer.ChainlinkAggregator({ aggregator: contracts.dependency("Chainlink.XOFUSD"), invert: false })
       )
     });
 
