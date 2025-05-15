@@ -41,6 +41,7 @@ contract OracleMigrationChecks is GovernanceScript, Test {
     contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
 
     config = new OracleMigrationConfig();
+    config.load();
     relayerFactory = IChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
 

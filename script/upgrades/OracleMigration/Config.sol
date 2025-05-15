@@ -38,7 +38,7 @@ contract OracleMigrationConfig is GovernanceScript {
   // address payable private cKESProxy;
   address private bridgedEUROCProxy;
 
-  constructor() public {
+  function load() public {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
     contracts.load("cKES-00-Create-Proxies", "latest");
     contracts.load("eXOF-00-Create-Proxies", "latest");

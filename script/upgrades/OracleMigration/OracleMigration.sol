@@ -87,6 +87,7 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
     }
 
     config = new OracleMigrationConfig();
+    config.load();
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
     redstoneAdapter = contracts.dependency("RedstoneAdapter");
   }
