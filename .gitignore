@@ -23,6 +23,7 @@ yarn-error.log*
 !/broadcast
 /broadcast/dev-*
 !/broadcast/dev-DeployMockChainlinkAggregator.sol/
+!/broadcast/dev-DeployMockRedstoneAdapter.sol/
 !/broadcast/ExecuteProposal*
 /broadcast/PassProposal*
 /broadcast/QueueProposal*
