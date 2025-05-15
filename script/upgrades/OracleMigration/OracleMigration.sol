@@ -11,10 +11,9 @@ import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
 // import { FixidityLib } from "script/utils/FixidityLib.sol";
-import { FixidityLib } from "mento-core-2.5.0/common/FixidityLib.sol";
 import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
-import { IBiPoolManager } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
+import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
