@@ -6,7 +6,8 @@ import { Arrays } from "script/utils/Arrays.sol";
 
 import { GovernanceScript } from "script/utils/Script.sol";
 // import { Contracts } from "script/utils/Contracts.sol";
-import { FixidityLib } from "script/utils/FixidityLib.sol";
+// import { FixidityLib } from "script/utils/FixidityLib.sol;";
+import { FixidityLib } from "mento-core-2.5.0/common/FixidityLib.sol";
 import { IBiPoolManager } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
 
 contract OracleMigrationConfig is GovernanceScript {
@@ -142,6 +143,8 @@ contract OracleMigrationConfig is GovernanceScript {
     newExchange.lastBucketUpdate = 0;
     newExchange.config.minimumReports = 1;
     newExchange.config.referenceRateResetFrequency = 6 minutes;
+
+    newExchange.config.spread = FixidityLib.newFixedFraction(2, 100);
 
     // (bool hasNewSpread, uint256 newSpread) = hasNewSpread(currentExchange);
     // if (hasNewSpread) {

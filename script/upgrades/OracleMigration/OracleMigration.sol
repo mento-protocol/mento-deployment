@@ -10,6 +10,8 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
+// import { FixidityLib } from "script/utils/FixidityLib.sol";
+import { FixidityLib } from "mento-core-2.5.0/common/FixidityLib.sol";
 import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
 import { IBiPoolManager } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
@@ -214,6 +216,7 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
       // newExchange.config.referenceRateResetFrequency = 6 minutes;
 
       IBiPoolManager.PoolExchange memory newExchange = config.getNewExchangeCfg(currentExchange);
+      // newExchange.config.spread = FixidityLib.newFixedFraction(2, 100);
 
       transactions.push(
         ICeloGovernance.Transaction(
