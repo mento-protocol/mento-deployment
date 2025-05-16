@@ -12,7 +12,8 @@ import { GovernanceScript } from "script/utils/Script.sol";
 
 import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
-import { IBiPoolManager } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
+import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
+// import { IBiPoolManager } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
 
 import { ISortedOracles } from "./OracleMigration.sol";
 import { OracleMigrationConfig } from "./Config.sol";
@@ -54,6 +55,7 @@ contract OracleMigrationChecks is GovernanceScript, Test {
     console2.log("\n");
 
     assert_sortedOraclesIsCorrectlyConfigured();
+    assert_additionalFeedsAreWhitelisted();
     // assert_redstoneCanReport();
     // assert_relayersReport();
     checkExchangesAreProperlyConfigured();
@@ -102,7 +104,11 @@ contract OracleMigrationChecks is GovernanceScript, Test {
       (uint256 rate, ) = sortedOracles.medianRate(relayer.rateFeedId());
       emit log_named_decimal_uint(relayer.rateFeedDescription(), rate, 24);
 
-      console2.log("🚀 Relayer %s relayed to feed %s successfully", relayerAddress, relayer.rateFeedId());
+      console2.log(
+        "🚀 Relayer %s relayed to feed %s successfully",
+        relayerAddress,
+        config.getFeedName(relayer.rateFeedId())
+      );
     }
     console2.log("✅ All relayers can report\n");
   }
@@ -122,35 +128,61 @@ contract OracleMigrationChecks is GovernanceScript, Test {
 
       if (config.isRedstonePowered(identifier)) {
         if (whitelisted[0] != redstoneAdapter) {
-          console2.log("❌ Expected redstone adapter to be whitelisted on feed %s", identifier);
+          console2.log("❌ Expected redstone adapter to be whitelisted on feed %s", config.getFeedName(identifier));
           require(
             whitelisted[0] == redstoneAdapter,
             "❌ Expected redstone adapter to be whitelisted on redstone powered feed"
           );
         } else {
-          console2.log("✅ Redstone adapter is whitelisted on feed %s", identifier);
+          console2.log("✅ Redstone adapter is whitelisted on feed %s", config.getFeedName(identifier));
         }
       } else {
         address relayer = relayerFactory.getRelayer(identifier);
         if (whitelisted[0] != relayer) {
-          console2.log("❌ Expected chainlink relayer to be whitelisted on feed %s", identifier);
+          console2.log("❌ Expected chainlink relayer to be whitelisted on feed %s", config.getFeedName(identifier));
           require(
             whitelisted[0] == relayer,
             "❌ Expected chainlink relayer to be whitelisted on chainlink powered feed"
           );
         } else {
-          console2.log("✅ Chainlink relayer is whitelisted on feed %s", identifier);
+          console2.log("✅ Chainlink relayer is whitelisted on feed %s", config.getFeedName(identifier));
         }
       }
 
       uint256 actualExpiry = sortedOracles.tokenReportExpirySeconds(identifier);
       if (actualExpiry != expectedTokenExpiry) {
-        console2.log("❌ Expected token report expiry to be %d seconds on feed %s", expectedTokenExpiry, identifier);
+        console2.log(
+          "❌ Expected token report expiry to be %d seconds on feed %s",
+          expectedTokenExpiry,
+          config.getFeedName(identifier)
+        );
         require(actualExpiry == expectedTokenExpiry, "❌ Expected token report expiry to be 6 minutes");
       }
     }
 
-    console2.log("✅ All %d feeds were configured correctly\n", feedsToMigrate.length);
+    console2.log("🤑 All %d feeds were configured correctly\n", feedsToMigrate.length);
+  }
+
+  function assert_additionalFeedsAreWhitelisted() internal {
+    console2.log("====🔍 Checking if additional feeds are whitelisted...====");
+    address[] memory additionalFeeds = config.additionalFeedsToWhitelist();
+    for (uint i = 0; i < additionalFeeds.length; i++) {
+      address identifier = additionalFeeds[i];
+      address[] memory whitelisted = sortedOracles.getOracles(identifier);
+      require(whitelisted.length == 1, "❌ Expected exactly 1 oracle to be whitelisted");
+
+      address relayerAddr = relayerFactory.getRelayer(identifier);
+      require(whitelisted[0] == relayerAddr, "❌ Expected chainlink relayer to be whitelisted on additional feed");
+
+      IChainlinkRelayer relayer = IChainlinkRelayer(relayerAddr);
+      console2.log(
+        "✅ Relayer %s(%s) is whitelisted on feed %s",
+        relayerAddr,
+        relayer.rateFeedDescription(),
+        identifier
+      );
+    }
+    console2.log("💪 All additional feeds are whitelisted\n");
   }
 
   function checkExchangesAreProperlyConfigured() internal {
@@ -158,18 +190,53 @@ contract OracleMigrationChecks is GovernanceScript, Test {
     IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
     bytes32[] memory exchangeIds = biPoolManager.getExchangeIds();
 
-    for (uint256 i = exchangeIds.length - 1; i >= 0; i--) {
+    for (uint256 i = 0; i < exchangeIds.length; i++) {
       bytes32 exchangeId = exchangeIds[i];
       IBiPoolManager.PoolExchange memory exchange = biPoolManager.getPoolExchange(exchangeId);
 
       require(exchange.config.minimumReports == 1, "❌ Expected minimum reports to be 1");
+      if (exchange.config.referenceRateResetFrequency != 6 minutes) {
+        console2.log(
+          "❌ Expected reset frequency to be 6 minutes on %s exchange %s",
+          config.getFeedName(exchange.config.referenceRateFeedID),
+          exchange.config.referenceRateFeedID
+        );
+        console2.log("Instead got %s", exchange.config.referenceRateResetFrequency);
+      }
       require(exchange.config.referenceRateResetFrequency == 6 minutes, "❌ Expected reset frequency to be 6 minutes");
       require(exchange.bucket0 > 0, "❌ Expected bucket0 to be > 0");
       require(exchange.bucket1 > 0, "❌ Expected bucket1 to be > 0");
 
-      if (i == 0) break;
+      if (config.hasNewSpread(exchange)) {
+        (FixidityLib.Fraction memory currentSpread, FixidityLib.Fraction memory targetSpread) = config
+          .getCurrentAndTargetSpread(exchange);
+
+        if (FixidityLib.equals(exchange.config.spread, targetSpread)) {
+          console2.log(
+            "✅ Spread was correctly overwritten on %s exchange",
+            config.getFeedName(exchange.config.referenceRateFeedID)
+          );
+        } else {
+          require(FixidityLib.equals(exchange.config.spread, targetSpread), "❌ Expected spread to be overridden");
+        }
+      }
+
+      if (config.hasNewResetSize(exchange)) {
+        (, uint256 targetResetSize) = config.getCurrentAndTargetResetSizes(exchange);
+        if (exchange.config.stablePoolResetSize == targetResetSize) {
+          console2.log(
+            "✅ Reset size was correctly overwritten on %s exchange",
+            config.getFeedName(exchange.config.referenceRateFeedID)
+          );
+        } else {
+          require(
+            exchange.config.stablePoolResetSize == targetResetSize,
+            "❌ Expected stable pool reset size to be overwritten"
+          );
+        }
+      }
     }
 
-    console2.log("✅ All exchanges are properly configured\n");
+    console2.log("✨ All %d exchanges are properly configured\n", exchangeIds.length);
   }
 }

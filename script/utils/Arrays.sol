@@ -295,4 +295,15 @@ library Arrays {
     }
     return false;
   }
+
+  function merge(address[] memory a, address[] memory b) internal pure returns (address[] memory) {
+    address[] memory result = new address[](a.length + b.length);
+    for (uint i = 0; i < a.length; i++) {
+      result[i] = a[i];
+    }
+    for (uint i = 0; i < b.length; i++) {
+      result[a.length + i] = b[i];
+    }
+    return result;
+  }
 }

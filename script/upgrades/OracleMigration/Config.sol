@@ -4,6 +4,7 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 import { Arrays } from "script/utils/Arrays.sol";
 
+import { console2 } from "forge-std/console2.sol";
 import { GovernanceScript } from "script/utils/Script.sol";
 // import { Contracts } from "script/utils/Contracts.sol";
 // import { FixidityLib } from "script/utils/FixidityLib.sol;";
@@ -26,7 +27,7 @@ contract OracleMigrationConfig is GovernanceScript {
     uint256 targetResetSize;
   }
 
-  // using Contracts for Contracts.Cache;
+  mapping(address => string) private rateFeedIdToName;
 
   address private CELOProxy;
   address private cUSDProxy;
@@ -36,7 +37,10 @@ contract OracleMigrationConfig is GovernanceScript {
   // address payable private eXOFProxy;
   address private cKESProxy;
   // address payable private cKESProxy;
-  address private bridgedEUROCProxy;
+  address private nativeUSDCProxy;
+  address private nativeUSDTProxy;
+  address private axlUSDCProxy;
+  address private axlEUROCProxy;
 
   function load() public {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
@@ -54,6 +58,36 @@ contract OracleMigrationConfig is GovernanceScript {
     cBRLProxy = contracts.celoRegistry("StableTokenBRL");
     eXOFProxy = contracts.deployed("StableTokenXOFProxy");
     cKESProxy = contracts.deployed("StableTokenKESProxy");
+    nativeUSDCProxy = contracts.dependency("NativeUSDC");
+    nativeUSDTProxy = contracts.dependency("NativeUSDT");
+    axlUSDCProxy = contracts.dependency("BridgedUSDC");
+    axlEUROCProxy = contracts.dependency("BridgedEUROC");
+
+    populateFeedNames();
+  }
+
+  function populateFeedNames() public {
+    rateFeedIdToName[cUSDProxy] = "CELO/USD";
+    rateFeedIdToName[cEURProxy] = "CELO/EUR";
+    rateFeedIdToName[cBRLProxy] = "CELO/BRL";
+    rateFeedIdToName[eXOFProxy] = "CELO/XOF";
+    rateFeedIdToName[cKESProxy] = "CELO/KES";
+    rateFeedIdToName[toRateFeedId("USDCUSD")] = "USDC/USD";
+    rateFeedIdToName[toRateFeedId("USDCEUR")] = "USDC/EUR";
+    rateFeedIdToName[toRateFeedId("USDCBRL")] = "USDC/BRL";
+    rateFeedIdToName[toRateFeedId("EUROCEUR")] = "EUROC/EUR";
+    rateFeedIdToName[toRateFeedId("EUROCXOF")] = "EUROC/XOF";
+    rateFeedIdToName[toRateFeedId("EURXOF")] = "EUR/XOF";
+    rateFeedIdToName[toRateFeedId("KESUSD")] = "KES/USD";
+    rateFeedIdToName[toRateFeedId("USDTUSD")] = "USDT/USD";
+    rateFeedIdToName[toRateFeedId("relayed:EURUSD")] = "EUR/USD";
+    rateFeedIdToName[toRateFeedId("relayed:BRLUSD")] = "BRL/USD";
+    rateFeedIdToName[toRateFeedId("relayed:XOFUSD")] = "XOF/USD";
+    rateFeedIdToName[toRateFeedId("relayed:PHPUSD")] = "PHP/USD";
+  }
+
+  function getFeedName(address rateFeedId) public view returns (string memory) {
+    return rateFeedIdToName[rateFeedId];
   }
 
   function redstonePoweredFeeds() public view returns (address[] memory) {
@@ -82,25 +116,85 @@ contract OracleMigrationConfig is GovernanceScript {
     return feeds;
   }
 
+  function additionalFeedsToWhitelist() public view returns (address[] memory) {
+    // The following feeds will be used in the next proposal once we get rid of redundant pools
+    // and route most all the stables through cUSD, so we will take the opportunity to whitelist them
+    // ahead of the next proposal.
+    address[] memory feeds = new address[](3);
+    feeds[0] = toRateFeedId("relayed:EURUSD");
+    feeds[1] = toRateFeedId("relayed:BRLUSD");
+    feeds[2] = toRateFeedId("relayed:XOFUSD");
+    return feeds;
+  }
+
   function feedsToMigrate() public view returns (address[] memory) {
-    address[] memory redstone = redstonePoweredFeeds();
-    address[] memory chainlink = chainlinkPoweredFeeds();
+    return Arrays.merge(redstonePoweredFeeds(), chainlinkPoweredFeeds());
+    // address[] memory redstone = redstonePoweredFeeds();
+    // address[] memory chainlink = chainlinkPoweredFeeds();
 
-    address[] memory combined = new address[](redstone.length + chainlink.length);
-    for (uint256 i = 0; i < redstone.length; i++) {
-      combined[i] = redstone[i];
-    }
-    for (uint256 i = 0; i < chainlink.length; i++) {
-      combined[redstone.length + i] = chainlink[i];
-    }
+    // address[] memory combined = new address[](redstone.length + chainlink.length);
+    // for (uint256 i = 0; i < redstone.length; i++) {
+    //   combined[i] = redstone[i];
+    // }
+    // for (uint256 i = 0; i < chainlink.length; i++) {
+    //   combined[redstone.length + i] = chainlink[i];
+    // }
 
-    return combined;
+    // return combined;
   }
 
   function spreadOverrides() public view returns (SpreadOverride[] memory) {
-    SpreadOverride[] memory overrides = new SpreadOverride[](2);
-    // eXOF/CELO
+    SpreadOverride[] memory overrides = new SpreadOverride[](8);
+    // cUSD/nativeUSDC
     overrides[0] = SpreadOverride({
+      asset0: cUSDProxy,
+      asset1: nativeUSDCProxy,
+      rateFeedId: toRateFeedId("USDCUSD"),
+      currentSpread: FixidityLib.newFixed(0), // 0%
+      targetSpread: FixidityLib.newFixedFraction(5, 10000) // 0.05%
+    });
+    // cUSD/axlUSDC
+    overrides[1] = SpreadOverride({
+      asset0: cUSDProxy,
+      asset1: axlUSDCProxy,
+      rateFeedId: toRateFeedId("USDCUSD"),
+      currentSpread: FixidityLib.newFixed(0), // 0%
+      targetSpread: FixidityLib.newFixedFraction(25, 10000) // 0.25%
+    });
+    // cEUR/axlUSDC
+    overrides[2] = SpreadOverride({
+      asset0: cEURProxy,
+      asset1: axlUSDCProxy,
+      rateFeedId: toRateFeedId("USDCEUR"),
+      currentSpread: FixidityLib.newFixedFraction(25, 10000), // 0.25%
+      targetSpread: FixidityLib.newFixedFraction(50, 10000) // 0.5%
+    });
+    // cREAL/axlUSDC
+    overrides[3] = SpreadOverride({
+      asset0: cBRLProxy,
+      asset1: axlUSDCProxy,
+      rateFeedId: toRateFeedId("USDCBRL"),
+      currentSpread: FixidityLib.newFixedFraction(25, 10000), // 0.25%
+      targetSpread: FixidityLib.newFixedFraction(50, 10000) // 0.5%
+    });
+    // cEUR/axlEUROC
+    overrides[4] = SpreadOverride({
+      asset0: cEURProxy,
+      asset1: axlEUROCProxy,
+      rateFeedId: toRateFeedId("EUROCEUR"),
+      currentSpread: FixidityLib.newFixedFraction(2, 10000), // 0.02%
+      targetSpread: FixidityLib.newFixedFraction(50, 10000) // 0.5%
+    });
+    // cUSD/USDT
+    overrides[5] = SpreadOverride({
+      asset0: cUSDProxy,
+      asset1: nativeUSDTProxy,
+      rateFeedId: toRateFeedId("USDTUSD"),
+      currentSpread: FixidityLib.newFixed(0), // 0%
+      targetSpread: FixidityLib.newFixedFraction(5, 10000) // 0.05%
+    });
+    // eXOF/CELO
+    overrides[6] = SpreadOverride({
       asset0: eXOFProxy,
       asset1: CELOProxy,
       rateFeedId: eXOFProxy,
@@ -108,9 +202,9 @@ contract OracleMigrationConfig is GovernanceScript {
       targetSpread: FixidityLib.newFixedFraction(2, 100) // 2%
     });
     // eXOF/EUROC
-    overrides[1] = SpreadOverride({
+    overrides[7] = SpreadOverride({
       asset0: eXOFProxy,
-      asset1: bridgedEUROCProxy,
+      asset1: axlEUROCProxy,
       rateFeedId: toRateFeedId("EUROCXOF"),
       currentSpread: FixidityLib.newFixedFraction(25, 10000), // 0.25%
       targetSpread: FixidityLib.newFixedFraction(2, 100) // 2%
@@ -143,57 +237,83 @@ contract OracleMigrationConfig is GovernanceScript {
     newExchange.config.minimumReports = 1;
     newExchange.config.referenceRateResetFrequency = 6 minutes;
 
-    newExchange.config.spread = FixidityLib.newFixedFraction(2, 100);
+    if (hasNewSpread(currentExchange)) {
+      (FixidityLib.Fraction memory currentSpread, FixidityLib.Fraction memory targetSpread) = getCurrentAndTargetSpread(
+        currentExchange
+      );
+      require(
+        FixidityLib.equals(newExchange.config.spread, currentSpread),
+        "❌ Current spread mismatch on spread override"
+      );
+      newExchange.config.spread = targetSpread;
+    }
 
-    // (bool hasNewSpread, uint256 newSpread) = hasNewSpread(currentExchange);
-    // if (hasNewSpread) {
-    //   newExchange.config.spread = FixidityLib.wrap(newSpread);
-    //   // newExchange.config.spread = newSpread;
-    // }
+    if (hasNewResetSize(currentExchange)) {
+      (uint256 currentResetSize, uint256 targetResetSize) = getCurrentAndTargetResetSizes(currentExchange);
+      require(
+        newExchange.config.stablePoolResetSize == currentResetSize,
+        "❌ Current reset size mismatch on stable pool reset size override"
+      );
+      newExchange.config.stablePoolResetSize = targetResetSize;
+    }
 
-    // (bool hasNewResetSize, uint256 newResetSize) = hasNewResetSize(currentExchange);
-    // if (hasNewResetSize) {
-    //   newExchange.config.stablePoolResetSize = newResetSize;
-    // }
     return newExchange;
   }
 
-  // function hasNewSpread(IBiPoolManager.PoolExchange memory poolCfg) public view returns (bool, uint256) {
-  //   SpreadOverride[] memory overrides = spreadOverrides();
-  //   for (uint256 i = 0; i < overrides.length; i++) {
-  //     if (overrides[i].asset0 == poolCfg.asset0 && overrides[i].asset1 == poolCfg.asset1) {
-  //       require(
-  //         overrides[i].rateFeedId == poolCfg.config.referenceRateFeedID,
-  //         "Rate feed ID mismatch on spread override"
-  //       );
-  //       require(overrides[i].currentSpread == poolCfg.config.spread, "Current spread mismatch on spread override");
+  function hasNewSpread(IBiPoolManager.PoolExchange memory poolCfg) public view returns (bool) {
+    SpreadOverride[] memory overrides = spreadOverrides();
+    for (uint256 i = 0; i < overrides.length; i++) {
+      if (overrides[i].asset0 == poolCfg.asset0 && overrides[i].asset1 == poolCfg.asset1) {
+        require(
+          overrides[i].rateFeedId == poolCfg.config.referenceRateFeedID,
+          "Rate feed ID mismatch on spread override"
+        );
+        return true;
+      }
+    }
 
-  //       return (true, overrides[i].targetSpread.unwrap());
-  //     }
-  //   }
+    return false;
+  }
 
-  //   return (false, poolCfg.config.spread.unwrap());
-  // }
+  function getCurrentAndTargetSpread(
+    IBiPoolManager.PoolExchange memory poolCfg
+  ) public view returns (FixidityLib.Fraction memory, FixidityLib.Fraction memory) {
+    SpreadOverride[] memory overrides = spreadOverrides();
+    for (uint256 i = 0; i < overrides.length; i++) {
+      if (overrides[i].asset0 == poolCfg.asset0 && overrides[i].asset1 == poolCfg.asset1) {
+        return (overrides[i].currentSpread, overrides[i].targetSpread);
+      }
+    }
 
-  // function hasNewResetSize(IBiPoolManager.PoolExchange memory poolCfg) public view returns (bool, uint256) {
-  //   StablePoolResetSizeOverride[] memory overrides = resetSizeOverrides();
-  //   for (uint256 i = 0; i < overrides.length; i++) {
-  //     if (overrides[i].asset0 == poolCfg.asset0 && overrides[i].asset1 == poolCfg.asset1) {
-  //       require(
-  //         overrides[i].rateFeedId == poolCfg.config.referenceRateFeedID,
-  //         "Rate feed ID mismatch on reset size override"
-  //       );
-  //       require(
-  //         overrides[i].currentResetSize == poolCfg.config.stablePoolResetSize,
-  //         "Current reset size mismatch on reset size override"
-  //       );
+    require(false, "getCurrentAndTargetSpread() called on a pool with no spread override");
+  }
 
-  //       return (true, overrides[i].targetResetSize);
-  //     }
-  //   }
+  function hasNewResetSize(IBiPoolManager.PoolExchange memory poolCfg) public view returns (bool) {
+    StablePoolResetSizeOverride[] memory overrides = resetSizeOverrides();
+    for (uint256 i = 0; i < overrides.length; i++) {
+      if (overrides[i].asset0 == poolCfg.asset0 && overrides[i].asset1 == poolCfg.asset1) {
+        require(
+          overrides[i].rateFeedId == poolCfg.config.referenceRateFeedID,
+          "Rate feed ID mismatch on reset size override"
+        );
+        return true;
+      }
+    }
+    return false;
+  }
 
-  //   return (false, poolCfg.config.stablePoolResetSize);
-  // }
+  function getCurrentAndTargetResetSizes(
+    IBiPoolManager.PoolExchange memory poolCfg
+  ) public view returns (uint256, uint256) {
+    StablePoolResetSizeOverride[] memory overrides = resetSizeOverrides();
+    for (uint256 i = 0; i < overrides.length; i++) {
+      if (overrides[i].asset0 == poolCfg.asset0 && overrides[i].asset1 == poolCfg.asset1) {
+        return (overrides[i].currentResetSize, overrides[i].targetResetSize);
+      }
+    }
+
+    require(false, "getCurrentAndTargetResetSizes() called on a pool with no reset size override");
+  }
 
   function isRedstonePowered(address rateFeedIdentifier) public view returns (bool) {
     return Arrays.contains(redstonePoweredFeeds(), rateFeedIdentifier);

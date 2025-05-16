@@ -125,19 +125,31 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
       }
     }
 
-    // 3. Set the token report expiry time to 6 minutes for all the feeds
+    // 3. Whitelist relayers for additional feeds that will be used in the next proposal
+    // (EUR/USD, BRL/USD, XOF/USD)
+    for (uint i = 0; i < config.additionalFeedsToWhitelist().length; i++) {
+      address identifier = config.additionalFeedsToWhitelist()[i];
+      whitelistRelayerFor(identifier);
+    }
+
+    // 3. Set the token report expiry time to 6 minutes for all the feeds being migrated
     uint256 tokenReportExpiry = 6 minutes;
     for (uint i = 0; i < feedsToMigrate.length; i++) {
       address identifier = feedsToMigrate[i];
       setTokenReportExpiry(identifier, tokenReportExpiry);
     }
 
+    // 4. Set the token report expiry for the additional feeds whitelisted in step 3
+    for (uint i = 0; i < config.additionalFeedsToWhitelist().length; i++) {
+      address identifier = config.additionalFeedsToWhitelist()[i];
+      setTokenReportExpiry(identifier, tokenReportExpiry);
+    }
     // PHP/USD was the first feed to use Chainlink, but we set the token report expiry time to 5 minutes back then.
     // We set it to 6 minutes to keep the same frequency as the other feeds.
     setTokenReportExpiry(config.PHPUSDIdentifier(), tokenReportExpiry);
 
-    // 4. Re-create the exchanges with a single report
-    // recreateExchangesWithSingleReport();
+    // 5. Re-create the exchanges with a single report
+    recreateExchangesWithSingleReport();
 
     return transactions;
   }
@@ -192,7 +204,10 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
       bytes32 exchangeId = exchangeIds[i];
       IBiPoolManager.PoolExchange memory currentExchange = biPoolManager.getPoolExchange(exchangeId);
 
-      if (!shouldBeMigrated(currentExchange.config.referenceRateFeedID)) {
+      // Treat PHP/USD as a special case, since it's technically not being migrated but we want to reconfigure it
+      // to have a 6 minute reset frequency.
+      bool isPHPUSD = currentExchange.config.referenceRateFeedID == config.PHPUSDIdentifier();
+      if (!shouldBeMigrated(currentExchange.config.referenceRateFeedID) && !isPHPUSD) {
         require(currentExchange.config.minimumReports == 1, "❌ Expected minimum reports to be 1 on non-migrated feed");
         continue;
       }
