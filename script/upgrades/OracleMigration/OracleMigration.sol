@@ -4,13 +4,11 @@ pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/Script.sol";
-// import { console } from "forge-std/console.sol";
 import { console2 as console } from "celo-foundry/Test.sol";
 import { Contracts } from "script/utils/Contracts.sol";
 import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
-// import { FixidityLib } from "script/utils/FixidityLib.sol";
 import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
 import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
