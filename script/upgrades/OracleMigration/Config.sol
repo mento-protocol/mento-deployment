@@ -6,8 +6,6 @@ import { Arrays } from "script/utils/Arrays.sol";
 
 import { console2 } from "forge-std/console2.sol";
 import { GovernanceScript } from "script/utils/Script.sol";
-// import { Contracts } from "script/utils/Contracts.sol";
-// import { FixidityLib } from "script/utils/FixidityLib.sol;";
 import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
 
 contract OracleMigrationConfig is GovernanceScript {
@@ -34,23 +32,15 @@ contract OracleMigrationConfig is GovernanceScript {
   address private cEURProxy;
   address private cBRLProxy;
   address private eXOFProxy;
-  // address payable private eXOFProxy;
   address private cKESProxy;
-  // address payable private cKESProxy;
   address private nativeUSDCProxy;
   address private nativeUSDTProxy;
   address private axlUSDCProxy;
   address private axlEUROCProxy;
 
   function load() public {
-    contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
     contracts.load("cKES-00-Create-Proxies", "latest");
     contracts.load("eXOF-00-Create-Proxies", "latest");
-
-    contracts.loadSilent("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
-    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
-    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
 
     CELOProxy = contracts.celoRegistry("GoldToken");
     cUSDProxy = contracts.celoRegistry("StableToken");
@@ -63,10 +53,10 @@ contract OracleMigrationConfig is GovernanceScript {
     axlUSDCProxy = contracts.dependency("BridgedUSDC");
     axlEUROCProxy = contracts.dependency("BridgedEUROC");
 
-    populateFeedNames();
+    setFeedsNames();
   }
 
-  function populateFeedNames() public {
+  function setFeedsNames() public {
     rateFeedIdToName[cUSDProxy] = "CELO/USD";
     rateFeedIdToName[cEURProxy] = "CELO/EUR";
     rateFeedIdToName[cBRLProxy] = "CELO/BRL";
@@ -111,12 +101,11 @@ contract OracleMigrationConfig is GovernanceScript {
     feeds[3] = cKESProxy; // CELO/KES
     feeds[4] = toRateFeedId("KESUSD");
     feeds[5] = toRateFeedId("USDTUSD");
-    // feeds[6] = toRateFeedId("relayed:PHPUSD"); // Won't be migrated, but we'll set the bucket reset freq to 6 minutes
 
     return feeds;
   }
 
-  function additionalFeedsToWhitelist() public view returns (address[] memory) {
+  function additionalRelayersToWhitelist() public view returns (address[] memory) {
     // The following feeds will be used in the next proposal once we get rid of redundant pools
     // and route most all the stables through cUSD, so we will take the opportunity to whitelist them
     // ahead of the next proposal.
@@ -129,18 +118,12 @@ contract OracleMigrationConfig is GovernanceScript {
 
   function feedsToMigrate() public view returns (address[] memory) {
     return Arrays.merge(redstonePoweredFeeds(), chainlinkPoweredFeeds());
-    // address[] memory redstone = redstonePoweredFeeds();
-    // address[] memory chainlink = chainlinkPoweredFeeds();
+  }
 
-    // address[] memory combined = new address[](redstone.length + chainlink.length);
-    // for (uint256 i = 0; i < redstone.length; i++) {
-    //   combined[i] = redstone[i];
-    // }
-    // for (uint256 i = 0; i < chainlink.length; i++) {
-    //   combined[redstone.length + i] = chainlink[i];
-    // }
-
-    // return combined;
+  function shouldRecreateExchange(address rateFeedIdentifier) external view returns (bool) {
+    // PHPUSD is already 1/1 and operated by Chainlink, however we want to re-create it to set
+    // the bucket reset frequency to 6 minutes, since it's currently set to 5.
+    return Arrays.contains(feedsToMigrate(), rateFeedIdentifier) || isPHPUSD(rateFeedIdentifier);
   }
 
   function spreadOverrides() public view returns (SpreadOverride[] memory) {
@@ -321,6 +304,10 @@ contract OracleMigrationConfig is GovernanceScript {
 
   function isChainlinkPowered(address rateFeedIdentifier) public view returns (bool) {
     return Arrays.contains(chainlinkPoweredFeeds(), rateFeedIdentifier);
+  }
+
+  function isPHPUSD(address rateFeedIdentifier) public view returns (bool) {
+    return toRateFeedId("relayed:PHPUSD") == rateFeedIdentifier;
   }
 
   function PHPUSDIdentifier() public pure returns (address) {

@@ -13,13 +13,20 @@ import { GovernanceScript } from "script/utils/Script.sol";
 import { IChainlinkRelayerFactory } from "mento-core-2.5.0/interfaces/IChainlinkRelayerFactory.sol";
 import { IChainlinkRelayer } from "mento-core-2.5.0/interfaces/IChainlinkRelayer.sol";
 import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
-// import { IBiPoolManager } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
 
 import { ISortedOracles } from "./OracleMigration.sol";
 import { OracleMigrationConfig } from "./Config.sol";
 
 interface IMockRedstoneAdapter {
   function relay() external;
+}
+
+interface IChainlinkAggregator {
+  function latestRoundData() external view returns (uint80, int256, uint256, uint256, uint80);
+
+  function latestTimestamp() external view returns (uint256);
+
+  function description() external view returns (string memory);
 }
 
 contract OracleMigrationChecks is GovernanceScript, Test {
@@ -34,12 +41,12 @@ contract OracleMigrationChecks is GovernanceScript, Test {
   address private biPoolManagerProxy;
 
   function prepare() public {
+    // contracts.load("cKES-00-Create-Proxies", "latest");
+    // contracts.load("eXOF-00-Create-Proxies", "latest");
+    contracts.loadSilent("MU01-00-Create-Proxies", "latest");
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
-    contracts.load("cKES-00-Create-Proxies", "latest");
-    contracts.load("eXOF-00-Create-Proxies", "latest");
-    contracts.loadSilent("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
-    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
-    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
+    // contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
+    // contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
 
     config = new OracleMigrationConfig();
     config.load();
@@ -56,49 +63,63 @@ contract OracleMigrationChecks is GovernanceScript, Test {
 
     assert_sortedOraclesIsCorrectlyConfigured();
     assert_additionalFeedsAreWhitelisted();
-    // assert_redstoneCanReport();
-    // assert_relayersReport();
+    assert_relayersReport();
     checkExchangesAreProperlyConfigured();
-    // printWhitelisted();
     console2.log("✅ All checks passed\n");
   }
 
-  // function assert_redstoneCanReport() internal {
-  //   vm.startPrank(0xdcbaC3971fd86f7bc70FA25E4C434041efdBb27e);
+  function shouldSkipRelayAttempt(IChainlinkRelayer relayer) internal returns (bool) {
+    IChainlinkRelayer.ChainlinkAggregator[] memory aggregators = relayer.getAggregators();
+    uint256 newestAggregatorTs = 0;
+    for (uint i = 0; i < aggregators.length; i++) {
+      IChainlinkAggregator aggregator = IChainlinkAggregator(aggregators[i].aggregator);
+      (, , , uint256 updatedAt, ) = aggregator.latestRoundData();
 
-  //   address redstoneAdapter = 0x854A01c7b8431bF23b707b134EF3f99fe5C48CED;
-  //   IMockRedstoneAdapter adapter = IMockRedstoneAdapter(redstoneAdapter);
+      if (updatedAt > newestAggregatorTs) {
+        newestAggregatorTs = updatedAt;
+      }
 
-  //   adapter.relay();
-  //   vm.stopPrank();
+      if (block.timestamp - updatedAt > 5 minutes) {
+        console2.log(
+          "\t⚠️ Aggregator %s has a stale timestamp (%d seconds), skipping",
+          aggregator.description(),
+          block.timestamp - updatedAt
+        );
+        return true;
+      }
+    }
 
-  //   console2.log("✅ Redstone can report\n");
-  // }
+    uint256 lastReportTs = sortedOracles.medianTimestamp(relayer.rateFeedId());
+    if (lastReportTs > newestAggregatorTs) {
+      console2.log(
+        "TimestampNotNew() condition met (on-chain=%d, relayer=%d), skipping",
+        lastReportTs,
+        newestAggregatorTs
+      );
+      return true;
+    }
 
-  // function printWhitelisted() internal {
-  //   address[] memory feedsToMigrate = config.redstonePoweredFeeds();
-  //   for (uint i = 0; i < feedsToMigrate.length; i++) {
-  //     address rateFeedIdentifier = feedsToMigrate[i];
-  //     address[] memory whitelisted = sortedOracles.getOracles(rateFeedIdentifier);
-  //     console2.log("feed %s", rateFeedIdentifier);
-  //     for (uint j = 0; j < whitelisted.length; j++) {
-  //       console2.log("\twhitelisted %s", whitelisted[j]);
-  //     }
-  //     console2.log("\n\n");
-  //   }
-  // }
+    return false;
+  }
 
   function assert_relayersReport() internal {
     console2.log("====🔍 Checking if all relayers can report...====");
-    address[] memory feedsToMigrate = config.redstonePoweredFeeds();
+    address[] memory feedsToMigrate = config.chainlinkPoweredFeeds();
     for (uint i = 0; i < feedsToMigrate.length; i++) {
+      // for (uint i = 0; i < 1; i++) {
       address rateFeedIdentifier = feedsToMigrate[i];
       address relayerAddress = relayerFactory.getRelayer(rateFeedIdentifier);
       IChainlinkRelayer relayer = IChainlinkRelayer(relayerAddress);
+      console2.log("🔍 Checking relayer %s", relayer.rateFeedDescription());
+
       require(
         relayer.rateFeedId() == rateFeedIdentifier,
         "❌ mismatch between the actual relayer feed and expected feed"
       );
+
+      if (shouldSkipRelayAttempt(relayer)) {
+        continue;
+      }
 
       relayer.relay();
       (uint256 rate, ) = sortedOracles.medianRate(relayer.rateFeedId());
@@ -165,7 +186,7 @@ contract OracleMigrationChecks is GovernanceScript, Test {
 
   function assert_additionalFeedsAreWhitelisted() internal {
     console2.log("====🔍 Checking if additional feeds are whitelisted...====");
-    address[] memory additionalFeeds = config.additionalFeedsToWhitelist();
+    address[] memory additionalFeeds = config.additionalRelayersToWhitelist();
     for (uint i = 0; i < additionalFeeds.length; i++) {
       address identifier = additionalFeeds[i];
       address[] memory whitelisted = sortedOracles.getOracles(identifier);
@@ -225,7 +246,7 @@ contract OracleMigrationChecks is GovernanceScript, Test {
         (, uint256 targetResetSize) = config.getCurrentAndTargetResetSizes(exchange);
         if (exchange.config.stablePoolResetSize == targetResetSize) {
           console2.log(
-            "✅ Reset size was correctly overwritten on %s exchange",
+            "✅ StablePoolResetSize was correctly overwritten on %s exchange",
             config.getFeedName(exchange.config.referenceRateFeedID)
           );
         } else {

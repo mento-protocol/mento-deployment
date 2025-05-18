@@ -28,6 +28,8 @@ interface ISortedOracles {
 
   function medianRate(address) external returns (uint256, uint256);
 
+  function medianTimestamp(address) external view returns (uint256);
+
   function getOracles(address) external returns (address[] memory);
 
   function setTokenReportExpiry(address, uint256) external;
@@ -39,14 +41,13 @@ interface ISortedOracles {
 
 contract OracleMigration is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
+  bool public hasChecks = true;
+  ICeloGovernance.Transaction[] private transactions;
 
   OracleMigrationConfig private config;
 
   address private redstoneAdapter;
   address private biPoolManagerProxy;
-
-  bool public hasChecks = true;
-  ICeloGovernance.Transaction[] private transactions;
 
   IChainlinkRelayerFactory private relayerFactory;
   ISortedOracles private sortedOracles;
@@ -58,37 +59,25 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
     setAddresses();
   }
 
-  /**
-   * @dev Loads the deployed contracts from previous deployments
-   */
   function loadDeployedContracts() public {
+    contracts.loadSilent("MU01-00-Create-Proxies", "latest");
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
-    contracts.load("cKES-00-Create-Proxies", "latest");
-    contracts.load("eXOF-00-Create-Proxies", "latest");
-
-    contracts.loadSilent("MU01-00-Create-Proxies", "latest"); // BrokerProxy & BiPoolProxy
-    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest"); // Pricing Modules
-    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts", "latest");
-    contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
   }
 
-  /**
-   * @dev Sets the addresses of the various contracts needed for the proposal.
-   */
   function setAddresses() public {
-    relayerFactory = IChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
+    config = new OracleMigrationConfig();
+    config.load();
+
+    biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
     sortedOracles = ISortedOracles(contracts.celoRegistry("SortedOracles"));
+    redstoneAdapter = contracts.dependency("RedstoneAdapter");
+    relayerFactory = IChainlinkRelayerFactory(contracts.deployed("ChainlinkRelayerFactoryProxy"));
 
     address[] memory relayers = relayerFactory.getRelayers();
     for (uint i = 0; i < relayers.length; i++) {
       IChainlinkRelayer relayer = IChainlinkRelayer(relayers[i]);
       relayersByRateFeedId[relayer.rateFeedId()] = relayer;
     }
-
-    config = new OracleMigrationConfig();
-    config.load();
-    biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
-    redstoneAdapter = contracts.dependency("RedstoneAdapter");
   }
 
   function run() public {
@@ -122,11 +111,10 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
         whitelistRelayerFor(identifier);
       }
     }
-
-    // 3. Whitelist relayers for additional feeds that will be used in the next proposal
+    // Additionally, whitelist relayers for additional feeds that will be used in the next proposal
     // (EUR/USD, BRL/USD, XOF/USD)
-    for (uint i = 0; i < config.additionalFeedsToWhitelist().length; i++) {
-      address identifier = config.additionalFeedsToWhitelist()[i];
+    for (uint i = 0; i < config.additionalRelayersToWhitelist().length; i++) {
+      address identifier = config.additionalRelayersToWhitelist()[i];
       whitelistRelayerFor(identifier);
     }
 
@@ -136,17 +124,16 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
       address identifier = feedsToMigrate[i];
       setTokenReportExpiry(identifier, tokenReportExpiry);
     }
-
-    // 4. Set the token report expiry for the additional feeds whitelisted in step 3
-    for (uint i = 0; i < config.additionalFeedsToWhitelist().length; i++) {
-      address identifier = config.additionalFeedsToWhitelist()[i];
+    // Additionally, set the token report expiry for the additional feeds whitelisted in step 3
+    for (uint i = 0; i < config.additionalRelayersToWhitelist().length; i++) {
+      address identifier = config.additionalRelayersToWhitelist()[i];
       setTokenReportExpiry(identifier, tokenReportExpiry);
     }
     // PHP/USD was the first feed to use Chainlink, but we set the token report expiry time to 5 minutes back then.
     // We set it to 6 minutes to keep the same frequency as the other feeds.
     setTokenReportExpiry(config.PHPUSDIdentifier(), tokenReportExpiry);
 
-    // 5. Re-create the exchanges with a single report
+    // 4. Re-create exchanges with a single report
     recreateExchangesWithSingleReport();
 
     return transactions;
@@ -170,7 +157,6 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
         data: abi.encodeWithSelector(ISortedOracles(0).addOracle.selector, rateFeedIdentifier, address(relayer))
       })
     );
-    // }
   }
 
   function setTokenReportExpiry(address rateFeedIdentifier, uint256 expectedExpiry) internal {
@@ -190,10 +176,6 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
     }
   }
 
-  function shouldBeMigrated(address rateFeedIdentifier) internal returns (bool) {
-    return Arrays.contains(config.feedsToMigrate(), rateFeedIdentifier);
-  }
-
   function recreateExchangesWithSingleReport() internal {
     IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
     bytes32[] memory exchangeIds = biPoolManager.getExchangeIds();
@@ -202,15 +184,11 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
       bytes32 exchangeId = exchangeIds[i];
       IBiPoolManager.PoolExchange memory currentExchange = biPoolManager.getPoolExchange(exchangeId);
 
-      // Treat PHP/USD as a special case, since it's technically not being migrated but we want to reconfigure it
-      // to have a 6 minute reset frequency.
-      bool isPHPUSD = currentExchange.config.referenceRateFeedID == config.PHPUSDIdentifier();
-      if (!shouldBeMigrated(currentExchange.config.referenceRateFeedID) && !isPHPUSD) {
+      if (!config.shouldRecreateExchange(currentExchange.config.referenceRateFeedID)) {
         require(currentExchange.config.minimumReports == 1, "❌ Expected minimum reports to be 1 on non-migrated feed");
         continue;
       }
 
-      // Delete the exchange
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -219,16 +197,7 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
         )
       );
 
-      // // Re-create the exchange
-      // IBiPoolManager.PoolExchange memory newExchange = currentExchange;
-      // newExchange.bucket0 = 0;
-      // newExchange.bucket1 = 0;
-      // newExchange.lastBucketUpdate = 0;
-      // newExchange.config.minimumReports = 1;
-      // newExchange.config.referenceRateResetFrequency = 6 minutes;
-
       IBiPoolManager.PoolExchange memory newExchange = config.getNewExchangeCfg(currentExchange);
-      // newExchange.config.spread = FixidityLib.newFixedFraction(2, 100);
 
       transactions.push(
         ICeloGovernance.Transaction(
