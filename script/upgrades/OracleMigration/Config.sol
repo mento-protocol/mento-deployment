@@ -116,16 +116,6 @@ contract OracleMigrationConfig is GovernanceScript {
     return feeds;
   }
 
-  function feedsToMigrate() public view returns (address[] memory) {
-    return Arrays.merge(redstonePoweredFeeds(), chainlinkPoweredFeeds());
-  }
-
-  function shouldRecreateExchange(address rateFeedIdentifier) external view returns (bool) {
-    // PHPUSD is already 1/1 and operated by Chainlink, however we want to re-create it to set
-    // the bucket reset frequency to 6 minutes, since it's currently set to 5.
-    return Arrays.contains(feedsToMigrate(), rateFeedIdentifier) || isPHPUSD(rateFeedIdentifier);
-  }
-
   function spreadOverrides() public view returns (SpreadOverride[] memory) {
     SpreadOverride[] memory overrides = new SpreadOverride[](8);
     // cUSD/nativeUSDC
@@ -208,6 +198,18 @@ contract OracleMigrationConfig is GovernanceScript {
     });
 
     return overrides;
+  }
+
+  function feedsToMigrate() public view returns (address[] memory) {
+    return Arrays.merge(redstonePoweredFeeds(), chainlinkPoweredFeeds());
+  }
+
+  function shouldRecreateExchange(address rateFeedIdentifier) external view returns (bool) {
+    return
+      Arrays.contains(feedsToMigrate(), rateFeedIdentifier) ||
+      // PHPUSD is already 1/1 and operated by Chainlink, however we want to re-create it to set
+      // the bucket reset frequency to 6 minutes, since it's currently set to 5.
+      isPHPUSD(rateFeedIdentifier);
   }
 
   function getNewExchangeCfg(

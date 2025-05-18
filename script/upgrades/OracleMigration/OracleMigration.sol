@@ -139,10 +139,6 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
     return transactions;
   }
 
-  /**
-   * @notice For a give rateFeed identifier, see if there's a register deployed relayer
-   * and whitelist if so. Additionally, set the report expiry time if needed.
-   */
   function whitelistRelayerFor(address rateFeedIdentifier) internal {
     IChainlinkRelayer relayer = relayersByRateFeedId[rateFeedIdentifier];
     require(
