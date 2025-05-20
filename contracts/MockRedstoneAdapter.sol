@@ -52,6 +52,7 @@ contract MockRedstoneAdapter is Ownable {
     uint128 _blockTimestamp
   ) external onlyOwnerOrExternalProvider {
     require(_mainnetFeeds.length == _prices.length, "Mainnet feeds and prices must be the same length");
+    require(_mainnetFeeds.length > 0, "Feeds must not be empty");
     for (uint256 i = 0; i < _mainnetFeeds.length; i++) {
       lastMainnetPricePerFeed[_mainnetFeeds[i]] = _prices[i];
     }
