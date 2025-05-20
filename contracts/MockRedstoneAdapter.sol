@@ -61,7 +61,8 @@ contract MockRedstoneAdapter is Ownable {
   }
 
   function relay() external onlyOwnerOrExternalProvider {
-    for (uint256 i = 0; i < mainnetRateFeeds.length; i++) {
+    uint256 length = mainnetRateFeeds.length;
+    for (uint256 i = 0; i < length; i++) {
       address mainnetRateFeed = mainnetRateFeeds[i];
       address alfajoresRateFeed = alfajoresRateFeeds[i];
       uint256 lastMainnetPrice = lastMainnetPricePerFeed[mainnetRateFeed];
