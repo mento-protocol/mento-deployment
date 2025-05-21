@@ -57,7 +57,6 @@ contract OracleMigrationChecks is GovernanceScript, Test {
     console2.log("\n");
 
     checkSortedOraclesConfig();
-    checkAdditionalFeedsAreWhitelisted();
     checkNewRelayersCanReport();
     checkExchangesAreProperlyConfigured();
     console2.log("✅ All checks passed\n");
@@ -138,12 +137,14 @@ contract OracleMigrationChecks is GovernanceScript, Test {
 
     uint256 expectedTokenExpiry = 6 minutes;
 
-    address[] memory feedsToMigrate = config.feedsToMigrate();
-    for (uint i = 0; i < feedsToMigrate.length; i++) {
-      address identifier = feedsToMigrate[i];
+    address[] memory allFeeds = Arrays.merge(config.feedsToMigrate(), config.additionalRelayersToWhitelist());
+    for (uint i = 0; i < allFeeds.length; i++) {
+      address identifier = allFeeds[i];
       address[] memory whitelisted = sortedOracles.getOracles(identifier);
+      uint256 actualExpiry = sortedOracles.tokenReportExpirySeconds(identifier);
 
       require(whitelisted.length == 1, "❌ Expected exactly 1 oracle to be whitelisted");
+      require(actualExpiry == expectedTokenExpiry, "❌ Expected token report expiry to be 6 minutes");
 
       if (config.isRedstonePowered(identifier)) {
         require(whitelisted[0] == redstoneAdapter, "❌ Expected redstone adapter to be whitelisted");
@@ -153,35 +154,9 @@ contract OracleMigrationChecks is GovernanceScript, Test {
         require(whitelisted[0] == relayer, "❌ Expected chainlink relayer to be whitelisted");
         console2.log("✅ Chainlink relayer (%s) is whitelisted on feed %s", relayer, config.getFeedName(identifier));
       }
-
-      uint256 actualExpiry = sortedOracles.tokenReportExpirySeconds(identifier);
-      require(actualExpiry == expectedTokenExpiry, "❌ Expected token report expiry to be 6 minutes");
     }
 
-    console2.log("🤑 All %d feeds were configured correctly\n", feedsToMigrate.length);
-  }
-
-  function checkAdditionalFeedsAreWhitelisted() internal {
-    console2.log("====🔍 Checking if additional feeds are whitelisted...====");
-
-    address[] memory additionalFeeds = config.additionalRelayersToWhitelist();
-    for (uint i = 0; i < additionalFeeds.length; i++) {
-      address identifier = additionalFeeds[i];
-      address[] memory whitelisted = sortedOracles.getOracles(identifier);
-      require(whitelisted.length == 1, "❌ Expected exactly 1 oracle to be whitelisted");
-
-      address relayerAddr = relayerFactory.getRelayer(identifier);
-      require(whitelisted[0] == relayerAddr, "❌ Expected chainlink relayer to be whitelisted on additional feed");
-
-      IChainlinkRelayer relayer = IChainlinkRelayer(relayerAddr);
-      console2.log(
-        "✅ Relayer %s(%s) is whitelisted on feed %s",
-        relayerAddr,
-        relayer.rateFeedDescription(),
-        identifier
-      );
-    }
-    console2.log("💪 All additional feeds are whitelisted\n");
+    console2.log("🤑 All %d feeds were configured correctly\n", allFeeds.length);
   }
 
   function checkExchangesAreProperlyConfigured() internal {
