@@ -64,13 +64,13 @@ contract UpdateMockChainlinkAggregators is Script {
 
   constructor() Script() {
     if (ChainLib.isAlfajores()) {
-      setUp_alfajores();
+      setupAlfajores();
     } else {
       console.log("This script is only meant to be run on testnets");
     }
   }
 
-  function setUp_alfajores() internal {
+  function setupAlfajores() internal {
     /// @dev Load additional deployed aggregators here to forward rates
     /// note: the aggregators are separated into two scoped blocks to avoid stack too deep errors
     {

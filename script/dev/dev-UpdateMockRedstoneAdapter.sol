@@ -36,17 +36,17 @@ contract UpdateMockRedstoneAdapter is Script {
   address public constant MAINNET_REDSTONE_ADAPTER = 0x6490a3FFAD86CA14FF84Be380D5639Fb8fBD311B;
   using Contracts for Contracts.Cache;
 
-  address mockAdapterAddress;
+  address public mockAdapterAddress;
 
   constructor() Script() {
     if (ChainLib.isAlfajores()) {
-      setUp_alfajores();
+      setupAlfajores();
     } else {
       console.log("This script is only meant to be run on testnets");
     }
   }
 
-  function setUp_alfajores() internal {
+  function setupAlfajores() internal {
     contracts.loadSilent("dev-DeployMockRedstoneAdapter", "latest");
     mockAdapterAddress = contracts.deployed("MockRedstoneAdapter");
   }
