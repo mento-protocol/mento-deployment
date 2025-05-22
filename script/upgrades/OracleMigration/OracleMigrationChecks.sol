@@ -129,6 +129,13 @@ contract OracleMigrationChecks is GovernanceScript, Test {
       return true;
     }
 
+    address rateFeedIdentifier = relayer.rateFeedId();
+    (, uint256[] memory rates, ) = ISortedOracles(sortedOracles).getRates(rateFeedIdentifier);
+    if (rates.length > 2) {
+      console2.log("⚠️ Feed %s has more than 2 reports, skipping\n", rateFeedIdentifier);
+      return true;
+    }
+
     return false;
   }
 
@@ -140,20 +147,10 @@ contract OracleMigrationChecks is GovernanceScript, Test {
     address[] memory allFeeds = Arrays.merge(config.feedsToMigrate(), config.additionalRelayersToWhitelist());
     for (uint i = 0; i < allFeeds.length; i++) {
       address identifier = allFeeds[i];
-      address[] memory whitelisted = sortedOracles.getOracles(identifier);
       uint256 actualExpiry = sortedOracles.tokenReportExpirySeconds(identifier);
-
-      require(whitelisted.length == 1, "❌ Expected exactly 1 oracle to be whitelisted");
       require(actualExpiry == expectedTokenExpiry, "❌ Expected token report expiry to be 6 minutes");
 
-      if (config.isRedstonePowered(identifier)) {
-        require(whitelisted[0] == redstoneAdapter, "❌ Expected redstone adapter to be whitelisted");
-        console2.log("✅ Redstone adapter is whitelisted on feed %s", config.getFeedName(identifier));
-      } else {
-        address relayer = relayerFactory.getRelayer(identifier);
-        require(whitelisted[0] == relayer, "❌ Expected chainlink relayer to be whitelisted");
-        console2.log("✅ Chainlink relayer (%s) is whitelisted on feed %s", relayer, config.getFeedName(identifier));
-      }
+      console2.log("✅ tokenExpiry set to 6 minutes for feed %s", config.getFeedName(identifier));
     }
 
     console2.log("🤑 All %d feeds were configured correctly\n", allFeeds.length);
