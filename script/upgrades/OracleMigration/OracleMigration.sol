@@ -32,6 +32,8 @@ interface ISortedOracles {
 
   function getOracles(address) external returns (address[] memory);
 
+  function getRates(address rateFeedId) external returns (address[] memory, uint256[] memory, uint256[] memory);
+
   function setTokenReportExpiry(address, uint256) external;
 
   function getTokenReportExpirySeconds(address) external returns (uint256);
@@ -88,7 +90,7 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0184.md", governance);
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0186.md", governance);
     }
     vm.stopBroadcast();
   }
@@ -97,12 +99,6 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
     address[] memory feedsToMigrate = config.feedsToMigrate();
-
-    // 1. Remove all oracles from the feeds, except for the redstone adapter
-    for (uint i = 0; i < feedsToMigrate.length; i++) {
-      address identifier = feedsToMigrate[i];
-      removeAllOracles(identifier);
-    }
 
     // 2. Whitelist the chainlink relayer for the chainlink powered feeds
     for (uint i = 0; i < feedsToMigrate.length; i++) {
@@ -202,29 +198,6 @@ contract OracleMigration is IMentoUpgrade, GovernanceScript {
           abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, newExchange)
         )
       );
-
-      if (i == 0) break;
-    }
-  }
-
-  function removeAllOracles(address rateFeedIdentifier) internal {
-    address[] memory oracles = ISortedOracles(sortedOracles).getOracles(rateFeedIdentifier);
-    bool isRedstonePowered = config.isRedstonePowered(rateFeedIdentifier);
-
-    if (isRedstonePowered) {
-      require(Arrays.contains(oracles, redstoneAdapter), "Redstone adapter not found on redstone powered feed");
-    }
-
-    for (uint i = oracles.length - 1; i >= 0; i--) {
-      if (oracles[i] != redstoneAdapter) {
-        transactions.push(
-          ICeloGovernance.Transaction({
-            value: 0,
-            destination: address(sortedOracles),
-            data: abi.encodeWithSelector(ISortedOracles(0).removeOracle.selector, rateFeedIdentifier, oracles[i], i)
-          })
-        );
-      }
 
       if (i == 0) break;
     }
