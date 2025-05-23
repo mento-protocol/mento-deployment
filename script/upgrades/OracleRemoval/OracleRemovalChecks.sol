@@ -51,7 +51,6 @@ contract OracleRemovalChecks is GovernanceScript, Test {
     for (uint i = 0; i < allFeeds.length; i++) {
       address identifier = allFeeds[i];
       address[] memory whitelisted = sortedOracles.getOracles(identifier);
-      uint256 actualExpiry = sortedOracles.tokenReportExpirySeconds(identifier);
 
       if (config.isRedstonePowered(identifier)) {
         require(whitelisted.length == 1, "❌ Expected exactly 1 oracle to be whitelisted");
