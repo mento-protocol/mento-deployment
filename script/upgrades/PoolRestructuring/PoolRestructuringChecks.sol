@@ -40,7 +40,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
   }
 
   function checkPoolsAreDeletedAndRecreatedWithNewSpread() internal {
-    console2.log("====🔍 Checking if pools were deleted and re-created with the new spread...====");
+    console2.log("====🔍 Checking current pools state... ====");
 
     IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
 
@@ -60,14 +60,11 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
         (, FixidityLib.Fraction memory targetSpread) = config.getCurrentAndTargetSpread(exchange);
         require(FixidityLib.equals(exchange.config.spread, targetSpread), "❌ Re-created pool with wrong spread");
 
-        console2.log(
-          "✅ Re-created pool %s with the new spread",
-          config.getFeedName(exchange.config.referenceRateFeedID)
-        );
+        console2.log("✅ Re-created pool %s with new spread", config.getFeedName(exchange.config.referenceRateFeedID));
       }
     }
 
     uint256 poolsDeletedButNotRecreated = config.poolsToDelete().length - config.spreadOverrides().length;
-    console2.log("✨ Other non-USD pools (%d) were properly deleted\n", poolsDeletedButNotRecreated);
+    console2.log("✅ Other non-USD pools (%d) were permanently deleted\n", poolsDeletedButNotRecreated);
   }
 }
