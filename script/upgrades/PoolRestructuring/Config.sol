@@ -23,6 +23,12 @@ contract PoolRestructuringConfig is GovernanceScript {
     FixidityLib.Fraction targetSpread;
   }
 
+  struct ValueDeltaBreakerOverride {
+    address rateFeedId;
+    uint256 currentThreshold;
+    uint256 targetThreshold;
+  }
+
   mapping(address => string) private rateFeedIdToName;
 
   address private CELOProxy;
@@ -151,6 +157,23 @@ contract PoolRestructuringConfig is GovernanceScript {
       targetSpread: FixidityLib.newFixedFraction(15, 10000) // 0.15%
     });
 
+    return overrides;
+  }
+
+  function valueDeltaBreakerOverrides() public view returns (ValueDeltaBreakerOverride[] memory) {
+    ValueDeltaBreakerOverride[] memory overrides = new ValueDeltaBreakerOverride[](2);
+    // cUSD/USDC and cUSD/axlUSDC (both use the same rate feed id)
+    overrides[0] = ValueDeltaBreakerOverride({
+      rateFeedId: toRateFeedId("USDCUSD"),
+      currentThreshold: 5000000000000000000000, // 0.005 or 5e21
+      targetThreshold: 1000000000000000000000 // 0.001 or 1e21
+    });
+    // cUSD/USDT
+    overrides[1] = ValueDeltaBreakerOverride({
+      rateFeedId: toRateFeedId("USDTUSD"),
+      currentThreshold: 5000000000000000000000, // 0.005 or 5e21
+      targetThreshold: 1000000000000000000000 // 0.001 or 1e21
+    });
     return overrides;
   }
 

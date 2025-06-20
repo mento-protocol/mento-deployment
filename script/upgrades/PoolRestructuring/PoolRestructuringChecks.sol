@@ -11,6 +11,7 @@ import { Arrays } from "script/utils/Arrays.sol";
 import { GovernanceScript } from "script/utils/Script.sol";
 
 import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
+import { ValueDeltaBreaker } from "mento-core-2.5.0/oracles/breakers/ValueDeltaBreaker.sol";
 
 import { PoolRestructuringConfig } from "./Config.sol";
 
@@ -20,15 +21,18 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
   PoolRestructuringConfig private config;
 
   address private biPoolManagerProxy;
+  address private valueDeltaBreaker;
 
   function prepare() public {
     contracts.loadSilent("MU01-00-Create-Proxies", "latest");
+    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest");
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
 
     config = new PoolRestructuringConfig();
     config.load();
 
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
+    valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
   }
 
   function run() public {
@@ -36,6 +40,9 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     console2.log("\n");
 
     checkPoolsAreDeletedAndRecreatedWithNewSpread();
+    checkValueDeltaBreakersThresholds();
+
+    console2.log("\n");
     console2.log("✅ All checks passed\n");
   }
 
@@ -66,5 +73,17 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
 
     uint256 poolsDeletedButNotRecreated = config.poolsToDelete().length - config.spreadOverrides().length;
     console2.log("✅ Other non-USD pools (%d) were permanently deleted\n", poolsDeletedButNotRecreated);
+  }
+
+  function checkValueDeltaBreakersThresholds() internal {
+    console2.log("====🔍 Checking updated ValueDeltaBreaker thresholds... ====");
+
+    PoolRestructuringConfig.ValueDeltaBreakerOverride[] memory overrides = config.valueDeltaBreakerOverrides();
+    for (uint256 i = 0; i < overrides.length; i++) {
+      uint256 currentThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(overrides[i].rateFeedId);
+      require(currentThreshold == overrides[i].targetThreshold, "❌ ValueDeltaBreaker threshold not updated");
+
+      console2.log("✅ Threshold updated for %s feed", config.getFeedName(overrides[i].rateFeedId));
+    }
   }
 }

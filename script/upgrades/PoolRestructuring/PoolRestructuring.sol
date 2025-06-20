@@ -10,6 +10,7 @@ import { Chain } from "script/utils/Chain.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
 import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
+import { ValueDeltaBreaker } from "mento-core-2.5.0/oracles/breakers/ValueDeltaBreaker.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
@@ -23,6 +24,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
   PoolRestructuringConfig private config;
 
   address private biPoolManagerProxy;
+  address private valueDeltaBreaker;
 
   function prepare() public {
     loadDeployedContracts();
@@ -31,6 +33,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
 
   function loadDeployedContracts() public {
     contracts.loadSilent("MU01-00-Create-Proxies", "latest");
+    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
   }
 
   function setAddresses() public {
@@ -38,6 +41,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
     config.load();
 
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
+    valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
   }
 
   function run() public {
@@ -58,6 +62,9 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
 
     // 1. Delete some pools, and re-create some of them with a newly proposed spread
     deleteAndRecreatePoolsWithNewSpread();
+
+    // 2. Update the value delta breakers threshold on some pools
+    updateValueDeltaBreakersThreshold();
 
     return transactions;
   }
@@ -103,5 +110,25 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
 
     require(deletions == config.poolsToDelete().length, "❌ Number of deleted pools txs does not match expected");
     require(creations == config.spreadOverrides().length, "❌ Number of created pools txs does not match expected");
+  }
+
+  function updateValueDeltaBreakersThreshold() internal {
+    PoolRestructuringConfig.ValueDeltaBreakerOverride[] memory overrides = config.valueDeltaBreakerOverrides();
+
+    for (uint256 i = 0; i < overrides.length; i++) {
+      uint256 currentThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(overrides[i].rateFeedId);
+      require(currentThreshold == overrides[i].currentThreshold, "❌ Current threshold mismatch");
+    }
+
+    address[] memory rateFeedIds = Arrays.addresses(overrides[0].rateFeedId, overrides[1].rateFeedId);
+    uint256[] memory newThresholds = Arrays.uints(overrides[0].targetThreshold, overrides[1].targetThreshold);
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        valueDeltaBreaker,
+        abi.encodeWithSelector(ValueDeltaBreaker(0).setRateChangeThresholds.selector, rateFeedIds, newThresholds)
+      )
+    );
   }
 }
