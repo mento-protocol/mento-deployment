@@ -23,14 +23,6 @@ contract PoolRestructuringConfig is GovernanceScript {
     FixidityLib.Fraction targetSpread;
   }
 
-  // struct StablePoolResetSizeOverride {
-  //   address asset0;
-  //   address asset1;
-  //   address rateFeedId;
-  //   uint256 currentResetSize;
-  //   uint256 targetResetSize;
-  // }
-
   mapping(address => string) private rateFeedIdToName;
 
   address private CELOProxy;
