@@ -283,7 +283,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
       revert("stablePoolResetSize of pool does not match the expected stablePoolResetSize. See logs.");
     }
 
-    console2.log("🟢 Pool config for %s is correct🤘🏼", cfgHelper.getFeedName(deployedPool.config.referenceRateFeedID));
+    console2.log("🟢 %s config is correct🤘🏼", cfgHelper.getFeedName(deployedPool.config.referenceRateFeedID));
   }
 
   function verifyTradingLimits(bytes32 exchangeId, Config.Pool memory expectedPoolConfig) internal view {
