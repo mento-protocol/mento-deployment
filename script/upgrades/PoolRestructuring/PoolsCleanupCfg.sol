@@ -195,21 +195,6 @@ contract PoolsCleanupCfg is GovernanceScript {
     return newExchange;
   }
 
-  function hasNewSpread(IBiPoolManager.PoolExchange memory poolCfg) public view returns (bool) {
-    SpreadOverride[] memory overrides = spreadOverrides();
-    for (uint256 i = 0; i < overrides.length; i++) {
-      if (overrides[i].asset0 == poolCfg.asset0 && overrides[i].asset1 == poolCfg.asset1) {
-        require(
-          overrides[i].rateFeedId == poolCfg.config.referenceRateFeedID,
-          "Rate feed ID mismatch on spread override"
-        );
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   function getCurrentAndTargetSpread(
     IBiPoolManager.PoolExchange memory poolCfg
   ) public view returns (FixidityLib.Fraction memory, FixidityLib.Fraction memory) {

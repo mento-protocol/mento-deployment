@@ -17,7 +17,7 @@ import { ValueDeltaBreaker } from "mento-core-2.5.0/oracles/breakers/ValueDeltaB
 import { TradingLimits } from "mento-core-2.5.0/libraries/TradingLimits.sol";
 
 import { Config } from "script/utils/Config.sol";
-import { NewPoolsConfig } from "./NewPoolsConfig.sol";
+import { NewPoolsCfg } from "./NewPoolsCfg.sol";
 
 import { CfgHelper } from "script/upgrades/PoolRestructuring/CfgHelper.sol";
 import { PoolsCleanupCfg } from "script/upgrades/PoolRestructuring/PoolsCleanupCfg.sol";
@@ -81,10 +81,10 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     checkValueDeltaBreakersThresholds();
     checkTradingLimits();
 
-    NewPoolsConfig.NewPools memory newPoolsConfig = NewPoolsConfig.get(contracts);
-    verifyExchanges(newPoolsConfig.pools);
+    NewPoolsCfg.NewPools memory newPoolsCfg = NewPoolsCfg.get(contracts);
+    verifyExchanges(newPoolsCfg.pools);
 
-    verifyCircuitBreaker(newPoolsConfig.rateFeedsConfig);
+    verifyCircuitBreaker(newPoolsCfg.rateFeedsConfig);
 
     console2.log("\n");
     console2.log("✅ All checks passed\n");
@@ -158,17 +158,17 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     //   "Number of expected pools does not match the number of deployed pools."
     // );
 
-    NewPoolsConfig.NewPools memory newPoolsConfig = NewPoolsConfig.get(contracts);
-    for (uint256 i = 0; i < newPoolsConfig.pools.length; i++) {
+    NewPoolsCfg.NewPools memory newPoolsCfg = NewPoolsCfg.get(contracts);
+    for (uint256 i = 0; i < newPoolsCfg.pools.length; i++) {
       bytes32 exchangeId = getExchangeId(
-        newPoolsConfig.pools[i].asset0,
-        newPoolsConfig.pools[i].asset1,
-        newPoolsConfig.pools[i].isConstantSum
+        newPoolsCfg.pools[i].asset0,
+        newPoolsCfg.pools[i].asset1,
+        newPoolsCfg.pools[i].isConstantSum
       );
 
-      verifyPoolExchange(exchangeId, newPoolsConfig.pools[i]);
-      verifyPoolConfig(exchangeId, newPoolsConfig.pools[i]);
-      verifyTradingLimits(exchangeId, newPoolsConfig.pools[i]);
+      verifyPoolExchange(exchangeId, newPoolsCfg.pools[i]);
+      verifyPoolConfig(exchangeId, newPoolsCfg.pools[i]);
+      verifyTradingLimits(exchangeId, newPoolsCfg.pools[i]);
     }
   }
 

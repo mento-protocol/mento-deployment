@@ -9,7 +9,7 @@ import { Contracts } from "script/utils/Contracts.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 import { FixidityLib } from "script/utils/FixidityLib.sol";
 
-library NewPoolsConfig {
+library NewPoolsCfg {
   using FixidityLib for FixidityLib.Fraction;
   using Contracts for Contracts.Cache;
 

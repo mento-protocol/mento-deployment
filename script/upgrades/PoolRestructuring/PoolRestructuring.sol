@@ -20,7 +20,7 @@ import { IPricingModule } from "mento-core-2.5.0/interfaces/IPricingModule.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
 import { Config } from "script/utils/Config.sol";
-import { NewPoolsConfig } from "./NewPoolsConfig.sol";
+import { NewPoolsCfg } from "./NewPoolsCfg.sol";
 
 import { CfgHelper } from "script/upgrades/PoolRestructuring/CfgHelper.sol";
 import { PoolsCleanupCfg } from "script/upgrades/PoolRestructuring/PoolsCleanupCfg.sol";
@@ -85,12 +85,12 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
       referenceRateFeedIDToExchangeId[currentExchange.config.referenceRateFeedID] = exchangeId;
     }
 
-    NewPoolsConfig.NewPools memory newPoolsConfig = NewPoolsConfig.get(contracts);
-    for (uint i = 0; i < newPoolsConfig.pools.length; i++) {
-      referenceRateFeedIDToExchangeId[newPoolsConfig.pools[i].referenceRateFeedID] = getExchangeId(
-        newPoolsConfig.pools[i].asset0,
-        newPoolsConfig.pools[i].asset1,
-        newPoolsConfig.pools[i].isConstantSum
+    NewPoolsCfg.NewPools memory newPoolsCfg = NewPoolsCfg.get(contracts);
+    for (uint i = 0; i < newPoolsCfg.pools.length; i++) {
+      referenceRateFeedIDToExchangeId[newPoolsCfg.pools[i].referenceRateFeedID] = getExchangeId(
+        newPoolsCfg.pools[i].asset0,
+        newPoolsCfg.pools[i].asset1,
+        newPoolsCfg.pools[i].isConstantSum
       );
     }
   }
@@ -255,16 +255,16 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
   }
 
   function createNewPools() internal {
-    NewPoolsConfig.NewPools memory newPoolsConfig = NewPoolsConfig.get(contracts);
+    NewPoolsCfg.NewPools memory newPoolsCfg = NewPoolsCfg.get(contracts);
 
-    for (uint256 i = 0; i < newPoolsConfig.pools.length; i++) {
-      proposal_createExchange(newPoolsConfig.pools[i]);
-      proposal_configureTradingLimits(newPoolsConfig.pools[i]);
+    for (uint256 i = 0; i < newPoolsCfg.pools.length; i++) {
+      proposal_createExchange(newPoolsCfg.pools[i]);
+      proposal_configureTradingLimits(newPoolsCfg.pools[i]);
     }
 
-    for (uint256 i = 0; i < newPoolsConfig.rateFeedsConfig.length; i++) {
-      proosal_configureBreakerBox(newPoolsConfig.rateFeedsConfig[i]);
-      proposal_configureMedianDeltaBreaker(newPoolsConfig.rateFeedsConfig[i]);
+    for (uint256 i = 0; i < newPoolsCfg.rateFeedsConfig.length; i++) {
+      proosal_configureBreakerBox(newPoolsCfg.rateFeedsConfig[i]);
+      proposal_configureMedianDeltaBreaker(newPoolsCfg.rateFeedsConfig[i]);
     }
   }
 
