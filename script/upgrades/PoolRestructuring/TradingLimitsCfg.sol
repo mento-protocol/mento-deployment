@@ -105,7 +105,7 @@ contract TradingLimitsCfg is GovernanceScript {
         enabledGlobal: true,
         limitGlobal: 2_500_000
       }),
-      // 1 USD ≈ 142 PHP
+      // 1 USD ≈ 142 JPY
       asset1Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
