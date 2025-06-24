@@ -11,14 +11,18 @@ import { Arrays } from "script/utils/Arrays.sol";
 
 import { Broker } from "mento-core-2.5.0/swap/Broker.sol";
 import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
+import { BreakerBox } from "mento-core-2.5.0/oracles/BreakerBox.sol";
+import { MedianDeltaBreaker } from "mento-core-2.5.0/oracles/breakers/MedianDeltaBreaker.sol";
 import { ValueDeltaBreaker } from "mento-core-2.5.0/oracles/breakers/ValueDeltaBreaker.sol";
 import { TradingLimits } from "mento-core-2.5.0/libraries/TradingLimits.sol";
+import { IPricingModule } from "mento-core-2.5.0/interfaces/IPricingModule.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
 import { PoolRestructuringConfig } from "./Config.sol";
 
 import { Config } from "script/utils/Config.sol";
+import { NewPoolsConfig } from "./NewPoolsConfig.sol";
 
 contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
@@ -31,6 +35,8 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
 
   address private brokerProxy;
   address private biPoolManagerProxy;
+  address private breakerBox;
+  address private medianDeltaBreaker;
   address private valueDeltaBreaker;
 
   mapping(address => bytes32) public referenceRateFeedIDToExchangeId;
@@ -38,12 +44,14 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
   function prepare() public {
     loadDeployedContracts();
     setAddresses();
-    setReferenceRateFeedIDToExchangeId();
+    setExchangeIds();
   }
 
   function loadDeployedContracts() public {
     contracts.loadSilent("MU01-00-Create-Proxies", "latest");
-    contracts.load("MU01-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest");
+    contracts.loadSilent("MU03-01-Create-Nonupgradeable-Contracts");
+    contracts.loadSilent("eXOF-00-Create-Proxies", "latest");
   }
 
   function setAddresses() public {
@@ -52,21 +60,28 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
 
     brokerProxy = contracts.deployed("BrokerProxy");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
+    breakerBox = contracts.deployed("BreakerBox");
+    medianDeltaBreaker = contracts.deployed("MedianDeltaBreaker");
     valueDeltaBreaker = contracts.deployed("ValueDeltaBreaker");
   }
 
-  function setReferenceRateFeedIDToExchangeId() public {
+  function setExchangeIds() public {
     IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
     bytes32[] memory exchangeIds = biPoolManager.getExchangeIds();
 
     for (uint256 i = 0; i < exchangeIds.length; i++) {
       bytes32 exchangeId = exchangeIds[i];
       IBiPoolManager.PoolExchange memory currentExchange = biPoolManager.getPoolExchange(exchangeId);
-
       referenceRateFeedIDToExchangeId[currentExchange.config.referenceRateFeedID] = exchangeId;
-      console.log("RateFeed ID %s", currentExchange.config.referenceRateFeedID);
-      console.logBytes32(exchangeId);
-      console.log("--------------------------------");
+    }
+
+    NewPoolsConfig.NewPools memory newPoolsConfig = NewPoolsConfig.get(contracts);
+    for (uint i = 0; i < newPoolsConfig.pools.length; i++) {
+      referenceRateFeedIDToExchangeId[newPoolsConfig.pools[i].referenceRateFeedID] = getExchangeId(
+        newPoolsConfig.pools[i].asset0,
+        newPoolsConfig.pools[i].asset1,
+        newPoolsConfig.pools[i].isConstantSum
+      );
     }
   }
 
@@ -94,6 +109,9 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
 
     // 3. Update the trading limits on some pools
     updateTradingLimits();
+
+    // 4. Create new pools
+    createNewPools();
 
     return transactions;
   }
@@ -218,6 +236,180 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
         );
       }
     }
+  }
+
+  function createNewPools() internal {
+    NewPoolsConfig.NewPools memory newPoolsConfig = NewPoolsConfig.get(contracts);
+
+    for (uint256 i = 0; i < newPoolsConfig.pools.length; i++) {
+      proposal_createExchange(newPoolsConfig.pools[i]);
+      proposal_configureTradingLimits(newPoolsConfig.pools[i]);
+    }
+
+    for (uint256 i = 0; i < newPoolsConfig.rateFeedsConfig.length; i++) {
+      proosal_configureBreakerBox(newPoolsConfig.rateFeedsConfig[i]);
+      proposal_configureMedianDeltaBreaker(newPoolsConfig.rateFeedsConfig[i]);
+    }
+  }
+
+  /**
+   * @notice Creates the exchange for the new pool.
+   */
+  function proposal_createExchange(Config.Pool memory pool) private {
+    IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
+    IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
+
+    IBiPoolManager.PoolExchange memory poolExchange = IBiPoolManager.PoolExchange({
+      asset0: pool.asset0,
+      asset1: pool.asset1,
+      pricingModule: pool.isConstantSum ? constantSum : constantProduct,
+      bucket0: 0,
+      bucket1: 0,
+      lastBucketUpdate: 0,
+      config: IBiPoolManager.PoolConfig({
+        spread: FixidityLib.wrap(pool.spread.unwrap()),
+        referenceRateFeedID: pool.referenceRateFeedID,
+        referenceRateResetFrequency: pool.referenceRateResetFrequency,
+        minimumReports: pool.minimumReports,
+        stablePoolResetSize: pool.stablePoolResetSize
+      })
+    });
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        biPoolManagerProxy,
+        abi.encodeWithSelector(IBiPoolManager(0).createExchange.selector, poolExchange)
+      )
+    );
+  }
+
+  /**
+   * @notice Configures the trading limits for the new pool.
+   */
+  function proposal_configureTradingLimits(Config.Pool memory pool) private {
+    bytes32 exchangeId = referenceRateFeedIDToExchangeId[pool.referenceRateFeedID];
+
+    // Set the trading limit for asset0 of the pool
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        brokerProxy,
+        abi.encodeWithSelector(
+          Broker(0).configureTradingLimit.selector,
+          exchangeId,
+          pool.asset0,
+          TradingLimits.Config({
+            timestep0: pool.asset0limits.timeStep0,
+            timestep1: pool.asset0limits.timeStep1,
+            limit0: pool.asset0limits.limit0,
+            limit1: pool.asset0limits.limit1,
+            limitGlobal: pool.asset0limits.limitGlobal,
+            flags: Config.tradingLimitConfigToFlag(pool.asset0limits)
+          })
+        )
+      )
+    );
+
+    // Set the trading limit for asset1 of the pool
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        brokerProxy,
+        abi.encodeWithSelector(
+          Broker(0).configureTradingLimit.selector,
+          exchangeId,
+          pool.asset1,
+          TradingLimits.Config({
+            timestep0: pool.asset1limits.timeStep0,
+            timestep1: pool.asset1limits.timeStep1,
+            limit0: pool.asset1limits.limit0,
+            limit1: pool.asset1limits.limit1,
+            limitGlobal: pool.asset1limits.limitGlobal,
+            flags: Config.tradingLimitConfigToFlag(pool.asset1limits)
+          })
+        )
+      )
+    );
+  }
+
+  /**
+   * @notice Configures the breaker box for the specified rate feed.
+   */
+  function proosal_configureBreakerBox(Config.RateFeed memory rateFeed) private {
+    // Add the new rate feed to breaker box
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBox,
+        abi.encodeWithSelector(BreakerBox(0).addRateFeed.selector, rateFeed.rateFeedID)
+      )
+    );
+
+    // Enable Median Delta Breaker for rate feed
+    if (rateFeed.medianDeltaBreaker0.enabled) {
+      // Reset the median value for this rateFeed, if we somehow have one set
+      if (MedianDeltaBreaker(medianDeltaBreaker).medianRatesEMA(rateFeed.rateFeedID) != 0) {
+        transactions.push(
+          ICeloGovernance.Transaction(
+            0,
+            medianDeltaBreaker,
+            abi.encodeWithSelector(MedianDeltaBreaker(0).resetMedianRateEMA.selector, rateFeed.rateFeedID)
+          )
+        );
+      }
+
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          breakerBox,
+          abi.encodeWithSelector(BreakerBox(0).toggleBreaker.selector, medianDeltaBreaker, rateFeed.rateFeedID, true)
+        )
+      );
+    }
+  }
+
+  /**
+   * @notice This function creates the transactions to configure the Median Delta Breaker.
+   */
+  function proposal_configureMedianDeltaBreaker(Config.RateFeed memory rateFeed) private {
+    // Set the cooldown time
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        medianDeltaBreaker,
+        abi.encodeWithSelector(
+          MedianDeltaBreaker(0).setCooldownTime.selector,
+          Arrays.addresses(rateFeed.rateFeedID),
+          Arrays.uints(rateFeed.medianDeltaBreaker0.cooldown)
+        )
+      )
+    );
+    // Set the rate change threshold
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        medianDeltaBreaker,
+        abi.encodeWithSelector(
+          MedianDeltaBreaker(0).setRateChangeThresholds.selector,
+          Arrays.addresses(rateFeed.rateFeedID),
+          Arrays.uints(rateFeed.medianDeltaBreaker0.threshold.unwrap())
+        )
+      )
+    );
+
+    // Set the smoothing factor
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        medianDeltaBreaker,
+        abi.encodeWithSelector(
+          MedianDeltaBreaker(0).setSmoothingFactor.selector,
+          rateFeed.rateFeedID,
+          rateFeed.medianDeltaBreaker0.smoothingFactor
+        )
+      )
+    );
   }
 
   function isSameTradingLimitConfig(
