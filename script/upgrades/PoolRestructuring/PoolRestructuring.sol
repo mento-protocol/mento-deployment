@@ -120,7 +120,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
     // 3. Update the trading limits on some pools
     updateTradingLimits();
 
-    // 4. Create new pools
+    // 4. Create cUSD/cEUR, cUSD/cREAL and cUSD/eXOF pools
     createNewPools();
 
     return transactions;
@@ -204,53 +204,47 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
 
       bytes32 limit0Id = exchangeId ^ bytes32(uint256(uint160(overrides[i].asset0)));
 
-      if (!isSameTradingLimitConfig(limit0Id, overrides[i].asset0Config)) {
-        // update the trading limits on asset0 of the pool
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            brokerProxy,
-            abi.encodeWithSelector(
-              Broker(0).configureTradingLimit.selector,
-              exchangeId,
-              overrides[i].asset0,
-              TradingLimits.Config({
-                timestep0: overrides[i].asset0Config.timeStep0,
-                timestep1: overrides[i].asset0Config.timeStep1,
-                limit0: overrides[i].asset0Config.limit0,
-                limit1: overrides[i].asset0Config.limit1,
-                limitGlobal: overrides[i].asset0Config.limitGlobal,
-                flags: Config.tradingLimitConfigToFlag(overrides[i].asset0Config)
-              })
-            )
+      // update the trading limits on asset0 of the pool
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          brokerProxy,
+          abi.encodeWithSelector(
+            Broker(0).configureTradingLimit.selector,
+            exchangeId,
+            overrides[i].asset0,
+            TradingLimits.Config({
+              timestep0: overrides[i].asset0Config.timeStep0,
+              timestep1: overrides[i].asset0Config.timeStep1,
+              limit0: overrides[i].asset0Config.limit0,
+              limit1: overrides[i].asset0Config.limit1,
+              limitGlobal: overrides[i].asset0Config.limitGlobal,
+              flags: Config.tradingLimitConfigToFlag(overrides[i].asset0Config)
+            })
           )
-        );
-      }
+        )
+      );
 
-      bytes32 limit1Id = exchangeId ^ bytes32(uint256(uint160(overrides[i].asset1)));
-
-      if (!isSameTradingLimitConfig(limit1Id, overrides[i].asset1Config)) {
-        // update trading limits on asset1 of the pool
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            brokerProxy,
-            abi.encodeWithSelector(
-              Broker(0).configureTradingLimit.selector,
-              exchangeId,
-              overrides[i].asset1,
-              TradingLimits.Config({
-                timestep0: overrides[i].asset1Config.timeStep0,
-                timestep1: overrides[i].asset1Config.timeStep1,
-                limit0: overrides[i].asset1Config.limit0,
-                limit1: overrides[i].asset1Config.limit1,
-                limitGlobal: overrides[i].asset1Config.limitGlobal,
-                flags: Config.tradingLimitConfigToFlag(overrides[i].asset1Config)
-              })
-            )
+      // update trading limits on asset1 of the pool
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          brokerProxy,
+          abi.encodeWithSelector(
+            Broker(0).configureTradingLimit.selector,
+            exchangeId,
+            overrides[i].asset1,
+            TradingLimits.Config({
+              timestep0: overrides[i].asset1Config.timeStep0,
+              timestep1: overrides[i].asset1Config.timeStep1,
+              limit0: overrides[i].asset1Config.limit0,
+              limit1: overrides[i].asset1Config.limit1,
+              limitGlobal: overrides[i].asset1Config.limitGlobal,
+              flags: Config.tradingLimitConfigToFlag(overrides[i].asset1Config)
+            })
           )
-        );
-      }
+        )
+      );
     }
   }
 
@@ -426,21 +420,5 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
         )
       )
     );
-  }
-
-  function isSameTradingLimitConfig(
-    bytes32 configId,
-    Config.TradingLimit memory newConfig
-  ) internal view returns (bool) {
-    (uint32 timestamp0, uint32 timestamp1, int48 limit0, int48 limit1, int48 limitGlobal, uint8 flags) = Broker(
-      brokerProxy
-    ).tradingLimitsConfig(configId);
-    if (flags != Config.tradingLimitConfigToFlag(newConfig)) return false;
-    if (timestamp0 != newConfig.timeStep0) return false;
-    if (timestamp1 != newConfig.timeStep1) return false;
-    if (limit0 != newConfig.limit0) return false;
-    if (limit1 != newConfig.limit1) return false;
-    if (limitGlobal != newConfig.limitGlobal) return false;
-    return true;
   }
 }

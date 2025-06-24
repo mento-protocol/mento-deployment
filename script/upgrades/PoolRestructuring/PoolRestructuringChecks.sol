@@ -32,6 +32,8 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
   using TradingLimits for TradingLimits.Config;
   using Contracts for Contracts.Cache;
 
+  uint256 private constant PRE_EXISTING_POOLS = 24;
+
   CfgHelper private cfgHelper;
   PoolsCleanupCfg private poolsCleanupCfg;
   TradingLimitsCfg private tradingLimitsCfg;
@@ -145,20 +147,24 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
 
       console2.log("✅ Threshold updated for %s feed", cfgHelper.getFeedName(overrides[i].rateFeedId));
     }
-    console2.log("\n");
   }
 
   function verifyExchanges(Config.Pool[] memory poolConfigs) internal {
-    console2.log("\n== Verifying exchanges ==");
-
-    // bytes32[] memory exchanges = BiPoolManager(biPoolManagerProxy).getExchangeIds();
-    // // check configured pools against the config
-    // require(
-    //   exchanges.length == PRE_EXISTING_POOLS + poolConfigs.length,
-    //   "Number of expected pools does not match the number of deployed pools."
-    // );
+    console2.log("===🔍 Verifying exchanges ===");
 
     NewPoolsCfg.NewPools memory newPoolsCfg = NewPoolsCfg.get(contracts);
+
+    bytes32[] memory exchanges = IBiPoolManager(biPoolManagerProxy).getExchangeIds();
+    // check configured pools against the config
+    require(
+      exchanges.length ==
+        PRE_EXISTING_POOLS -
+          poolsCleanupCfg.poolsToDelete().length + // pools that were deleted
+          poolsCleanupCfg.spreadOverrides().length + // pools that were re-created with a new spread
+          newPoolsCfg.pools.length, // 3 new cUSD pools
+      "Number of expected pools does not match the number of deployed pools."
+    );
+
     for (uint256 i = 0; i < newPoolsCfg.pools.length; i++) {
       bytes32 exchangeId = getExchangeId(
         newPoolsCfg.pools[i].asset0,
@@ -170,10 +176,11 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
       verifyPoolConfig(exchangeId, newPoolsCfg.pools[i]);
       verifyTradingLimits(exchangeId, newPoolsCfg.pools[i]);
     }
+    console2.log("\n");
   }
 
   function verifyCircuitBreaker(Config.RateFeed[] memory rateFeedConfigs) internal view {
-    console2.log("\n== Checking circuit breaker ==");
+    console2.log("===🔍 Checking circuit breaker ===");
 
     for (uint256 i = 0; i < rateFeedConfigs.length; i++) {
       verifyBreakersAreEnabled(rateFeedConfigs[i]);
@@ -293,7 +300,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     checkTradingLimt(expectedPoolConfig.asset0limits, asset0ActualLimit);
     checkTradingLimt(expectedPoolConfig.asset1limits, asset1ActualLimit);
 
-    console2.log("🟢 Trading limits set for %s 🔒", cfgHelper.getFeedName(pool.config.referenceRateFeedID));
+    console2.log("🟢 Trading limits set for %s 🔒\n", cfgHelper.getFeedName(pool.config.referenceRateFeedID));
   }
 
   function verifyBreakersAreEnabled(Config.RateFeed memory expectedRateFeedConfig) internal view {
