@@ -170,12 +170,17 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
       verifyPoolExchange(exchangeId, newPoolsCfg.pools[i]);
       verifyPoolConfig(exchangeId, newPoolsCfg.pools[i]);
       verifyTradingLimits(exchangeId, newPoolsCfg.pools[i]);
+
+      console2.log(
+        "🟢 %s pool has the expected params and trading limits",
+        cfgHelper.getFeedName(newPoolsCfg.pools[i].referenceRateFeedID)
+      );
     }
     console2.log("\n");
   }
 
   function verifyCircuitBreaker(Config.RateFeed[] memory rateFeedConfigs) internal view {
-    console2.log("===🔍 Checking circuit breaker ===");
+    console2.log("===🔍 Verifying circuit breaker on new pools ===");
 
     for (uint256 i = 0; i < rateFeedConfigs.length; i++) {
       verifyBreakersAreEnabled(rateFeedConfigs[i]);
@@ -189,11 +194,6 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     require(deployedPool.asset0 == expectedPoolConfig.asset0, "❌ asset0 mismatch");
     require(deployedPool.asset1 == expectedPoolConfig.asset1, "❌ asset1 mismatch");
     require(address(deployedPool.pricingModule) == constantSum, "❌ pricing module mismatch");
-
-    console2.log(
-      "🟢 %s pool has correct assets and pricing",
-      cfgHelper.getFeedName(deployedPool.config.referenceRateFeedID)
-    );
   }
 
   function verifyPoolConfig(bytes32 exchangeId, Config.Pool memory expectedPoolConfig) internal view {
@@ -212,9 +212,6 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
       deployedPool.config.stablePoolResetSize == expectedPoolConfig.stablePoolResetSize,
       "❌ stablePoolResetSize mismatch"
     );
-
-    string memory feedName = cfgHelper.getFeedName(deployedPool.config.referenceRateFeedID);
-    console2.log("🟢 %s pool config is correct", feedName);
   }
 
   function verifyTradingLimits(bytes32 exchangeId, Config.Pool memory expectedPoolConfig) internal view {
@@ -230,8 +227,6 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
 
     compareTradingLimits(expectedPoolConfig.asset0limits, asset0ActualLimit);
     compareTradingLimits(expectedPoolConfig.asset1limits, asset1ActualLimit);
-
-    console2.log("🟢 Trading limits set for %s", cfgHelper.getFeedName(pool.config.referenceRateFeedID));
   }
 
   function verifyBreakersAreEnabled(Config.RateFeed memory expectedRateFeedConfig) internal view {

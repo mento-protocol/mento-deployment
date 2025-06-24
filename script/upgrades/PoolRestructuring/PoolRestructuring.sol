@@ -204,7 +204,6 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
 
       bytes32 limit0Id = exchangeId ^ bytes32(uint256(uint160(overrides[i].asset0)));
 
-      // update the trading limits on asset0 of the pool
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -225,7 +224,6 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
         )
       );
 
-      // update trading limits on asset1 of the pool
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -262,9 +260,6 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
     }
   }
 
-  /**
-   * @notice Creates the exchange for the new pool.
-   */
   function proposal_createExchange(Config.Pool memory pool) private {
     IPricingModule constantProduct = IPricingModule(contracts.deployed("ConstantProductPricingModule"));
     IPricingModule constantSum = IPricingModule(contracts.deployed("ConstantSumPricingModule"));
@@ -294,13 +289,9 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
     );
   }
 
-  /**
-   * @notice Configures the trading limits for the new pool.
-   */
   function proposal_configureTradingLimits(Config.Pool memory pool) private {
     bytes32 exchangeId = referenceRateFeedIDToExchangeId[pool.referenceRateFeedID];
 
-    // Set the trading limit for asset0 of the pool
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -321,7 +312,6 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
       )
     );
 
-    // Set the trading limit for asset1 of the pool
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -343,11 +333,13 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
     );
   }
 
-  /**
-   * @notice Configures the breaker box for the specified rate feed.
-   */
   function proosal_configureBreakerBox(Config.RateFeed memory rateFeed) private {
-    // Add the new rate feed to breaker box
+    require(rateFeed.medianDeltaBreaker0.enabled, "❌ MedianDeltaBreaker not enabled");
+    require(
+      MedianDeltaBreaker(medianDeltaBreaker).medianRatesEMA(rateFeed.rateFeedID) == 0,
+      "❌ Median rate EMA not 0"
+    );
+
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -356,34 +348,16 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
       )
     );
 
-    // Enable Median Delta Breaker for rate feed
-    if (rateFeed.medianDeltaBreaker0.enabled) {
-      // Reset the median value for this rateFeed, if we somehow have one set
-      if (MedianDeltaBreaker(medianDeltaBreaker).medianRatesEMA(rateFeed.rateFeedID) != 0) {
-        transactions.push(
-          ICeloGovernance.Transaction(
-            0,
-            medianDeltaBreaker,
-            abi.encodeWithSelector(MedianDeltaBreaker(0).resetMedianRateEMA.selector, rateFeed.rateFeedID)
-          )
-        );
-      }
-
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          breakerBox,
-          abi.encodeWithSelector(BreakerBox(0).toggleBreaker.selector, medianDeltaBreaker, rateFeed.rateFeedID, true)
-        )
-      );
-    }
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        breakerBox,
+        abi.encodeWithSelector(BreakerBox(0).toggleBreaker.selector, medianDeltaBreaker, rateFeed.rateFeedID, true)
+      )
+    );
   }
 
-  /**
-   * @notice This function creates the transactions to configure the Median Delta Breaker.
-   */
   function proposal_configureMedianDeltaBreaker(Config.RateFeed memory rateFeed) private {
-    // Set the cooldown time
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -395,7 +369,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
         )
       )
     );
-    // Set the rate change threshold
+
     transactions.push(
       ICeloGovernance.Transaction(
         0,
@@ -408,7 +382,6 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
       )
     );
 
-    // Set the smoothing factor
     transactions.push(
       ICeloGovernance.Transaction(
         0,
