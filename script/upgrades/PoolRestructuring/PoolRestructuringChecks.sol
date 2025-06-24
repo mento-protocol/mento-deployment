@@ -138,8 +138,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
   function checkValueDeltaBreakersThresholds() internal {
     console2.log("====🔍 Checking updated ValueDeltaBreaker thresholds... ====");
 
-    ValueDeltaBreakerCfg.ValueDeltaBreakerOverride[] memory overrides = valueDeltaBreakerCfg
-      .valueDeltaBreakerOverrides();
+    ValueDeltaBreakerCfg.Override[] memory overrides = valueDeltaBreakerCfg.valueDeltaBreakerOverrides();
     for (uint256 i = 0; i < overrides.length; i++) {
       uint256 currentThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(overrides[i].rateFeedId);
       require(currentThreshold == overrides[i].targetThreshold, "❌ ValueDeltaBreaker threshold not updated");
@@ -395,7 +394,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     console2.log("====🔍 Checking updated trading limits... ====");
 
     IBrokerWithCasts _broker = IBrokerWithCasts(brokerProxy);
-    TradingLimitsCfg.TradingLimitsOverride[] memory overrides = tradingLimitsCfg.tradingLimitsOverrides();
+    TradingLimitsCfg.Override[] memory overrides = tradingLimitsCfg.tradingLimitsOverrides();
 
     for (uint256 i = 0; i < overrides.length; i++) {
       bytes32 exchangeId = referenceRateFeedIDToExchangeId[overrides[i].referenceRateFeedID];

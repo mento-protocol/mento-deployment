@@ -176,8 +176,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
   }
 
   function updateValueDeltaBreakersThreshold() internal {
-    ValueDeltaBreakerCfg.ValueDeltaBreakerOverride[] memory overrides = valueDeltaBreakerCfg
-      .valueDeltaBreakerOverrides();
+    ValueDeltaBreakerCfg.Override[] memory overrides = valueDeltaBreakerCfg.valueDeltaBreakerOverrides();
 
     for (uint256 i = 0; i < overrides.length; i++) {
       uint256 currentThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(overrides[i].rateFeedId);
@@ -197,7 +196,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
   }
 
   function updateTradingLimits() internal {
-    TradingLimitsCfg.TradingLimitsOverride[] memory overrides = tradingLimitsCfg.tradingLimitsOverrides();
+    TradingLimitsCfg.Override[] memory overrides = tradingLimitsCfg.tradingLimitsOverrides();
 
     for (uint256 i = 0; i < overrides.length; i++) {
       bytes32 exchangeId = referenceRateFeedIDToExchangeId[overrides[i].referenceRateFeedID];

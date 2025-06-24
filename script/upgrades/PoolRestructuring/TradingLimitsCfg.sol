@@ -2,19 +2,16 @@
 // solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines, var-name-mixedcase
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
-import { Arrays } from "script/utils/Arrays.sol";
 
-import { console2 } from "forge-std/console2.sol";
 import { GovernanceScript } from "script/utils/Script.sol";
-import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
-import { Config } from "script/utils/Config.sol";
 
+import { Config } from "script/utils/Config.sol";
 import { CfgHelper } from "script/upgrades/PoolRestructuring/CfgHelper.sol";
 
 contract TradingLimitsCfg is GovernanceScript {
   CfgHelper private cfgHelper;
 
-  struct TradingLimitsOverride {
+  struct Override {
     address asset0;
     address asset1;
     address referenceRateFeedID;
@@ -26,11 +23,11 @@ contract TradingLimitsCfg is GovernanceScript {
     cfgHelper = _cfgHelper;
   }
 
-  function tradingLimitsOverrides() public view returns (TradingLimitsOverride[] memory) {
-    TradingLimitsOverride[] memory overrides = new TradingLimitsOverride[](13);
+  function tradingLimitsOverrides() public view returns (Override[] memory) {
+    Override[] memory overrides = new Override[](13);
 
     // cEUR/axlEUROC
-    overrides[0] = TradingLimitsOverride({
+    overrides[0] = Override({
       asset0: cfgHelper.cEURProxy(),
       asset1: cfgHelper.axlEUROCProxy(),
       referenceRateFeedID: toRateFeedId("EUROCEUR"),
@@ -48,7 +45,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/nativeUSDT
-    overrides[1] = TradingLimitsOverride({
+    overrides[1] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.nativeUSDTProxy(),
       referenceRateFeedID: toRateFeedId("USDTUSD"),
@@ -66,7 +63,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/PUSO
-    overrides[2] = TradingLimitsOverride({
+    overrides[2] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.PUSOProxy(),
       referenceRateFeedID: toRateFeedId("relayed:PHPUSD"),
@@ -93,7 +90,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/cJPY
-    overrides[3] = TradingLimitsOverride({
+    overrides[3] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.cJPYProxy(),
       referenceRateFeedID: toRateFeedId("relayed:JPYUSD"),
@@ -120,7 +117,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/cCOP
-    overrides[4] = TradingLimitsOverride({
+    overrides[4] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.cCOPProxy(),
       referenceRateFeedID: toRateFeedId("relayed:COPUSD"),
@@ -147,7 +144,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/cGHS
-    overrides[5] = TradingLimitsOverride({
+    overrides[5] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.cGHSProxy(),
       referenceRateFeedID: toRateFeedId("relayed:GHSUSD"),
@@ -174,7 +171,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/cGBP
-    overrides[6] = TradingLimitsOverride({
+    overrides[6] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.cGBPProxy(),
       referenceRateFeedID: toRateFeedId("relayed:GBPUSD"),
@@ -201,7 +198,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/cZAR
-    overrides[7] = TradingLimitsOverride({
+    overrides[7] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.cZARProxy(),
       referenceRateFeedID: toRateFeedId("relayed:ZARUSD"),
@@ -228,7 +225,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/cCAD
-    overrides[8] = TradingLimitsOverride({
+    overrides[8] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.cCADProxy(),
       referenceRateFeedID: toRateFeedId("relayed:CADUSD"),
@@ -255,7 +252,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/cAUD
-    overrides[9] = TradingLimitsOverride({
+    overrides[9] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.cAUDProxy(),
       referenceRateFeedID: toRateFeedId("relayed:AUDUSD"),
@@ -282,7 +279,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/cCHF
-    overrides[10] = TradingLimitsOverride({
+    overrides[10] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.cCHFProxy(),
       referenceRateFeedID: toRateFeedId("relayed:CHFUSD"),
@@ -309,7 +306,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/cNGN
-    overrides[11] = TradingLimitsOverride({
+    overrides[11] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.cNGNProxy(),
       referenceRateFeedID: toRateFeedId("relayed:NGNUSD"),
@@ -336,7 +333,7 @@ contract TradingLimitsCfg is GovernanceScript {
     });
 
     // cUSD/CELO
-    overrides[12] = TradingLimitsOverride({
+    overrides[12] = Override({
       asset0: cfgHelper.cUSDProxy(),
       asset1: cfgHelper.CELOProxy(),
       referenceRateFeedID: cfgHelper.cUSDProxy(),

@@ -2,13 +2,11 @@
 // solhint-disable func-name-mixedcase, contract-name-camelcase, function-max-lines, var-name-mixedcase
 pragma solidity ^0.5.13;
 pragma experimental ABIEncoderV2;
-import { Arrays } from "script/utils/Arrays.sol";
 
-import { console2 } from "forge-std/console2.sol";
 import { GovernanceScript } from "script/utils/Script.sol";
 import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
-import { Config } from "script/utils/Config.sol";
 
+import { Config } from "script/utils/Config.sol";
 import { CfgHelper } from "script/upgrades/PoolRestructuring/CfgHelper.sol";
 
 contract PoolsCleanupCfg is GovernanceScript {
