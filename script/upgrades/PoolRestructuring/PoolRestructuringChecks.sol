@@ -71,28 +71,23 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
 
     constantSum = contracts.deployed("ConstantSumPricingModule");
 
-    setReferenceRateFeedIDToExchangeId();
+    setExchangeIds();
   }
 
   function run() public {
     prepare();
-
     console2.log("\n");
 
-    checkPoolsAreDeletedAndRecreatedWithNewSpread();
-    checkValueDeltaBreakersThresholds();
-    checkTradingLimits();
+    verifyPoolsWeredDeletedAndRecreated();
+    verifyValueDeltaBreakersThresholds();
+    verifyUpdatedTradingLimits();
 
     NewPoolsCfg.NewPools memory newPoolsCfg = NewPoolsCfg.get(contracts);
-    verifyExchanges(newPoolsCfg.pools);
-
+    verifyNewPools(newPoolsCfg.pools);
     verifyCircuitBreaker(newPoolsCfg.rateFeedsConfig);
-
-    console2.log("\n");
-    console2.log("✅ All checks passed\n");
   }
 
-  function setReferenceRateFeedIDToExchangeId() public {
+  function setExchangeIds() public {
     IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
     bytes32[] memory exchangeIds = biPoolManager.getExchangeIds();
 
@@ -104,8 +99,8 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     }
   }
 
-  function checkPoolsAreDeletedAndRecreatedWithNewSpread() internal {
-    console2.log("====🔍 Checking current pools state... ====");
+  function verifyPoolsWeredDeletedAndRecreated() internal {
+    console2.log("====🔍 Verifying pools were deleted and recreated... ====");
 
     IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
 
@@ -126,7 +121,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
         require(FixidityLib.equals(exchange.config.spread, targetSpread), "❌ Re-created pool with wrong spread");
 
         console2.log(
-          "✅ Re-created pool %s with new spread",
+          "✅ Re-created %s pool with new spread",
           cfgHelper.getFeedName(exchange.config.referenceRateFeedID)
         );
       }
@@ -137,8 +132,8 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     console2.log("✅ Other non-USD pools (%d) were permanently deleted\n", poolsDeletedButNotRecreated);
   }
 
-  function checkValueDeltaBreakersThresholds() internal {
-    console2.log("====🔍 Checking updated ValueDeltaBreaker thresholds... ====");
+  function verifyValueDeltaBreakersThresholds() internal {
+    console2.log("====🔍 Verifying ValueDeltaBreaker thresholds... ====");
 
     ValueDeltaBreakerCfg.Override[] memory overrides = valueDeltaBreakerCfg.valueDeltaBreakerOverrides();
     for (uint256 i = 0; i < overrides.length; i++) {
@@ -147,21 +142,21 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
 
       console2.log("✅ Threshold updated for %s feed", cfgHelper.getFeedName(overrides[i].rateFeedId));
     }
+    console2.log("\n");
   }
 
-  function verifyExchanges(Config.Pool[] memory poolConfigs) internal {
-    console2.log("===🔍 Verifying exchanges ===");
+  function verifyNewPools(Config.Pool[] memory poolConfigs) internal {
+    console2.log("===🔍 Verifying additional created pools ===");
 
     NewPoolsCfg.NewPools memory newPoolsCfg = NewPoolsCfg.get(contracts);
 
     bytes32[] memory exchanges = IBiPoolManager(biPoolManagerProxy).getExchangeIds();
-    // check configured pools against the config
     require(
       exchanges.length ==
         PRE_EXISTING_POOLS -
           poolsCleanupCfg.poolsToDelete().length + // pools that were deleted
           poolsCleanupCfg.spreadOverrides().length + // pools that were re-created with a new spread
-          newPoolsCfg.pools.length, // 3 new cUSD pools
+          newPoolsCfg.pools.length, // 3 additional cUSD pools
       "Number of expected pools does not match the number of deployed pools."
     );
 
@@ -191,38 +186,12 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
   function verifyPoolExchange(bytes32 exchangeId, Config.Pool memory expectedPoolConfig) internal view {
     IBiPoolManager.PoolExchange memory deployedPool = IBiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeId);
 
-    // verify asset0 of the deployed pool against the config
-    if (deployedPool.asset0 != expectedPoolConfig.asset0) {
-      console2.log(
-        "The asset0 of deployed pool: %s does not match the expected asset0: %s.",
-        deployedPool.asset0,
-        expectedPoolConfig.asset0
-      );
-      revert("asset0 of pool does not match the expected asset0. See logs.");
-    }
-
-    // verify asset1 of the deployed pool against the config
-    if (deployedPool.asset1 != expectedPoolConfig.asset1) {
-      console2.log(
-        "The asset1 of deployed pool: %s does not match the expected asset1: %s.",
-        deployedPool.asset1,
-        expectedPoolConfig.asset1
-      );
-      revert("asset1 of pool does not match the expected asset1. See logs.");
-    }
-
-    // Ensure the pricing module is the constant product
-    if (address(deployedPool.pricingModule) != constantSum) {
-      console2.log(
-        "The pricing module of deployed pool: %s does not match the expected pricing module: %s.",
-        address(deployedPool.pricingModule),
-        constantSum
-      );
-      revert("pricing module of pool does not match the expected pricing module. See logs.");
-    }
+    require(deployedPool.asset0 == expectedPoolConfig.asset0, "❌ asset0 mismatch");
+    require(deployedPool.asset1 == expectedPoolConfig.asset1, "❌ asset1 mismatch");
+    require(address(deployedPool.pricingModule) == constantSum, "❌ pricing module mismatch");
 
     console2.log(
-      "🟢 PoolExchange for %s has correct assets and pricing 🤘🏼",
+      "🟢 %s pool has correct assets and pricing",
       cfgHelper.getFeedName(deployedPool.config.referenceRateFeedID)
     );
   }
@@ -230,60 +199,22 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
   function verifyPoolConfig(bytes32 exchangeId, Config.Pool memory expectedPoolConfig) internal view {
     IBiPoolManager.PoolExchange memory deployedPool = IBiPoolManager(biPoolManagerProxy).getPoolExchange(exchangeId);
 
-    // if (deployedPool.config.spread.unwrap() != expectedPoolConfig.spread.unwrap()) {
-    //   console2.log(
-    //     "The spread of deployed pool: %s does not match the expected spread: %s.",
-    //     deployedPool.config.spread.unwrap(),
-    //     expectedPoolConfig.spread.unwrap()
-    //   );
-    //   revert("spread of pool does not match the expected spread. See logs.");
-    // }
+    require(
+      deployedPool.config.referenceRateFeedID == expectedPoolConfig.referenceRateFeedID,
+      "❌ rateFeedId mismatch"
+    );
+    require(deployedPool.config.minimumReports == expectedPoolConfig.minimumReports, "❌ minimumReports mismatch");
+    require(
+      deployedPool.config.referenceRateResetFrequency == expectedPoolConfig.referenceRateResetFrequency,
+      "❌ referenceRateResetFrequency mismatch"
+    );
+    require(
+      deployedPool.config.stablePoolResetSize == expectedPoolConfig.stablePoolResetSize,
+      "❌ stablePoolResetSize mismatch"
+    );
 
-    // console2.log("Expected spread: %s", expectedPoolConfig.spread.unwrap());
-    // console2.log("Deployed spread: %s", deployedPool.config.spread.unwrap());
-    // if (FixidityLib.equals(deployedPool.config.spread, expectedPoolConfig.spread)) {
-    //   console2.log("✅ Spread is correct");
-    // } else {
-    //   console2.log("❌ Spread is incorrect");
-    // }
-
-    if (deployedPool.config.referenceRateFeedID != expectedPoolConfig.referenceRateFeedID) {
-      console2.log(
-        "The referenceRateFeedID of deployed pool: %s does not match the expected referenceRateFeedID: %s.",
-        deployedPool.config.referenceRateFeedID,
-        expectedPoolConfig.referenceRateFeedID
-      );
-      revert("referenceRateFeedID of pool does not match the expected referenceRateFeedID. See logs.");
-    }
-
-    if (deployedPool.config.minimumReports != expectedPoolConfig.minimumReports) {
-      console2.log(
-        "The minimumReports of deployed pool: %s does not match the expected minimumReports: %s.",
-        deployedPool.config.minimumReports,
-        expectedPoolConfig.minimumReports
-      );
-      revert("minimumReports of pool does not match the expected minimumReports. See logs.");
-    }
-
-    if (deployedPool.config.referenceRateResetFrequency != expectedPoolConfig.referenceRateResetFrequency) {
-      console2.log(
-        "The referenceRateResetFrequency of deployed pool: %s does not match the expected: %s.",
-        deployedPool.config.referenceRateResetFrequency,
-        expectedPoolConfig.referenceRateResetFrequency
-      );
-      revert("referenceRateResetFrequency of pool does not match the expected referenceRateResetFrequency. See logs.");
-    }
-
-    if (deployedPool.config.stablePoolResetSize != expectedPoolConfig.stablePoolResetSize) {
-      console2.log(
-        "The stablePoolResetSize of deployed pool: %s does not match the expected stablePoolResetSize: %s.",
-        deployedPool.config.stablePoolResetSize,
-        expectedPoolConfig.stablePoolResetSize
-      );
-      revert("stablePoolResetSize of pool does not match the expected stablePoolResetSize. See logs.");
-    }
-
-    console2.log("🟢 %s config is correct🤘🏼", cfgHelper.getFeedName(deployedPool.config.referenceRateFeedID));
+    string memory feedName = cfgHelper.getFeedName(deployedPool.config.referenceRateFeedID);
+    console2.log("🟢 %s pool config is correct", feedName);
   }
 
   function verifyTradingLimits(bytes32 exchangeId, Config.Pool memory expectedPoolConfig) internal view {
@@ -297,112 +228,54 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     bytes32 asset1LimitId = exchangeId ^ bytes32(uint256(uint160(pool.asset1)));
     TradingLimits.Config memory asset1ActualLimit = _broker.tradingLimitsConfig(asset1LimitId);
 
-    checkTradingLimt(expectedPoolConfig.asset0limits, asset0ActualLimit);
-    checkTradingLimt(expectedPoolConfig.asset1limits, asset1ActualLimit);
+    compareTradingLimits(expectedPoolConfig.asset0limits, asset0ActualLimit);
+    compareTradingLimits(expectedPoolConfig.asset1limits, asset1ActualLimit);
 
-    console2.log("🟢 Trading limits set for %s 🔒\n", cfgHelper.getFeedName(pool.config.referenceRateFeedID));
+    console2.log("🟢 Trading limits set for %s", cfgHelper.getFeedName(pool.config.referenceRateFeedID));
   }
 
   function verifyBreakersAreEnabled(Config.RateFeed memory expectedRateFeedConfig) internal view {
-    // verify that MedianDeltaBreaker is enabled
     if (expectedRateFeedConfig.medianDeltaBreaker0.enabled) {
       bool medianDeltaEnabled = BreakerBox(breakerBox).isBreakerEnabled(
         medianDeltaBreaker,
         expectedRateFeedConfig.rateFeedID
       );
-      if (!medianDeltaEnabled) {
-        console2.log("MedianDeltaBreaker not enabled for rate feed %s", expectedRateFeedConfig.rateFeedID);
-        revert("MedianDeltaBreaker not enabled for all rate feeds");
-      }
+      require(medianDeltaEnabled, "❌ MedianDeltaBreaker not enabled");
     }
+    console2.log("🟢 MedianDeltaBreaker enabled on %s pool", cfgHelper.getFeedName(expectedRateFeedConfig.rateFeedID));
+  }
+
+  function verifyMedianDeltaBreaker(Config.RateFeed memory expectedRateFeedConfig) internal view {
+    uint256 actualCooldown = MedianDeltaBreaker(medianDeltaBreaker).getCooldown(expectedRateFeedConfig.rateFeedID);
+    uint256 actualRateChangeThreshold = MedianDeltaBreaker(medianDeltaBreaker).rateChangeThreshold(
+      expectedRateFeedConfig.rateFeedID
+    );
+    uint256 actualSmoothingFactor = MedianDeltaBreaker(medianDeltaBreaker).getSmoothingFactor(
+      expectedRateFeedConfig.rateFeedID
+    );
+
+    require(actualCooldown == expectedRateFeedConfig.medianDeltaBreaker0.cooldown, "❌ cooldown mismatch");
+    require(
+      actualRateChangeThreshold == expectedRateFeedConfig.medianDeltaBreaker0.threshold.unwrap(),
+      "❌ rate change threshold mismatch"
+    );
+    require(
+      actualSmoothingFactor == expectedRateFeedConfig.medianDeltaBreaker0.smoothingFactor,
+      "❌ smoothing factor mismatch"
+    );
+
     console2.log(
-      "🟢 Breakers enabled for the rate feed %s 🗳️",
+      "🟢 MedianDeltaBreaker cfg on %s was set correctly",
       cfgHelper.getFeedName(expectedRateFeedConfig.rateFeedID)
     );
   }
 
-  function verifyMedianDeltaBreaker(Config.RateFeed memory expectedRateFeedConfig) internal view {
-    // verify that cooldown period, rate change threshold and smoothing factor were set correctly
-    if (expectedRateFeedConfig.medianDeltaBreaker0.enabled) {
-      // Get the actual values from the deployed median delta breaker contract
-      uint256 cooldown = MedianDeltaBreaker(medianDeltaBreaker).getCooldown(expectedRateFeedConfig.rateFeedID);
-      uint256 rateChangeThreshold = MedianDeltaBreaker(medianDeltaBreaker).rateChangeThreshold(
-        expectedRateFeedConfig.rateFeedID
-      );
-      uint256 smoothingFactor = MedianDeltaBreaker(medianDeltaBreaker).getSmoothingFactor(
-        expectedRateFeedConfig.rateFeedID
-      );
-
-      // verify cooldown period
-      verifyCooldownTime(
-        cooldown,
-        expectedRateFeedConfig.medianDeltaBreaker0.cooldown,
-        expectedRateFeedConfig.rateFeedID,
-        false
-      );
-
-      // verify rate change threshold
-      verifyRateChangeTheshold(
-        rateChangeThreshold,
-        expectedRateFeedConfig.medianDeltaBreaker0.threshold.unwrap(),
-        expectedRateFeedConfig.rateFeedID,
-        false
-      );
-
-      // verify smoothing factor
-      if (smoothingFactor != expectedRateFeedConfig.medianDeltaBreaker0.smoothingFactor) {
-        console2.log("expected: %s", expectedRateFeedConfig.medianDeltaBreaker0.smoothingFactor);
-        console2.log("got:      %s", smoothingFactor);
-        console2.log(
-          "MedianDeltaBreaker smoothing factor not set correctly for the rate feed: %s",
-          expectedRateFeedConfig.rateFeedID
-        );
-        revert("MedianDeltaBreaker smoothing factor not set correctly for all rate feeds");
-      }
-    }
-    console2.log("🟢 MedianDeltaBreaker cooldown, rate change threshold and smoothing factor set correctly 🔒\r\n");
-  }
-
-  function verifyRateChangeTheshold(
-    uint256 currentThreshold,
-    uint256 expectedThreshold,
-    address rateFeedID,
-    bool isValueDeltaBreaker
-  ) internal view {
-    if (currentThreshold != expectedThreshold) {
-      if (isValueDeltaBreaker) {
-        console2.log("ValueDeltaBreaker rate change threshold not set correctly for rate feed with id %s", rateFeedID);
-        revert("ValueDeltaBreaker rate change threshold not set correctly for rate feed");
-      }
-      console2.log("MedianDeltaBreaker rate change threshold not set correctly for rate feed %s", rateFeedID);
-      revert("MedianDeltaBreaker rate change threshold not set correctly for all rate feeds");
-    }
-  }
-
-  function verifyCooldownTime(
-    uint256 currentCoolDown,
-    uint256 expectedCoolDown,
-    address rateFeedID,
-    bool isValueDeltaBreaker
-  ) internal view {
-    if (currentCoolDown != expectedCoolDown) {
-      console2.log("currentCoolDown: %s", currentCoolDown);
-      console2.log("expectedCoolDown: %s", expectedCoolDown);
-      if (isValueDeltaBreaker) {
-        console2.log("ValueDeltaBreaker cooldown not set correctly for rate feed with id %s", rateFeedID);
-        revert("ValueDeltaBreaker cooldown not set correctly for rate feed");
-      }
-      console2.log("MedianDeltaBreaker cooldown not set correctly for rate feed %s", rateFeedID);
-      revert("MedianDeltaBreaker cooldown not set correctly for all rate feeds");
-    }
-  }
-
-  function checkTradingLimits() internal {
-    console2.log("====🔍 Checking updated trading limits... ====");
+  function verifyUpdatedTradingLimits() internal {
+    console2.log("====🔍 Verifying updated trading limits... ====");
 
     IBrokerWithCasts _broker = IBrokerWithCasts(brokerProxy);
-    TradingLimitsCfg.Override[] memory overrides = tradingLimitsCfg.tradingLimitsOverrides();
 
+    TradingLimitsCfg.Override[] memory overrides = tradingLimitsCfg.tradingLimitsOverrides();
     for (uint256 i = 0; i < overrides.length; i++) {
       bytes32 exchangeId = referenceRateFeedIDToExchangeId[overrides[i].referenceRateFeedID];
 
@@ -412,42 +285,23 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
       bytes32 asset1LimitId = exchangeId ^ bytes32(uint256(uint160(overrides[i].asset1)));
       TradingLimits.Config memory asset1ActualLimit = _broker.tradingLimitsConfig(asset1LimitId);
 
-      checkTradingLimt(overrides[i].asset0Config, asset0ActualLimit);
-      checkTradingLimt(overrides[i].asset1Config, asset1ActualLimit);
+      compareTradingLimits(overrides[i].asset0Config, asset0ActualLimit);
+      compareTradingLimits(overrides[i].asset1Config, asset1ActualLimit);
 
       console2.log("✅ Trading limits updated for %s feed", cfgHelper.getFeedName(overrides[i].referenceRateFeedID));
     }
+    console2.log("\n");
   }
 
-  function checkTradingLimt(
+  function compareTradingLimits(
     Config.TradingLimit memory expectedTradingLimit,
     TradingLimits.Config memory actualTradingLimit
   ) internal view {
-    if (expectedTradingLimit.limit0 != actualTradingLimit.limit0) {
-      console2.log("limit0 was not set as expected ❌");
-      revert("Not all trading limits were configured correctly.");
-    }
-    if (expectedTradingLimit.limit1 != actualTradingLimit.limit1) {
-      console2.log("limit1 was not set as expected ❌");
-      revert("Not all trading limits were configured correctly.");
-    }
-    if (expectedTradingLimit.limitGlobal != actualTradingLimit.limitGlobal) {
-      console2.log("limitGlobal was not set as expected ❌");
-      revert("Not all trading limits were configured correctly.");
-    }
-    if (expectedTradingLimit.timeStep0 != actualTradingLimit.timestep0) {
-      console2.log("timestep0 was not set as expected ❌");
-      revert("Not all trading limits were configured correctly.");
-    }
-    if (expectedTradingLimit.timeStep1 != actualTradingLimit.timestep1) {
-      console2.log("timestep1 was not set as expected ❌");
-      revert("Not all trading limits were configured correctly.");
-    }
-
-    uint8 tradingLimitFlags = Config.tradingLimitConfigToFlag(expectedTradingLimit);
-    if (tradingLimitFlags != actualTradingLimit.flags) {
-      console2.log("flags were not set as expected ❌");
-      revert("Not all trading limits were configured correctly.");
-    }
+    require(expectedTradingLimit.limit0 == actualTradingLimit.limit0, "❌ limit0 mismatch");
+    require(expectedTradingLimit.limit1 == actualTradingLimit.limit1, "❌ limit1 mismatch");
+    require(expectedTradingLimit.limitGlobal == actualTradingLimit.limitGlobal, "❌ limitGlobal mismatch");
+    require(expectedTradingLimit.timeStep0 == actualTradingLimit.timestep0, "❌ timestep0 mismatch");
+    require(expectedTradingLimit.timeStep1 == actualTradingLimit.timestep1, "❌ timestep1 mismatch");
+    require(Config.tradingLimitConfigToFlag(expectedTradingLimit) == actualTradingLimit.flags, "❌ flags mismatch");
   }
 }
