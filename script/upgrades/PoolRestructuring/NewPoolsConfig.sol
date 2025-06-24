@@ -49,13 +49,6 @@ library NewPoolsConfig {
       rateFeedsConfig[i] = cfg;
     }
 
-    // rateFeedConfig.medianDeltaBreaker0 = Config.MedianDeltaBreaker({
-    //   enabled: true,
-    //   threshold: FixidityLib.newFixedFraction(4, 100), // 4%
-    //   cooldown: 15 minutes,
-    //   smoothingFactor: FixidityLib.newFixedFraction(5, 1000).unwrap() // 0.005
-    // });
-
     return rateFeedsConfig;
   }
 

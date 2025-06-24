@@ -19,10 +19,13 @@ import { IPricingModule } from "mento-core-2.5.0/interfaces/IPricingModule.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 
-import { PoolRestructuringConfig } from "./Config.sol";
-
 import { Config } from "script/utils/Config.sol";
 import { NewPoolsConfig } from "./NewPoolsConfig.sol";
+
+import { CfgHelper } from "script/upgrades/PoolRestructuring/CfgHelper.sol";
+import { PoolsCleanupCfg } from "script/upgrades/PoolRestructuring/PoolsCleanupCfg.sol";
+import { TradingLimitsCfg } from "script/upgrades/PoolRestructuring/TradingLimitsCfg.sol";
+import { ValueDeltaBreakerCfg } from "script/upgrades/PoolRestructuring/ValueDeltaBreakerCfg.sol";
 
 contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
   using TradingLimits for TradingLimits.Config;
@@ -31,7 +34,10 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
   bool public hasChecks = true;
   ICeloGovernance.Transaction[] private transactions;
 
-  PoolRestructuringConfig private config;
+  CfgHelper private cfgHelper;
+  PoolsCleanupCfg private poolsCleanupCfg;
+  TradingLimitsCfg private tradingLimitsCfg;
+  ValueDeltaBreakerCfg private valueDeltaBreakerCfg;
 
   address private brokerProxy;
   address private biPoolManagerProxy;
@@ -55,8 +61,12 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
   }
 
   function setAddresses() public {
-    config = new PoolRestructuringConfig();
-    config.load();
+    cfgHelper = new CfgHelper();
+    cfgHelper.load();
+
+    poolsCleanupCfg = new PoolsCleanupCfg(cfgHelper);
+    tradingLimitsCfg = new TradingLimitsCfg(cfgHelper);
+    valueDeltaBreakerCfg = new ValueDeltaBreakerCfg();
 
     brokerProxy = contracts.deployed("BrokerProxy");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
@@ -126,7 +136,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
       bytes32 exchangeId = exchangeIds[i];
       IBiPoolManager.PoolExchange memory currentExchange = biPoolManager.getPoolExchange(exchangeId);
 
-      if (!config.shouldBeDeleted(currentExchange)) {
+      if (!poolsCleanupCfg.shouldBeDeleted(currentExchange)) {
         continue;
       }
 
@@ -139,10 +149,10 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
         )
       );
 
-      if (config.shouldRecreateWithNewSpread(currentExchange)) {
+      if (poolsCleanupCfg.shouldRecreateWithNewSpread(currentExchange)) {
         creations++;
 
-        IBiPoolManager.PoolExchange memory newExchange = config.getPoolCfgWithNewSpread(currentExchange);
+        IBiPoolManager.PoolExchange memory newExchange = poolsCleanupCfg.getPoolCfgWithNewSpread(currentExchange);
         transactions.push(
           ICeloGovernance.Transaction(
             0,
@@ -155,12 +165,19 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
       if (i == 0) break;
     }
 
-    require(deletions == config.poolsToDelete().length, "❌ Number of deleted pools txs does not match expected");
-    require(creations == config.spreadOverrides().length, "❌ Number of created pools txs does not match expected");
+    require(
+      deletions == poolsCleanupCfg.poolsToDelete().length,
+      "❌ Number of deleted pools txs does not match expected"
+    );
+    require(
+      creations == poolsCleanupCfg.spreadOverrides().length,
+      "❌ Number of created pools txs does not match expected"
+    );
   }
 
   function updateValueDeltaBreakersThreshold() internal {
-    PoolRestructuringConfig.ValueDeltaBreakerOverride[] memory overrides = config.valueDeltaBreakerOverrides();
+    ValueDeltaBreakerCfg.ValueDeltaBreakerOverride[] memory overrides = valueDeltaBreakerCfg
+      .valueDeltaBreakerOverrides();
 
     for (uint256 i = 0; i < overrides.length; i++) {
       uint256 currentThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(overrides[i].rateFeedId);
@@ -180,7 +197,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
   }
 
   function updateTradingLimits() internal {
-    PoolRestructuringConfig.TradingLimitsOverride[] memory overrides = config.tradingLimitsOverrides();
+    TradingLimitsCfg.TradingLimitsOverride[] memory overrides = tradingLimitsCfg.tradingLimitsOverrides();
 
     for (uint256 i = 0; i < overrides.length; i++) {
       bytes32 exchangeId = referenceRateFeedIDToExchangeId[overrides[i].referenceRateFeedID];

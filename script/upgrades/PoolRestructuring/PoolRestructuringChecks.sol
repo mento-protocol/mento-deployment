@@ -16,9 +16,13 @@ import { MedianDeltaBreaker } from "mento-core-2.5.0/oracles/breakers/MedianDelt
 import { ValueDeltaBreaker } from "mento-core-2.5.0/oracles/breakers/ValueDeltaBreaker.sol";
 import { TradingLimits } from "mento-core-2.5.0/libraries/TradingLimits.sol";
 
-import { PoolRestructuringConfig } from "./Config.sol";
 import { Config } from "script/utils/Config.sol";
 import { NewPoolsConfig } from "./NewPoolsConfig.sol";
+
+import { CfgHelper } from "script/upgrades/PoolRestructuring/CfgHelper.sol";
+import { PoolsCleanupCfg } from "script/upgrades/PoolRestructuring/PoolsCleanupCfg.sol";
+import { TradingLimitsCfg } from "script/upgrades/PoolRestructuring/TradingLimitsCfg.sol";
+import { ValueDeltaBreakerCfg } from "script/upgrades/PoolRestructuring/ValueDeltaBreakerCfg.sol";
 
 interface IBrokerWithCasts {
   function tradingLimitsConfig(bytes32 id) external view returns (TradingLimits.Config memory);
@@ -28,7 +32,10 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
   using TradingLimits for TradingLimits.Config;
   using Contracts for Contracts.Cache;
 
-  PoolRestructuringConfig private config;
+  CfgHelper private cfgHelper;
+  PoolsCleanupCfg private poolsCleanupCfg;
+  TradingLimitsCfg private tradingLimitsCfg;
+  ValueDeltaBreakerCfg private valueDeltaBreakerCfg;
 
   address private brokerProxy;
   address private biPoolManagerProxy;
@@ -47,8 +54,12 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     contracts.loadSilent("MU07-Deploy-ChainlinkRelayerFactory", "latest");
     contracts.loadSilent("eXOF-00-Create-Proxies", "latest");
 
-    config = new PoolRestructuringConfig();
-    config.load();
+    cfgHelper = new CfgHelper();
+    cfgHelper.load();
+
+    poolsCleanupCfg = new PoolsCleanupCfg(cfgHelper);
+    tradingLimitsCfg = new TradingLimitsCfg(cfgHelper);
+    valueDeltaBreakerCfg = new ValueDeltaBreakerCfg();
 
     brokerProxy = contracts.deployed("BrokerProxy");
     biPoolManagerProxy = contracts.deployed("BiPoolManagerProxy");
@@ -101,34 +112,39 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
       bytes32 exchangeId = exchangeIds[i];
       IBiPoolManager.PoolExchange memory exchange = biPoolManager.getPoolExchange(exchangeId);
 
-      if (config.shouldBeDeleted(exchange)) {
+      if (poolsCleanupCfg.shouldBeDeleted(exchange)) {
         // If this pool was supposed to be deleted but it's still there, it means it was part of the ones that
         // had to be re-created with a new spread.
         require(
-          config.shouldRecreateWithNewSpread(exchange),
+          poolsCleanupCfg.shouldRecreateWithNewSpread(exchange),
           "❌ Failed to delete pool without a newly proposed spread"
         );
 
-        (, FixidityLib.Fraction memory targetSpread) = config.getCurrentAndTargetSpread(exchange);
+        (, FixidityLib.Fraction memory targetSpread) = poolsCleanupCfg.getCurrentAndTargetSpread(exchange);
         require(FixidityLib.equals(exchange.config.spread, targetSpread), "❌ Re-created pool with wrong spread");
 
-        console2.log("✅ Re-created pool %s with new spread", config.getFeedName(exchange.config.referenceRateFeedID));
+        console2.log(
+          "✅ Re-created pool %s with new spread",
+          cfgHelper.getFeedName(exchange.config.referenceRateFeedID)
+        );
       }
     }
 
-    uint256 poolsDeletedButNotRecreated = config.poolsToDelete().length - config.spreadOverrides().length;
+    uint256 poolsDeletedButNotRecreated = poolsCleanupCfg.poolsToDelete().length -
+      poolsCleanupCfg.spreadOverrides().length;
     console2.log("✅ Other non-USD pools (%d) were permanently deleted\n", poolsDeletedButNotRecreated);
   }
 
   function checkValueDeltaBreakersThresholds() internal {
     console2.log("====🔍 Checking updated ValueDeltaBreaker thresholds... ====");
 
-    PoolRestructuringConfig.ValueDeltaBreakerOverride[] memory overrides = config.valueDeltaBreakerOverrides();
+    ValueDeltaBreakerCfg.ValueDeltaBreakerOverride[] memory overrides = valueDeltaBreakerCfg
+      .valueDeltaBreakerOverrides();
     for (uint256 i = 0; i < overrides.length; i++) {
       uint256 currentThreshold = ValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(overrides[i].rateFeedId);
       require(currentThreshold == overrides[i].targetThreshold, "❌ ValueDeltaBreaker threshold not updated");
 
-      console2.log("✅ Threshold updated for %s feed", config.getFeedName(overrides[i].rateFeedId));
+      console2.log("✅ Threshold updated for %s feed", cfgHelper.getFeedName(overrides[i].rateFeedId));
     }
     console2.log("\n");
   }
@@ -201,7 +217,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
 
     console2.log(
       "🟢 PoolExchange for %s has correct assets and pricing 🤘🏼",
-      config.getFeedName(deployedPool.config.referenceRateFeedID)
+      cfgHelper.getFeedName(deployedPool.config.referenceRateFeedID)
     );
   }
 
@@ -261,7 +277,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
       revert("stablePoolResetSize of pool does not match the expected stablePoolResetSize. See logs.");
     }
 
-    console2.log("🟢 Pool config for %s is correct🤘🏼", config.getFeedName(deployedPool.config.referenceRateFeedID));
+    console2.log("🟢 Pool config for %s is correct🤘🏼", cfgHelper.getFeedName(deployedPool.config.referenceRateFeedID));
   }
 
   function verifyTradingLimits(bytes32 exchangeId, Config.Pool memory expectedPoolConfig) internal view {
@@ -278,7 +294,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     checkTradingLimt(expectedPoolConfig.asset0limits, asset0ActualLimit);
     checkTradingLimt(expectedPoolConfig.asset1limits, asset1ActualLimit);
 
-    console2.log("🟢 Trading limits set for %s 🔒", config.getFeedName(pool.config.referenceRateFeedID));
+    console2.log("🟢 Trading limits set for %s 🔒", cfgHelper.getFeedName(pool.config.referenceRateFeedID));
   }
 
   function verifyBreakersAreEnabled(Config.RateFeed memory expectedRateFeedConfig) internal view {
@@ -293,7 +309,10 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
         revert("MedianDeltaBreaker not enabled for all rate feeds");
       }
     }
-    console2.log("🟢 Breakers enabled for the rate feed %s 🗳️", config.getFeedName(expectedRateFeedConfig.rateFeedID));
+    console2.log(
+      "🟢 Breakers enabled for the rate feed %s 🗳️",
+      cfgHelper.getFeedName(expectedRateFeedConfig.rateFeedID)
+    );
   }
 
   function verifyMedianDeltaBreaker(Config.RateFeed memory expectedRateFeedConfig) internal view {
@@ -376,7 +395,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     console2.log("====🔍 Checking updated trading limits... ====");
 
     IBrokerWithCasts _broker = IBrokerWithCasts(brokerProxy);
-    PoolRestructuringConfig.TradingLimitsOverride[] memory overrides = config.tradingLimitsOverrides();
+    TradingLimitsCfg.TradingLimitsOverride[] memory overrides = tradingLimitsCfg.tradingLimitsOverrides();
 
     for (uint256 i = 0; i < overrides.length; i++) {
       bytes32 exchangeId = referenceRateFeedIDToExchangeId[overrides[i].referenceRateFeedID];
@@ -390,7 +409,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
       checkTradingLimt(overrides[i].asset0Config, asset0ActualLimit);
       checkTradingLimt(overrides[i].asset1Config, asset1ActualLimit);
 
-      console2.log("✅ Trading limits updated for %s feed", config.getFeedName(overrides[i].referenceRateFeedID));
+      console2.log("✅ Trading limits updated for %s feed", cfgHelper.getFeedName(overrides[i].referenceRateFeedID));
     }
   }
 
