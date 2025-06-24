@@ -202,8 +202,6 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
       bytes32 exchangeId = referenceRateFeedIDToExchangeId[overrides[i].referenceRateFeedID];
       require(exchangeId != bytes32(0), "❌ Exchange ID not found for trading limits override");
 
-      bytes32 limit0Id = exchangeId ^ bytes32(uint256(uint160(overrides[i].asset0)));
-
       transactions.push(
         ICeloGovernance.Transaction(
           0,

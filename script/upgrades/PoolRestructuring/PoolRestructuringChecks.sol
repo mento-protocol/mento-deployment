@@ -83,7 +83,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     verifyUpdatedTradingLimits();
 
     NewPoolsCfg.NewPools memory newPoolsCfg = NewPoolsCfg.get(contracts);
-    verifyNewPools(newPoolsCfg.pools);
+    verifyNewPools();
     verifyCircuitBreaker(newPoolsCfg.rateFeedsConfig);
   }
 
@@ -145,7 +145,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
     console2.log("\n");
   }
 
-  function verifyNewPools(Config.Pool[] memory poolConfigs) internal {
+  function verifyNewPools() internal {
     console2.log("===🔍 Verifying additional created pools ===");
 
     NewPoolsCfg.NewPools memory newPoolsCfg = NewPoolsCfg.get(contracts);
@@ -157,7 +157,7 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
           poolsCleanupCfg.poolsToDelete().length + // pools that were deleted
           poolsCleanupCfg.spreadOverrides().length + // pools that were re-created with a new spread
           newPoolsCfg.pools.length, // 3 additional cUSD pools
-      "Number of expected pools does not match the number of deployed pools."
+      "❌ number of pools mismatch"
     );
 
     for (uint256 i = 0; i < newPoolsCfg.pools.length; i++) {
