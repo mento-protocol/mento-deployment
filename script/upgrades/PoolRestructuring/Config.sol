@@ -7,8 +7,14 @@ import { Arrays } from "script/utils/Arrays.sol";
 import { console2 } from "forge-std/console2.sol";
 import { GovernanceScript } from "script/utils/Script.sol";
 import { IBiPoolManager, FixidityLib } from "mento-core-2.5.0/interfaces/IBiPoolManager.sol";
+// import { TradingLimits } from "mento-core-2.5.0/libraries/TradingLimits.sol";
+import { Config } from "script/utils/Config.sol";
+
+// import { Config } from "script/utils/Config.sol";
 
 contract PoolRestructuringConfig is GovernanceScript {
+  // using TradingLimits for TradingLimits.Config;
+
   struct PoolToDelete {
     address asset0;
     address asset1;
@@ -29,6 +35,16 @@ contract PoolRestructuringConfig is GovernanceScript {
     uint256 targetThreshold;
   }
 
+  struct TradingLimitsOverride {
+    address asset0;
+    address asset1;
+    // TradingLimits.Config asset0Config;
+    // TradingLimits.Config asset1Config;
+    address referenceRateFeedID;
+    Config.TradingLimit asset0Config;
+    Config.TradingLimit asset1Config;
+  }
+
   mapping(address => string) private rateFeedIdToName;
 
   address private CELOProxy;
@@ -39,6 +55,15 @@ contract PoolRestructuringConfig is GovernanceScript {
   address private cKESProxy;
   address private cCADProxy;
   address private cAUDProxy;
+  address private cCHFProxy;
+  address private cGBPProxy;
+  address private cZARProxy;
+  address private cJPYProxy;
+  address private cNGNProxy;
+  address private PUSOProxy;
+  address private cCOPProxy;
+  address private cGHSProxy;
+
   address private nativeUSDCProxy;
   address private nativeUSDTProxy;
   address private axlUSDCProxy;
@@ -48,6 +73,10 @@ contract PoolRestructuringConfig is GovernanceScript {
     contracts.load("cKES-00-Create-Proxies", "latest");
     contracts.load("eXOF-00-Create-Proxies", "latest");
     contracts.loadSilent("FX00-00-Deploy-Proxys", "latest");
+    contracts.loadSilent("FX02-00-Deploy-Proxys", "latest");
+    contracts.loadSilent("PUSO-00-Create-Proxies", "latest");
+    contracts.loadSilent("cCOP-00-Create-Proxies", "latest");
+    contracts.loadSilent("cGHS-00-Deploy-Proxy", "latest");
 
     CELOProxy = contracts.celoRegistry("GoldToken");
     cUSDProxy = contracts.celoRegistry("StableToken");
@@ -57,6 +86,15 @@ contract PoolRestructuringConfig is GovernanceScript {
     cKESProxy = contracts.deployed("StableTokenKESProxy");
     cCADProxy = contracts.deployed("StableTokenCADProxy");
     cAUDProxy = contracts.deployed("StableTokenAUDProxy");
+    cCHFProxy = contracts.deployed("StableTokenCHFProxy");
+    cGBPProxy = contracts.deployed("StableTokenGBPProxy");
+    cZARProxy = contracts.deployed("StableTokenZARProxy");
+    cJPYProxy = contracts.deployed("StableTokenJPYProxy");
+    cNGNProxy = contracts.deployed("StableTokenNGNProxy");
+    PUSOProxy = contracts.deployed("StableTokenPHPProxy");
+    cCOPProxy = contracts.deployed("StableTokenCOPProxy");
+    cGHSProxy = contracts.deployed("StableTokenGHSProxy");
+
     nativeUSDCProxy = contracts.dependency("NativeUSDC");
     nativeUSDTProxy = contracts.dependency("NativeUSDT");
     axlUSDCProxy = contracts.dependency("BridgedUSDC");
@@ -85,6 +123,13 @@ contract PoolRestructuringConfig is GovernanceScript {
     rateFeedIdToName[toRateFeedId("relayed:PHPUSD")] = "PHP/USD";
     rateFeedIdToName[toRateFeedId("relayed:CADUSD")] = "CAD/USD";
     rateFeedIdToName[toRateFeedId("relayed:AUDUSD")] = "AUD/USD";
+    rateFeedIdToName[toRateFeedId("relayed:JPYUSD")] = "JPY/USD";
+    rateFeedIdToName[toRateFeedId("relayed:NGNUSD")] = "NGN/USD";
+    rateFeedIdToName[toRateFeedId("relayed:COPUSD")] = "COP/USD";
+    rateFeedIdToName[toRateFeedId("relayed:GHSUSD")] = "GHS/USD";
+    rateFeedIdToName[toRateFeedId("relayed:CHFUSD")] = "CHF/USD";
+    rateFeedIdToName[toRateFeedId("relayed:ZARUSD")] = "ZAR/USD";
+    rateFeedIdToName[toRateFeedId("relayed:GBPUSD")] = "GBP/USD";
   }
 
   function getFeedName(address rateFeedId) public view returns (string memory) {
@@ -174,6 +219,336 @@ contract PoolRestructuringConfig is GovernanceScript {
       currentThreshold: 5000000000000000000000, // 0.005 or 5e21
       targetThreshold: 1000000000000000000000 // 0.001 or 1e21
     });
+    return overrides;
+  }
+
+  function tradingLimitsOverrides() public view returns (TradingLimitsOverride[] memory) {
+    TradingLimitsOverride[] memory overrides = new TradingLimitsOverride[](13);
+
+    // cEUR/axlEUROC
+    overrides[0] = TradingLimitsOverride({
+      asset0: cEURProxy,
+      asset1: axlEUROCProxy,
+      referenceRateFeedID: toRateFeedId("EUROCEUR"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: false,
+        limitGlobal: 0
+      }),
+      asset1Config: Config.emptyTradingLimitConfig()
+    });
+
+    // cUSD/nativeUSDT
+    overrides[1] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: nativeUSDTProxy,
+      referenceRateFeedID: toRateFeedId("USDTUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 2_500_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 5_000_000,
+        enabledGlobal: false,
+        limitGlobal: 0
+      }),
+      asset1Config: Config.emptyTradingLimitConfig()
+    });
+
+    // cUSD/PUSO
+    overrides[2] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: PUSOProxy,
+      referenceRateFeedID: toRateFeedId("relayed:PHPUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: true,
+        limitGlobal: 2_500_000
+      }),
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 5_700_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 28_500_000,
+        enabledGlobal: true,
+        limitGlobal: 142_500_000
+      })
+    });
+
+    // cUSD/JPY
+    overrides[3] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: cJPYProxy,
+      referenceRateFeedID: toRateFeedId("relayed:JPYUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: true,
+        limitGlobal: 2_500_000
+      }),
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 14_200_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 71_000_000,
+        enabledGlobal: true,
+        limitGlobal: 355_000_000
+      })
+    });
+
+    // cUSD/cCOP
+    overrides[4] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: cCOPProxy,
+      referenceRateFeedID: toRateFeedId("relayed:COPUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 50_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 250_000,
+        enabledGlobal: true,
+        limitGlobal: 1_250_000
+      }),
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 210_550_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 1_052_750_000,
+        enabledGlobal: true,
+        limitGlobal: 5_263_750_000
+      })
+    });
+
+    // cUSD/cGHS
+    overrides[5] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: cGHSProxy,
+      referenceRateFeedID: toRateFeedId("relayed:GHSUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 50_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 250_000,
+        enabledGlobal: true,
+        limitGlobal: 1_250_000
+      }),
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 500_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 2_500_000,
+        enabledGlobal: true,
+        limitGlobal: 12_500_000
+      })
+    });
+
+    // cUSD/cGBP
+    overrides[6] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: cGBPProxy,
+      referenceRateFeedID: toRateFeedId("relayed:GBPUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: true,
+        limitGlobal: 2_500_000
+      }),
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 77_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 385_000,
+        enabledGlobal: true,
+        limitGlobal: 1_925_000
+      })
+    });
+
+    // cUSD/cZAR
+    overrides[7] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: cZARProxy,
+      referenceRateFeedID: toRateFeedId("relayed:ZARUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: true,
+        limitGlobal: 2_500_000
+      }),
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 1_800_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 9_000_000,
+        enabledGlobal: true,
+        limitGlobal: 45_000_000
+      })
+    });
+
+    // cUSD/cCAD
+    overrides[8] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: cCADProxy,
+      referenceRateFeedID: toRateFeedId("relayed:CADUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: true,
+        limitGlobal: 2_500_000
+      }),
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 140_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 700_000,
+        enabledGlobal: true,
+        limitGlobal: 3_500_000
+      })
+    });
+
+    // cUSD/cAUD
+    overrides[9] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: cAUDProxy,
+      referenceRateFeedID: toRateFeedId("relayed:AUDUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: true,
+        limitGlobal: 2_500_000
+      }),
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 160_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 800_000,
+        enabledGlobal: true,
+        limitGlobal: 4_000_000
+      })
+    });
+
+    // cUSD/cCHF
+    overrides[10] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: cCHFProxy,
+      referenceRateFeedID: toRateFeedId("relayed:CHFUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: true,
+        limitGlobal: 2_500_000
+      }),
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 83_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 415_000,
+        enabledGlobal: true,
+        limitGlobal: 2_075_000
+      })
+    });
+
+    // cUSD/cNGN
+    overrides[11] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: cNGNProxy,
+      referenceRateFeedID: toRateFeedId("relayed:NGNUSD"),
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: true,
+        limitGlobal: 2_500_000
+      }),
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 161_200_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 806_000_000,
+        enabledGlobal: true,
+        limitGlobal: 4_030_000_000
+      })
+    });
+
+    // cUSD/CELO
+    overrides[12] = TradingLimitsOverride({
+      asset0: cUSDProxy,
+      asset1: CELOProxy,
+      referenceRateFeedID: cUSDProxy,
+      asset0Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: false,
+        limitGlobal: 0
+      }),
+      asset1Config: Config.emptyTradingLimitConfig()
+    });
+
     return overrides;
   }
 
