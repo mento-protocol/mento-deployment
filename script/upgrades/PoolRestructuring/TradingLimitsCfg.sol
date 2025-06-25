@@ -41,7 +41,16 @@ contract TradingLimitsCfg is GovernanceScript {
         enabledGlobal: false,
         limitGlobal: 0
       }),
-      asset1Config: Config.emptyTradingLimitConfig()
+      asset1Config: Config.TradingLimit({
+        enabled0: true,
+        timeStep0: 5 minutes,
+        limit0: 100_000,
+        enabled1: true,
+        timeStep1: 1 days,
+        limit1: 500_000,
+        enabledGlobal: false,
+        limitGlobal: 0
+      })
     });
 
     // cUSD/nativeUSDT
@@ -98,23 +107,23 @@ contract TradingLimitsCfg is GovernanceScript {
       asset0Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 50_000,
+        limit0: 100_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 250_000,
+        limit1: 500_000,
         enabledGlobal: true,
-        limitGlobal: 1_250_000
+        limitGlobal: 2_500_000
       }),
       // 1 USD ≈ 142 JPY
       asset1Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 7_100_000,
+        limit0: 14_200_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 35_500_000,
+        limit1: 71_000_000,
         enabledGlobal: true,
-        limitGlobal: 177_500_000
+        limitGlobal: 355_000_000
       })
     });
 
@@ -182,23 +191,23 @@ contract TradingLimitsCfg is GovernanceScript {
       asset0Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 50_000,
+        limit0: 100_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 250_000,
+        limit1: 500_000,
         enabledGlobal: true,
-        limitGlobal: 1_250_000
+        limitGlobal: 2_500_000
       }),
       // 1 USD ≈ 0.77 GBP
       asset1Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 38_500,
+        limit0: 77_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 192_500,
+        limit1: 385_000,
         enabledGlobal: true,
-        limitGlobal: 962_500
+        limitGlobal: 1_925_000
       })
     });
 
@@ -238,23 +247,23 @@ contract TradingLimitsCfg is GovernanceScript {
       asset0Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 50_000,
+        limit0: 100_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 250_000,
+        limit1: 500_000,
         enabledGlobal: true,
-        limitGlobal: 1_250_000
+        limitGlobal: 2_500_000
       }),
       // 1 USD ≈ 1.4 CAD
       asset1Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 70_000,
+        limit0: 140_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 350_000,
+        limit1: 700_000,
         enabledGlobal: true,
-        limitGlobal: 1_750_000
+        limitGlobal: 3_500_000
       })
     });
 
@@ -266,23 +275,23 @@ contract TradingLimitsCfg is GovernanceScript {
       asset0Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 50_000,
+        limit0: 100_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 250_000,
+        limit1: 500_000,
         enabledGlobal: true,
-        limitGlobal: 1_250_000
+        limitGlobal: 2_500_000
       }),
       // 1 USD ≈ 1.6 AUD
       asset1Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 80_000,
+        limit0: 160_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 400_000,
+        limit1: 800_000,
         enabledGlobal: true,
-        limitGlobal: 2_000_000
+        limitGlobal: 4_000_000
       })
     });
 
@@ -294,23 +303,23 @@ contract TradingLimitsCfg is GovernanceScript {
       asset0Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 50_000,
+        limit0: 100_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 250_000,
+        limit1: 500_000,
         enabledGlobal: true,
-        limitGlobal: 1_250_000
+        limitGlobal: 2_500_000
       }),
       // 1 USD ≈ 0.83 CHF
       asset1Config: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 41_500,
+        limit0: 83_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 207_500,
+        limit1: 415_000,
         enabledGlobal: true,
-        limitGlobal: 1_037_500
+        limitGlobal: 2_075_000
       })
     });
 
