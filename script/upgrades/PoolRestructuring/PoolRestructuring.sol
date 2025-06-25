@@ -104,7 +104,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
       // TODO: Update with proposal link
-      createProposal(_transactions, "TODO", governance);
+      createProposal(_transactions, "https://google.com", governance);
     }
     vm.stopBroadcast();
   }
@@ -401,6 +401,21 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
         )
       )
     );
+
+    if (isXOFPool(rateFeed.rateFeedID)) {
+      require(rateFeed.dependentRateFeeds.length == 1, "❌ expected XOF/USD to have a dependent rate feed");
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          breakerBox,
+          abi.encodeWithSelector(
+            BreakerBox(0).setRateFeedDependencies.selector,
+            rateFeed.rateFeedID,
+            rateFeed.dependentRateFeeds
+          )
+        )
+      );
+    }
   }
 
   function isSameTradingLimitConfig(
@@ -417,5 +432,9 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
     if (limit1 != newConfig.limit1) return false;
     if (limitGlobal != newConfig.limitGlobal) return false;
     return true;
+  }
+
+  function isXOFPool(address rateFeedID) internal pure returns (bool) {
+    return rateFeedID == Config.rateFeedID("relayed:XOFUSD");
   }
 }

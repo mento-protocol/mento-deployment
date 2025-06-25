@@ -263,6 +263,22 @@ contract PoolRestructuringChecks is GovernanceScript, Test {
       "🟢 MedianDeltaBreaker cfg on %s was set correctly",
       cfgHelper.getFeedName(expectedRateFeedConfig.rateFeedID)
     );
+
+    if (expectedRateFeedConfig.dependentRateFeeds.length > 0) {
+      require(
+        expectedRateFeedConfig.rateFeedID == Config.rateFeedID("relayed:XOFUSD"),
+        "❌ unexpected feed with dependency"
+      );
+      require(expectedRateFeedConfig.dependentRateFeeds.length == 1, "❌ expected XOF/USD to have a single dependency");
+
+      address dependency = BreakerBox(breakerBox).rateFeedDependencies(expectedRateFeedConfig.rateFeedID, 0);
+      require(dependency == expectedRateFeedConfig.dependentRateFeeds[0], "❌ dependent rate feed mismatch");
+
+      console2.log(
+        "🟢 %s has the expected dependent rate feed",
+        cfgHelper.getFeedName(expectedRateFeedConfig.rateFeedID)
+      );
+    }
   }
 
   function verifyUpdatedTradingLimits() internal {

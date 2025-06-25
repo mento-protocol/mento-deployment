@@ -46,6 +46,11 @@ library NewPoolsCfg {
         cooldown: 15 minutes,
         smoothingFactor: FixidityLib.newFixedFraction(5, 1000).unwrap() // 0.005
       });
+
+      if (isXOFPool(rateFeedIDs[i])) {
+        cfg.dependentRateFeeds = Arrays.addresses(Config.rateFeedID("EURXOF"));
+      }
+
       rateFeedsConfig[i] = cfg;
     }
 
@@ -158,5 +163,9 @@ library NewPoolsCfg {
         limitGlobal: 555_000_000
       })
     });
+  }
+
+  function isXOFPool(address rateFeedID) internal pure returns (bool) {
+    return rateFeedID == Config.rateFeedID("relayed:XOFUSD");
   }
 }
