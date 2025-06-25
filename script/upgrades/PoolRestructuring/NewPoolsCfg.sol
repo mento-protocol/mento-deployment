@@ -74,15 +74,16 @@ library NewPoolsCfg {
         enabledGlobal: true,
         limitGlobal: 2_500_000
       }),
+      // 1 USD ≈ 0.86 EUR
       asset1limits: Config.TradingLimit({
         enabled0: true,
         timeStep0: 5 minutes,
-        limit0: 100_000,
+        limit0: 86_000,
         enabled1: true,
         timeStep1: 1 days,
-        limit1: 500_000,
+        limit1: 430_000,
         enabledGlobal: true,
-        limitGlobal: 2_500_000
+        limitGlobal: 2_150_000
       })
     });
   }
