@@ -103,6 +103,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
+      // TODO: Update with proposal link
       createProposal(_transactions, "TODO", governance);
     }
     vm.stopBroadcast();
@@ -183,6 +184,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
       require(currentThreshold == overrides[i].currentThreshold, "❌ Current threshold mismatch");
     }
 
+    require(overrides.length == 2, "❌ Expected only 2 value delta breaker overrides");
     address[] memory rateFeedIds = Arrays.addresses(overrides[0].rateFeedId, overrides[1].rateFeedId);
     uint256[] memory newThresholds = Arrays.uints(overrides[0].targetThreshold, overrides[1].targetThreshold);
 
@@ -253,7 +255,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
     }
 
     for (uint256 i = 0; i < newPoolsCfg.rateFeedsConfig.length; i++) {
-      proosal_configureBreakerBox(newPoolsCfg.rateFeedsConfig[i]);
+      proposal_configureBreakerBox(newPoolsCfg.rateFeedsConfig[i]);
       proposal_configureMedianDeltaBreaker(newPoolsCfg.rateFeedsConfig[i]);
     }
   }
@@ -331,7 +333,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
     );
   }
 
-  function proosal_configureBreakerBox(Config.RateFeed memory rateFeed) private {
+  function proposal_configureBreakerBox(Config.RateFeed memory rateFeed) private {
     require(rateFeed.medianDeltaBreaker0.enabled, "❌ MedianDeltaBreaker not enabled");
     require(
       MedianDeltaBreaker(medianDeltaBreaker).medianRatesEMA(rateFeed.rateFeedID) == 0,
