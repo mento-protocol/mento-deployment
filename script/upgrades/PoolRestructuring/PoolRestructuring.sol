@@ -103,8 +103,7 @@ contract PoolRestructuring is IMentoUpgrade, GovernanceScript {
 
     vm.startBroadcast(Chain.deployerPrivateKey());
     {
-      // TODO: Update with proposal link
-      createProposal(_transactions, "https://google.com", governance);
+      createProposal(_transactions, "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0187.md", governance);
     }
     vm.stopBroadcast();
   }
