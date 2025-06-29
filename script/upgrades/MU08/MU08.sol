@@ -66,6 +66,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   address private brokerProxy;
   address private biPoolManagerProxy;
   address private reserveProxy;
+  address private sortedOraclesProxy;
   address private breakerBox;
   address private medianDeltaBreaker;
   address private valueDeltaBreaker;
@@ -141,6 +142,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
     biPoolManagerProxy = address(uint160(contracts.deployed("BiPoolManagerProxy")));
     reserveProxy = address(uint160(contracts.celoRegistry("Reserve")));
+    sortedOraclesProxy = address(uint160(contracts.celoRegistry("SortedOracles")));
     breakerBox = address(uint160(contracts.deployed("BreakerBox")));
     medianDeltaBreaker = address(uint160(contracts.deployed("MedianDeltaBreaker")));
     valueDeltaBreaker = address(uint160(contracts.deployed("ValueDeltaBreaker")));
@@ -394,7 +396,12 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_transferMentoV2Ownership() public {
-    address[] memory mentoV2Proxies = Arrays.addresses(brokerProxy, biPoolManagerProxy, reserveProxy);
+    address[] memory mentoV2Proxies = Arrays.addresses(
+      brokerProxy,
+      biPoolManagerProxy,
+      reserveProxy,
+      sortedOraclesProxy
+    );
     for (uint i = 0; i < mentoV2Proxies.length; i++) {
       transferOwnership(mentoV2Proxies[i]);
       transferProxyAdmin(mentoV2Proxies[i]);

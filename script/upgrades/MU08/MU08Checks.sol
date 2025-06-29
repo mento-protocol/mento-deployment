@@ -52,6 +52,7 @@ contract MU08Checks is GovernanceScript, Test {
   address private brokerProxy;
   address private biPoolManagerProxy;
   address private reserveProxy;
+  address private sortedOraclesProxy;
   address private breakerBox;
   address private medianDeltaBreaker;
   address private valueDeltaBreaker;
@@ -112,6 +113,7 @@ contract MU08Checks is GovernanceScript, Test {
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
     biPoolManagerProxy = address(uint160(contracts.deployed("BiPoolManagerProxy")));
     reserveProxy = address(uint160(contracts.celoRegistry("Reserve")));
+    sortedOraclesProxy = address(uint160(contracts.celoRegistry("SortedOracles")));
     breakerBox = address(uint160(contracts.deployed("BreakerBox")));
     medianDeltaBreaker = address(uint160(contracts.deployed("MedianDeltaBreaker")));
     valueDeltaBreaker = address(uint160(contracts.deployed("ValueDeltaBreaker")));
@@ -300,7 +302,12 @@ contract MU08Checks is GovernanceScript, Test {
 
   function verifyMentoV2Ownership() public {
     console.log("\n== Verifying MentoV2 contract ownerships: ==");
-    address[] memory mentoV2Proxies = Arrays.addresses(brokerProxy, biPoolManagerProxy, reserveProxy);
+    address[] memory mentoV2Proxies = Arrays.addresses(
+      brokerProxy,
+      biPoolManagerProxy,
+      reserveProxy,
+      sortedOraclesProxy
+    );
     for (uint256 i = 0; i < mentoV2Proxies.length; i++) {
       verifyProxyAndImplementationOwnership(mentoV2Proxies[i]);
     }
