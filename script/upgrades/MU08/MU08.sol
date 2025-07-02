@@ -66,6 +66,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   address private brokerProxy;
   address private biPoolManagerProxy;
   address private reserveProxy;
+  address private sortedOraclesProxy;
   address private breakerBox;
   address private medianDeltaBreaker;
   address private valueDeltaBreaker;
@@ -141,6 +142,7 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     brokerProxy = address(uint160(contracts.deployed("BrokerProxy")));
     biPoolManagerProxy = address(uint160(contracts.deployed("BiPoolManagerProxy")));
     reserveProxy = address(uint160(contracts.celoRegistry("Reserve")));
+    sortedOraclesProxy = address(uint160(contracts.celoRegistry("SortedOracles")));
     breakerBox = address(uint160(contracts.deployed("BreakerBox")));
     medianDeltaBreaker = address(uint160(contracts.deployed("MedianDeltaBreaker")));
     valueDeltaBreaker = address(uint160(contracts.deployed("ValueDeltaBreaker")));
@@ -385,11 +387,6 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
     // so we only need to transfer ownership of that single contract.
     address sharedImplementation = IProxyLite(cUSDProxy)._getImplementation();
     for (uint i = 0; i < tokenProxies.length; i++) {
-      if (tokenProxies[i] == cGHSProxy) {
-        // cGHS is not yet initialized, so it doesn't have an implementation
-        continue;
-      }
-
       require(
         IProxyLite(tokenProxies[i])._getImplementation() == sharedImplementation,
         "Token proxies not poiting to cUSD implementation"
@@ -399,7 +396,12 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function proposal_transferMentoV2Ownership() public {
-    address[] memory mentoV2Proxies = Arrays.addresses(brokerProxy, biPoolManagerProxy, reserveProxy);
+    address[] memory mentoV2Proxies = Arrays.addresses(
+      brokerProxy,
+      biPoolManagerProxy,
+      reserveProxy,
+      sortedOraclesProxy
+    );
     for (uint i = 0; i < mentoV2Proxies.length; i++) {
       transferOwnership(mentoV2Proxies[i]);
       transferProxyAdmin(mentoV2Proxies[i]);
@@ -437,12 +439,8 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function transferOwnership(address contractAddr) internal {
-    bool isGHS = contractAddr == cGHSProxy;
-
-    if (
-      isGHS ||
-      (IOwnableLite(contractAddr).owner() != timelockProxy && IOwnableLite(contractAddr).owner() == celoGovernance)
-    ) {
+    address contractOwner = IOwnableLite(contractAddr).owner();
+    if (contractOwner != timelockProxy && contractOwner == celoGovernance) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,
@@ -454,12 +452,8 @@ contract MU08 is IMentoUpgrade, GovernanceScript {
   }
 
   function transferProxyAdmin(address contractAddr) internal {
-    bool isGHS = contractAddr == cGHSProxy;
-
-    if (
-      isGHS ||
-      (IProxyLite(contractAddr)._getOwner() != timelockProxy && IProxyLite(contractAddr)._getOwner() == celoGovernance)
-    ) {
+    address proxyAdmin = IProxyLite(contractAddr)._getOwner();
+    if (proxyAdmin != timelockProxy && proxyAdmin == celoGovernance) {
       transactions.push(
         ICeloGovernance.Transaction({
           value: 0,
