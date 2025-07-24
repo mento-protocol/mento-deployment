@@ -1,6 +1,6 @@
 ## TL;DR
 
-This proposal unpauses the Mento Token, enabling normal token transfers for all users. Initially launched as a non-transferable governance token, the MENTO token was designed with a future option to become transferable contingent upon the protocol’s maturity, as well as community and market readiness. Given Mento's significant progress, product traction, and strategic focus on stablecoin-based onchain FX markets, enabling token transferability is now timely and beneficial for the protocol's continued growth and decentralization.
+This proposal enables MENTO token transfers for all users by unpausing the Mento Token. Initially launched as a non-transferable governance token, the MENTO token was designed with a future option to become transferable contingent upon the protocol’s maturity, as well as community and market readiness. Given Mento's significant progress, product traction, and strategic focus on stablecoin-based onchain FX markets, enabling token transferability is now timely and beneficial for the protocol's continued growth and decentralization.
 
 ### Motivation
 
