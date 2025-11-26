@@ -58,11 +58,14 @@ if (!process.env.CELOSCAN_API_KEY) {
 
 const celoscanApiKey = process.env.CELOSCAN_API_KEY;
 
-let chain: "alfajores" | "celo" | null = null;
+let chain: "alfajores" | "sepolia" | "celo" | null = null;
 let celoscanApiUrl: string;
 if (broadcast.chain == 44787) {
   chain = "alfajores";
   celoscanApiUrl = "https://api-alfajores.celoscan.io/api";
+} else if (broadcast.chain == 11142220) {
+  chain = "sepolia";
+  celoscanApiUrl = "https://api-sepolia.celoscan.io/api";
 } else if (broadcast.chain == 42220) {
   chain = "celo";
   celoscanApiUrl = "https://api.celoscan.io/api";

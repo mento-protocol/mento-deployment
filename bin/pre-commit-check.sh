@@ -24,6 +24,9 @@ get_network_name() {
         "44787")
             echo "alfajores"
             ;;
+        "11142220")
+            echo "sepolia"
+            ;;
         *)
             echo "Error: Unsupported network ID: $network_id" >&2
             exit 1

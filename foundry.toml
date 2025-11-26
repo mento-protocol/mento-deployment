@@ -45,6 +45,9 @@ libraries = [
     "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0xED477A99035d0c1e11369F1D7A4e587893cc002B",
 ]
 
+[lint]
+lint_on_build = false
+
 [profile.ci]
 fuzz_runs = 1_000
 verbosity = 4
@@ -56,4 +59,4 @@ match_contract = "Integration"
 [rpc_endpoints]
 celo = "${CELO_RPC_URL}"
 alfajores = "${ALFAJORES_RPC_URL}"
-
+sepolia = "${SEPOLIA_RPC_URL}"
