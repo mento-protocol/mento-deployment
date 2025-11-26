@@ -79,5 +79,9 @@
     "Chainlink.JPYUSD": "0x0ceafb2a2e94760e7e615acf6ca2f92c68eb0471",
     "Chainlink.NGNUSD": "0xf2b8ad658a6475440a3294749ef0bb18fe474367",
     "RedstoneAdapter": "0x854A01c7b8431bF23b707b134EF3f99fe5C48CED"
+  },
+  "11142220": {
+    "Governor": "0x23173Ac37b8E4e5a60d787aC543B3F51e8f398b4",
+    "TimelockProxy": "0x74c44Be99937815173A3C56274331e0A05611e0D"
   }
 }
