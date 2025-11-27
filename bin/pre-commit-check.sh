@@ -87,6 +87,12 @@ process_file() {
 
     # Loop through each address and check its verification status
     for address in "${addresses[@]}"; do
+        if [ "$network" == "sepolia" ]; then
+            # skip sepolia for now because it's not supported by CeloScan
+            # without upgrading to the v2 API
+            continue
+        fi
+
         if ! ./bin/check-celoscan-verification.sh "$address" "$network"; then
             exit_status=1
         fi

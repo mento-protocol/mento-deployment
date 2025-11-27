@@ -45,6 +45,11 @@ libraries = [
     "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0xED477A99035d0c1e11369F1D7A4e587893cc002B",
 ]
 
+[profile.sepolia-deployment]
+libraries = [
+    "lib/mento-core-2.0.0/contracts/common/linkedlists/AddressSortedLinkedListWithMedian.sol:AddressSortedLinkedListWithMedian:0xf90B816Ea07eC3c6384656cd5B3249DA8fc3df6F"
+]
+
 [lint]
 lint_on_build = false
 

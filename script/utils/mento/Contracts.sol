@@ -41,6 +41,10 @@ library Contracts {
     _load(self, script, timestamp, true);
   }
 
+  function loadSilent(Cache storage self, string memory script) internal {
+    _load(self, script, "latest", true);
+  }
+
   function _load(Cache storage self, string memory script, string memory timestamp, bool silent) internal {
     string memory chainId = Chain.idString();
     string memory root = vm.projectRoot();
