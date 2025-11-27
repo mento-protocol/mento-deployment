@@ -26,7 +26,8 @@ library Chain {
   string public constant NETWORK_SEPOLIA_CHAINID_STRING = "11142220";
   string public constant NETWORK_SEPOLIA_RPC = "sepolia";
   string public constant NETWORK_SEPOLIA_PK_ENV_VAR = "SEPOLIA_DEPLOYER_PK";
-  address public constant GOVERNANCE_FACTORY_SEPOLIA = 0xEB873758a1806Cda1e135bfb62f602A99D264E2A; // MockGovernanceFactory
+  // MockGovernanceFactory
+  address public constant GOVERNANCE_FACTORY_SEPOLIA = 0xEB873758a1806Cda1e135bfb62f602A99D264E2A;
 
   /**
    * @notice Get the current chainId
