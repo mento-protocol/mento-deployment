@@ -7,9 +7,9 @@ import { IERC20Lite } from "script/interfaces/IERC20Lite.sol";
 import { Script } from "script/utils/mento/Script.sol";
 import { console2 as console } from "forge-std/Script.sol";
 
-import { MGP11Config } from "./Config.sol";
+import { MGP12Config } from "./Config.sol";
 
-contract MGP11Checks is Script, Test {
+contract MGP12Checks is Script, Test {
   string public constant GHS_NAME = "Celo Ghanaian Cedi";
 
   address payable public stableTokenGHSProxy;
@@ -17,7 +17,7 @@ contract MGP11Checks is Script, Test {
   address public proxyOwner;
   address public testUser;
 
-  MGP11Config private config;
+  MGP12Config private config;
 
   constructor() public {
     setUp();
@@ -31,7 +31,7 @@ contract MGP11Checks is Script, Test {
     // stableTokenGHSProxy = contracts.deployed("StableTokenGHSProxy");
     // stableTokenV2Implementation = contracts.deployed("StableTokenV2");
 
-    config = new MGP11Config();
+    config = new MGP12Config();
     config.load();
   }
 
@@ -53,6 +53,7 @@ contract MGP11Checks is Script, Test {
     config.printAllStables();
     console.log("\n");
     console.log(unicode"🟢 All %s tokens have been renamed correctly", stables.length);
+    // TODO: check implementation of all stables is the original StableTokenV2 impl
   }
 
   function equal(string memory a, string memory b) internal pure returns (bool) {

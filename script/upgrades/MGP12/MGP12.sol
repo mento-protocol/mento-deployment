@@ -12,7 +12,7 @@ import { Contracts } from "script/utils/mento/Contracts.sol";
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 import { IProxy } from "mento-core-2.5.0/common/interfaces/IProxy.sol";
 
-import { MGP11Config } from "./Config.sol";
+import { MGP12Config } from "./Config.sol";
 
 import { StableTokenV2Renamer } from "contracts/StableTokenV2Renamer.sol";
 
@@ -27,13 +27,13 @@ interface IStableTokenV2Renamer {
  *         governance transactions needed to update the cGHS token name
  * @dev depends on: ../deploy/*.sol
  */
-contract MGP11 is IMentoUpgrade, GovernanceScript {
+contract MGP12 is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
 
   address private stableTokenV2ImplementationAddress;
   address private renamerImplAddress;
 
-  MGP11Config private config;
+  MGP12Config private config;
 
   ICeloGovernance.Transaction[] private transactions;
 
@@ -49,7 +49,7 @@ contract MGP11 is IMentoUpgrade, GovernanceScript {
    * @dev Sets the addresses of the various contracts needed for the proposal.
    */
   function setAddresses() public {
-    config = new MGP11Config();
+    config = new MGP12Config();
     config.load();
 
     stableTokenV2ImplementationAddress = stableTokenV2ImplAddress();
@@ -86,7 +86,7 @@ contract MGP11 is IMentoUpgrade, GovernanceScript {
   }
 
   function renameToken(address token) public {
-    MGP11Config.TokenRenamingTask memory task = config.getTask(token);
+    MGP12Config.TokenRenamingTask memory task = config.getTask(token);
 
     require(IProxy(token)._getImplementation() == stableTokenV2ImplementationAddress, "Current impl != expected impl");
     transactions.push(
@@ -134,11 +134,11 @@ contract MGP11 is IMentoUpgrade, GovernanceScript {
       return contracts.deployed("StableTokenV2");
     }
 
-    revert("Unexpected network for MGP11");
+    revert("Unexpected network for MGP12");
   }
 
   function renamerImplementationAddress() internal returns (address) {
-    contracts.loadSilent("MGP11-00-Rename-Implementation", "latest");
+    contracts.loadSilent("MGP11-00-Rename-Implementation", "latest"); // TODO: redeploy and update to MGP12
     return contracts.deployed("StableTokenV2Renamer");
   }
 

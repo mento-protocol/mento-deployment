@@ -10,7 +10,7 @@ import { Chain } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
 import { IERC20Lite } from "script/interfaces/IERC20Lite.sol";
 
-contract MGP11Config is GovernanceScript {
+contract MGP12Config is GovernanceScript {
   uint256 public constant NUM_STABLES = 15;
 
   using Contracts for Contracts.Cache;
@@ -50,7 +50,7 @@ contract MGP11Config is GovernanceScript {
     } else if (Chain.isSepolia()) {
       loadSepoliaAddresses();
     } else {
-      revert("Unexpected network for MGP11");
+      revert("Unexpected network for MGP12");
     }
 
     setStables();

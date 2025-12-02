@@ -9,14 +9,14 @@ import { IGovernanceFactory } from "../../../interfaces/IGovernanceFactory.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 
 /**
- yarn deploy -n <network> -u MGP11 -s MGP11-00-Rename-Implementation.sol
+ yarn deploy -n <network> -u MGP12 -s MGP12-00-Rename-Implementation.sol
  */
 
 interface IOwnableLite {
   function transferOwnership(address newOwner) external;
 }
 
-contract MGP11_RenameImplementation is Script {
+contract MGP12_RenameImplementation is Script {
   using Contracts for Contracts.Cache;
 
   function run() public {
@@ -48,6 +48,6 @@ contract MGP11_RenameImplementation is Script {
       return IGovernanceFactory(governanceFactory).governanceTimelock();
     }
 
-    revert("Unexpected network for MGP11");
+    revert("Unexpected network for MGP12");
   }
 }
