@@ -11,9 +11,12 @@ import { Contracts } from "script/utils/mento/Contracts.sol";
 import { IERC20Lite } from "script/interfaces/IERC20Lite.sol";
 
 contract MGP11Config is GovernanceScript {
+  uint256 public constant NUM_STABLES = 15;
+
   using Contracts for Contracts.Cache;
 
   struct TokenRenamingTask {
+    string oldName;
     string newName;
     string oldSymbol;
     string newSymbol;
@@ -68,65 +71,82 @@ contract MGP11Config is GovernanceScript {
     stables.push(cCAD);
     stables.push(cAUD);
     stables.push(cCHF);
+    stables.push(cJPY);
+    stables.push(cNGN);
   }
 
   function setTasks() public {
+    tasks[cUSD].oldName = "Celo Dollar";
     tasks[cUSD].newName = "Mento Dollar";
     tasks[cUSD].oldSymbol = "cUSD";
     tasks[cUSD].newSymbol = "USDm";
 
+    tasks[cEUR].oldName = "Celo Euro";
     tasks[cEUR].newName = "Mento Euro";
     tasks[cEUR].oldSymbol = "cEUR";
     tasks[cEUR].newSymbol = "EURm";
 
+    tasks[cREAL].oldName = "Celo Brazilian Real";
     tasks[cREAL].newName = "Mento Brazilian Real";
     tasks[cREAL].oldSymbol = "cREAL";
-    tasks[cREAL].newSymbol = "REALm";
+    tasks[cREAL].newSymbol = "BRLm";
 
-    tasks[eXOF].newName = "Mento CFA"; // TODO: confirm name
+    tasks[eXOF].oldName = "ECO CFA";
+    tasks[eXOF].newName = "Mento West African CFA franc"; // TODO: confirm name
     tasks[eXOF].oldSymbol = "eXOF";
     tasks[eXOF].newSymbol = "XOFm"; // TODO: confirm symbol
 
+    tasks[cKES].oldName = "Celo Kenyan Shilling";
     tasks[cKES].newName = "Mento Kenyan Shilling";
     tasks[cKES].oldSymbol = "cKES";
     tasks[cKES].newSymbol = "KESm";
 
-    tasks[PUSO].newName = "Mento PUSO"; // TODO: confirm name
+    tasks[PUSO].oldName = "PUSO";
+    tasks[PUSO].newName = "Mento Philippine Peso"; // TODO: confirm name
     tasks[PUSO].oldSymbol = "PUSO";
-    tasks[PUSO].newSymbol = "PUSOm"; // TODO: confirm symbol
+    tasks[PUSO].newSymbol = "PHPm"; // TODO: confirm symbol
 
+    tasks[cCOP].oldName = "Celo Colombian Peso";
     tasks[cCOP].newName = "Mento Colombian Peso";
     tasks[cCOP].oldSymbol = "cCOP";
     tasks[cCOP].newSymbol = "COPm";
 
+    tasks[cGHS].oldName = "Celo Ghanaian Cedi";
     tasks[cGHS].newName = "Mento Ghanaian Cedi";
     tasks[cGHS].oldSymbol = "cGHS";
     tasks[cGHS].newSymbol = "GHSm";
 
+    tasks[cGBP].oldName = "Celo British Pound";
     tasks[cGBP].newName = "Mento British Pound";
     tasks[cGBP].oldSymbol = "cGBP";
     tasks[cGBP].newSymbol = "GBPm";
 
+    tasks[cZAR].oldName = "Celo South African Rand";
     tasks[cZAR].newName = "Mento South African Rand";
     tasks[cZAR].oldSymbol = "cZAR";
     tasks[cZAR].newSymbol = "ZARm";
 
+    tasks[cCAD].oldName = "Celo Canadian Dollar";
     tasks[cCAD].newName = "Mento Canadian Dollar";
     tasks[cCAD].oldSymbol = "cCAD";
     tasks[cCAD].newSymbol = "CADm";
 
+    tasks[cAUD].oldName = "Celo Australian Dollar";
     tasks[cAUD].newName = "Mento Australian Dollar";
     tasks[cAUD].oldSymbol = "cAUD";
     tasks[cAUD].newSymbol = "AUDm";
 
+    tasks[cCHF].oldName = "Celo Swiss Franc";
     tasks[cCHF].newName = "Mento Swiss Franc";
     tasks[cCHF].oldSymbol = "cCHF";
     tasks[cCHF].newSymbol = "CHFm";
 
+    tasks[cJPY].oldName = "Celo Japanese Yen";
     tasks[cJPY].newName = "Mento Japanese Yen";
     tasks[cJPY].oldSymbol = "cJPY";
     tasks[cJPY].newSymbol = "JPYm";
 
+    tasks[cNGN].oldName = "Celo Nigerian Naira";
     tasks[cNGN].newName = "Mento Nigerian Naira";
     tasks[cNGN].oldSymbol = "cNGN";
     tasks[cNGN].newSymbol = "NGNm";

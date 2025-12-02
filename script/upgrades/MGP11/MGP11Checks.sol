@@ -36,21 +36,26 @@ contract MGP11Checks is Script, Test {
   }
 
   function run() public {
-    console.log("\n\n");
+    address[] memory stables = config.getStables();
+    for (uint256 i = 0; i < stables.length; i++) {
+      address stable = stables[i];
 
+      require(equal(config.getTask(stable).newName, IERC20Lite(stable).name()), "Current name != expected old name");
+      require(
+        equal(config.getTask(stable).newSymbol, IERC20Lite(stable).symbol()),
+        "Current symbol != expected old symbol"
+      );
+    }
+
+    console.log("\n");
     console.log("========= Post-upgrade state =========");
+    console.log("\n");
     config.printAllStables();
-    // console.log(unicode"🟢 MGP11Checks");
+    console.log("\n");
+    console.log(unicode"🟢 All %s tokens have been renamed correctly", stables.length);
+  }
 
-    // // Verify the implmentation is still the original StableTokenV2
-    // address currentImplementation = Proxy(stableTokenGHSProxy)._getImplementation();
-    // assertEq(currentImplementation, stableTokenV2Implementation, "Implementation is not the expected StableTokenV2");
-    // console.log("🟢 Implementation is the expected StableTokenV2");
-
-    // // Verify the name is correct
-    // IERC20Lite token = IERC20Lite(stableTokenGHSProxy);
-    // string memory currentName = token.name();
-    // assertEq(currentName, GHS_NAME, "Token has not been changed to the correct name");
-    // console.log("🟢 Token has been updated to %s", GHS_NAME);
+  function equal(string memory a, string memory b) internal pure returns (bool) {
+    return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
   }
 }

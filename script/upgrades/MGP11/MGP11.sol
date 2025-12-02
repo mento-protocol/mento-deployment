@@ -16,9 +16,11 @@ import { MGP11Config } from "./Config.sol";
 
 import { StableTokenV2Renamer } from "contracts/StableTokenV2Renamer.sol";
 
-// interface IStableTokenV2Renamer {
-//   function setSymbol(string calldata newSymbol) external;
-// }
+interface IStableTokenV2Renamer {
+  function setName(string calldata newName) external;
+
+  function setSymbol(string calldata newSymbol) external;
+}
 
 /**
  * @notice This script is use to create the proposal containing the CELO
@@ -74,9 +76,9 @@ contract MGP11 is IMentoUpgrade, GovernanceScript {
     config.printAllStables();
 
     address[] memory stables = config.getStables();
+    require(stables.length == config.NUM_STABLES(), "Number of stables != expected number of stables");
     for (uint256 i = 0; i < stables.length; i++) {
       address stable = stables[i];
-      // console.log("Renaming %s (%s)", IERC20Lite(stable).symbol(), stable);
       renameToken(stable);
     }
 
@@ -95,12 +97,21 @@ contract MGP11 is IMentoUpgrade, GovernanceScript {
       )
     );
 
+    require(equal(task.oldName, IERC20Lite(token).name()), "Current name != expected old name");
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        token,
+        abi.encodeWithSelector(IStableTokenV2Renamer.setName.selector, task.newName)
+      )
+    );
+
     require(equal(task.oldSymbol, IERC20Lite(token).symbol()), "Current symbol != expected old symbol");
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         token,
-        abi.encodeWithSelector(StableTokenV2Renamer.setSymbol.selector, task.newSymbol)
+        abi.encodeWithSelector(IStableTokenV2Renamer.setSymbol.selector, task.newSymbol)
       )
     );
 
