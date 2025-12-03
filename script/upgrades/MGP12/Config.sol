@@ -95,9 +95,9 @@ contract MGP12Config is GovernanceScript {
     tasks[cREAL].newSymbol = "BRLm";
 
     tasks[eXOF].oldName = "ECO CFA";
-    tasks[eXOF].newName = "Mento West African CFA franc"; // TODO: confirm name
+    tasks[eXOF].newName = "Mento West African CFA franc";
     tasks[eXOF].oldSymbol = "eXOF";
-    tasks[eXOF].newSymbol = "XOFm"; // TODO: confirm symbol
+    tasks[eXOF].newSymbol = "XOFm";
 
     tasks[cKES].oldName = "Celo Kenyan Shilling";
     tasks[cKES].newName = "Mento Kenyan Shilling";
@@ -105,9 +105,9 @@ contract MGP12Config is GovernanceScript {
     tasks[cKES].newSymbol = "KESm";
 
     tasks[PUSO].oldName = "PUSO";
-    tasks[PUSO].newName = "Mento Philippine Peso"; // TODO: confirm name
+    tasks[PUSO].newName = "Mento Philippine Peso";
     tasks[PUSO].oldSymbol = "PUSO";
-    tasks[PUSO].newSymbol = "PHPm"; // TODO: confirm symbol
+    tasks[PUSO].newSymbol = "PHPm";
 
     tasks[cCOP].oldName = "Celo Colombian Peso";
     tasks[cCOP].newName = "Mento Colombian Peso";
