@@ -14,13 +14,13 @@ import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 contract MockGovernanceFactory is IGovernanceFactory {
   address public constant MENTO_TOKEN = 0x07867fd40EB56b4380bE39c88D0a7EA59Aa99A20;
 
-  address public constant EMISSION = 0x7c990801cA84e23e8Df85AB2AdB52c8e2e518797;
+  address public constant EMISSION = 0x3C1BEA0F35b5dcAc1065CA9b3b6877657dEa4A69;
 
-  address public constant LOCKING = 0xC955e54F7f6a302d926720890ddE96705104db38;
+  address public constant LOCKING = 0xB72320fC501cb30E55bAF0DA48c20b11fAc9f79D;
 
-  address public constant GOVERNOR = 0x910A940a53C12982ae2277392C5Cfa03aa8c602b;
+  address public constant GOVERNOR = 0x23173Ac37b8E4e5a60d787aC543B3F51e8f398b4;
 
-  address public constant TIME_LOCK = 0x32346936c5bAf3c7B53Ea3fe40B405EFD3A3e656;
+  address public constant TIME_LOCK = 0x74c44Be99937815173A3C56274331e0A05611e0D;
 
   function createGovernance(
     address watchdogMultiSig_,

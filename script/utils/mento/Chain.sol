@@ -26,8 +26,7 @@ library Chain {
   string public constant NETWORK_SEPOLIA_CHAINID_STRING = "11142220";
   string public constant NETWORK_SEPOLIA_RPC = "sepolia";
   string public constant NETWORK_SEPOLIA_PK_ENV_VAR = "SEPOLIA_DEPLOYER_PK";
-  // MockGovernanceFactory
-  address public constant GOVERNANCE_FACTORY_SEPOLIA = 0xEB873758a1806Cda1e135bfb62f602A99D264E2A;
+  address public constant MOCK_GOVERNANCE_FACTORY_SEPOLIA = 0x582a4D31d8b0D0e71398BB69E95EA69671669CBC;
 
   /**
    * @notice Get the current chainId
@@ -68,7 +67,7 @@ library Chain {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return GOVERNANCE_FACTORY_CELO;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return GOVERNANCE_FACTORY_ALFAJORES;
-    if (_chainId == NETWORK_SEPOLIA_CHAINID) return GOVERNANCE_FACTORY_SEPOLIA;
+    if (_chainId == NETWORK_SEPOLIA_CHAINID) return MOCK_GOVERNANCE_FACTORY_SEPOLIA;
     revert("unexpected network");
   }
 
