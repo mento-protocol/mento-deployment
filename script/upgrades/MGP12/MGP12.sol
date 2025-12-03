@@ -14,7 +14,7 @@ import { IProxy } from "mento-core-2.5.0/common/interfaces/IProxy.sol";
 
 import { MGP12Config } from "./Config.sol";
 
-import { StableTokenV2Renamer } from "contracts/StableTokenV2Renamer.sol";
+import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 
 interface IStableTokenV2Renamer {
   function setName(string calldata newName) external;
@@ -22,16 +22,8 @@ interface IStableTokenV2Renamer {
   function setSymbol(string calldata newSymbol) external;
 }
 
-/**
- * @notice This script is use to create the proposal containing the CELO
- *         governance transactions needed to update the cGHS token name
- * @dev depends on: ../deploy/*.sol
- */
 contract MGP12 is IMentoUpgrade, GovernanceScript {
   using Contracts for Contracts.Cache;
-
-  address private stableTokenV2ImplementationAddress;
-  address private renamerImplAddress;
 
   MGP12Config private config;
 
@@ -39,32 +31,27 @@ contract MGP12 is IMentoUpgrade, GovernanceScript {
 
   bool public hasChecks = true;
 
-  string private constant GHS_NAME = "Celo Ghanaian Cedi";
-
   function prepare() public {
-    setAddresses();
-  }
-
-  /**
-   * @dev Sets the addresses of the various contracts needed for the proposal.
-   */
-  function setAddresses() public {
     config = new MGP12Config();
     config.load();
-
-    stableTokenV2ImplementationAddress = stableTokenV2ImplAddress();
-    renamerImplAddress = renamerImplementationAddress();
   }
 
   function run() public {
     prepare();
 
-    address governance = contracts.celoRegistry("Governance");
+    IGovernanceFactory governanceFactory = IGovernanceFactory(ChainLib.governanceFactory());
+    address mentoGovernor = governanceFactory.mentoGovernor();
+
     ICeloGovernance.Transaction[] memory _transactions = buildProposal();
 
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
-      createProposal(_transactions, "TODO: Add MD, update to structured proposal", governance);
+      createStructuredProposal(
+        "MGP-12: Mento Stablecoins Rebranding",
+        "./script/upgrades/MGP12/MGP12.md",
+        _transactions,
+        mentoGovernor
+      );
     }
     vm.stopBroadcast();
   }
@@ -72,8 +59,9 @@ contract MGP12 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    console.log("========= Pre-upgrade state =========");
+    console.log("========= Pre-upgrade state =========\n");
     config.printAllStables();
+    console.log("\n");
 
     address[] memory stables = config.getStables();
     require(stables.length == config.NUM_STABLES(), "Number of stables != expected number of stables");
@@ -85,15 +73,26 @@ contract MGP12 is IMentoUpgrade, GovernanceScript {
     return transactions;
   }
 
+  /**
+   * @dev Renames the token to the new name and symbol, in four steps:
+   *      1. Switch to the temporary renamer implementation
+   *      2. Update the name
+   *      3. Update the symbol
+   *      4. Switch back to the previous StableTokenV2 implementation
+   * @param token The address of the token to rename
+   */
   function renameToken(address token) public {
     MGP12Config.TokenRenamingTask memory task = config.getTask(token);
 
-    require(IProxy(token)._getImplementation() == stableTokenV2ImplementationAddress, "Current impl != expected impl");
+    require(
+      IProxy(token)._getImplementation() == config.getStableTokenV2ImplAddress(),
+      "Current impl != expected impl"
+    );
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         token,
-        abi.encodeWithSelector(IProxy._setImplementation.selector, renamerImplAddress)
+        abi.encodeWithSelector(IProxy._setImplementation.selector, config.getRenamerImplAddress())
       )
     );
 
@@ -119,27 +118,9 @@ contract MGP12 is IMentoUpgrade, GovernanceScript {
       ICeloGovernance.Transaction(
         0,
         token,
-        abi.encodeWithSelector(IProxy._setImplementation.selector, stableTokenV2ImplementationAddress)
+        abi.encodeWithSelector(IProxy._setImplementation.selector, config.getStableTokenV2ImplAddress())
       )
     );
-  }
-
-  function stableTokenV2ImplAddress() internal returns (address) {
-    if (ChainLib.isSepolia()) {
-      return contracts.dependency("StableTokenV2Implementation");
-    }
-
-    if (ChainLib.isCelo()) {
-      contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
-      return contracts.deployed("StableTokenV2");
-    }
-
-    revert("Unexpected network for MGP12");
-  }
-
-  function renamerImplementationAddress() internal returns (address) {
-    contracts.loadSilent("MGP11-00-Rename-Implementation", "latest"); // TODO: redeploy and update to MGP12
-    return contracts.deployed("StableTokenV2Renamer");
   }
 
   function equal(string memory a, string memory b) internal pure returns (bool) {

@@ -23,6 +23,9 @@ contract MGP12Config is GovernanceScript {
     address implementation;
   }
 
+  address internal stableTokenV2ImplAddress;
+  address internal renamerImplAddress;
+
   address[] internal stables;
   mapping(address => TokenRenamingTask) tasks;
 
@@ -176,6 +179,12 @@ contract MGP12Config is GovernanceScript {
     cCHF = contracts.deployed("StableTokenCHFProxy");
     cJPY = contracts.deployed("StableTokenJPYProxy");
     cNGN = contracts.deployed("StableTokenNGNProxy");
+
+    contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
+    stableTokenV2ImplAddress = contracts.deployed("StableTokenV2");
+
+    contracts.loadSilent("MGP12-00-Rename-Implementation", "latest");
+    renamerImplAddress = contracts.deployed("StableTokenV2Renamer");
   }
 
   function loadSepoliaAddresses() public {
@@ -194,10 +203,23 @@ contract MGP12Config is GovernanceScript {
     cCHF = contracts.dependency("StableTokenCHF");
     cJPY = contracts.dependency("StableTokenJPY");
     cNGN = contracts.dependency("StableTokenNGN");
+
+    stableTokenV2ImplAddress = contracts.dependency("StableTokenV2Implementation");
+
+    contracts.loadSilent("MGP12-00-Rename-Implementation", "latest");
+    renamerImplAddress = contracts.deployed("StableTokenV2Renamer");
   }
 
   function getStables() public view returns (address[] memory) {
     return stables;
+  }
+
+  function getStableTokenV2ImplAddress() public view returns (address) {
+    return stableTokenV2ImplAddress;
+  }
+
+  function getRenamerImplAddress() public view returns (address) {
+    return renamerImplAddress;
   }
 
   function hasTask(address token) public view returns (bool) {
