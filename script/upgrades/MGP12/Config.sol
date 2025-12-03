@@ -180,7 +180,7 @@ contract MGP12Config is GovernanceScript {
     cJPY = contracts.deployed("StableTokenJPYProxy");
     cNGN = contracts.deployed("StableTokenNGNProxy");
 
-    contracts.loadSilent("MU04-00-Create-Implementations", "latest"); // First StableTokenV2 deployment
+    contracts.loadSilent("MU04-00-Create-Implementations", "latest");
     stableTokenV2ImplAddress = contracts.deployed("StableTokenV2");
 
     contracts.loadSilent("MGP12-00-Rename-Implementation", "latest");
