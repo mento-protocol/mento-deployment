@@ -1,6 +1,6 @@
 ## TL;DR
 
-This proposal rebrands all Mento stablecoins from the `cXXX` naming convention to `XXXm`, aligning with Mento's multichain strategy and establishing a unified brand identity. For example, `cUSD` becomes `USDm`, `cEUR` becomes `EURm`, and so on. This is a branding-only change with no modifications to smart contract addresses, collateralization mechanisms, or fiat pegs.
+This proposal rebrands all Mento stablecoins from the `cXXX` symbol convention to `XXXm`, aligning with Mento's multichain strategy and establishing a unified brand identity. For example, `cUSD` becomes `USDm`, `cEUR` becomes `EURm`, and so on. The token names are adjusted accordingly, i.e. `Celo Dollar` becomes `Mento Dollar` and so forth. This is a branding-only change with no modifications to smart contract addresses, collateralization mechanisms, or fiat pegs. Please see [the forum post](https://forum.mento.org/t/mento-stablecoin-rebranding-and-strategic-evolution/98) for more details on the proposal.
 
 ### Summary
 
@@ -40,21 +40,21 @@ For each token, the renaming process follows four steps:
 
 **Step 1: Switch to Temporary Implementation**
 
-Call `_setImplementation(address)` on the token proxy to switch from the current `StableTokenV2` implementation to the temporary `StableTokenV2Renamer` implementation. This temporary implementation exposes `setName` and `setSymbol` functions that allow updating the token name and symbol.
+- Call `_setImplementation(address)` on the token proxy to switch from the current `StableTokenV2` implementation to the temporary `StableTokenV2Renamer` implementation. This temporary implementation exposes `setName` and `setSymbol` functions that allow updating the token name and symbol.
 
 **Step 2: Update Name**
 
-Call `setName(string)` on the token (now using the renamer implementation) to update the name from the old format (e.g., `Celo Dollar`) to the new format (e.g., `Mento Dollar`).
+- Call `setName(string)` on the token (now using the renamer implementation) to update the name from the old format (e.g., `Celo Dollar`) to the new format (e.g., `Mento Dollar`).
 
 **Step 3: Update Symbol**
 
-Call `setSymbol(string)` on the token to update the symbol from the old format (e.g., `cUSD`) to the new format (e.g., `USDm`).
+- Call `setSymbol(string)` on the token to update the symbol from the old format (e.g., `cUSD`) to the new format (e.g., `USDm`).
 
 **Step 4: Restore Original Implementation**
 
-Call `_setImplementation(address)` on the token proxy to switch back to the original `StableTokenV2` implementation, completing the rename process.
+- Call `_setImplementation(address)` on the token proxy to switch back to the original `StableTokenV2` implementation, completing the rename process.
 
-#### Transaction Breakdown per Token
+### Transaction Breakdown per Token
 
 | TX# | Target      | Function                      | Parameters                        |
 | --- | ----------- | ----------------------------- | --------------------------------- |
@@ -68,9 +68,9 @@ This pattern repeats for all 15 tokens.
 **Relevant Addresses for Verification**
 
 - StableTokenV2Renamer (temporary implementation)
-  - TODO: add addresses
+  - https://celoscan.io/address/0x13450da8b43b198bf2d2650f788f943e34fb8a1b
 - StableTokenV2 (original implementation)
-  - TODO: add address
+  - https://celoscan.io/address/0x434563B0604BE100F04B7Ae485BcafE3c9D8850E
 
 ### Expected Outcome
 
