@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.19;
 
-import { TempStable } from "mento-core-2.6.4/tokens/TempStable.sol";
+import { Ownable } from "openzeppelin-contracts-next/contracts/access/Ownable.sol";
 
 /**
- * @title Temporary implementation for StableTokenV2.
- * @dev Has a Symbol update function and Symbol variable in the same slot as the original
- *      implementation.
+ * @title StableTokenV2Renamer
+ * @dev Allows the owner to update the name and symbol of a StableTokenV2.
  */
-contract StableTokenV2Renamer is TempStable {
+contract StableTokenV2Renamer is Ownable {
+  // slot 0 = Ownable._owner
+  address public slot1; // slot 1
+  string private _name; // slot 2
   string private _symbol; // slot 3
 
   function setSymbol(string calldata newSymbol) external onlyOwner {
@@ -17,5 +19,13 @@ contract StableTokenV2Renamer is TempStable {
 
   function symbol() public view returns (string memory) {
     return _symbol;
+  }
+
+  function setName(string calldata newName) external onlyOwner {
+    _name = newName;
+  }
+
+  function name() public view returns (string memory) {
+    return _name;
   }
 }

@@ -68,7 +68,7 @@ This pattern repeats for all 15 tokens.
 **Relevant Addresses for Verification**
 
 - StableTokenV2Renamer (temporary implementation)
-  - https://celoscan.io/address/0x13450da8b43b198bf2d2650f788f943e34fb8a1b
+  - https://celoscan.io/address/0x234304272999C4069c93C54f1bd3A43524Db3A3C
 - StableTokenV2 (original implementation)
   - https://celoscan.io/address/0x434563B0604BE100F04B7Ae485BcafE3c9D8850E
 

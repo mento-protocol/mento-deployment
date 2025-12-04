@@ -67,6 +67,7 @@ contract MGP12 is IMentoUpgrade, GovernanceScript {
     require(stables.length == config.NUM_STABLES(), "Number of stables != expected number of stables");
     for (uint256 i = 0; i < stables.length; i++) {
       address stable = stables[i];
+      require(stable != address(0), "Stable token address is 0");
       renameToken(stable);
     }
 
