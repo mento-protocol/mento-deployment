@@ -13,6 +13,11 @@ parse_network () { # $1: network, $2: use_fork
             CHAIN_ID=44787
             export FOUNDRY_PROFILE=alfajores-deployment
             ;;
+        "sepolia")
+            RPC_URL=$SEPOLIA_RPC_URL
+            CHAIN_ID=11142220
+            export FOUNDRY_PROFILE=sepolia-deployment
+            ;;
         "celo")
             RPC_URL=$CELO_RPC_URL
             CHAIN_ID=42220

@@ -24,6 +24,9 @@ get_network_name() {
         "44787")
             echo "alfajores"
             ;;
+        "11142220")
+            echo "sepolia"
+            ;;
         *)
             echo "Error: Unsupported network ID: $network_id" >&2
             exit 1
@@ -82,13 +85,16 @@ process_file() {
         return 0
     fi
 
+    # The verification check below is disabled at the moment because the old Celoscan API's are deprecated
+    # and we need to upgrade to the v2 API.
+
     # Loop through each address and check its verification status
-    for address in "${addresses[@]}"; do
-        if ! ./bin/check-celoscan-verification.sh "$address" "$network"; then
-            exit_status=1
-        fi
-        printf "\n"
-    done
+    # for address in "${addresses[@]}"; do
+    #     if ! ./bin/check-celoscan-verification.sh "$address" "$network"; then
+    #         exit_status=1
+    #     fi
+    #     printf "\n"
+    # done
 
     return $exit_status
 }

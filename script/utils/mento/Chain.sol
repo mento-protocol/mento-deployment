@@ -22,6 +22,12 @@ library Chain {
   string public constant NETWORK_ALFAJORES_PK_ENV_VAR = "ALFAJORES_DEPLOYER_PK";
   address public constant GOVERNANCE_FACTORY_ALFAJORES = 0x96Fe03DBFEc1EB419885a01d2335bE7c1a45e33b;
 
+  uint256 public constant NETWORK_SEPOLIA_CHAINID = 11142220;
+  string public constant NETWORK_SEPOLIA_CHAINID_STRING = "11142220";
+  string public constant NETWORK_SEPOLIA_RPC = "sepolia";
+  string public constant NETWORK_SEPOLIA_PK_ENV_VAR = "SEPOLIA_DEPLOYER_PK";
+  address public constant MOCK_GOVERNANCE_FACTORY_SEPOLIA = 0x582a4D31d8b0D0e71398BB69E95EA69671669CBC;
+
   /**
    * @notice Get the current chainId
    * @return _chainId the chain id
@@ -37,6 +43,7 @@ library Chain {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return NETWORK_CELO_CHAINID_STRING;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return NETWORK_ALFAJORES_CHAINID_STRING;
+    if (_chainId == NETWORK_SEPOLIA_CHAINID) return NETWORK_SEPOLIA_CHAINID_STRING;
     revert("unexpected network");
   }
 
@@ -44,6 +51,7 @@ library Chain {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return NETWORK_CELO_RPC;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return NETWORK_ALFAJORES_RPC;
+    if (_chainId == NETWORK_SEPOLIA_CHAINID) return NETWORK_SEPOLIA_RPC;
     revert("unexpected network");
   }
 
@@ -51,6 +59,7 @@ library Chain {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return vm.envUint(NETWORK_CELO_PK_ENV_VAR);
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return vm.envUint(NETWORK_ALFAJORES_PK_ENV_VAR);
+    if (_chainId == NETWORK_SEPOLIA_CHAINID) return vm.envUint(NETWORK_SEPOLIA_PK_ENV_VAR);
     revert("unexpected network");
   }
 
@@ -58,6 +67,7 @@ library Chain {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return GOVERNANCE_FACTORY_CELO;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return GOVERNANCE_FACTORY_ALFAJORES;
+    if (_chainId == NETWORK_SEPOLIA_CHAINID) return MOCK_GOVERNANCE_FACTORY_SEPOLIA;
     revert("unexpected network");
   }
 
@@ -79,5 +89,9 @@ library Chain {
 
   function isAlfajores() internal view returns (bool) {
     return id() == NETWORK_ALFAJORES_CHAINID;
+  }
+
+  function isSepolia() internal view returns (bool) {
+    return id() == NETWORK_SEPOLIA_CHAINID;
   }
 }
