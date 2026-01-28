@@ -19,8 +19,8 @@ contract MGP13Checks is Script, Test {
   constructor() public {
     config = new MGP13Config();
     config.load();
-    biPoolManagerProxy = config.getBiPoolManagerProxy();
-    expectedBiPoolManagerImpl = config.getBiPoolManagerImpl();
+    biPoolManagerProxy = config.biPoolManagerProxy();
+    expectedBiPoolManagerImpl = config.currentBiPoolManagerImpl();
     biPoolManager = IBiPoolManager(biPoolManagerProxy);
   }
 
@@ -29,6 +29,8 @@ contract MGP13Checks is Script, Test {
       IProxy(biPoolManagerProxy)._getImplementation() == expectedBiPoolManagerImpl,
       "BiPoolManager proxy implementation mismatch"
     );
+
+    console.log(unicode"🟢 BiPoolManager proxy implementation restored to:", expectedBiPoolManagerImpl);
 
     MGP13Config.SpreadOverride[] memory overrides = config.spreadOverrides();
     require(overrides.length > 0, "No spread overrides configured");
@@ -44,17 +46,10 @@ contract MGP13Checks is Script, Test {
         "updated spread mismatch on spread override"
       );
 
-      console.log(
-        unicode"🟢 Spread updated for exchange %s (asset0: %s, asset1: %s)",
-        overrideConfig.exchangeId,
-        overrideConfig.asset0,
-        overrideConfig.asset1
-      );
+      console.log(unicode"🟢 Spread updated for exchange");
+      console.logBytes32(overrideConfig.exchangeId);
+      console.log("asset0:", overrideConfig.asset0);
+      console.log("asset1:", overrideConfig.asset1);
     }
-
-    console.log(
-      unicode"🟢 BiPoolManager proxy implementation restored to expected address %s",
-      expectedBiPoolManagerImpl
-    );
   }
 }

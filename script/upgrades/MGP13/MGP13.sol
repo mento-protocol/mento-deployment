@@ -4,9 +4,9 @@ pragma solidity ^0.8;
 pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/mento/Script.sol";
-import { console2 as console } from "forge-std/console2.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
+import { console2 as console } from "forge-std/Script.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
@@ -52,26 +52,52 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    MGP13Config.SpreadOverride[] memory overrides = config.spreadOverrides();
-    require(overrides.length > 0, "No spread overrides configured");
+    console.log("==========================================");
+    console.log(unicode"🤖 Building proposal for MGP-13");
 
-    address biPoolManagerProxy = config.getBiPoolManagerProxy();
-    address newBiPoolManagerImpl = config.getBiPoolManagerImpl();
-    address currentBiPoolManagerImpl = IProxy(biPoolManagerProxy)._getImplementation();
+    // address biPoolManagerProxy = config.biPoolManagerProxy();
+    // address originalBiPoolManagerImpl = config.biPoolManagerImpl();
+    // address tmpBiPoolManagerImpl = config.tmpBiPoolManagerImpl();
+    // address currentBiPoolManagerImpl = IProxy(biPoolManagerProxy)._getImplementation();
 
-    require(newBiPoolManagerImpl != address(0), "New BiPoolManager impl is 0");
-    require(currentBiPoolManagerImpl != address(0), "Current BiPoolManager impl is 0");
+    // require(originalBiPoolManagerImpl != address(0), "Original BiPoolManager impl is 0");
+    // require(tmpBiPoolManagerImpl != address(0), "Temporary BiPoolManager impl is 0");
+    // require(currentBiPoolManagerImpl != address(0), "Current BiPoolManager impl is 0");
+    // require(currentBiPoolManagerImpl == originalBiPoolManagerImpl, "Current BiPoolManager impl mismatch");
 
-    IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
+    updateBiPoolManagerImpl();
+    updateSpreads();
+    rollbackBiPoolManagerImpl();
 
-    // Switch to the temporary BiPoolManager implementation that supports setSpread
+    console.log("==========================================");
+    return transactions;
+  }
+
+  function updateBiPoolManagerImpl() internal {
+    address biPoolManagerProxy = config.biPoolManagerProxy();
+
+    require(
+      IProxy(biPoolManagerProxy)._getImplementation() == config.currentBiPoolManagerImpl(),
+      "Current BiPoolManager impl mismatch"
+    );
+
+    console.log(unicode"🤖 Updating BiPoolManager impl to:", config.tmpBiPoolManagerImpl());
+
     transactions.push(
       ICeloGovernance.Transaction(
         0,
         biPoolManagerProxy,
-        abi.encodeWithSelector(IProxy._setImplementation.selector, newBiPoolManagerImpl)
+        abi.encodeWithSelector(IProxy._setImplementation.selector, config.tmpBiPoolManagerImpl())
       )
     );
+  }
+
+  function updateSpreads() internal {
+    MGP13Config.SpreadOverride[] memory overrides = config.spreadOverrides();
+    require(overrides.length > 0, "No spread overrides configured");
+
+    address biPoolManagerProxy = config.biPoolManagerProxy();
+    IBiPoolManager biPoolManager = IBiPoolManager(biPoolManagerProxy);
 
     for (uint256 i = 0; i < overrides.length; i++) {
       MGP13Config.SpreadOverride memory overrideConfig = overrides[i];
@@ -84,17 +110,12 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
         "current spread mismatch on spread override"
       );
 
-      console.log(
-        "Updating spread for exchange %s (asset0: %s, asset1: %s)",
-        overrideConfig.exchangeId,
-        overrideConfig.asset0,
-        overrideConfig.asset1
-      );
+      console.log(unicode"🤖 Updating spread for", overrideConfig.name);
 
       transactions.push(
         ICeloGovernance.Transaction(
           0,
-          config.getBiPoolManagerProxy(),
+          biPoolManagerProxy,
           abi.encodeWithSelector(
             IBiPoolManager.setSpread.selector,
             overrideConfig.exchangeId,
@@ -103,16 +124,22 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
         )
       );
     }
+  }
 
-    // Switch back to the previous BiPoolManager implementation
+  function rollbackBiPoolManagerImpl() internal {
+    // require(
+    //   IProxy(config.biPoolManagerProxy())._getImplementation() == config.tmpBiPoolManagerImpl(),
+    //   "Temporary BiPoolManager impl mismatch"
+    // );
+
+    console.log(unicode"🤖 Rolling back BiPoolManager impl to:", config.currentBiPoolManagerImpl());
+
     transactions.push(
       ICeloGovernance.Transaction(
         0,
-        biPoolManagerProxy,
-        abi.encodeWithSelector(IProxy._setImplementation.selector, currentBiPoolManagerImpl)
+        config.biPoolManagerProxy(),
+        abi.encodeWithSelector(IProxy._setImplementation.selector, config.currentBiPoolManagerImpl())
       )
     );
-
-    return transactions;
   }
 }
