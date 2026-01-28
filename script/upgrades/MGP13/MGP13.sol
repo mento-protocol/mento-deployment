@@ -7,12 +7,14 @@ import { GovernanceScript } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
 import { console2 as console } from "forge-std/Script.sol";
+import { Arrays } from "script/utils/Arrays.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
 import { IGovernanceFactory } from "script/interfaces/IGovernanceFactory.sol";
 
 import { IBiPoolManager, FixidityLib } from "mento-core-2.6.5/interfaces/IBiPoolManager.sol";
 import { IProxy } from "mento-core-2.5.0/common/interfaces/IProxy.sol";
+import { IValueDeltaBreaker } from "mento-core-2.6.5/interfaces/IValueDeltaBreaker.sol";
 
 import { MGP13Config } from "./Config.sol";
 
@@ -67,6 +69,7 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
 
     updateBiPoolManagerImpl();
     updateSpreads();
+    updateValueDeltaBreakerThresholds();
     rollbackBiPoolManagerImpl();
 
     console.log("==========================================");
@@ -141,5 +144,28 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
         abi.encodeWithSelector(IProxy._setImplementation.selector, config.currentBiPoolManagerImpl())
       )
     );
+  }
+
+  function updateValueDeltaBreakerThresholds() internal {
+    MGP13Config.ValueDeltaBreakerThresholdOverride[] memory overrides = config.valueDeltaBreakerThresholdOverrides();
+
+    address valueDeltaBreaker = config.valueDeltaBreaker();
+
+    for (uint256 i = 0; i < overrides.length; i++) {
+      uint256 currentThreshold = IValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(overrides[i].rateFeedID);
+      require(currentThreshold == overrides[i].currentThreshold, "Current threshold mismatch");
+
+      require(overrides.length == 2, "Expected 2 value delta breaker overrides");
+      address[] memory rateFeedIds = Arrays.addresses(overrides[0].rateFeedID, overrides[1].rateFeedID);
+      uint256[] memory newThresholds = Arrays.uints(overrides[0].newThreshold, overrides[1].newThreshold);
+
+      transactions.push(
+        ICeloGovernance.Transaction(
+          0,
+          valueDeltaBreaker,
+          abi.encodeWithSelector(IValueDeltaBreaker.setRateChangeThresholds.selector, rateFeedIds, newThresholds)
+        )
+      );
+    }
   }
 }

@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 
 import { GovernanceScript } from "script/utils/mento/Script.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
+import { toRateFeedId } from "script/utils/mento/Oracles.sol";
 
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 
@@ -31,6 +32,7 @@ contract MGP13Config is GovernanceScript {
   address public biPoolManagerProxy;
   address public currentBiPoolManagerImpl;
   address public tmpBiPoolManagerImpl;
+  address public valueDeltaBreaker;
   address public cUSD;
   address public nativeUSDC;
   address public nativeUSDT;
@@ -41,6 +43,7 @@ contract MGP13Config is GovernanceScript {
     biPoolManagerProxy = _biPoolManagerProxy();
     currentBiPoolManagerImpl = _currentBiPoolManagerImpl();
     tmpBiPoolManagerImpl = _tmpBiPoolManagerImpl();
+    valueDeltaBreaker = _valueDeltaBreaker();
     nativeUSDC = contracts.dependency("NativeUSDC");
     nativeUSDT = contracts.dependency("NativeUSDT");
     axlUSDC = contracts.dependency("BridgedUSDC");
@@ -77,6 +80,24 @@ contract MGP13Config is GovernanceScript {
       asset1: nativeUSDT,
       currentSpread: FixidityLib.newFixed(0), // 0%
       newSpread: FixidityLib.newFixedFraction(5, 10000) // 0.05%
+    });
+
+    return overrides;
+  }
+
+  function valueDeltaBreakerThresholdOverrides() public view returns (ValueDeltaBreakerThresholdOverride[] memory) {
+    ValueDeltaBreakerThresholdOverride[] memory overrides = new ValueDeltaBreakerThresholdOverride[](2);
+    // cUSD/USDC and cUSD/axlUSDC (both use the same rate feed id)
+    overrides[0] = ValueDeltaBreakerThresholdOverride({
+      rateFeedID: toRateFeedId("USDCUSD"),
+      currentThreshold: 1000000000000000000000, // 0.001 or 1e21
+      newThreshold: 1500000000000000000000 // 0.0015 or 1.5e21
+    });
+    // cUSD/USDT
+    overrides[1] = ValueDeltaBreakerThresholdOverride({
+      rateFeedID: toRateFeedId("USDTUSD"),
+      currentThreshold: 1000000000000000000000, // 0.001 or 1e21
+      newThreshold: 1500000000000000000000 // 0.0015 or 1.5e21
     });
 
     return overrides;
@@ -121,5 +142,18 @@ contract MGP13Config is GovernanceScript {
   function _tmpBiPoolManagerImpl() internal returns (address) {
     contracts.loadSilent("MGP13-00-Deploy-BiPoolManager-Implementation", "latest");
     return contracts.deployed("BiPoolManager");
+  }
+
+  function _valueDeltaBreaker() internal returns (address) {
+    if (ChainLib.isCelo()) {
+      contracts.loadSilent("MU01-01-Create-Nonupgradeable-Contracts", "latest");
+      return contracts.deployed("ValueDeltaBreaker");
+    }
+
+    if (ChainLib.isSepolia()) {
+      return contracts.dependency("ValueDeltaBreaker");
+    }
+
+    revert("unknown network");
   }
 }
