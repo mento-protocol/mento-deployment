@@ -91,14 +91,14 @@ contract MGP13Config is GovernanceScript {
     // cUSD/USDC and cUSD/axlUSDC (both use the same rate feed id)
     overrides[0] = ValueDeltaBreakerThresholdOverride({
       rateFeedID: toRateFeedId("USDCUSD"),
-      currentThreshold: 1000000000000000000000, // 0.001 or 1e21
-      newThreshold: 1500000000000000000000 // 0.0015 or 1.5e21
+      currentThreshold: 0.001 * 1e24, // 0.001 or 1e21
+      newThreshold: 0.0015 * 1e24 // 0.0015 or 1.5e21
     });
     // cUSD/USDT
     overrides[1] = ValueDeltaBreakerThresholdOverride({
       rateFeedID: toRateFeedId("USDTUSD"),
-      currentThreshold: 1000000000000000000000, // 0.001 or 1e21
-      newThreshold: 1500000000000000000000 // 0.0015 or 1.5e21
+      currentThreshold: 0.001 * 1e24, // 0.001 or 1e21
+      newThreshold: 0.0015 * 1e24 // 0.0015 or 1.5e21
     });
 
     return overrides;
