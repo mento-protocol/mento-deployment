@@ -21,6 +21,11 @@ library Chain {
   string public constant NETWORK_ALFAJORES_RPC = "alfajores";
   string public constant NETWORK_ALFAJORES_PK_ENV_VAR = "ALFAJORES_DEPLOYER_PK";
 
+  uint256 public constant NETWORK_SEPOLIA_CHAINID = 11142220;
+  string public constant NETWORK_SEPOLIA_CHAINID_STRING = "11142220";
+  string public constant NETWORK_SEPOLIA_RPC = "sepolia";
+  string public constant NETWORK_SEPOLIA_PK_ENV_VAR = "SEPOLIA_DEPLOYER_PK";
+
   /**
    * @notice Get the current chainId
    * @return the chain id
@@ -36,6 +41,7 @@ library Chain {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return NETWORK_CELO_CHAINID_STRING;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return NETWORK_ALFAJORES_CHAINID_STRING;
+    if (_chainId == NETWORK_SEPOLIA_CHAINID) return NETWORK_SEPOLIA_CHAINID_STRING;
     revert("unexpected network");
   }
 
@@ -43,6 +49,7 @@ library Chain {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return NETWORK_CELO_RPC;
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return NETWORK_ALFAJORES_RPC;
+    if (_chainId == NETWORK_SEPOLIA_CHAINID) return NETWORK_SEPOLIA_RPC;
     revert("unexpected network");
   }
 
@@ -50,6 +57,7 @@ library Chain {
     uint256 _chainId = id();
     if (_chainId == NETWORK_CELO_CHAINID) return vm.envUint(NETWORK_CELO_PK_ENV_VAR);
     if (_chainId == NETWORK_ALFAJORES_CHAINID) return vm.envUint(NETWORK_ALFAJORES_PK_ENV_VAR);
+    if (_chainId == NETWORK_SEPOLIA_CHAINID) return vm.envUint(NETWORK_SEPOLIA_PK_ENV_VAR);
     revert("unexpected network");
   }
 
@@ -71,5 +79,9 @@ library Chain {
 
   function isAlfajores() internal pure returns (bool) {
     return id() == NETWORK_ALFAJORES_CHAINID;
+  }
+
+  function isSepolia() internal pure returns (bool) {
+    return id() == NETWORK_SEPOLIA_CHAINID;
   }
 }

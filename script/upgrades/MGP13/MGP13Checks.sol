@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.8;
+
+import { Test } from "forge-std/Test.sol";
+import { Script } from "script/utils/mento/Script.sol";
+import { console2 as console } from "forge-std/Script.sol";
+
+import { IBiPoolManager, FixidityLib } from "mento-core-2.6.5/interfaces/IBiPoolManager.sol";
+import { IProxy } from "mento-core-2.5.0/common/interfaces/IProxy.sol";
+
+import { MGP13Config } from "./Config.sol";
+
+contract MGP13Checks is Script, Test {
+  MGP13Config private config;
+  IBiPoolManager private biPoolManager;
+  address private biPoolManagerProxy;
+  address private expectedBiPoolManagerImpl;
+
+  constructor() public {
+    config = new MGP13Config();
+    config.load();
+    biPoolManagerProxy = config.getBiPoolManagerProxy();
+    expectedBiPoolManagerImpl = config.getBiPoolManagerImpl();
+    biPoolManager = IBiPoolManager(biPoolManagerProxy);
+  }
+
+  function run() public {
+    require(
+      IProxy(biPoolManagerProxy)._getImplementation() == expectedBiPoolManagerImpl,
+      "BiPoolManager proxy implementation mismatch"
+    );
+
+    MGP13Config.SpreadOverride[] memory overrides = config.spreadOverrides();
+    require(overrides.length > 0, "No spread overrides configured");
+
+    for (uint256 i = 0; i < overrides.length; i++) {
+      MGP13Config.SpreadOverride memory overrideConfig = overrides[i];
+      IBiPoolManager.PoolExchange memory exchange = biPoolManager.getPoolExchange(overrideConfig.exchangeId);
+
+      require(exchange.asset0 == overrideConfig.asset0, "asset0 mismatch on spread override");
+      require(exchange.asset1 == overrideConfig.asset1, "asset1 mismatch on spread override");
+      require(
+        FixidityLib.equals(exchange.config.spread, overrideConfig.newSpread),
+        "updated spread mismatch on spread override"
+      );
+
+      console.log(
+        unicode"🟢 Spread updated for exchange %s (asset0: %s, asset1: %s)",
+        overrideConfig.exchangeId,
+        overrideConfig.asset0,
+        overrideConfig.asset1
+      );
+    }
+
+    console.log(
+      unicode"🟢 BiPoolManager proxy implementation restored to expected address %s",
+      expectedBiPoolManagerImpl
+    );
+  }
+}
