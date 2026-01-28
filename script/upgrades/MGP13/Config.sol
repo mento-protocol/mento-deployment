@@ -87,6 +87,7 @@ contract MGP13Config is GovernanceScript {
 
   function valueDeltaBreakerThresholdOverrides() public view returns (ValueDeltaBreakerThresholdOverride[] memory) {
     ValueDeltaBreakerThresholdOverride[] memory overrides = new ValueDeltaBreakerThresholdOverride[](2);
+
     // cUSD/USDC and cUSD/axlUSDC (both use the same rate feed id)
     overrides[0] = ValueDeltaBreakerThresholdOverride({
       rateFeedID: toRateFeedId("USDCUSD"),
@@ -124,6 +125,8 @@ contract MGP13Config is GovernanceScript {
     if (ChainLib.isSepolia()) {
       return contracts.dependency("BiPoolManagerProxy");
     }
+
+    revert("unknown network");
   }
 
   function _currentBiPoolManagerImpl() internal returns (address) {

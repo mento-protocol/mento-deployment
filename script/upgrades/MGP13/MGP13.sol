@@ -6,7 +6,6 @@ pragma experimental ABIEncoderV2;
 import { GovernanceScript } from "script/utils/mento/Script.sol";
 import { Chain as ChainLib } from "script/utils/mento/Chain.sol";
 import { Contracts } from "script/utils/mento/Contracts.sol";
-import { console2 as console } from "forge-std/Script.sol";
 import { Arrays } from "script/utils/Arrays.sol";
 
 import { IMentoUpgrade, ICeloGovernance } from "script/interfaces/IMentoUpgrade.sol";
@@ -54,25 +53,11 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
   function buildProposal() public returns (ICeloGovernance.Transaction[] memory) {
     require(transactions.length == 0, "buildProposal() should only be called once");
 
-    console.log("==========================================");
-    console.log(unicode"🤖 Building proposal for MGP-13");
-
-    // address biPoolManagerProxy = config.biPoolManagerProxy();
-    // address originalBiPoolManagerImpl = config.biPoolManagerImpl();
-    // address tmpBiPoolManagerImpl = config.tmpBiPoolManagerImpl();
-    // address currentBiPoolManagerImpl = IProxy(biPoolManagerProxy)._getImplementation();
-
-    // require(originalBiPoolManagerImpl != address(0), "Original BiPoolManager impl is 0");
-    // require(tmpBiPoolManagerImpl != address(0), "Temporary BiPoolManager impl is 0");
-    // require(currentBiPoolManagerImpl != address(0), "Current BiPoolManager impl is 0");
-    // require(currentBiPoolManagerImpl == originalBiPoolManagerImpl, "Current BiPoolManager impl mismatch");
-
     updateBiPoolManagerImpl();
     updateSpreads();
     updateValueDeltaBreakerThresholds();
     rollbackBiPoolManagerImpl();
 
-    console.log("==========================================");
     return transactions;
   }
 
@@ -83,8 +68,6 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
       IProxy(biPoolManagerProxy)._getImplementation() == config.currentBiPoolManagerImpl(),
       "Current BiPoolManager impl mismatch"
     );
-
-    console.log(unicode"🤖 Updating BiPoolManager impl to:", config.tmpBiPoolManagerImpl());
 
     transactions.push(
       ICeloGovernance.Transaction(
@@ -113,8 +96,6 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
         "current spread mismatch on spread override"
       );
 
-      console.log(unicode"🤖 Updating spread for", overrideConfig.name);
-
       transactions.push(
         ICeloGovernance.Transaction(
           0,
@@ -130,13 +111,6 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
   }
 
   function rollbackBiPoolManagerImpl() internal {
-    // require(
-    //   IProxy(config.biPoolManagerProxy())._getImplementation() == config.tmpBiPoolManagerImpl(),
-    //   "Temporary BiPoolManager impl mismatch"
-    // );
-
-    console.log(unicode"🤖 Rolling back BiPoolManager impl to:", config.currentBiPoolManagerImpl());
-
     transactions.push(
       ICeloGovernance.Transaction(
         0,

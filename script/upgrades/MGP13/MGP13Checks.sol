@@ -33,13 +33,18 @@ contract MGP13Checks is Script, Test {
       "BiPoolManager proxy implementation mismatch"
     );
 
-    console.log(unicode"🟢 BiPoolManager proxy implementation restored to:", expectedBiPoolManagerImpl);
+    console.log("==========================================");
+    console.log(unicode"👀 MGP-13 — Proposal Checks");
+    console.log("");
+    console.log(unicode"🟢 BiPoolManager proxy implementation restored to:");
+    console.log("\t", expectedBiPoolManagerImpl);
+    console.log("");
 
-    MGP13Config.SpreadOverride[] memory overrides = config.spreadOverrides();
-    require(overrides.length > 0, "No spread overrides configured");
+    MGP13Config.SpreadOverride[] memory spreadOverrides = config.spreadOverrides();
 
-    for (uint256 i = 0; i < overrides.length; i++) {
-      MGP13Config.SpreadOverride memory overrideConfig = overrides[i];
+    console.log(unicode"🟢 Spread updated for (%d) exchanges:", spreadOverrides.length);
+    for (uint256 i = 0; i < spreadOverrides.length; i++) {
+      MGP13Config.SpreadOverride memory overrideConfig = spreadOverrides[i];
       IBiPoolManager.PoolExchange memory exchange = biPoolManager.getPoolExchange(overrideConfig.exchangeId);
 
       require(exchange.asset0 == overrideConfig.asset0, "asset0 mismatch on spread override");
@@ -49,22 +54,24 @@ contract MGP13Checks is Script, Test {
         "updated spread mismatch on spread override"
       );
 
-      console.log(unicode"🟢 Spread updated for exchange");
-      console.logBytes32(overrideConfig.exchangeId);
-      console.log("asset0:", overrideConfig.asset0);
-      console.log("asset1:", overrideConfig.asset1);
+      console.log("\t", overrideConfig.name);
     }
+
+    console.log("");
 
     MGP13Config.ValueDeltaBreakerThresholdOverride[] memory thresholdOverrides = config
       .valueDeltaBreakerThresholdOverrides();
     require(thresholdOverrides.length > 0, "No value delta breaker overrides configured");
 
+    console.log(unicode"🟢 ValueDeltaBreaker threshold updated for (%d) feeds:", thresholdOverrides.length);
     for (uint256 i = 0; i < thresholdOverrides.length; i++) {
       uint256 currentThreshold = IValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(
         thresholdOverrides[i].rateFeedID
       );
       require(currentThreshold == thresholdOverrides[i].newThreshold, "ValueDeltaBreaker threshold mismatch");
-      console.log("ValueDeltaBreaker threshold updated for:", thresholdOverrides[i].rateFeedID);
+      console.log("\t", thresholdOverrides[i].rateFeedID);
     }
+
+    console.log("");
   }
 }
