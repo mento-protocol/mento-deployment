@@ -1,6 +1,6 @@
 ## TL;DR
 
-This proposal enables a 5bps (0.05%) spread fee and increases the ValueDeltaBreaker circuit breaker thresholds from 10bps to 15bps (0.10% → 0.15%) for the following pairs: `USDm/USDC`, `USDm/axlUSDC`, and `USDm/USD₮`. The goals are to reduce breaker-induced downtime, curb arbitrage losses, and introduce protocol revenue on high-volume pairs.
+This proposal enables a 5bps (0.05%) spread fee and increases the ValueDeltaBreaker circuit breaker thresholds from 10bps to 15bps (0.10% → 0.15%) for the following pairs: `USDm/USDC`, `USDm/axlUSDC`, and `USDm/USD₮`. The goals are to reduce breaker-induced downtime, improve protection against arbitrage losses, and enable protocol revenue on high-volume pairs.
 
 ### Summary
 
