@@ -41,7 +41,7 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
     vm.startBroadcast(ChainLib.deployerPrivateKey());
     {
       createStructuredProposal(
-        "MGP-13: Update spreads for selected pools",
+        "MGP-13: Increase Circuit Breaker to 15bps and Enable 5bps Spread Fee",
         "./script/upgrades/MGP13/MGP13.md",
         _transactions,
         mentoGovernor
