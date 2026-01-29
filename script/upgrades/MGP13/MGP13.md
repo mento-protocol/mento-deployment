@@ -9,7 +9,7 @@ This proposal updates two parameter sets for the above‑mentioned USDm pairs:
 - **Spread fee**: **0.00% → 0.05%** (0bps → 5bps)
 - **Circuit breaker threshold**: **0.10% → 0.15%** (10bps → 15bps)
 
-The increased circuit breaker values are proposed because the current 10bps breakers have started to cause significant downtime (notably for the USD₮ pair) due to recent USD₮ price instability
+The increased circuit breaker values are proposed because the current 10bps breakers have started to cause significant downtime (notably for the USD₮ pair) due to recent USD₮ price instability.
 
 The increased spreads are proposed because the current 0% spreads expose the reserve to potential arbitrage losses while related swaps are not generating protocol revenue. It is expected that this leads to reduced swap volume on Mento but an overall increase in protocol revenue and better protection against arbitrage losses for the Mento Reserve.
 
