@@ -18,7 +18,7 @@ contract MGP13Checks is Script, Test {
   address private expectedBiPoolManagerImpl;
   address private valueDeltaBreaker;
 
-  constructor() public {
+  constructor() {
     config = new MGP13Config();
     config.load();
     biPoolManagerProxy = config.biPoolManagerProxy();

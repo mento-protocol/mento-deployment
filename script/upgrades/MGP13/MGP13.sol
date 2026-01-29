@@ -125,21 +125,21 @@ contract MGP13 is IMentoUpgrade, GovernanceScript {
 
     address valueDeltaBreaker = config.valueDeltaBreaker();
 
+    require(overrides.length == 2, "Expected 2 value delta breaker overrides");
     for (uint256 i = 0; i < overrides.length; i++) {
       uint256 currentThreshold = IValueDeltaBreaker(valueDeltaBreaker).rateChangeThreshold(overrides[i].rateFeedID);
       require(currentThreshold == overrides[i].currentThreshold, "Current threshold mismatch");
-
-      require(overrides.length == 2, "Expected 2 value delta breaker overrides");
-      address[] memory rateFeedIds = Arrays.addresses(overrides[0].rateFeedID, overrides[1].rateFeedID);
-      uint256[] memory newThresholds = Arrays.uints(overrides[0].newThreshold, overrides[1].newThreshold);
-
-      transactions.push(
-        ICeloGovernance.Transaction(
-          0,
-          valueDeltaBreaker,
-          abi.encodeWithSelector(IValueDeltaBreaker.setRateChangeThresholds.selector, rateFeedIds, newThresholds)
-        )
-      );
     }
+
+    address[] memory rateFeedIds = Arrays.addresses(overrides[0].rateFeedID, overrides[1].rateFeedID);
+    uint256[] memory newThresholds = Arrays.uints(overrides[0].newThreshold, overrides[1].newThreshold);
+
+    transactions.push(
+      ICeloGovernance.Transaction(
+        0,
+        valueDeltaBreaker,
+        abi.encodeWithSelector(IValueDeltaBreaker.setRateChangeThresholds.selector, rateFeedIds, newThresholds)
+      )
+    );
   }
 }
