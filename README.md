@@ -12,8 +12,12 @@ git clone git@github.com:mento-protocol/mento-deployment.git
 # Change directory to the the newly cloned repo
 cd mento-deployment
 
+# Initialise all nested submodules (required — the checkout action and
+# `forge install` do not recurse into nested forge-managed libraries)
+git submodule update --init --recursive
+
 # Install the project dependencies & build the contracts
-yarn install && forge install && forge build
+yarn install && forge build
 
 # Create your .env file (Replace the PK for deployer account)
 cp .env.example .env
@@ -24,6 +28,22 @@ yarn secrets:get
 # Execute scripts using forge script command
 forge script DeployCircuitBreaker --rpc-url $ALFAJORES_RPC_URL --broadcast --legacy --verify --verifier sourcify
 ```
+
+## Running Tests
+
+Foundry fork tests live in `test/` and require a Celo mainnet RPC endpoint.
+
+```bash
+# Run all fork tests against Celo mainnet
+forge test --match-path "test/**" --fork-url $CELO_RPC_URL -v
+
+# Run a specific test contract
+forge test --match-contract FX03Test --fork-url $CELO_RPC_URL -vvv
+```
+
+CI runs these automatically when the `CELO_RPC_URL` secret is configured in
+the repository (Settings → Secrets → Actions). Without it the test step is
+skipped rather than blocking the build.
 
 ## Deployment Structure
 
